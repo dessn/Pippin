@@ -1,17 +1,25 @@
 import inspect
 import os
 
+import logging
+
 
 class SNANALightCurveFit:
     def __init__(self, base="base_des.nml", fitopts="base_des.fitopts"):
+        self.logger = logging.getLogger("pippin")
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        self.base_file = base
-        self.fitopts_file = fitopts
+        self.base_file = self.data_dir + base
+        self.fitopts_file = self.data_dir + fitopts
 
-        with open(self.data_dir + base, "r") as f:
+        self.logger.debug(f"Loading base file from {self.base_file}")
+        with open(self.base_file, "r") as f:
             self.base = list(f.read().splitlines())
-        with open(self.data_dir + fitopts, "r") as f:
+            self.logger.info(f"Loaded base file from {self.base_file}")
+
+        self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
+        with open(self.fitopts_file, "r") as f:
             self.fitopts = list(f.read().splitlines())
+            self.logger.info(f"Loaded fitopts file from {self.fitopts_file}")
 
     def set_property(self, name, value, section_start=None, section_end=None, assignment="="):
         """ Ensures the property name value pair is set in the base file.
@@ -33,7 +41,7 @@ class SNANALightCurveFit:
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
-        desired_line = f"\t{name.upper()} = {value}"
+        desired_line = f"\t{name.upper()} {assignment} {value}"
         for i, line in enumerate(self.base):
             if reached_section or line.strip().startswith(section_start):
                 reached_section = True
@@ -53,6 +61,7 @@ class SNANALightCurveFit:
                 break
         if not added:
             self.base.append(desired_line)
+        self.logger.debug(f"Line {i} set to {desired_line}")
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
@@ -79,6 +88,7 @@ class SNANALightCurveFit:
         self.set_property(name, value, section_start="&FITINP", section_end="&END")
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
     s = SNANALightCurveFit()
 
     s.set_snlcinp("CUTWIN_NBAND_THRESH", 1000)
