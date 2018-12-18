@@ -1,0 +1,76 @@
+BATCH_INFO:  sbatch  $SBATCH_TEMPLATES/SBATCH_kicp.TEMPLATE 64
+
+
+&SNLCINP
+    SIM_PRESCALE = 2.0
+    USE_MINOS = T
+
+    VERSION_PHOTOMETRY = 'DESALL_specType_forcePhoto_real_snana_text'
+
+    PHOTFLAG_MSKREJ   = 0, 0
+    SNTABLE_LIST      = 'FITRES'
+    TEXTFILE_PREFIX   = 'DES3YR_DES_CHANGEME'
+
+    KCOR_FILE        = '$DES_ROOT/kcor/SpecIa_3yr/DES_Y3A2_noOOB.fits'
+
+    FLUXERRMODEL_FILE = '$DES_ROOT/simlibs/DES3YR_FAKE_ERRORFUDGES.DAT'
+
+    NFIT_ITERATION = 3
+    INTERP_OPT     = 1
+
+    H0_REF   = 70.0
+    OLAM_REF =  0.70
+    OMAT_REF =  0.30
+    W0_REF   = -1.00
+
+    SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
+
+    SNTYPE_LIST = 1,101
+
+    CUTWIN_MJD   = 56500, 57500
+    OPT_SETPKMJD = 5
+    OPT_MWEBV    = 3
+    OPT_MWCOLORLAW  = 99
+
+    ABORT_ON_NOEPOCHS = F
+    ABORT_ON_TRESTCUT = F
+    ABORT_ON_DUPLCID  = F
+
+    CUTWIN_NEPOCH    =  5
+    cutwin_redshift  =  0.05, 0.9
+    cutwin_redshift_err   =  0.0, 0.01
+    cutwin_Trest     = -20.0,   60.0
+    cutwin_Trestmin  = -20.0,   0.0
+    CUTWIN_TRESTMAX  =  10.0,  200.0
+    CUTWIN_MWEBV     = 0.0 0.25
+
+    CUTWIN_PSF = 0.5, 2.75
+
+    CUTWIN_SNRMAX       =  5.0, 1.0E8
+    CUTWIN_NFILT_SNRMAX =  2.0, 99.
+
+    cutwin_Nband_thresh = 1
+
+    CUTWIN_ZPNPE = 30.5, 100.  ! cut on ZP in Npe
+
+    FUDGE_MAG_ERROR = ''
+    VPEC_FILE = ''
+
+    SNCID_IGNORE_FILE = '$DES3YR/config/35sigignore.list'
+&END
+
+
+&FITINP
+    FITMODEL_NAME  = 'SALT2.JLA-B14'
+    FILTLIST_FIT = 'griz'
+
+    FUDGEALL_ITER1_MAXFRAC = 0.03
+    PRIOR_MJDSIG        = 10
+    PRIOR_SHAPE_RANGE = -4.0, 4.0
+
+    FITWIN_SHAPE     = -3.00, +3.00
+    FITWIN_COLOR     = -0.30, +0.30
+    FITWIN_PROB      =  0.01,  1.01
+    FITWIN_TREST     = -15.0, 45.0
+    DELCHI2_REJECT   = 10
+&END
