@@ -1,10 +1,19 @@
 import logging
+import inspect
+import os
 
 
-class ConfigBasedExecutable:
-    def __init__(self, base_file):
+class OutputExecutable:
+    def __init__(self, output_name):
         self.logger = logging.getLogger("pippin")
 
+        self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + f"/../output/{output_name}")
+        os.makedirs(self.output_dir, exist_ok=True)
+
+
+class ConfigBasedExecutable(OutputExecutable):
+    def __init__(self, base_file, output_name):
+        super().__init__(output_name)
         self.logger.debug(f"Loading base file from {self.base_file}")
         with open(base_file, "r") as f:
             self.base = list(f.read().splitlines())
