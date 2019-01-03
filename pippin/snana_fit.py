@@ -10,7 +10,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
         self.base_file = self.data_dir + base
         self.fitopts_file = self.data_dir + fitopts
-        super().__init__(self.base_file, output_name)
+        super().__init__(self.base_file, output_name, "=")
 
         self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
         with open(self.fitopts_file, "r") as f:
@@ -62,4 +62,5 @@ if __name__ == "__main__":
     s.set_fitinp("FITWIN_PROB", "0.05, 1.01")
     s.set_fitinp("GOODBYE", -1)
     s.set_property("BATCH_INFO", "sbatch  $SBATCH_TEMPLATES/SBATCH_sandyb.TEMPLATE  96", assignment=":")
+    s.delete_property("GOODBYE")
     s.write_nml()

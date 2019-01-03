@@ -1,26 +1,38 @@
 import logging
 import inspect
 import os
+from abc import ABC, abstractmethod
 
 
-class OutputExecutable:
+class OutputExecutable(ABC):
     def __init__(self, output_name):
         self.logger = logging.getLogger("pippin")
 
         self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + f"/../output/{output_name}")
+        self.output_name = output_name
         os.makedirs(self.output_dir, exist_ok=True)
+
+    @abstractmethod
+    def run(self):
+        pass
 
 
 class ConfigBasedExecutable(OutputExecutable):
-    def __init__(self, base_file, output_name):
+    def __init__(self, base_file, output_name, default_assignment):
         super().__init__(output_name)
+        self.default_assignment = default_assignment
         self.logger.debug(f"Loading base file from {self.base_file}")
         with open(base_file, "r") as f:
             self.base = list(f.read().splitlines())
             self.logger.info(f"Loaded base file from {self.base_file}")
 
-    def set_property(self, name, value, section_start=None, section_end=None, assignment="="):
+    def delete_property(self, name, section_start=None, section_end=None):
+        self.set_property(name, None, section_start=section_start, section_end=section_end)
+
+    def set_property(self, name, value, section_start=None, section_end=None, assignment=None):
         """ Ensures the property name value pair is set in the base file.
+        
+        Set value to None to remove a property
 
         Parameters
         ----------
@@ -33,9 +45,10 @@ class ConfigBasedExecutable(OutputExecutable):
         section_end : str, optional
             What ends the section. Generally "&END"
         assignment : str, optional
-            Method used to describe setting an attribute. Normally "=", but might need to 
-            be ":" for some cases.
+            Method used to describe setting an attribute. Default determined by class init
         """
+        if assignment is None:
+            assignment = self.default_assignment
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
@@ -47,16 +60,19 @@ class ConfigBasedExecutable(OutputExecutable):
                 continue
 
             if line.strip().upper().startswith(name.upper()):
-                # Replace existing option
-                self.base[i] = desired_line
+                # Replace existing option or remove it
+                if value is None:
+                    self.base[i] = ""
+                else:
+                    self.base[i] = desired_line
                 added = True
                 break
 
-            if reached_section and (section_end is not None and line.strip().startswith(section_end)):
+            if value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
                 # Option doesn't exist, lets add it
                 self.base.insert(i, desired_line)
                 added = True
                 break
-        if not added:
+        if not added and value is not None:
             self.base.append(desired_line)
         self.logger.debug(f"Line {i} set to {desired_line}")
