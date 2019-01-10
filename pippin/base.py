@@ -1,15 +1,13 @@
-import logging
-import inspect
 import os
 from abc import ABC, abstractmethod
 
+from pippin.config import get_logger
+
 
 class OutputExecutable(ABC):
-    def __init__(self, output_name):
-        self.logger = logging.getLogger("pippin")
-
-        self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + f"/../output/{output_name}")
-        self.output_name = output_name
+    def __init__(self, output_dir):
+        self.logger = get_logger()
+        self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
     @abstractmethod
@@ -18,9 +16,10 @@ class OutputExecutable(ABC):
 
 
 class ConfigBasedExecutable(OutputExecutable):
-    def __init__(self, base_file, output_name, default_assignment):
-        super().__init__(output_name)
+    def __init__(self, output_dir, base_file, default_assignment):
+        super().__init__(output_dir)
         self.default_assignment = default_assignment
+        self.base_file = base_file
         self.logger.debug(f"Loading base file from {self.base_file}")
         with open(base_file, "r") as f:
             self.base = list(f.read().splitlines())
@@ -52,7 +51,7 @@ class ConfigBasedExecutable(OutputExecutable):
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
-        desired_line = f"\t{name.upper()} {assignment} {value}"
+        desired_line = f"{name.upper()} {assignment} {value}"
         for i, line in enumerate(self.base):
             if reached_section or line.strip().startswith(section_start):
                 reached_section = True

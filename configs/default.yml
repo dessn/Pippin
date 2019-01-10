@@ -1,0 +1,21 @@
+SIM:
+    BORING_SIM:
+        IA:
+            BASE: des_ia.input
+            GENMAG_SMEAR_MODELNAME: G10
+        NONIA:
+            BASE: des_cc.input
+            GENMODEL: NON1AGRID $DES_ROOT/models/NON1AGRID/DES_NON1ASED_K10.GRID
+        GLOBAL:
+            NGEN_UNIT: 0.1
+
+LCFIT:
+    NO_CHANGES:
+        BASE: des.nml
+    DIFFERENT_SN:
+        BASE: des.nml
+        SNLCINP:
+            CUTWIN_SNRMAX:  3.0, 1.0E8
+            CUTWIN_NFILT_SNRMAX:  3.0, 99.
+
+CLASSIFICATION:

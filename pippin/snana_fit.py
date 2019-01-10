@@ -6,7 +6,7 @@ from pippin.base import ConfigBasedExecutable
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
-    def __init__(self, output_name, version, base="base_des.nml", fitopts="base_des.fitopts"):
+    def __init__(self, output_name, version, base="des.nml", fitopts="des.fitopts"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
         self.base_file = self.data_dir + base
         self.fitopts_file = self.data_dir + fitopts
