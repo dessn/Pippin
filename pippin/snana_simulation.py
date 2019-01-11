@@ -65,7 +65,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     include_file = line.split(":")[-1].strip()
                     self.logger.debug(f"Copying included file {include_file}")
                     shutil.copy(self.data_dir + include_file, self.output_dir)
-                    output_files.append(self.output_dir + include_file)
+                    output_files.append(self.output_dir + "/" + include_file)
 
         # Write the primary input file
         with open(self.config_path, "w") as f:
