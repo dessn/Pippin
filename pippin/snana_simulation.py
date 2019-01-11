@@ -17,7 +17,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.genversion = genversion
         self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
-        self.config_path = self.output_dir + "/" + genversion + ".input"
+        self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = config["IA"]["BASE"]
         self.base_cc = config["NONIA"]["BASE"]
         self.global_config = global_config
@@ -69,9 +69,10 @@ class SNANASimulation(ConfigBasedExecutable):
                     shutil.copy(self.data_dir + include_file, temp_dir)
 
         # Write the primary input file
-        with open(self.config_path, "w") as f:
+        main_input_file = f"{temp_dir}/{self.genversion}.input"
+        with open(main_input_file, "w") as f:
             f.writelines(map(lambda s: s + '\n', self.base))
-        self.logger.info(f"Input file written to {self.config_path}")
+        self.logger.info(f"Input file written to {main_input_file}")
 
         # Remove any duplicates and order the output files
         output_files = sorted(os.listdir(temp_dir))
@@ -95,6 +96,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if "//" not in self.output_dir and "Pippin" in self.output_dir:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
+                self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
                 shutil.copy(temp_dir, self.output_dir)
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
