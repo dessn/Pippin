@@ -48,7 +48,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.write_input()
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
-            subprocess.run(["snlc_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
 
 if __name__ == "__main__":
