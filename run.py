@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Initialise logging
-    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s")
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
