@@ -60,7 +60,7 @@ class SNANASimulation(ConfigBasedExecutable):
         if "//" not in self.output_dir and "Pippin" in self.output_dir:
             self.logger.debug(f"Cleaning output directory {self.output_dir}")
             shutil.rmtree(self.output_dir, ignore_errors=True)
-
+            os.makedirs(self.output_dir, exist_ok=True)
         self.write_input()
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
