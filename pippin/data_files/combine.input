@@ -12,7 +12,6 @@ NGEN_UNIT:  0.5
 
 H0: 70
 ZRANGE:      0.10  1.15
-GENPREFIX:   DES          # prefix of all data filenames
 FORMAT_MASK: 48           # 2=TERSE    16=RanCID  32=FITS-FORMAT
 
 RANSEED_REPEAT: 10  123459  

@@ -55,6 +55,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.set_property("SIMGEN_INFILE_Ia", self.base_ia)
         self.set_property("SIMGEN_INFILE_NONIa", self.base_cc)
+        self.set_property("GENPREFIX", self.genversion)
 
     def write_input(self):
         with open(self.config_path, "w") as f:
@@ -68,7 +69,7 @@ class SNANASimulation(ConfigBasedExecutable):
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
         self.logger.info(f"Sim logging outputting to {logging_file}")
-        done_file = f"{self.output_dir}/SIMLOGS_DES/SIMJOB_ALL.DONE"
+        done_file = f"{self.output_dir}/SIMLOGS_{self.genversion}/SIMJOB_ALL.DONE"
 
         # Monitor for success or failure
         while True:
@@ -88,6 +89,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
             # Check to see if the done file exists
             if os.path.exists(done_file):
+                self.logger.info("Done file found, creating symlinks to output")
                 return True
 
 
