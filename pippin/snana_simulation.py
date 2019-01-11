@@ -53,9 +53,9 @@ class SNANASimulation(ConfigBasedExecutable):
         # Copy the base files across
         output_files = []
         shutil.copy(self.data_dir + self.base_ia, self.output_dir)
-        output_files.append(self.output_dir + self.base_ia)
+        output_files.append(self.output_dir + "/" + self.base_ia)
         shutil.copy(self.data_dir + self.base_cc, self.output_dir)
-        output_files.append(self.output_dir + self.base_cc)
+        output_files.append(self.output_dir + "/" + self.base_cc)
 
         # Copy the include input file if there is one
         with open(self.data_dir + self.base_ia, "r") as f:
