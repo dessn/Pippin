@@ -49,7 +49,7 @@ class SNANASimulation(ConfigBasedExecutable):
         hash_file = f"{self.output_dir}/hash.txt"
         if os.path.exists(hash_file):
             with open(hash_file, "r") as f:
-                old_hash = int(f.read().strip())
+                old_hash = f.read().strip()
                 self.logger.debug(f"Previous result found, hash is {old_hash}")
 
         # Put config in a temp directory
