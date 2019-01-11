@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import time
 import tempfile
+import hashlib
 
 from pippin.base import ConfigBasedExecutable
 
@@ -87,8 +88,8 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(file, "r") as f:
                 string_to_hash += f.read()
             self.logger.warn(file)
-            self.logger.warn(hash(string_to_hash))
-        new_hash = hash(string_to_hash)
+            self.logger.warn(hashlib.sha256(string_to_hash).hexdigest())
+        new_hash = hashlib.sha256(string_to_hash).hexdigest()
         self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
 
