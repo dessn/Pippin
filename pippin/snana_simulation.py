@@ -91,7 +91,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
             # Check to see if the done file exists
             if os.path.exists(done_file):
-                sim_folder = f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}"
+                sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
                 sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
                 self.logger.info("Done file found, creating symlinks")
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
