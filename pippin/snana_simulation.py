@@ -21,6 +21,8 @@ class SNANASimulation(ConfigBasedExecutable):
         self.base_cc = config["NONIA"]["BASE"]
         self.global_config = global_config
 
+        # TODO: Would be good if in future versions we checked for changes and didnt delete if we didn't have to
+        # TODO: The correct way of doing this is to read in all inputs, hash them, and save the hash as a file
         # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
         if "//" not in self.output_dir and "Pippin" in self.output_dir:
             self.logger.debug(f"Cleaning output directory {self.output_dir}")
@@ -89,11 +91,12 @@ class SNANASimulation(ConfigBasedExecutable):
 
             # Check to see if the done file exists
             if os.path.exists(done_file):
-                self.logger.info("Done file found, creating symlinks to output")
+                sim_folder = f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}"
+                sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
+                self.logger.info("Done file found, creating symlinks")
+                self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
+                os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 return True
-
-
-
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
