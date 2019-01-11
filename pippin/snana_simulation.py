@@ -58,9 +58,9 @@ class SNANASimulation(ConfigBasedExecutable):
             # Check log for abort
             with open(logging_file, "r") as f:
                 output_error = False
-                for line in f.readlines():
+                for line in f.read().splitlines():
                     if "ABORT ON FATAL ERROR" in line:
-                        self.logger.error(f"Fatal error in simulation. See {logging_file} for details.")
+                        self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
                         output_error = True
                     if output_error:
                         self.logger.error(f"Excerpt: {line}")
