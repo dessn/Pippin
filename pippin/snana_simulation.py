@@ -24,6 +24,15 @@ class SNANASimulation(ConfigBasedExecutable):
         shutil.copy(self.data_dir + self.base_ia, self.output_dir)
         shutil.copy(self.data_dir + self.base_cc, self.output_dir)
 
+        # Copy the include input file if there is one
+        with open(self.data_dir + self.base_ia, "r") as f:
+            for line in f.readlines():
+                line = line.strip()
+                if line.startswith("INPUT_FILE_INCLUDE"):
+                    include_file = line.split(":")[-1].strip()
+                    self.logger.debug(f"Copying included file {include_file}")
+                    shutil.copy(self.data_dir + include_file, self.output_dir)
+
         for key in config.get("IA", []):
             if key.upper() == "BASE":
                 continue
