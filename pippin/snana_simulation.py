@@ -45,7 +45,7 @@ class SNANASimulation(ConfigBasedExecutable):
     def write_input(self):
         # Load previous hash here if it exists
         old_hash = None
-        hash_file = f"{self.output_dir}/hash.md5"
+        hash_file = f"{self.output_dir}/hash.txt"
         if os.path.exists(hash_file):
             with open(hash_file, "r") as f:
                 old_hash = int(f.read().strip())
