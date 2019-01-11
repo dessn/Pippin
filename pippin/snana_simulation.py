@@ -75,7 +75,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logger.info(f"Input file written to {main_input_file}")
 
         # Remove any duplicates and order the output files
-        output_files = sorted(os.listdir(temp_dir))
+        output_files = [f"{temp_dir}/{a}" for a in sorted(os.listdir(temp_dir))]
         self.logger.debug(f"{len(output_files)} files used to create simulation. Hashing them.")
 
         # Also add this file to the hash, so if the code changes we also regenerate. Smart.
