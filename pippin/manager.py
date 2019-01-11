@@ -29,7 +29,9 @@ class Manager:
             sim_output_dir = f"{output_dir}/0_SIM/{self.prefix}_{sim_name}"
             self.logger.debug(f"Running simulation {sim_name}, output to {sim_output_dir}")
             s = SNANASimulation(sim_output_dir, f"{self.prefix}_{sim_name}", c["SIM"][sim_name], self.global_config)
-            s.run()
+            success = s.run()
+            if not success:
+                exit(1)
 
         self.logger.info("Completed all simulations")
 

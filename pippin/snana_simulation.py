@@ -4,6 +4,7 @@ import logging
 import shutil
 import subprocess
 import time
+import tempfile
 
 from pippin.base import ConfigBasedExecutable
 
@@ -44,18 +45,19 @@ class SNANASimulation(ConfigBasedExecutable):
     def write_input(self):
         # Load previous hash here if it exists
         old_hash = None
-        hash_file = self.output_dir + "hash.md5"
+        hash_file = f"{self.output_dir}/hash.md5"
         if os.path.exists(hash_file):
             with open(hash_file, "r") as f:
                 old_hash = int(f.read().strip())
                 self.logger.debug(f"Previous result found, hash is {old_hash}")
 
+        # Put config in a temp directory
+        temp_dir_obj = tempfile.TemporaryDirectory()
+        temp_dir = temp_dir_obj.name
+
         # Copy the base files across
-        output_files = []
-        shutil.copy(self.data_dir + self.base_ia, self.output_dir)
-        output_files.append(self.output_dir + "/" + self.base_ia)
-        shutil.copy(self.data_dir + self.base_cc, self.output_dir)
-        output_files.append(self.output_dir + "/" + self.base_cc)
+        shutil.copy(self.data_dir + self.base_ia, temp_dir)
+        shutil.copy(self.data_dir + self.base_cc, temp_dir)
 
         # Copy the include input file if there is one
         with open(self.data_dir + self.base_ia, "r") as f:
@@ -64,17 +66,15 @@ class SNANASimulation(ConfigBasedExecutable):
                 if line.startswith("INPUT_FILE_INCLUDE"):
                     include_file = line.split(":")[-1].strip()
                     self.logger.debug(f"Copying included file {include_file}")
-                    shutil.copy(self.data_dir + include_file, self.output_dir)
-                    output_files.append(self.output_dir + "/" + include_file)
+                    shutil.copy(self.data_dir + include_file, temp_dir)
 
         # Write the primary input file
         with open(self.config_path, "w") as f:
             f.writelines(map(lambda s: s + '\n', self.base))
-        output_files.append(self.config_path)
         self.logger.info(f"Input file written to {self.config_path}")
 
         # Remove any duplicates and order the output files
-        output_files = sorted(list(set(output_files)))
+        output_files = sorted(os.listdir(temp_dir))
         self.logger.debug(f"{len(output_files)} files used to create simulation. Hashing them.")
 
         # Also add this file to the hash, so if the code changes we also regenerate. Smart.
@@ -88,19 +88,20 @@ class SNANASimulation(ConfigBasedExecutable):
         new_hash = hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
-        # If different, clean directory
+
         if regenerate:
             self.logger.info(f"Running simulation, hash check failed")
             # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
             if "//" not in self.output_dir and "Pippin" in self.output_dir:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
-                os.makedirs(self.output_dir, exist_ok=True)
+                shutil.copy(temp_dir, self.output_dir)
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
         else:
             self.logger.info("Hash check passed, not rerunning")
+        temp_dir_obj.cleanup()
         return regenerate
 
     def run(self):
