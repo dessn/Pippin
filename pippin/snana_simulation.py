@@ -21,7 +21,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.base_ia = config["IA"]["BASE"]
         self.base_cc = config["NONIA"]["BASE"]
         self.global_config = global_config
-
+        self.hash_file = None
         self.hash = None
 
         for key in config.get("IA", []):
@@ -103,6 +103,7 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
+                self.hash_file = hash_file
         else:
             self.logger.info("Hash check passed, not rerunning")
         temp_dir_obj.cleanup()
@@ -135,6 +136,8 @@ class SNANASimulation(ConfigBasedExecutable):
                     if output_error:
                         self.logger.error(f"Excerpt: {line}")
             if output_error:
+                self.logger.debug("Removing hash on failure")
+                os.remove(self.hash_file)
                 return False
 
             # Check to see if the done file exists
