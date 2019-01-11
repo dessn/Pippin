@@ -99,10 +99,9 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
-            return False
         else:
             self.logger.info("Hash check passed, not rerunning")
-            return True
+        return regenerate
 
     def run(self):
 
