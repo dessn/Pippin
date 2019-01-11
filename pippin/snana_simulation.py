@@ -84,10 +84,10 @@ class SNANASimulation(ConfigBasedExecutable):
         # Get current hash
         string_to_hash = ""
         for file in output_files:
-            self.logger.warn(file)
-            self.logger.warn(hash(string_to_hash))
             with open(file, "r") as f:
                 string_to_hash += f.read()
+            self.logger.warn(file)
+            self.logger.warn(hash(string_to_hash))
         new_hash = hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
