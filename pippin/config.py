@@ -17,7 +17,7 @@ def singleton(fn):
 
 @singleton
 def get_config():
-    filename = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../config.cfg")
+    filename = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../cfg.ini")
     config = configparser.ConfigParser()
     config.read(filename)
     return config
