@@ -56,16 +56,24 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logger.info(f"Input file written to {self.config_path}")
 
     def run(self):
+        # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
+        if "//" not in self.output_dir and "Pippin" in self.output_dir:
+            self.logger.debug(f"Cleaning output directory {self.output_dir}")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+
         self.write_input()
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
         self.logger.info(f"Sim logging outputting to {logging_file}")
+        done_file = f"{self.output_dir}/SIMLOGS_DES/SIMJOB_ALL.DONE"
+
         # Monitor for success or failure
         while True:
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-            # Check log for abort
+
+            # Check log for errors and if found, print the rest of the log so you dont have to look up the file
             with open(logging_file, "r") as f:
                 output_error = False
                 for line in f.read().splitlines():
@@ -77,6 +85,9 @@ class SNANASimulation(ConfigBasedExecutable):
             if output_error:
                 return False
 
+            # Check to see if the done file exists
+            if os.path.exists(done_file):
+                return True
 
 
 
