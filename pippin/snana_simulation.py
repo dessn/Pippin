@@ -54,7 +54,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Monitor for success or failure
         while True:
-            time.sleep(self.global_config["OUTPUT"]["ping_frequency"])
+            time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
             # Check log for abort
             with open(logging_file, "r") as f:
                 output_error = False
