@@ -51,7 +51,7 @@ class ConfigBasedExecutable(OutputExecutable):
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
-        desired_line = f"{name.upper()} {assignment} {value}"
+        desired_line = f"{name.upper()}{assignment} {value}"
         for i, line in enumerate(self.base):
             if reached_section or line.strip().startswith(section_start):
                 reached_section = True
