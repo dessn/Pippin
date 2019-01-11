@@ -52,6 +52,7 @@ class SNANASimulation(ConfigBasedExecutable):
         with open(logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
+        self.logger.info(f"Sim logging outputting to {logging_file}")
         # Monitor for success or failure
         while True:
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
@@ -59,7 +60,7 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(logging_file, "r") as f:
                 output_error = False
                 for line in f.read().splitlines():
-                    if "ABORT ON FATAL ERROR" in line:
+                    if "ERROR" in line:
                         self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
                         output_error = True
                     if output_error:
