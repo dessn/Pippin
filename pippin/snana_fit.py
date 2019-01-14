@@ -68,6 +68,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             f.writelines(map(lambda s: s + '\n', self.fitopts))
             f.writelines(map(lambda s: s + '\n', self.base))
         self.logger.info(f"NML file written to {self.config_path}")
+        assert os.path.exists(self.config_path), "NML file does not exist"
 
     def run(self):
         self.write_nml()
@@ -77,22 +78,26 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         self.logger.info(f"Light curve fitting outputting to {logging_file}")
         done_file = f"{self.output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
+        secondary_log = f"{self.output_dir}/SPLIT_JOBS/LCFIT/MERGELOGS/MERGE2.LOG"
 
+        log_files = [logging_file, secondary_log]
         while True:
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
             # Check for errors
-            if os.path.exists(logging_file):
-                with open(logging_file, "r") as f:
-                    output_error = False
-                    for line in f.read().splitlines():
-                        if "ERROR" in line:
-                            self.logger.critical(f"Fatal error in light curve fitting. See {logging_file} for details.")
-                            output_error = True
-                        if output_error:
-                            self.logger.error(f"Excerpt: {line}")
-                if output_error:
-                    return False
+            for file in log_files:
+                if os.path.exists(file):
+                    with open(file, "r") as f:
+                        output_error = False
+                        for line in f.read().splitlines():
+                            if "ERROR" in line:
+                                self.logger.critical(f"Fatal error in light curve fitting. See {file} for details.")
+                                output_error = True
+                            if output_error:
+                                self.logger.error(f"Excerpt: {line}")
+
+                    if output_error:
+                        return False
 
             # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
             if os.path.exists(done_file):

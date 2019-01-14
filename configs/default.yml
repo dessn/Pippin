@@ -1,5 +1,5 @@
 SIM:
-    BORING_SIM:
+    BORINGSIM:
         IA:
             BASE: des_ia.input
             GENMAG_SMEAR_MODELNAME: G10
@@ -10,7 +10,7 @@ SIM:
             NGEN_UNIT: 0.1
 
 LCFIT:
-    NO_CHANGES:
+    NOCHANGES:
         BASE: des.nml
 #    DIFFERENT_SN:
 #        BASE: des.nml
