@@ -72,13 +72,14 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def run(self):
         self.write_nml()
+        return False
         logging_file = self.config_path.replace(".nml", ".nml_log")
         with open(logging_file, "w") as f:
             # TODO: Add queue to config and run
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         self.logger.info(f"Light curve fitting outputting to {logging_file}")
         done_file = f"{self.output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
-        secondary_log = f"{self.output_dir}/SPLIT_JOBS/LCFIT/MERGELOGS/MERGE2.LOG"
+        secondary_log = f"{self.output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
         log_files = [logging_file, secondary_log]
         while True:
