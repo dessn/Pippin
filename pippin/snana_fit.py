@@ -8,7 +8,7 @@ from pippin.base import ConfigBasedExecutable
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
-    def __init__(self, output_dir, version, config, global_config):
+    def __init__(self, output_dir, sim_version, config, global_config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
 
         self.config = config
