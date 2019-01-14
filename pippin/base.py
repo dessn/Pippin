@@ -63,7 +63,8 @@ class ConfigBasedExecutable(OutputExecutable):
                 if value is None:
                     self.base[i] = ""
                 else:
-                    self.base[i] = desired_line
+                    start = line.upper().split(name.upper())[0]
+                    self.base[i] = start + desired_line
                 added = True
                 break
 

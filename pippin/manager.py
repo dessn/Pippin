@@ -37,6 +37,7 @@ class Manager:
 
         for sim_name in c["SIM"]:
             for fit_name in c["LCFIT"]:
+                fit_output_dir = f"{output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
                 self.logger.info(f"Fitting {fit_name} for simulation {sim_name}")
-                f = SNANALightCurveFit()
+                f = SNANALightCurveFit(fit_output_dir, f"{self.prefix}_{sim_name}_{fit_name}", c["LCFIT"][fit_name], self.global_config)
                 f.run()

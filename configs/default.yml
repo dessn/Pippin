@@ -14,6 +14,7 @@ LCFIT:
         BASE: des.nml
 #    DIFFERENT_SN:
 #        BASE: des.nml
+#        FITOPTS: des.fitopts
 #        SNLCINP:
 #            CUTWIN_SNRMAX:  3.0, 1.0E8
 #            CUTWIN_NFILT_SNRMAX:  3.0, 99.
