@@ -82,16 +82,17 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
             # Check for errors
-            with open(logging_file, "r") as f:
-                output_error = False
-                for line in f.read().splitlines():
-                    if "ERROR" in line:
-                        self.logger.critical(f"Fatal error in light curve fitting. See {logging_file} for details.")
-                        output_error = True
-                    if output_error:
-                        self.logger.error(f"Excerpt: {line}")
-            if output_error:
-                return False
+            if os.path.exists(logging_file):
+                with open(logging_file, "r") as f:
+                    output_error = False
+                    for line in f.read().splitlines():
+                        if "ERROR" in line:
+                            self.logger.critical(f"Fatal error in light curve fitting. See {logging_file} for details.")
+                            output_error = True
+                        if output_error:
+                            self.logger.error(f"Excerpt: {line}")
+                if output_error:
+                    return False
 
             # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
             if os.path.exists(done_file):
