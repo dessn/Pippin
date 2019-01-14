@@ -27,8 +27,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.fitopts = list(f.read().splitlines())
             self.logger.info(f"Loaded {len(self.fitopts)} fitopts file from {self.fitopts_file}")
 
-        self.version = version
-        self.config_path = self.output_dir + "/" + self.version + ".nml"
+        self.sim_version = sim_version
+        self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
@@ -60,7 +60,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
-        self.set_property("VERSION", self.version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("VERSION", self.sim_version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.output_dir, assignment=":", section_end="&SNLCINP")
 
         # Write main file
@@ -97,6 +97,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             if os.path.exists(done_file):
                 self.logger.info("Tarball found, fitting successful")
                 return True
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
