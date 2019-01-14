@@ -53,12 +53,13 @@ class ConfigBasedExecutable(OutputExecutable):
         added = False
         desired_line = f"{name}{assignment} {value}"
         for i, line in enumerate(self.base):
-            if reached_section or line.strip().startswith(section_start):
+            modified_line = line.upper().replace(assignment, " ").strip()
+            if reached_section or modified_line.startswith(section_start.upper()):
                 reached_section = True
             else:
                 continue
 
-            if line.strip().upper().replace(assignment, " ").split()[0] == name.upper():
+            if modified_line.split()[0] == name.upper():
                 # Replace existing option or remove it
                 if value is None:
                     self.base[i] = ""
