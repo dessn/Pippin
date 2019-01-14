@@ -126,18 +126,19 @@ class SNANASimulation(ConfigBasedExecutable):
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
             # Check log for errors and if found, print the rest of the log so you dont have to look up the file
-            with open(logging_file, "r") as f:
-                output_error = False
-                for line in f.read().splitlines():
-                    if "ERROR" in line:
-                        self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
-                        output_error = True
-                    if output_error:
-                        self.logger.error(f"Excerpt: {line}")
-            if output_error:
-                self.logger.debug("Removing hash on failure")
-                os.remove(self.hash_file)
-                return False
+            if os.path.exists(logging_file):
+                with open(logging_file, "r") as f:
+                    output_error = False
+                    for line in f.read().splitlines():
+                        if "ERROR" in line:
+                            self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
+                            output_error = True
+                        if output_error:
+                            self.logger.error(f"Excerpt: {line}")
+                if output_error:
+                    self.logger.debug("Removing hash on failure")
+                    os.remove(self.hash_file)
+                    return False
 
             # Check to see if the done file exists
             if os.path.exists(done_file):
