@@ -29,6 +29,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.sim_version = sim_version
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
+        self.lc_output_dir = f"{self.output_dir}/output"
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
@@ -61,7 +62,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
         self.set_property("VERSION", self.sim_version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
-        self.set_property("OUTDIR",  self.output_dir, assignment=":", section_end="&SNLCINP")
+        self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
 
         # Write main file
         with open(self.config_path, "w") as f:
@@ -75,8 +76,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         logging_file = self.config_path.replace(".nml", ".nml_log")
         with open(logging_file, "w") as f:
             # TODO: Add queue to config and run
-            pass
-            # subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         self.logger.info(f"Light curve fitting outputting to {logging_file}")
         done_file = f"{self.output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
         secondary_log = f"{self.output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
@@ -91,7 +91,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     with open(file, "r") as f:
                         output_error = False
                         for line in f.read().splitlines():
-                            if "ERROR" in line:
+                            if "ERROR" in line and not output_error:
                                 self.logger.critical(f"Fatal error in light curve fitting. See {file} for details.")
                                 output_error = True
                             if output_error:
