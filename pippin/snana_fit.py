@@ -60,8 +60,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
-        self.set_property("VERSION", self.version, assignment=":") # TODO FIX THIS, DOUBLE VERSION KEY
-        self.set_property("OUTDIR",  self.output_dir, assignment=":")
+        self.set_property("VERSION", self.version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("OUTDIR",  self.output_dir, assignment=":", section_end="&SNLCINP")
 
         # Write main file
         with open(self.config_path, "w") as f:
