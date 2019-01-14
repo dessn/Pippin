@@ -59,7 +59,7 @@ class ConfigBasedExecutable(OutputExecutable):
             else:
                 continue
 
-            if modified_line.split()[0] == name.upper():
+            if modified_line and modified_line.split()[0] == name.upper():
                 # Replace existing option or remove it
                 if value is None:
                     self.base[i] = ""
