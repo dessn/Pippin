@@ -28,8 +28,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.logger.info(f"Loaded {len(self.fitopts)} fitopts file from {self.fitopts_file}")
 
         self.version = version
-        self.set_property("VERSION", version, assignment=":") # TODO FIX THIS, DOUBLE VERSION KEY
-        self.set_property("OUTDIR",  self.output_dir, assignment=":")
         self.config_path = self.output_dir + "/" + self.version + ".nml"
 
     def set_snlcinp(self, name, value):
@@ -62,6 +60,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
+        self.set_property("VERSION", self.version, assignment=":") # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("OUTDIR",  self.output_dir, assignment=":")
 
         # Write main file
         with open(self.config_path, "w") as f:
@@ -91,7 +91,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     if output_error:
                         self.logger.error(f"Excerpt: {line}")
             if output_error:
-                self.logger.debug("Removing hash on failure")
                 return False
 
             # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done

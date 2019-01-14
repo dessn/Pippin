@@ -58,7 +58,7 @@ class ConfigBasedExecutable(OutputExecutable):
             else:
                 continue
 
-            if line.strip().upper().startswith(name.upper()):
+            if line.strip().upper().replace(assignment, " ").split()[0] == name.upper():
                 # Replace existing option or remove it
                 if value is None:
                     self.base[i] = ""
