@@ -92,6 +92,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 f.writelines(map(lambda s: s + '\n', total_string))
             self.logger.info(f"NML file written to {self.config_path}")
 
+            with open(hash_file, "w") as f:
+                f.write(str(new_hash))
+                self.logger.debug(f"New hash saved to {hash_file}")
+
         return regenerate, new_hash
 
     def run(self):
