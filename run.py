@@ -10,10 +10,13 @@ if __name__ == "__main__":
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("-v", "--verbose", help="increase output verbosity")
+
     args = parser.parse_args()
 
+    level = logging.DEBUG if args.verbose else logging.INFO
     # Initialise logging
-    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s")
+    logging.basicConfig(level=level, format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s")
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
