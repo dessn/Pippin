@@ -51,3 +51,7 @@ class Manager:
                 if not lc_hash:
                     exit(1)
                 lc_hashes[f"{sim_name}_{fit_name}"] = lc_hash
+
+        self.logger.info("Completed all light curve fitting")
+        self.logger.info("")
+        self.logger.info("")
