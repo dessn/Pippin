@@ -102,7 +102,14 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
             # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
             if os.path.exists(done_file):
-                self.logger.info("Tarball found, fitting successful")
+                self.logger.info("Tarball found, fitting complete, cleaning up the directory")
+                try:
+                    subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+                except subprocess.CalledProcessError as e:
+                    self.logger.critical("split_and_fit cleaning failed")
+                    self.logger.error(e.stdout)
+                    self.logger.error(e.stderr)
+                    raise e
                 return True
 
 
