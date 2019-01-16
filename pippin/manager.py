@@ -27,21 +27,27 @@ class Manager:
         self.logger.info("")
         self.logger.info("")
 
+        sim_hashes = {}
         for sim_name in c["SIM"]:
             sim_output_dir = f"{output_dir}/0_SIM/{self.prefix}_{sim_name}"
             self.logger.debug(f"Running simulation {sim_name}, output to {sim_output_dir}")
             s = SNANASimulation(sim_output_dir, f"{self.prefix}_{sim_name}", c["SIM"][sim_name], self.global_config)
-            success = s.run()
-            if not success:
+            sim_hash = s.run()
+            if not sim_hash:
                 exit(1)
+            sim_hashes[sim_name] = sim_hash
 
         self.logger.info("Completed all simulations")
         self.logger.info("")
         self.logger.info("")
 
+        lc_hashes = {}
         for sim_name in c["SIM"]:
             for fit_name in c["LCFIT"]:
                 fit_output_dir = f"{output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
                 self.logger.info(f"Fitting {fit_name} for simulation {sim_name}")
-                f = SNANALightCurveFit(fit_output_dir, f"{self.prefix}_{sim_name}", c["LCFIT"][fit_name], self.global_config)
-                f.run()
+                f = SNANALightCurveFit(fit_output_dir, f"{self.prefix}_{sim_name}", c["LCFIT"][fit_name], self.global_config, sim_hashes[sim_name])
+                lc_hash = f.run()
+                if not lc_hash:
+                    exit(1)
+                lc_hashes[f"{sim_name}_{fit_name}"] = lc_hash

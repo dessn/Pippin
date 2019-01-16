@@ -5,9 +5,9 @@ import shutil
 import subprocess
 import time
 import tempfile
-import hashlib
 
 from pippin.base import ConfigBasedExecutable
+from pippin.config import get_hash
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -87,7 +87,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for file in output_files:
             with open(file, "r") as f:
                 string_to_hash += f.read()
-        new_hash = hashlib.sha256(string_to_hash.encode('utf-8')).hexdigest()
+        new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
 
@@ -106,13 +106,13 @@ class SNANASimulation(ConfigBasedExecutable):
         else:
             self.logger.info("Hash check passed, not rerunning")
         temp_dir_obj.cleanup()
-        return regenerate
+        return regenerate, new_hash
 
     def run(self):
 
-        regenerate = self.write_input()
+        regenerate, new_hash = self.write_input()
         if not regenerate:
-            return True
+            return new_hash
 
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
@@ -147,7 +147,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.info("Done file found, creating symlinks")
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
-                return True
+                return new_hash
 
 
 if __name__ == "__main__":

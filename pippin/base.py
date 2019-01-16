@@ -12,6 +12,7 @@ class OutputExecutable(ABC):
 
     @abstractmethod
     def run(self):
+        """ Returns the hash of the step if successful, False if not. """
         pass
 
 

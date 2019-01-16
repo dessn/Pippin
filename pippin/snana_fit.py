@@ -5,10 +5,11 @@ import subprocess
 import time
 
 from pippin.base import ConfigBasedExecutable
+from pippin.config import get_hash
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
-    def __init__(self, output_dir, sim_version, config, global_config):
+    def __init__(self, output_dir, sim_version, config, global_config, sim_hash):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
 
         self.config = config
@@ -19,6 +20,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.base_file = self.data_dir + base
         self.fitopts_file = self.data_dir + fitopts
+        self.sim_hash = sim_hash
 
         super().__init__(output_dir, self.base_file, "=")
 
@@ -64,15 +66,39 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property("VERSION", self.sim_version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
 
-        # Write main file
-        with open(self.config_path, "w") as f:
-            f.writelines(map(lambda s: s + '\n', self.fitopts))
-            f.writelines(map(lambda s: s + '\n', self.base))
-        self.logger.info(f"NML file written to {self.config_path}")
-        assert os.path.exists(self.config_path), "NML file does not exist"
+        # Load old hash
+        old_hash = None
+        hash_file = f"{self.output_dir}/hash.txt"
+        if os.path.exists(hash_file):
+            with open(hash_file, "r") as f:
+                old_hash = f.read().strip()
+                self.logger.debug(f"Previous result found, hash is {old_hash}")
+
+        # We want to do our hashing check here
+        total_string = self.fitopts + self.base
+        string_to_hash = self.sim_hash + "".join(total_string)
+        with open(os.path.abspath(inspect.stack()[0][1]), "r") as f:
+            string_to_hash += f.read()
+        new_hash = get_hash(string_to_hash)
+
+        self.logger.debug(f"Current hash set to {new_hash}")
+        regenerate = old_hash is None or old_hash != new_hash
+
+        if regenerate:
+            self.logger.info(f"Running Light curve fit, hash check failed")
+
+            # Write main file
+            with open(self.config_path, "w") as f:
+                f.writelines(map(lambda s: s + '\n', total_string))
+            self.logger.info(f"NML file written to {self.config_path}")
+
+        return regenerate, new_hash
 
     def run(self):
-        self.write_nml()
+        regenerate, new_hash = self.write_nml()
+        if not regenerate:
+            return new_hash
+
         logging_file = self.config_path.replace(".nml", ".nml_log")
         with open(logging_file, "w") as f:
             # TODO: Add queue to config and run
@@ -109,7 +135,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
                 except subprocess.CalledProcessError as e:
                     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
-                return True
+                return new_hash
 
 
 if __name__ == "__main__":
