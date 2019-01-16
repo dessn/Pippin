@@ -24,6 +24,8 @@ class Manager:
         num_sims = len(c["SIM"].keys())
         num_fits = len(c["LCFIT"].keys())
         self.logger.info(f"Found {num_sims} simulation(s) and {num_fits} LC fit(s)")
+        self.logger.info("")
+        self.logger.info("")
 
         for sim_name in c["SIM"]:
             sim_output_dir = f"{output_dir}/0_SIM/{self.prefix}_{sim_name}"
@@ -34,6 +36,8 @@ class Manager:
                 exit(1)
 
         self.logger.info("Completed all simulations")
+        self.logger.info("")
+        self.logger.info("")
 
         for sim_name in c["SIM"]:
             for fit_name in c["LCFIT"]:

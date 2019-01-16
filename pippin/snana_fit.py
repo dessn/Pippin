@@ -104,7 +104,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             if os.path.exists(done_file):
                 self.logger.info("Tarball found, fitting complete, cleaning up the directory")
                 try:
-                    subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+                    logging_file2 = logging_file.replace("_log", "_log2")
+                    with open(logging_file2, "w") as f:
+                        subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
                 except subprocess.CalledProcessError as e:
                     self.logger.critical("split_and_fit cleaning failed")
                     self.logger.error(e.stdout)
