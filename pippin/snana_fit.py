@@ -108,10 +108,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     with open(logging_file2, "w") as f:
                         subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
                 except subprocess.CalledProcessError as e:
-                    self.logger.critical("split_and_fit cleaning failed")
-                    self.logger.error(e.stdout)
-                    self.logger.error(e.stderr)
-                    raise e
+                    self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 return True
 
 
