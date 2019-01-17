@@ -30,7 +30,7 @@ class Manager:
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
 
         self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + self.global_config['OUTPUT']['output_dir'] + "/" + self.filename)
-        self.logger.info(f"Output will be located in {output_dir}")
+        self.logger.info(f"Output will be located in {self.output_dir}")
         c = self.run_config
 
         num_sims = len(c["SIM"].keys())
