@@ -12,7 +12,7 @@ class ToyClassifier(Classifier):
         fitres = f"{self.fit_dir}/FITOPT000.FITRES.gz"
         self.logger.debug(f"Looking for {fitres}")
         if not os.path.exists(fitres):
-            self.logger.error("FITRES file could not be found, classifer has nothing to work with")
+            self.logger.error(f"FITRES file could not be found at {fitres}, classifer has nothing to work with")
             return False
 
         data = pd.read_csv(sep='\s+', skiprows=7, comment="#", compression="infer")
