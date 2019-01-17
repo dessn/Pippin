@@ -15,6 +15,6 @@ class ToyClassifier(Classifier):
             self.logger.error(f"FITRES file could not be found at {fitres}, classifer has nothing to work with")
             return False
 
-        data = pd.read_csv(sep='\s+', skiprows=7, comment="#", compression="infer")
+        data = pd.read_csv(fitres, sep='\s+', skiprows=7, comment="#", compression="infer")
         print(data.columns)
         return True
