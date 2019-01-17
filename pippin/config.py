@@ -4,6 +4,7 @@ import os
 import logging
 import hashlib
 
+
 def singleton(fn):
     instance = None
 
