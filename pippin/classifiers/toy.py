@@ -10,6 +10,7 @@ class ToyClassifier(Classifier):
         super().__init__(light_curve_dir, fit_dir, output_dir, options)
 
     def classify(self):
+        os.makedirs(self.output_dir, exist_ok=True)
         fitres = f"{self.fit_dir}/FITOPT000.FITRES.gz"
         self.logger.debug(f"Looking for {fitres}")
         if not os.path.exists(fitres):
@@ -21,7 +22,7 @@ class ToyClassifier(Classifier):
 
         probability = np.random.uniform(size=ids.size)
 
-        combined = np.vstack((ids, probability))
+        combined = np.vstack((ids, probability)).T
         print(combined.shape)
 
         output_file = self.output_dir + "/prob.txt"
