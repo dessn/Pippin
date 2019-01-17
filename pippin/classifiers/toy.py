@@ -11,6 +11,7 @@ class ToyClassifier(Classifier):
 
     def classify(self):
         os.makedirs(self.output_dir, exist_ok=True)
+
         fitres = f"{self.fit_dir}/FITOPT000.FITRES.gz"
         self.logger.debug(f"Looking for {fitres}")
         if not os.path.exists(fitres):
@@ -19,12 +20,10 @@ class ToyClassifier(Classifier):
 
         data = pd.read_csv(fitres, sep='\s+', skiprows=12, comment="#", compression="infer")
         ids = data["CID"].values
-
         probability = np.random.uniform(size=ids.size)
-
         combined = np.vstack((ids, probability)).T
-        print(combined.shape)
 
         output_file = self.output_dir + "/prob.txt"
+        self.logger.info(f"Saving probabilities to {output_file}")
         np.savetxt(output_file, combined)
         return True # change to hash
