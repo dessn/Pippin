@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+import numpy as np
 from pippin.classifiers.classifier import Classifier
 
 
@@ -16,5 +17,13 @@ class ToyClassifier(Classifier):
             return False
 
         data = pd.read_csv(fitres, sep='\s+', skiprows=12, comment="#", compression="infer")
-        print(data.columns)
-        return True
+        ids = data["CID"].values
+
+        probability = np.random.uniform(size=ids.size)
+
+        combined = np.vstack((ids, probability))
+        print(combined.shape)
+
+        output_file = self.output_dir + "/prob.txt"
+        np.savetxt(output_file, combined)
+        return True # change to hash
