@@ -35,7 +35,7 @@ class Manager:
 
         num_sims = len(c["SIM"].keys())
         num_fits = len(c["LCFIT"].keys())
-        num_clas = len(c["CLASSIFICATSION"].keys())
+        num_clas = len(c["CLASSIFICATION"].keys())
         self.logger.info(f"Found {num_sims} simulation(s), {num_fits} LC fit(s), {num_clas} classifiers")
         self.logger.info("")
         self.logger.info("")
