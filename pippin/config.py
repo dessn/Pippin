@@ -3,6 +3,7 @@ import inspect
 import os
 import logging
 import hashlib
+import shutil
 
 
 def singleton(fn):
@@ -30,6 +31,15 @@ def get_hash(input_string):
 
 def get_logger():
     return logging.getLogger("pippin")
+
+
+def chown_dir(directory):
+    global_config = get_config()
+    for root, dirs, files in os.walk(directory):
+        for d in dirs:
+            shutil.chown(d, group=global_config["SNANA"]["group"])
+        for f in files:
+            shutil.chown(f, group=global_config["SNANA"]["group"])
 
 
 if __name__ == "__main__":

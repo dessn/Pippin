@@ -7,7 +7,7 @@ import time
 import tempfile
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash
+from pippin.config import get_hash, chown_dir
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -39,8 +39,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 continue
             self.set_property(key, config['GLOBAL'][key])
 
-        self.set_property("SIMGEN_INFILE_Ia", self.base_ia)
-        self.set_property("SIMGEN_INFILE_NONIa", self.base_cc)
+        self.set_property("SIMGEN_INFILE_Ia", self.output_dir + "/" + self.base_ia)
+        self.set_property("SIMGEN_INFILE_NONIa", self.output_dir + "/" + self.base_cc)
         self.set_property("GENPREFIX", self.genversion)
 
     def write_input(self):
@@ -103,6 +103,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
                 self.hash_file = hash_file
+            chown_dir(self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
         temp_dir_obj.cleanup()
@@ -117,6 +118,7 @@ class SNANASimulation(ConfigBasedExecutable):
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim logging outputting to {logging_file}")
         done_file = f"{self.output_dir}/SIMLOGS_{self.genversion}/SIMJOB_ALL.DONE"
@@ -147,6 +149,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.info("Done file found, creating symlinks")
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
+                chown_dir(self.output_dir)
                 return new_hash
 
 

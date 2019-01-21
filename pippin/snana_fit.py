@@ -5,7 +5,7 @@ import subprocess
 import time
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash
+from pippin.config import get_hash, chown_dir
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
@@ -95,6 +95,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
+            chown_dir(self.output_dir)
 
         return regenerate, new_hash
 
@@ -121,7 +122,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     with open(file, "r") as f:
                         output_error = False
                         for line in f.read().splitlines():
-                            if "ERROR" in line and not output_error:
+                            if ("ERROR" in line or "ABORT" in line) and not output_error:
                                 self.logger.critical(f"Fatal error in light curve fitting. See {file} for details.")
                                 output_error = True
                             if output_error:
@@ -139,6 +140,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
                 except subprocess.CalledProcessError as e:
                     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
+                chown_dir(self.output_dir)
                 return new_hash
 
 

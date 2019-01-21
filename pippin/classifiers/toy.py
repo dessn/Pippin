@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from pippin.classifiers.classifier import Classifier
+from pippin.config import chown_dir
 
 
 class ToyClassifier(Classifier):
@@ -26,4 +27,5 @@ class ToyClassifier(Classifier):
         output_file = self.output_dir + "/prob.txt"
         self.logger.info(f"Saving probabilities to {output_file}")
         np.savetxt(output_file, combined)
+        chown_dir(self.output_dir)
         return True # change to hash
