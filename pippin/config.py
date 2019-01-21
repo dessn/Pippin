@@ -37,9 +37,9 @@ def chown_dir(directory):
     global_config = get_config()
     for root, dirs, files in os.walk(directory):
         for d in dirs:
-            shutil.chown(d, group=global_config["SNANA"]["group"])
+            shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
         for f in files:
-            shutil.chown(f, group=global_config["SNANA"]["group"])
+            shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
 
 
 if __name__ == "__main__":
