@@ -35,11 +35,18 @@ def get_logger():
 
 def chown_dir(directory):
     global_config = get_config()
+    logger = get_logger()
     for root, dirs, files in os.walk(directory):
         for d in dirs:
-            shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
+            try:
+                shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
+            except FileNotFoundError:
+                logger.warning(f"Chown cannot find file: {os.path.join(root, d)}")
         for f in files:
-            shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
+            try:
+                shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
+            except FileNotFoundError:
+                logger.warning(f"Chown cannot find file: {os.path.join(root, f)}")
 
 
 if __name__ == "__main__":
