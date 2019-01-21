@@ -19,7 +19,7 @@ class ToyClassifier(Classifier):
             self.logger.error(f"FITRES file could not be found at {fitres}, classifer has nothing to work with")
             return False
 
-        data = pd.read_csv(fitres, sep='\s+', skiprows=12, comment="#", compression="infer")
+        data = pd.read_csv(fitres, sep='\s+', comment="#", compression="infer")
         ids = data["CID"].values
         probability = np.random.uniform(size=ids.size)
         combined = np.vstack((ids, probability)).T
