@@ -122,7 +122,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     with open(file, "r") as f:
                         output_error = False
                         for line in f.read().splitlines():
-                            if ("ERROR" in line or "ABORT" in line) and not output_error:
+                            if ("ERROR" in line or ("ABORT" in line and " 0 " not in line)) and not output_error:
                                 self.logger.critical(f"Fatal error in light curve fitting. See {file} for details.")
                                 output_error = True
                             if output_error:
