@@ -1,11 +1,11 @@
 SIM: # Dont change this
-  BORINGSIM: # This is the name of the simulation
+  BORINGDES: # This is the name of the simulation
     IA:
       BASE: des_ia.input
       GENMAG_SMEAR_MODELNAME: G10
     NONIA:
       BASE: des_cc.input
-      GENMODEL: NON1AGRID $DES_ROOT/models/NON1AGRID/DES_NON1ASED_K10.GRID
+      GENMODEL: NON1ASED
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_CHANGE: 2 12345
@@ -13,6 +13,7 @@ SIM: # Dont change this
 LCFIT: # Dont change this
   NOCHANGES: # Name of the light curve fitting
       BASE: des.nml
+      MASK: DES # LCFIT MASK means only apply this light curve fitting on sims which have DES in the sim name, like BORINGDES
 #    DIFFERENT_SN:
 #        BASE: des.nml
 #        FITOPTS: des.fitopts

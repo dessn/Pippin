@@ -58,9 +58,12 @@ class Manager:
         lc_hashes = {}
         for sim_name in c["SIM"]:
             for fit_name in c["LCFIT"]:
+                fit_config = c["LCFIT"][fit_name]
+                if fit_config.get("MASK") is not None and fit_config.get("MASK") not in sim_name:
+                    continue
                 fit_output_dir = self._get_lc_output_dir(sim_name, fit_name)
                 self.logger.info(f"Fitting {fit_name} for simulation {sim_name}")
-                f = SNANALightCurveFit(fit_output_dir, f"{self.prefix}_{sim_name}", c["LCFIT"][fit_name], self.global_config, sim_hashes[sim_name])
+                f = SNANALightCurveFit(fit_output_dir, f"{self.prefix}_{sim_name}", fit_config, self.global_config, sim_hashes[sim_name])
                 lc_hash = f.run()
                 if not lc_hash:
                     exit(1)
@@ -74,10 +77,12 @@ class Manager:
         classifier_hashes = {}
         for sim_name in c["SIM"]:
             for fit_name in c["LCFIT"]:
+                fit_config = c["LCFIT"][fit_name]
+                if fit_config.get("MASK") is not None and fit_config.get("MASK") not in sim_name:
+                    continue
                 for clas_name in c["CLASSIFICATION"]:
                     clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
                     self.logger.info(f"Classifying {clas_name} for LC fit {fit_name} on simulation {sim_name}")
-
                     config = c["CLASSIFICATION"][clas_name]
                     options = config.get("OPTS", {})
                     name = config["CLASSIFIER"]
