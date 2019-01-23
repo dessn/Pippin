@@ -63,7 +63,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
-        self.set_property("VERSION", self.sim_version, assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("VERSION", self.sim_version + "*", assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
 
         # Load old hash
