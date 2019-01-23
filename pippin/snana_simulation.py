@@ -38,6 +38,10 @@ class SNANASimulation(ConfigBasedExecutable):
             if key.upper() == "BASE":
                 continue
             self.set_property(key, config['GLOBAL'][key])
+            if key == "RANSEED_CHANGE":
+                self.delete_property("RANSEED_REPEAT")
+            elif key == "RANSEED_REPEAT":
+                self.delete_property("RANSEED_CHANGE")
 
         self.set_property("SIMGEN_INFILE_Ia", self.output_dir + "/" + self.base_ia)
         self.set_property("SIMGEN_INFILE_NONIa", self.output_dir + "/" + self.base_cc)

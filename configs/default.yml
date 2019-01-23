@@ -8,6 +8,7 @@ SIM: # Dont change this
       GENMODEL: NON1AGRID $DES_ROOT/models/NON1AGRID/DES_NON1ASED_K10.GRID
     GLOBAL:
       NGEN_UNIT: 0.1
+      RANSEED_CHANGE: 2 12345
 
 LCFIT: # Dont change this
   NOCHANGES: # Name of the light curve fitting
