@@ -146,6 +146,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 if output_error:
                     self.logger.debug("Removing hash on failure")
                     os.remove(self.hash_file)
+                    chown_dir(self.output_dir)
                     return False
             for file in os.listdir(sim_log_dir):
                 if not file.startswith("TMP") or not file.endswith(".LOG"):
@@ -160,6 +161,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 if output_error:
                     self.logger.debug("Removing hash on failure")
                     os.remove(self.hash_file)
+                    chown_dir(self.output_dir)
                     return False
 
             # Check to see if the done file exists
