@@ -35,8 +35,8 @@ def get_logger():
 
 def mkdirs(path):
     try:
-        original_umask = os.umask(0)
-        os.makedirs(path, exist_ok=True)
+        original_umask = os.umask(0o022)
+        os.makedirs(path, exist_ok=True, mode=0o022)
     finally:
         os.umask(original_umask)
 
