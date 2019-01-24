@@ -150,7 +150,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 if not file.startswith("TMP") or not file.endswith(".LOG"):
                     continue
                 with open(sim_log_dir + "/" + file, "r") as f:
-                    for line in f.readlines():
+                    for line in f.read().splitlines():
                         if " ABORT " in line:
                             output_error = True
                             self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
