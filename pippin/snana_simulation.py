@@ -49,7 +49,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
     def write_input(self):
         # Load previous hash here if it exists
-        exit()
+
         old_hash = None
         hash_file = f"{self.output_dir}/hash.txt"
         if os.path.exists(hash_file):

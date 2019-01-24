@@ -36,12 +36,8 @@ def get_logger():
 
 
 def mkdirs(path):
-    try:
-        os.makedirs(path, exist_ok=False)
-        chown_dir(path)
-        os.chmod(path, 0o775)
-    except OSError:
-        pass
+    os.makedirs(path, exist_ok=True, mode=0o775)
+    chown_dir(path)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -71,6 +67,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
 def chown_dir(directory):
     global_config = get_config()
     logger = get_logger()
+    shutil.chown(directory, group=global_config["SNANA"]["group"])
     for root, dirs, files in os.walk(directory):
         for d in dirs:
             try:
