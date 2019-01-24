@@ -125,20 +125,35 @@ class SNANASimulation(ConfigBasedExecutable):
         shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim logging outputting to {logging_file}")
-        done_file = f"{self.output_dir}/SIMLOGS_{self.genversion}/SIMJOB_ALL.DONE"
+        sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
+        done_file = f"{sim_log_dir}/SIMJOB_ALL.DONE"
 
         # Monitor for success or failure
         while True:
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
             # Check log for errors and if found, print the rest of the log so you dont have to look up the file
+            output_error = False
             if os.path.exists(logging_file):
                 with open(logging_file, "r") as f:
-                    output_error = False
                     for line in f.read().splitlines():
                         if "ERROR" in line:
                             self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
                             output_error = True
+                        if output_error:
+                            self.logger.error(f"Excerpt: {line}")
+                if output_error:
+                    self.logger.debug("Removing hash on failure")
+                    os.remove(self.hash_file)
+                    return False
+            for file in os.listdir(sim_log_dir):
+                if not file.startswith("TMP") or not file.endswith(".LOG"):
+                    continue
+                with open(sim_log_dir + "/" + file, "r") as f:
+                    for line in f.readlines():
+                        if " ABORT " in line:
+                            output_error = True
+                            self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
                         if output_error:
                             self.logger.error(f"Excerpt: {line}")
                 if output_error:
