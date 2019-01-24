@@ -123,7 +123,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         logging_file = self.config_path.replace(".input", ".input_log")
         with open(logging_file, "w") as f:
-            subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim running and logging outputting to {logging_file}")
