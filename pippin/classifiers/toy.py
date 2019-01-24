@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import numpy as np
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir
+from pippin.config import chown_dir, mkdirs
 
 
 class ToyClassifier(Classifier):
@@ -11,7 +11,7 @@ class ToyClassifier(Classifier):
         super().__init__(light_curve_dir, fit_dir, output_dir, options)
 
     def classify(self):
-        os.makedirs(self.output_dir, exist_ok=True)
+        mkdirs(self.output_dir)
 
         fitres = f"{self.fit_dir}/FITOPT000.FITRES.gz"
         self.logger.debug(f"Looking for {fitres}")

@@ -1,14 +1,14 @@
 import os
 from abc import ABC, abstractmethod
 
-from pippin.config import get_logger
+from pippin.config import get_logger, mkdirs
 
 
 class OutputExecutable(ABC):
     def __init__(self, output_dir):
         self.logger = get_logger()
         self.output_dir = output_dir
-        os.makedirs(self.output_dir, exist_ok=True)
+        mkdirs(self.output_dir)
 
     @abstractmethod
     def run(self):

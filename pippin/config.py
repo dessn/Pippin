@@ -33,6 +33,14 @@ def get_logger():
     return logging.getLogger("pippin")
 
 
+def mkdirs(path):
+    try:
+        original_umask = os.umask(0)
+        os.makedirs(path, exist_ok=True)
+    finally:
+        os.umask(original_umask)
+
+
 def chown_dir(directory):
     global_config = get_config()
     logger = get_logger()
