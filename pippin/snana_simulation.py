@@ -129,9 +129,8 @@ class SNANASimulation(ConfigBasedExecutable):
         done_file = f"{sim_log_dir}/SIMJOB_ALL.DONE"
 
         # Monitor for success or failure
+        time.sleep(10)
         while True:
-            time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-
             # Check log for errors and if found, print the rest of the log so you dont have to look up the file
             output_error = False
             if os.path.exists(logging_file):
@@ -151,7 +150,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     continue
                 with open(sim_log_dir + "/" + file, "r") as f:
                     for line in f.read().splitlines():
-                        if " ABORT " in line:
+                        if " ABORT " in line or "FATAL[" in line:
                             output_error = True
                             self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
                         if output_error:
@@ -170,6 +169,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 chown_dir(self.output_dir)
                 return new_hash
+
+            time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
 
 if __name__ == "__main__":
