@@ -39,7 +39,7 @@ def mkdirs(path):
     try:
         os.makedirs(path, exist_ok=False)
         chown_dir(path)
-        os.chmod(path, 0o002)
+        os.chmod(path, 0o775)
     except OSError:
         pass
 
