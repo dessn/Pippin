@@ -36,7 +36,8 @@ def get_logger():
 
 
 def mkdirs(path):
-    os.makedirs(path, exist_ok=True, mode=0o002)
+    os.makedirs(path, exist_ok=True)
+    chown_dir(path)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
