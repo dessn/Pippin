@@ -7,7 +7,7 @@ import time
 import tempfile
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash, chown_dir, copytree
+from pippin.config import get_hash, chown_dir, copytree, mkdirs
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -102,6 +102,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if "//" not in self.output_dir and "Pippin" in self.output_dir:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
+                mkdirs(self.output_dir)
                 self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
                 copytree(temp_dir, self.output_dir)
             with open(hash_file, "w") as f:
