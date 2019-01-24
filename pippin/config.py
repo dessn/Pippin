@@ -36,10 +36,10 @@ def get_logger():
 
 
 def mkdirs(path):
-    os.makedirs(path, exist_ok=True, mode=0o022)
+    os.makedirs(path, exist_ok=True, mode=0o002)
 
 
-def copytree(src, dst, symlinks = False, ignore = None):
+def copytree(src, dst, symlinks=False, ignore=None):
     lst = os.listdir(src)
     if ignore:
         excl = ignore(src, lst)
