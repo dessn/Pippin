@@ -61,7 +61,6 @@ def copytree(src, dst, symlinks=False, ignore=None):
         elif os.path.isdir(s):
             copytree(s, d, symlinks, ignore)
         else:
-            print(s, d)
             shutil.copy2(s, d)
 
 
