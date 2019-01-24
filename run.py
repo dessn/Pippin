@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
 
-    os.umask(0o022)
+    #os.umask(0o022)
 
     # Load YAML config file
     config_path = os.path.dirname(inspect.stack()[0][1]) + args.config
