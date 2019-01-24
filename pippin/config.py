@@ -38,6 +38,7 @@ def get_logger():
 def mkdirs(path):
     os.makedirs(path, exist_ok=True)
     chown_dir(path)
+    os.chmod(path, 0o002)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -62,6 +63,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
             copytree(s, d, symlinks, ignore)
         else:
             shutil.copy2(s, d)
+
 
 def chown_dir(directory):
     global_config = get_config()
