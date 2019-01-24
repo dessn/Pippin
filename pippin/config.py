@@ -4,7 +4,9 @@ import os
 import logging
 import hashlib
 import shutil
-
+import os
+import shutil
+import stat
 
 def singleton(fn):
     instance = None
@@ -36,6 +38,29 @@ def get_logger():
 def mkdirs(path):
     os.makedirs(path, exist_ok=True, mode=0o022)
 
+
+def copytree(src, dst, symlinks = False, ignore = None):
+    lst = os.listdir(src)
+    if ignore:
+        excl = ignore(src, lst)
+        lst = [x for x in lst if x not in excl]
+    for item in lst:
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if symlinks and os.path.islink(s):
+            if os.path.lexists(d):
+                os.remove(d)
+                os.symlink(os.readlink(s), d)
+                try:
+                    st = os.lstat(s)
+                    mode = stat.S_IMODE(st.st_mode)
+                    os.lchmod(d, mode)
+                except:
+                    pass # lchmod not available
+        elif os.path.isdir(s):
+            copytree(s, d, symlinks, ignore)
+        else:
+            shutil.copy2(s, d)
 
 def chown_dir(directory):
     global_config = get_config()

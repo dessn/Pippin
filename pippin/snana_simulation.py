@@ -7,7 +7,7 @@ import time
 import tempfile
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash, chown_dir
+from pippin.config import get_hash, chown_dir, copytree
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -102,7 +102,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
                 self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
-                shutil.copytree(temp_dir, self.output_dir)
+                copytree(temp_dir, self.output_dir)
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
