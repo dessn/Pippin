@@ -1,0 +1,22 @@
+# Ibc model (from MOSFIT group)
+
+INPUT_FILE_INCLUDE:  des_include.input
+
+GENTYPE:   31
+GENMODEL: $PLASTICC_MODELS/SIMSED.SNIbc-MOSFIT
+GENAV_WV07:   1       # WV07, Eq. 2
+GENRANGE_AV:  0  3    # CCM89 AV-extinctionrange
+
+SIMSED_USE_BINARY:   1
+SIMSED_PATH_BINARY:  $PLASTICC_MODELS/SIMSED_BINARIES
+
+# Volumetric rate
+DNDZ: CC_S15          # rate from Strolger 2015 (HST)
+DNDZ_ALLSCALE:  0.15  # 30% of CC is Ibc, then half for hybrid
+
+
+# ==============================
+# SIMSED GRID PARAMETERS
+# Eqal prob per SED
+
+SIMSED_GRIDONLY:  IBC_INDEX

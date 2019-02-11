@@ -25,14 +25,12 @@ class SNANASimulation(ConfigBasedExecutable):
         self.hash_file = None
         self.hash = None
 
-        for key in config.get("IA", []):
-            if key.upper() == "BASE":
-                continue
-            self.set_property("GENOPT(Ia)", f"{key} {config['IA'][key]}", section_end="ENDLIST_GENVERSION")
-        for key in config.get("NONIA", []):
-            if key.upper() == "BASE":
-                continue
-            self.set_property("GENOPT(NON1A)", f"{key} {config['NONIA'][key]}", section_end="ENDLIST_GENVERSION")
+        for k in config.keys():
+            if k.upper() != "GLOBAL":
+                for key in config.get("IA", []):
+                    if key.upper() == "BASE":
+                        continue
+                    self.set_property(f"GENOPT({k})", f"{key} {config[k][key]}", section_end="ENDLIST_GENVERSION")
 
         for key in config.get("GLOBAL", []):
             if key.upper() == "BASE":

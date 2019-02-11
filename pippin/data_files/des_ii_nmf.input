@@ -1,0 +1,47 @@
+# IIpca model From Santiago and Lluis
+# 2018-04-11: update SIMSED params
+# 2018-08-12: new model from Santiago to fix artifacts
+# 2018-08-23: new model from Santiago to fix triangle artifact
+
+INPUT_FILE_INCLUDE:  SIMGEN_DES_INCLUDE.INPUT
+
+GENTYPE:   21
+GENMODEL: $PLASTICC_MODELS/SIMSED.SNII-NMF
+SIMSED_USE_BINARY:   1
+SIMSED_PATH_BINARY:  $PLASTICC_MODELS/SIMSED_BINARIES
+
+# Volumetric rate
+DNDZ: CC_S15          # rate from Strolger 2015 (HST)
+DNDZ_ALLSCALE:  0.35  # 70% of CC is II, then half for hybrid
+
+
+# =================================================
+# SIMSED parameters are correlated & interpolated
+# Last update: Aug 13 2018
+
+SIMSED_PARAM:  pc1
+GENPEAK_pc1:   0.0854
+#GENSIGMA_pc1:  0.0854 0.0686 # COV doesn't work with asymm Gaussian
+GENSIGMA_pc1:  0.075 0.075
+GENRANGE_pc1:  0.01 0.5
+
+SIMSED_PARAM:  pc2
+GENPEAK_pc2:   0.0199
+#GENSIGMA_pc2:  0.0169 0.025
+GENSIGMA_pc2:  0.021 0.021
+GENRANGE_pc2:  0.001 0.07
+
+SIMSED_PARAM:   pc3
+GENPEAK_pc3:    0.0250
+#GENSIGMA_pc3:   0.019 0.015
+GENSIGMA_pc3:   0.017 0.017
+GENRANGE_pc3:   0.001 0.07
+
+SIMSED_REDCOR(pc1,pc2):    0.241
+SIMSED_REDCOR(pc1,pc3):    0.052
+SIMSED_REDCOR(pc2,pc3):   -0.074
+
+# I doubt these are COV, but probably REDCOR
+#SIMSED_COV(pc1,pc2):    0.241
+#SIMSED_COV(pc1,pc3):    0.052
+#SIMSED_COV(pc2,pc3):   -0.074
