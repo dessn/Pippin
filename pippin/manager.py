@@ -14,7 +14,7 @@ class Manager:
         self.run_config = config
         self.global_config = get_config()
 
-        self.prefix = "PIPPIN_" + filename
+        self.prefix = "PIP_" + filename
         self.output_dir = None
 
     def _get_sim_output_dir(self, sim_name):

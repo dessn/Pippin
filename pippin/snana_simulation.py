@@ -46,7 +46,7 @@ class SNANASimulation(ConfigBasedExecutable):
             elif key == "RANSEED_REPEAT":
                 self.delete_property("RANSEED_CHANGE")
 
-        self.set_property("SIMGEN_INFILE_Ia", self.output_dir + "/" + self.base_ia)
+        self.set_property("SIMGEN_INFILE_Ia", self.base_ia)
         self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc))
         self.set_property("GENPREFIX", self.genversion)
 
@@ -126,7 +126,6 @@ class SNANASimulation(ConfigBasedExecutable):
             return new_hash
 
         logging_file = self.config_path.replace(".input", ".input_log")
-        exit() # TODO REMOVE
         with open(logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])
