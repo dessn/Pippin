@@ -27,12 +27,15 @@ class SNANASimulation(ConfigBasedExecutable):
 
         for k in config.keys():
             if k.upper() != "GLOBAL":
-                for key in config.get("IA", []):
+                run_config = config[k]
+                run_config_keys = list(run_config.keys())
+                assert "BASE" in run_config_keys, "You must specify a base file for each option"
+                for key in run_config_keys:
                     if key.upper() == "BASE":
                         continue
-                    base_file = config[k]["BASE"]
+                    base_file = run_config["BASE"]
                     match = base_file.split(".")[0]
-                    self.set_property(f"GENOPT({match})", f"{key} {config[k][key]}", section_end="ENDLIST_GENVERSION")
+                    self.set_property(f"GENOPT({match})", f"{key} {run_config[key]}", section_end="ENDLIST_GENVERSION")
 
         for key in config.get("GLOBAL", []):
             if key.upper() == "BASE":
