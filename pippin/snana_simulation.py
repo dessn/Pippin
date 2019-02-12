@@ -20,7 +20,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = config["IA"]["BASE"]
-        self.base_cc = config["NONIA"]["BASE"]
+        self.base_cc = [k for k in config.keys() if k != "IA" and k != "GLOBAL"]
         self.global_config = global_config
         self.hash_file = None
         self.hash = None
@@ -30,7 +30,9 @@ class SNANASimulation(ConfigBasedExecutable):
                 for key in config.get("IA", []):
                     if key.upper() == "BASE":
                         continue
-                    self.set_property(f"GENOPT({k})", f"{key} {config[k][key]}", section_end="ENDLIST_GENVERSION")
+                    base_file = config[k]["BASE"]
+                    match = base_file.split(".")[0]
+                    self.set_property(f"GENOPT({match})", f"{key} {config[k][key]}", section_end="ENDLIST_GENVERSION")
 
         for key in config.get("GLOBAL", []):
             if key.upper() == "BASE":
@@ -42,7 +44,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.delete_property("RANSEED_CHANGE")
 
         self.set_property("SIMGEN_INFILE_Ia", self.output_dir + "/" + self.base_ia)
-        self.set_property("SIMGEN_INFILE_NONIa", self.output_dir + "/" + self.base_cc)
+        self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc))
         self.set_property("GENPREFIX", self.genversion)
 
     def write_input(self):
@@ -61,7 +63,8 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Copy the base files across
         shutil.copy(self.data_dir + self.base_ia, temp_dir)
-        shutil.copy(self.data_dir + self.base_cc, temp_dir)
+        for f in self.base_cc:
+            shutil.copy(self.data_dir + f, temp_dir)
 
         # Copy the include input file if there is one
         with open(self.data_dir + self.base_ia, "r") as f:
@@ -120,6 +123,7 @@ class SNANASimulation(ConfigBasedExecutable):
             return new_hash
 
         logging_file = self.config_path.replace(".input", ".input_log")
+        exit() # TODO REMOVE
         with open(logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])

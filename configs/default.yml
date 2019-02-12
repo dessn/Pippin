@@ -1,11 +1,20 @@
 SIM: # Dont change
-  BORINGDES:
+  BORINGDES: # Sim name
     IA: # Dont change
       BASE: des_ia.input
       GENMAG_SMEAR_MODELNAME: G10
-    IAX:
-      BASE: contaminant_iax.input
-
+    IAX: # Name these whatever you want
+      BASE: des_iax.input
+    IA91BG:
+      BASE: des_ia91bg.input
+    IBC_MOSFIT:
+      BASE: des_ibc_mosfit.input
+    IBC_TEMPLATES:
+      BASE: des_ibc_templates.input
+    II_NMF:
+      BASE: des_ii_nmf.input
+    II_TEMPLATES:
+      BASE: des_ii_templates.input
 
     GLOBAL:
       NGEN_UNIT: 0.1
