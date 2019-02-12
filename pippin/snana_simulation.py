@@ -20,7 +20,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = config["IA"]["BASE"]
-        self.base_cc = [k for k in config.keys() if k != "IA" and k != "GLOBAL"]
+        self.base_cc = [config[k]["BASE"] for k in config.keys() if k != "IA" and k != "GLOBAL"]
         self.global_config = global_config
         self.hash_file = None
         self.hash = None
