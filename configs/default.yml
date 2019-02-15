@@ -1,7 +1,7 @@
 SIM: # Dont change
   BORINGDES: # Sim name
     IA: # Dont change
-      BASE: des_ia.input
+      BASE: des_ia_salt2.input
       GENMAG_SMEAR_MODELNAME: G10
     IAX: # Name these whatever you want
       BASE: des_iax.input
