@@ -17,7 +17,7 @@ HOSTLIB_MSKOPT:     258           # 2=noise, 256=vbose
 SOLID_ANGLE:  0.0082     # 27 sq deg
 
 GENFILTERS:  griz
-KCOR_FILE:   DES/kcor_DES_grizY.fits
+KCOR_FILE:   DES/DES-SN3YR/kcor_DECam.fits
 
 # selection criteria for generation
 #GENRANGE_PEAKMJD: 56535.0  56695.   # Y1 only
