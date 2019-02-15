@@ -3,7 +3,7 @@
 # 2018-08-12: new model from Santiago to fix artifacts
 # 2018-08-23: new model from Santiago to fix triangle artifact
 
-INPUT_FILE_INCLUDE:  SIMGEN_DES_INCLUDE.INPUT
+INPUT_FILE_INCLUDE:  des_include.input
 
 GENTYPE:   21
 GENMODEL: $PLASTICC_MODELS/SIMSED.SNII-NMF
