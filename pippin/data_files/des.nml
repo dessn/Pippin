@@ -25,8 +25,6 @@ NJOB_PER_BATCHFILE: 20
 
     SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
 
-    SNTYPE_LIST = 1,101
-
     CUTWIN_MJD   = 56500, 57500
     OPT_SETPKMJD = 5
     OPT_MWEBV    = 3
