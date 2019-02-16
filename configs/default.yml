@@ -17,8 +17,7 @@ SIM: # Dont change
       BASE: des_ii_templates.input
 
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_CHANGE: 2 12345
+      NGEN_UNIT: 0.3
 
 LCFIT: # Dont change
   NOCHANGES: # Name of the light curve fitting
