@@ -1,7 +1,7 @@
 # SN~Iax from Saurabh
+INPUT_FILE_INCLUDE:  des_include.input
 
 GENTYPE:  11
-INPUT_FILE_INCLUDE:  des_include.input
 
 GENMODEL: $PLASTICC_MODELS/SIMSED.SNIax
 

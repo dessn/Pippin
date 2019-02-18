@@ -1,23 +1,22 @@
 SIM: # Dont change
   BORINGDES: # Sim name
     IA_G10: # Starts with IA_
-      BASE: des_ia_salt2.input
-      GENMAG_SMEAR_MODELNAME: G10
+      BASE: des_ia_salt2_g10.input
     IA_C11: # Starts with IA_
-      BASE: des_ia_salt2.input
-      GENMAG_SMEAR_MODELNAME: C11
+      BASE: des_ia_salt2_c11.input
+      # GENMAG_SMEAR_MODELNAME: C11 # You can specify GENOPTS like this if you want, just dont need any atm
     IAX:
-      BASE: des_iax.input
+      BASE: sn_iax.input
     IA91BG:
-      BASE: des_ia91bg.input
+      BASE: sn_ia91bg.input
     IBC_MOSFIT:
-      BASE: des_ibc_mosfit.input
+      BASE: sn_ibc_mosfit.input
     IBC_TEMPLATES:
-      BASE: des_ibc_templates.input
+      BASE: sn_ibc_templates.input
     II_NMF:
-      BASE: des_ii_nmf.input
+      BASE: sn_ii_nmf.input
     II_TEMPLATES:
-      BASE: des_ii_templates.input
+      BASE: sn_ii_templates.input
 
     GLOBAL:
       NGEN_UNIT: 0.3

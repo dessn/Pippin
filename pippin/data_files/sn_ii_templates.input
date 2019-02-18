@@ -1,7 +1,7 @@
 # MAGOFF = 2.100 -> 1.500 (0.6 mag brighter)
 #
-
 INPUT_FILE_INCLUDE:  des_include.input
+
 
 GENTYPE:   20
 GENMODEL:  $PLASTICC_MODELS/NON1ASED.SNII-Templates

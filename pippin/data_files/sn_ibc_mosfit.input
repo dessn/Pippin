@@ -1,5 +1,4 @@
 # Ibc model (from MOSFIT group)
-
 INPUT_FILE_INCLUDE:  des_include.input
 
 GENTYPE:   31

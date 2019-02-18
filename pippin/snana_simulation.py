@@ -17,6 +17,7 @@ class SNANASimulation(ConfigBasedExecutable):
         super().__init__(output_dir, self.data_dir + combine, ":")
 
         self.genversion = genversion
+        self.reserved_keywords = ["BASE"]
         self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = [config[k]["BASE"] for k in config.keys() if k.startswith("IA_") or k == "IA"]
@@ -31,7 +32,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 run_config_keys = list(run_config.keys())
                 assert "BASE" in run_config_keys, "You must specify a base file for each option"
                 for key in run_config_keys:
-                    if key.upper() == "BASE":
+                    if key.upper() in self.reserved_keywords:
                         continue
                     base_file = run_config["BASE"]
                     match = base_file.split(".")[0]
