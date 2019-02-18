@@ -1,9 +1,12 @@
 SIM: # Dont change
   BORINGDES: # Sim name
-    IA: # Dont change
+    IA_G10: # Starts with IA_
       BASE: des_ia_salt2.input
       GENMAG_SMEAR_MODELNAME: G10
-    IAX: # Name these whatever you want
+    IA_C11: # Starts with IA_
+      BASE: des_ia_salt2.input
+      GENMAG_SMEAR_MODELNAME: C11
+    IAX:
       BASE: des_iax.input
     IA91BG:
       BASE: des_ia91bg.input

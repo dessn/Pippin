@@ -19,8 +19,8 @@ class SNANASimulation(ConfigBasedExecutable):
         self.genversion = genversion
         self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
-        self.base_ia = config["IA"]["BASE"]
-        self.base_cc = [config[k]["BASE"] for k in config.keys() if k != "IA" and k != "GLOBAL"]
+        self.base_ia = [config[k]["BASE"] for k in config.keys() if k.startswith("IA_") or k == "IA"]
+        self.base_cc = [config[k]["BASE"] for k in config.keys() if not k.startswith("IA_") and k != "IA" and k != "GLOBAL"]
         self.global_config = global_config
         self.hash_file = None
         self.hash = None
@@ -46,7 +46,7 @@ class SNANASimulation(ConfigBasedExecutable):
             elif key == "RANSEED_REPEAT":
                 self.delete_property("RANSEED_CHANGE")
 
-        self.set_property("SIMGEN_INFILE_Ia", self.base_ia)
+        self.set_property("SIMGEN_INFILE_Ia", " ".join(self.base_ia))
         self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc))
         self.set_property("GENPREFIX", self.genversion)
 
@@ -65,18 +65,24 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir = temp_dir_obj.name
 
         # Copy the base files across
-        shutil.copy(self.data_dir + self.base_ia, temp_dir)
+        for f in self.base_ia:
+            shutil.copy(self.data_dir + f, temp_dir)
         for f in self.base_cc:
             shutil.copy(self.data_dir + f, temp_dir)
 
         # Copy the include input file if there is one
-        with open(self.data_dir + self.base_ia, "r") as f:
-            for line in f.readlines():
-                line = line.strip()
-                if line.startswith("INPUT_FILE_INCLUDE"):
-                    include_file = line.split(":")[-1].strip()
-                    self.logger.debug(f"Copying included file {include_file}")
-                    shutil.copy(self.data_dir + include_file, temp_dir)
+        input_copied = []
+        fs = self.base_ia + self.base_cc
+        for ff in fs:
+            if ff not in input_copied:
+                input_copied.append(ff)
+                with open(self.data_dir + ff, "r") as f:
+                    for line in f.readlines():
+                        line = line.strip()
+                        if line.startswith("INPUT_FILE_INCLUDE"):
+                            include_file = line.split(":")[-1].strip()
+                            self.logger.debug(f"Copying included file {include_file}")
+                            shutil.copy(self.data_dir + include_file, temp_dir)
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
