@@ -1,9 +1,9 @@
 SIM: # Dont change
   BORINGDES: # Sim name
     IA_G10: # Starts with IA_
-      BASE: des_ia_salt2_g10.input
+      BASE: sn_ia_salt2_g10.input
     IA_C11: # Starts with IA_
-      BASE: des_ia_salt2_c11.input
+      BASE: sn_ia_salt2_c11.input
       # GENMAG_SMEAR_MODELNAME: C11 # You can specify GENOPTS like this if you want, just dont need any atm
     IAX:
       BASE: sn_iax.input
