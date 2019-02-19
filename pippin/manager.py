@@ -35,7 +35,7 @@ class Manager:
 
         num_sims = len(c["SIM"].keys())
         num_fits = len(c["LCFIT"].keys())
-        num_clas = len(c["CLASSIFICATION"].keys())
+        num_clas = len(c.get("CLASSIFICATION", {}).keys())
         self.logger.info(f"Found {num_sims} simulation(s), {num_fits} LC fit(s), {num_clas} classifiers")
         self.logger.info("")
         self.logger.info("")
@@ -74,23 +74,24 @@ class Manager:
         self.logger.info("")
         self.logger.info("")
 
-        classifier_hashes = {}
-        for sim_name in c["SIM"]:
-            for fit_name in c["LCFIT"]:
-                fit_config = c["LCFIT"][fit_name]
-                if fit_config.get("MASK") is not None and fit_config.get("MASK") not in sim_name:
-                    continue
-                for clas_name in c["CLASSIFICATION"]:
-                    clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
-                    self.logger.info(f"Classifying {clas_name} for LC fit {fit_name} on simulation {sim_name}")
-                    config = c["CLASSIFICATION"][clas_name]
-                    options = config.get("OPTS", {})
-                    name = config["CLASSIFIER"]
-                    self.logger.debug(f"Attempting to initialise class {name}")
-                    cls = ClassifierFactory.get(name)
-                    cc = cls(self._get_sim_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, options)
-                    clas_hash = cc.classify()
-                    if not clas_hash:
-                        exit(1)
-                    classifier_hashes[f"{sim_name}_{fit_name}_{clas_name}"] = clas_hash
-                    self.logger.info("")
+        if num_clas > 0:
+            classifier_hashes = {}
+            for sim_name in c["SIM"]:
+                for fit_name in c["LCFIT"]:
+                    fit_config = c["LCFIT"][fit_name]
+                    if fit_config.get("MASK") is not None and fit_config.get("MASK") not in sim_name:
+                        continue
+                    for clas_name in c["CLASSIFICATION"]:
+                        clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
+                        self.logger.info(f"Classifying {clas_name} for LC fit {fit_name} on simulation {sim_name}")
+                        config = c["CLASSIFICATION"][clas_name]
+                        options = config.get("OPTS", {})
+                        name = config["CLASSIFIER"]
+                        self.logger.debug(f"Attempting to initialise class {name}")
+                        cls = ClassifierFactory.get(name)
+                        cc = cls(self._get_sim_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, options)
+                        clas_hash = cc.classify()
+                        if not clas_hash:
+                            exit(1)
+                        classifier_hashes[f"{sim_name}_{fit_name}_{clas_name}"] = clas_hash
+                        self.logger.info("")
