@@ -40,7 +40,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             path = os.path.join(self.lc_output_dir, f)
             data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES.gz"), sep='\s+', comment="#", compression="infer")
             counts = data.groupby("TYPE").size()
-            self.logger.info("Types" + ("  ".join([f"{k}:{v}" for k, v in zip(counts.index, counts.values)])))
+            self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(counts.index, counts.values)])))
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
