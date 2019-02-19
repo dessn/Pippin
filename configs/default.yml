@@ -20,17 +20,16 @@ SIM: # Dont change
 
     GLOBAL:
       NGEN_UNIT: 0.3
-
 LCFIT: # Dont change
   NOCHANGES: # Name of the light curve fitting
       BASE: des.nml
       MASK: DES # LCFIT MASK means only apply this light curve fitting on sims which have DES in the sim name, like BORINGDES
-#    DIFFERENT_SN:
-#        BASE: des.nml
-#        FITOPTS: des.fitopts
-#        SNLCINP:
-#            CUTWIN_SNRMAX:  3.0, 1.0E8
-#            CUTWIN_NFILT_SNRMAX:  3.0, 99.
+#  DIFFERENT_SN:
+#      BASE: des.nml
+#      FITOPTS: des.fitopts
+#      SNLCINP:
+#          CUTWIN_SNRMAX:  3.0, 1.0E8
+#          CUTWIN_NFILT_SNRMAX:  3.0, 99.
 
 CLASSIFICATION: # Dont change this
   TOY: # Name of the classification step

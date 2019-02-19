@@ -1,0 +1,13 @@
+SIM:
+  DES:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    IAX:
+      BASE: sn_iax.input
+      DNDZ_ALLSCALE: 10.0
+    GLOBAL:
+      NGEN_UNIT: 0.1
+LCFIT:
+  NOCHANGES:
+      BASE: des.nml
+      MASK: DES
