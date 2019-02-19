@@ -10,6 +10,7 @@ SIM: # Dont change
       DNDZ_ALLSCALE: 10.0
     IA91BG:
       BASE: sn_ia91bg.input
+      DNDZ_ALLSCALE: 100.0
     IBC_MOSFIT:
       BASE: sn_ibc_mosfit.input
     IBC_TEMPLATES:
