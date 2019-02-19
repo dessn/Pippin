@@ -3,6 +3,7 @@ import os
 import logging
 import subprocess
 import time
+import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import get_hash, chown_dir
@@ -32,6 +33,14 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.sim_version = sim_version
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
+
+    def print_stats(self):
+        folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
+        for f in folders:
+            path = os.path.join(self.lc_output_dir, f)
+            data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES.gz"), sep='\s+', comment="#", compression="infer")
+            counts = data.groupby("TYPE").size()
+            self.logger.info("Types" + ("  ".join([f"{k}:{v}" for k, v in zip(counts.index, counts.values)])))
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
@@ -142,6 +151,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 except subprocess.CalledProcessError as e:
                     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 chown_dir(self.output_dir)
+                self.print_stats()
                 return new_hash
 
 
