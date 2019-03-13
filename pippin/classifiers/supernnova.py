@@ -29,7 +29,7 @@ source ~/.bashrc
 conda activate {conda_env}
 module load cuda
 cd {path_to_supernnova}
-python run.py --data --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fits_dir}
+python run.py --data --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir}
 python run.py --use_cuda {command} --dump_dir {dump_dir}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
