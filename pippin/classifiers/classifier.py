@@ -8,7 +8,7 @@ class Classifier(ABC):
         self.light_curve_dir = light_curve_dir
         self.fit_dir = fit_dir
         self.output_dir = output_dir
-        self.option = options
+        self.options = options
         self.logger = logging.getLogger("pippin")
 
     @abstractmethod

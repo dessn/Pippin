@@ -21,7 +21,7 @@ SIM: # Dont change
       BASE: sn_ii_templates.input
 
     GLOBAL:
-      NGEN_UNIT: 0.3
+      NGEN_UNIT: 0.5
 LCFIT: # Dont change
   NOCHANGES: # Name of the light curve fitting
       BASE: des.nml

@@ -1,0 +1,29 @@
+SIM:
+  DES:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    IA_C11:
+      BASE: sn_ia_salt2_c11.input
+    IAX:
+      BASE: sn_iax.input
+      DNDZ_ALLSCALE: 10.0
+    II_NMF:
+      BASE: sn_ii_nmf.input
+      DNDZ_ALLSCALE: 10.0
+    II_TEMPLATES:
+      BASE: sn_ii_templates.input
+      DNDZ_ALLSCALE: 10.0
+    GLOBAL:
+      NGEN_UNIT: 0.5
+
+
+LCFIT:
+  BASIC:
+      BASE: des.nml
+
+
+CLASSIFICATION:
+  SNN:
+    CLASSIFIER: SuperNNovaClassifier
+    OPTS:
+      TRAIN: True

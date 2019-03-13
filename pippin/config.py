@@ -8,6 +8,7 @@ import os
 import shutil
 import stat
 
+
 def singleton(fn):
     instance = None
 
@@ -17,7 +18,6 @@ def singleton(fn):
             instance = fn(*args, **kwargs)
         return instance
     return get
-
 
 @singleton
 def get_config():
