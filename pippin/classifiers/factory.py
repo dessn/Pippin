@@ -1,3 +1,4 @@
+from pippin.classifiers.supernnova import SuperNNovaClassifier
 from pippin.classifiers.toy import ToyClassifier
 
 
@@ -13,6 +14,7 @@ class ClassifierFactory:
         cls.ids[classifierClass.__name__] = classifierClass
 
 ClassifierFactory.add_factory(ToyClassifier)
+ClassifierFactory.add_factory(SuperNNovaClassifier)
 
 if __name__ == "__main__":
     c = ClassifierFactory.get("ToyClassifier")
