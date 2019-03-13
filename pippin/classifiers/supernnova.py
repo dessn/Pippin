@@ -6,8 +6,8 @@ from pippin.config import chown_dir, mkdirs, get_config
 
 
 class SuperNNovaClassifier(Classifier):
-    def __init__(self, photometry_dir, fit_dir, output_dir, options):
-        super().__init__(photometry_dir, fit_dir, output_dir, options)
+    def __init__(self, light_curve_dir, fit_dir, output_dir, options):
+        super().__init__(light_curve_dir, fit_dir, output_dir, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
@@ -62,6 +62,8 @@ python run.py --use_cuda {command} --dump_dir {dump_dir}
         format_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
+            "photometry_dir": self.light_curve_dir,
+            "fit_dir": self.fit_dir,
             "path_to_supernnova": self.path_to_supernnova,
             "job_name": f"train_{self.job_base_name}",
             "command": "--train_rnn"
