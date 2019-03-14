@@ -12,8 +12,7 @@ class SuperNNovaClassifier(Classifier):
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
 
-        self.slurm = """
-#!/bin/bash
+        self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
 #SBATCH --time=02:00:00
