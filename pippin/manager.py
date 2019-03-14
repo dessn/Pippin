@@ -20,6 +20,9 @@ class Manager:
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"
 
+    def _get_phot_output_dir(self, sim_name, fit_name):
+        return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}/{self.prefix}_{sim_name}_{fit_name}"
+
     def _get_lc_output_dir(self, sim_name, fit_name):
         return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
 
@@ -89,7 +92,7 @@ class Manager:
                         name = config["CLASSIFIER"]
                         self.logger.debug(f"Attempting to initialise class {name}")
                         cls = ClassifierFactory.get(name)
-                        cc = cls(self._get_sim_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, options)
+                        cc = cls(self._get_phot_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, options)
                         clas_hash = cc.classify()
                         if not clas_hash:
                             exit(1)
