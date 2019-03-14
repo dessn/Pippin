@@ -32,7 +32,7 @@ python run.py --data --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir
 python run.py --use_cuda {command} --dump_dir {dump_dir}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
-        self.path_to_supernnova = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../" + self.global_config["SuperNNova"]["location"])
+        self.path_to_supernnova = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
 
     def classify(self):
         mkdirs(self.output_dir)
