@@ -20,8 +20,8 @@ class Manager:
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"
 
-    def _get_phot_output_dir(self, sim_name, fit_name):
-        return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}/{self.prefix}_{sim_name}_{fit_name}"
+    def _get_phot_output_dir(self, sim_name):
+        return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}/{self.prefix}_{sim_name}"
 
     def _get_lc_output_dir(self, sim_name, fit_name):
         return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
