@@ -70,7 +70,12 @@ python run.py --use_cuda {command} --dump_dir {dump_dir}
         }
 
         slurm_output_file = self.output_dir + "/train_job.slurm"
+        self.logger.info(f"Training SuperNNova, slurm job outputting to {slurm_output_file}")
+
         with open(slurm_output_file, "w") as f:
             f.write(self.slurm.format(**format_dict))
-        #subprocess.run(["sbatch", "--wait", slurm_output_file], cwd=self.output_dir)
-        #chown_dir(self.output_dir)
+
+        self.logger.info("Submitting batch job to train SuperNNova")
+        subprocess.run(["sbatch", "--wait", slurm_output_file], cwd=self.output_dir)
+        self.logger.info("Batch job finished")
+        chown_dir(self.output_dir)

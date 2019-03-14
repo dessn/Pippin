@@ -105,6 +105,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
             chown_dir(self.output_dir)
+        else:
+            self.logger.info("Hash check passed, not rerunning")
 
         return regenerate, new_hash
 

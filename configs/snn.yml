@@ -8,6 +8,7 @@ SIM:
       BASE: sn_iax.input
     II_NMF:
       BASE: sn_ii_nmf.input
+      DNDZ_ALLSCALE: 10.0
     GLOBAL:
       NGEN_UNIT: 0.5
 
