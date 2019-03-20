@@ -73,7 +73,7 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
             "fit_dir": self.fit_dir,
             "path_to_supernnova": self.path_to_supernnova,
             "job_name": f"train_{self.job_base_name}",
-            "command": "--train_rnn",
+            "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
             "model": "" if training else f"--model_files {model_path}" ,
             "test_or_train": "" if training else "--data_testing"
