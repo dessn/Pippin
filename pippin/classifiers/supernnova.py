@@ -24,14 +24,14 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --output=log_%j.out
 #SBATCH --error=log_%j.err
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=12G
+#SBATCH --mem=16G
 
 source ~/.bashrc
 conda activate {conda_env}
 module load cuda
 cd {path_to_supernnova}
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir}
-python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {command}
+python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {test_or_train}
+python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_supernnova = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
@@ -54,28 +54,16 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {command}
 
     def classify(self):
         mkdirs(self.output_dir)
-        if self.options.get("TRAIN"):
-            return self.train()
 
+        training = self.options.get("TRAIN") is not None
+        model = self.options.get("MODEL")
+        model_path = None
+        if not training:
+            assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
+            model_path = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../" + model)
+            self.logger.debug(f"Looking for model in {model_path}")
+            assert os.path.exists(model_path), f"Cannot find {model_path}"
 
-        # fitres = f"{self.fit_dir}/FITOPT000.FITRES.gz"
-        # self.logger.debug(f"Looking for {fitres}")
-        # if not os.path.exists(fitres):
-        #     self.logger.error(f"FITRES file could not be found at {fitres}, classifer has nothing to work with")
-        #     return False
-        #
-        # data = pd.read_csv(fitres, sep='\s+', comment="#", compression="infer")
-        # ids = data["CID"].values
-        # probability = np.random.uniform(size=ids.size)
-        # combined = np.vstack((ids, probability)).T
-        #
-        # output_file = self.output_dir + "/prob.txt"
-        # self.logger.info(f"Saving probabilities to {output_file}")
-        # np.savetxt(output_file, combined)
-        # chown_dir(self.output_dir)
-        return True # change to hash
-
-    def train(self):
         types = self.get_types()
         str_types = json.dumps(types)
         format_dict = {
@@ -86,11 +74,13 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {command}
             "path_to_supernnova": self.path_to_supernnova,
             "job_name": f"train_{self.job_base_name}",
             "command": "--train_rnn",
-            "sntypes": str_types
+            "sntypes": str_types,
+            "model": "" if training else f"--model_files {model_path}" ,
+            "test_or_train": "" if training else "--data_testing"
         }
 
-        slurm_output_file = self.output_dir + "/train_job.slurm"
-        self.logger.info(f"Training SuperNNova, slurm job outputting to {slurm_output_file}")
+        slurm_output_file = self.output_dir + "/job.slurm"
+        self.logger.info(f"Running SuperNNova, slurm job outputting to {slurm_output_file}")
 
         with open(slurm_output_file, "w") as f:
             f.write(self.slurm.format(**format_dict))
@@ -99,3 +89,5 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {command}
         subprocess.run(["sbatch", "--wait", slurm_output_file], cwd=self.output_dir)
         self.logger.info("Batch job finished")
         chown_dir(self.output_dir)
+
+        return True  # change to hash
