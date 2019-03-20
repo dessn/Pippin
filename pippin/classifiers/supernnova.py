@@ -46,7 +46,7 @@ python run.py --use_cuda --sntypes {sntypes} --dump_dir {dump_dir} {command}
             with open(path, "r") as file:
                 for line in file.readlines():
                     if line.startswith("GENTYPE"):
-                        number = "1" + line.split(":")[1].trim()
+                        number = "1" + line.split(":")[1].strip()
                         types[number] = name
                         break
         self.logger.info(f"Types found: {json.dumps(types)}")
