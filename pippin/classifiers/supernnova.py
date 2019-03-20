@@ -1,6 +1,7 @@
 import os
 import inspect
 import subprocess
+import json
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config
 
@@ -29,11 +30,27 @@ source ~/.bashrc
 conda activate {conda_env}
 module load cuda
 cd {path_to_supernnova}
-python run.py --data --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir}
-python run.py --use_cuda {command} --dump_dir {dump_dir}
+python run.py --data --sntypes {sn_types} --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir}
+python run.py --use_cuda --sntypes {sntypes} --dump_dir {dump_dir} {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_supernnova = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
+
+    def get_types(self):
+        types = {}
+        sim_config_dir = os.path.pardir(self.light_curve_dir)
+        self.logger.debug(f"Searching {sim_config_dir} for types")
+        for f in [f for f in os.listdir(sim_config_dir) if f.endswith(".input")]:
+            path = sim_config_dir + os.sep() + f
+            name = f.split(".")[0]
+            with open(path, "r") as file:
+                for line in file.readlines():
+                    if line.startswith("GENTYPE"):
+                        number = "1" + line.split(":")[1].trim()
+                        types[number] = name
+                        break
+        self.logger.info(f"Types found: {json.dumps(types)}")
+        return types
 
     def classify(self):
         mkdirs(self.output_dir)
@@ -59,6 +76,8 @@ python run.py --use_cuda {command} --dump_dir {dump_dir}
         return True # change to hash
 
     def train(self):
+        types = self.get_types()
+        str_types = json.dumps(types)
         format_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
@@ -66,7 +85,8 @@ python run.py --use_cuda {command} --dump_dir {dump_dir}
             "fit_dir": self.fit_dir,
             "path_to_supernnova": self.path_to_supernnova,
             "job_name": f"train_{self.job_base_name}",
-            "command": "--train_rnn"
+            "command": "--train_rnn",
+            "sn_types": str_types
         }
 
         slurm_output_file = self.output_dir + "/train_job.slurm"
