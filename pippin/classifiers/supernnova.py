@@ -38,7 +38,7 @@ python run.py --use_cuda --sntypes {sntypes} --dump_dir {dump_dir} {command}
 
     def get_types(self):
         types = {}
-        sim_config_dir = os.path.pardir(self.light_curve_dir)
+        sim_config_dir = os.path.abspath(os.path.join(self.light_curve_dir, os.pardir))
         self.logger.debug(f"Searching {sim_config_dir} for types")
         for f in [f for f in os.listdir(sim_config_dir) if f.endswith(".input")]:
             path = sim_config_dir + os.sep() + f
