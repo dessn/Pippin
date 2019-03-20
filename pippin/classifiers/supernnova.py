@@ -46,7 +46,7 @@ python run.py --use_cuda --sntypes {sntypes} --dump_dir {dump_dir} {command}
             with open(path, "r") as file:
                 for line in file.readlines():
                     if line.startswith("GENTYPE"):
-                        number = "1" + line.split(":")[1].strip()
+                        number = "1" + "%02d" % int(line.split(":")[1].strip())
                         types[number] = name
                         break
         self.logger.info(f"Types found: {json.dumps(types)}")
@@ -86,7 +86,7 @@ python run.py --use_cuda --sntypes {sntypes} --dump_dir {dump_dir} {command}
             "path_to_supernnova": self.path_to_supernnova,
             "job_name": f"train_{self.job_base_name}",
             "command": "--train_rnn",
-            "sn_types": str_types
+            "sntypes": str_types
         }
 
         slurm_output_file = self.output_dir + "/train_job.slurm"
