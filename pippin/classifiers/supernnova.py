@@ -24,7 +24,7 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --output=log_%j.out
 #SBATCH --error=log_%j.err
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=4G
+#SBATCH --mem=12G
 
 source ~/.bashrc
 conda activate {conda_env}
