@@ -119,6 +119,8 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
 
         if model is not None:
             shutil.move(model, new_model_file)
+            args_old, args_new = os.path.abspath(os.path.join(os.path.dirname(model), "cli_args.json")), self.output_dir + "/cli_args.json"
+            shutil.move(args_old, args_new)
             self.logger.info(f"Model file can be found at {new_model_file}")
 
         with open(predictions, "rb") as f:
