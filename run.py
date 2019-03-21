@@ -5,7 +5,7 @@ import yaml
 import sys
 import logging
 
-from pippin.config import get_config
+from pippin.config import get_config, mkdirs
 from pippin.manager import Manager
 
 if __name__ == "__main__":
@@ -20,7 +20,9 @@ if __name__ == "__main__":
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
-    logging_filename = f"{get_config()['OUTPUT']['output_dir']}/{config_filename}/{config_filename}.log"
+    logging_folder = f"{get_config()['OUTPUT']['output_dir']}/{config_filename}"
+    mkdirs(logging_folder)
+    logging_filename = f"{logging_folder}/{config_filename}.log"
 
     # Initialise logging
     logging.basicConfig(
