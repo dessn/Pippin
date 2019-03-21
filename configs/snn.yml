@@ -15,7 +15,7 @@ SIM:
       DNDZ_ALLSCALE: 0.25
     IBC_TEMPLATES:
       BASE: sn_ibc_templates.input
-      DNDZ_ALLSCALE: 17.0
+      DNDZ_ALLSCALE: 1.0
     II_NMF:
       BASE: sn_ii_nmf.input
       DNDZ_ALLSCALE: 5.0
