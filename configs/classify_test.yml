@@ -21,4 +21,4 @@ CLASSIFICATION:
   SNN:
     CLASSIFIER: SuperNNovaClassifier
     OPTS:
-      MODEL: output/SNN/2_CLAS/PIP_SNN_DES_BASIC_SNN/dump/models/vanilla_S_0_CLF_2_R_None_saltfit_DF_1.0_N_global_lstm_32x2_0.05_128_True_mean/vanilla_S_0_CLF_2_R_None_saltfit_DF_1.0_N_global_lstm_32x2_0.05_128_True_mean.pt
+      MODEL: output/SNN/2_CLAS/PIP_SNN_DES_BASIC_SNN/model.pt
