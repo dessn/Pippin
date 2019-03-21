@@ -2,8 +2,10 @@ import argparse
 import inspect
 import os
 import yaml
+import sys
 import logging
 
+from pippin.config import get_config
 from pippin.manager import Manager
 
 if __name__ == "__main__":
@@ -15,11 +17,20 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose else logging.INFO
-    # Initialise logging
-    logging.basicConfig(level=level, format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s")
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
+    logging_filename = f"{get_config()['OUTPUT']['output_dir']}/{config_filename}/{config_filename.log}"
+
+    # Initialise logging
+    logging.basicConfig(
+        level=level,
+        format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s",
+        handlers=[
+            logging.FileHandler(logging_filename),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
 
     # Load YAML config file
     config_path = os.path.dirname(inspect.stack()[0][1]) + args.config
