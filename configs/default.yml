@@ -13,7 +13,7 @@ SIM: # Dont change
       DNDZ_ALLSCALE: 10.0
     IBC_MOSFIT:
       BASE: sn_ibc_mosfit.input
-      DNDZ_ALLSCALE: 50.0
+      DNDZ_ALLSCALE: 2.0
     IBC_TEMPLATES:
       BASE: sn_ibc_templates.input
       DNDZ_ALLSCALE: 17.0
