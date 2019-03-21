@@ -3,6 +3,8 @@ import inspect
 import subprocess
 import json
 import collections
+import shutil
+import pickle
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config
 
@@ -72,6 +74,9 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
         return model_file, os.path.join(saved_dir, pred_file)
 
     def classify(self):
+        if os.path.exists(self.output_dir):
+            self.logger.info(f"Removing old output files at {self.output_dir}")
+            shutil.rmtree(self.output_dir)
         mkdirs(self.output_dir)
 
         training = self.options.get("TRAIN") is not None
@@ -111,8 +116,7 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
         model, predictions = self.get_model_and_pred()
         new_pred_file = self.output_dir + "/predictions.csv"
         new_model_file = self.output_dir + "model.pt"
-        import shutil
-        import pickle
+
         if model is not None:
             shutil.move(model, new_model_file)
             self.logger.info(f"Model file can be found at {new_model_file}")
