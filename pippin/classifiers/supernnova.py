@@ -54,6 +54,23 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
         self.logger.info(f"Types found: {json.dumps(sorted_types)}")
         return sorted_types
 
+    def get_model_and_pred(self):
+        model_folder = self.dump_dir + "/models"
+        files = [f for f in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, f))]
+        assert len(files) == 1, f"More than one directory found: {str(files)}"
+        saved_dir = os.path.abspath(os.path.join(model_folder, files[0]))
+
+        subfiles = list(os.listdir(saved_dir))
+        model_files = [f for f in subfiles if f.endswith(".pt")]
+        if model_files:
+            model_file = os.path.join(saved_dir, model_files[0])
+            self.logger.debug(f"Found model file {model_file}")
+        else:
+            self.logger.debug("No model found. Not an issue if you've specified a model.")
+            model_file = None
+        pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(".pickle")][0]
+        return model_file, os.path.join(saved_dir, pred_file)
+
     def classify(self):
         mkdirs(self.output_dir)
 
@@ -90,6 +107,21 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
         self.logger.info("Submitting batch job to train SuperNNova")
         subprocess.run(["sbatch", "--wait", slurm_output_file], cwd=self.output_dir)
         self.logger.info("Batch job finished")
-        chown_dir(self.output_dir)
 
+        model, predictions = self.get_model_and_pred()
+        new_pred_file = self.output_dir + "/predictions.csv"
+        new_model_file = self.output_dir + "model.pt"
+        import shutil
+        import pickle
+        if model is not None:
+            shutil.move(model, new_model_file)
+            self.logger.info(f"Model file can be found at {new_model_file}")
+
+        with open(predictions, "rb") as f:
+            dataframe = pickle.load(f)
+            final_dataframe = dataframe[["SNID", "all_class0"]]
+            final_dataframe.to_csv(new_pred_file)
+            self.logger.info(f"Predictions file can be found at {new_pred_file}")
+
+        chown_dir(self.output_dir)
         return True  # change to hash
