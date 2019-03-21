@@ -7,19 +7,22 @@ SIM: # Dont change
       # GENMAG_SMEAR_MODELNAME: C11 # You can specify GENOPTS like this if you want, just dont need any atm
     IAX:
       BASE: sn_iax.input
-      DNDZ_ALLSCALE: 10.0
+      DNDZ_ALLSCALE: 5.0
     IA91BG:
       BASE: sn_ia91bg.input
-      DNDZ_ALLSCALE: 100.0
+      DNDZ_ALLSCALE: 1000.0
     IBC_MOSFIT:
       BASE: sn_ibc_mosfit.input
+      DNDZ_ALLSCALE: 50.0
     IBC_TEMPLATES:
       BASE: sn_ibc_templates.input
+      DNDZ_ALLSCALE: 17.0
     II_NMF:
       BASE: sn_ii_nmf.input
+      DNDZ_ALLSCALE: 5.0
     II_TEMPLATES:
       BASE: sn_ii_templates.input
-
+      DNDZ_ALLSCALE: 5.0
     GLOBAL:
       NGEN_UNIT: 0.5
 LCFIT: # Dont change
