@@ -2,6 +2,7 @@ import os
 import inspect
 import subprocess
 import json
+import collections
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config
 
@@ -49,8 +50,9 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
                         number = "1" + "%02d" % int(line.split(":")[1].strip())
                         types[number] = name
                         break
-        self.logger.info(f"Types found: {json.dumps(types)}")
-        return types
+        sorted_types = collections.OrderedDict(sorted(types.items()))
+        self.logger.info(f"Types found: {json.dumps(sorted_types)}")
+        return sorted_types
 
     def classify(self):
         mkdirs(self.output_dir)
