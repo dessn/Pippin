@@ -115,7 +115,7 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
 
         model, predictions = self.get_model_and_pred()
         new_pred_file = self.output_dir + "/predictions.csv"
-        new_model_file = self.output_dir + "model.pt"
+        new_model_file = self.output_dir + "/model.pt"
 
         if model is not None:
             shutil.move(model, new_model_file)
