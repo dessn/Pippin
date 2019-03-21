@@ -1,3 +1,5 @@
+SIM:
+  DES:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     IA_C11:
