@@ -12,18 +12,18 @@ SIM:
       DNDZ_ALLSCALE: 3.0
     IBC_MOSFIT:
       BASE: sn_ibc_mosfit.input
-      DNDZ_ALLSCALE: 0.25
+      DNDZ_ALLSCALE: 0.5
     IBC_TEMPLATES:
       BASE: sn_ibc_templates.input
-      DNDZ_ALLSCALE: 1.0
+      DNDZ_ALLSCALE: 0.5
     II_NMF:
       BASE: sn_ii_nmf.input
-      DNDZ_ALLSCALE: 5.0
+      DNDZ_ALLSCALE: 1.0
     II_TEMPLATES:
       BASE: sn_ii_templates.input
-      DNDZ_ALLSCALE: 5.0
+      DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 5
+      NGEN_UNIT: 1
 
 
 LCFIT:
