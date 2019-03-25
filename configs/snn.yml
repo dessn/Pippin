@@ -36,3 +36,4 @@ CLASSIFICATION:
     CLASSIFIER: SuperNNovaClassifier
     OPTS:
       TRAIN: True
+      USE_PHOTOMETRY: True

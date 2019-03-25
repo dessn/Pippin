@@ -33,8 +33,8 @@ source ~/.bashrc
 conda activate {conda_env}
 module load cuda
 cd {path_to_supernnova}
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {test_or_train}
-python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {command}
+python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {phot} {test_or_train}
+python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {phot}  {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_supernnova = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
@@ -80,6 +80,7 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
         mkdirs(self.output_dir)
 
         training = self.options.get("TRAIN") is not None
+        use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
         model_path = None
         if not training:
@@ -99,7 +100,8 @@ python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {co
             "job_name": f"train_{self.job_base_name}",
             "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
-            "model": "" if training else f"--model_files {model_path}" ,
+            "model": "" if training else f"--model_files {model_path}",
+            "phot": "" if not use_photometry else "--source_data photometry",
             "test_or_train": "" if training else "--data_testing"
         }
 
