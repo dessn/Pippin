@@ -1,0 +1,95 @@
+# -----------------------------------------
+#   NSED(NON1A): 43
+#
+# User-generated comments:
+#   MAGOFF and MAGSMEAR adjusted to match m_R peak and sigma
+#   in Table 6 of Li et al, 2010 (arXiv:1006.4612)
+#   Nugent SED templates updated by D.Scolnic as illustrated in
+#   http://kicp-workshops.uchicago.edu/SNphotID_2012/depot/talk-scolnic-daniel.pdf
+#
+#   Aug 29, 2012 (RK) -
+#   update MAGOFF and MAGSMEAR values (STK noticed some were wrong)
+#
+#   January 26, 2017 (D. Jones) - see arXiv: 1611.07042
+#
+#   added 4 Ia-91bg templates: 1991bg (Nugent), 1998de, 1999by, 2005bl
+#   added 4 IIb templates: SN 1993J, 2008ax, 2011dh, 2011fu
+#
+#   MAGOFF adjusted such that SNe Ib are simulated at a uniform mag
+#   with MAGSMEAR 0.41 so that their distribution agrees better with the data.
+#   Then, MAGOFF and MAGSMEAR were adjusted so that SNe II and Ib/c
+#   distributions agree with PSNID classifications of Pan-STARRS photometric
+#   data after shape (-3.0 < x1 < 3.0) and color (-0.3 < c < 0.3) cuts.
+#   MAGOFF values for all SNe II were brightened by 0.8 mag.  MAGOFF
+#   values for all SNe Ib/c were brightened by 1.2 mag.  MAGSMEAR values for
+#   SNe II were reduced by 30%.  MAGSMEAR values for SNe Ib/c were reduced
+#   by 60%.
+
+#SNTYPE  20  => II+IIP       (WGTSUM= 0.590)
+#SNTYPE  21  => IIn+IIN      (WGTSUM= 0.040)
+#SNTYPE  22  => IIL          (WGTSUM= 0.080)
+#SNTYPE  32  => Ib           (WGTSUM= 0.140)
+#SNTYPE  33  => Ic+Ibc       (WGTSUM= 0.150)
+
+GENTYPE:  20
+
+NON1A_KEYS: 5
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE
+
+NON1A:    201   0.0207   1.300     0.740     20    # IIP  (SDSS-000018)
+NON1A:    204   0.0207   1.300     0.740     20    # IIP  (SDSS-003818)
+NON1A:    208   0.0207   1.300     0.740     20    # IIP  (SDSS-013376)
+NON1A:    210   0.0207   1.300     0.740     20    # IIP  (SDSS-014450)
+NON1A:    213   0.0207   1.300     0.740     20    # IIP  (SDSS-014599)
+NON1A:    214   0.0207   1.300     0.740     20    # IIP  (SDSS-015031)
+NON1A:    215   0.0207   1.300     0.740     20    # IIP  (SDSS-015320)
+NON1A:    216   0.0207   1.300     0.740     20    # IIP  (SDSS-015339)
+NON1A:    219   0.0207   1.300     0.740     20    # IIP  (SDSS-017564)
+NON1A:    220   0.0207   1.300     0.740     20    # IIP  (SDSS-017862)
+NON1A:    221   0.0207   1.300     0.740     20    # IIP  (SDSS-018109)
+NON1A:    222   0.0207   1.300     0.740     20    # IIP  (SDSS-018297)
+NON1A:    223   0.0207   1.300     0.740     20    # IIP  (SDSS-018408)
+NON1A:    224   0.0207   1.300     0.740     20    # IIP  (SDSS-018441)
+NON1A:    225   0.0207   1.300     0.740     20    # IIP  (SDSS-018457)
+NON1A:    226   0.0207   1.300     0.740     20    # IIP  (SDSS-018590)
+NON1A:    227   0.0207   1.300     0.740     20    # IIP  (SDSS-018596)
+NON1A:    228   0.0207   1.300     0.740     20    # IIP  (SDSS-018700)
+NON1A:    229   0.0207   1.300     0.740     20    # IIP  (SDSS-018713)
+NON1A:    230   0.0207   1.300     0.740     20    # IIP  (SDSS-018734)
+NON1A:    231   0.0207   1.300     0.740     20    # IIP  (SDSS-018793)
+NON1A:    232   0.0207   1.300     0.740     20    # IIP  (SDSS-018834)
+NON1A:    233   0.0207   1.300     0.740     20    # IIP  (SDSS-018892)
+NON1A:    235   0.0207   1.300     0.740     20    # IIP  (SDSS-020038)
+
+NON1A:    206   0.0320   0.700     1.057     21    # IIN  (SDSS-012842)
+NON1A:    209   0.0320   0.700     1.057     21    # IIN  (SDSS-013449)
+
+NON1A:    002   0.0710  -1.350     0.452     22    # IIL  (Nugent+Scolnic_IIL)
+
+NON1A:    400   0.0213  -0.650     0.000     23    # IIb  (LOWZ-2011fu)
+NON1A:    401   0.0213  -0.650     0.000     23    # IIb  (LOWZ-2008ax)
+NON1A:    402   0.0213  -0.650     0.000     23    # IIb  (LOWZ-1993J)
+NON1A:    403   0.0213  -0.650     0.000     23    # IIb  (LOWZ-2011dh)
+
+NON1A:    103   0.0200  -0.430     0.154     32    # Ib   (CSP-2004gv)
+NON1A:    104   0.0200   1.470     0.154     32    # Ib   (CSP-2006ep)
+NON1A:    105   0.0200  -1.828     0.154     32    # Ib   (CSP-2007Y)
+NON1A:    202   0.0200  -0.854     0.154     32    # Ib   (SDSS-000020)
+NON1A:    203   0.0200  -1.299     0.154     32    # Ib   (SDSS-002744)
+NON1A:    212   0.0200  -0.250     0.154     32    # Ib   (SDSS-014492)
+NON1A:    234   0.0200  -0.919     0.154     32    # Ib   (SDSS-019323)
+
+NON1A:    021   0.0167   0.280     0.414     33    # Ibc  (SNLS-04D1la)
+NON1A:    022   0.0167   0.280     0.414     33    # Ic   (SNLS-04D4jv)
+NON1A:    101   0.0167   0.280     0.414     33    # Ic   (CSP-2004fe)
+NON1A:    102   0.0167   0.280     0.414     33    # Ic   (CSP-2004gq)
+NON1A:    205   0.0167   0.280     0.414     33    # Ic   (SDSS-004012)
+NON1A:    207   0.0167   0.280     0.414     33    # Ic   (SDSS-013195)
+NON1A:    211   0.0167   0.280     0.414     33    # Ic   (SDSS-014475)
+NON1A:    217   0.0167   0.280     0.414     33    # Ic   (SDSS-015475)
+NON1A:    218   0.0167   0.280     0.414     33    # Ic   (SDSS-017548)
+
+PEC1A:    502   0.25   -17.447     0.5250     42    # Ia-91bg  (Nugent)
+PEC1A:    503   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-1999by)
+PEC1A:    506   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-1998de)
+PEC1A:    509   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-2005bl)
