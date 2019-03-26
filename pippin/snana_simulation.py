@@ -149,7 +149,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if os.path.exists(logging_file):
                 with open(logging_file, "r") as f:
                     for line in f.read().splitlines():
-                        if "ERROR" in line:
+                        if "ERROR" in line or "***** ABORT *****" in line:
                             self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
                             output_error = True
                         if output_error:

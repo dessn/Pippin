@@ -24,12 +24,13 @@
 #   values for all SNe Ib/c were brightened by 1.2 mag.  MAGSMEAR values for
 #   SNe II were reduced by 30%.  MAGSMEAR values for SNe Ib/c were reduced
 #   by 60%.
+#   SNTYPE  20  => II+IIP       (WGTSUM= 0.590)
+#   SNTYPE  21  => IIn+IIN      (WGTSUM= 0.040)
+#   SNTYPE  22  => IIL          (WGTSUM= 0.080)
+#   SNTYPE  32  => Ib           (WGTSUM= 0.140)
+#   SNTYPE  33  => Ic+Ibc       (WGTSUM= 0.150)
 
-#SNTYPE  20  => II+IIP       (WGTSUM= 0.590)
-#SNTYPE  21  => IIn+IIN      (WGTSUM= 0.040)
-#SNTYPE  22  => IIL          (WGTSUM= 0.080)
-#SNTYPE  32  => Ib           (WGTSUM= 0.140)
-#SNTYPE  33  => Ic+Ibc       (WGTSUM= 0.150)
+INPUT_FILE_INCLUDE:  des_include.input
 
 GENTYPE:  20
 
