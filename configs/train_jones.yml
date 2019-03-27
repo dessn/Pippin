@@ -4,9 +4,10 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 5.0
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANDSEED_REPEAT: 2 12345
+      NGEN_UNIT: 0.5
+      RANDSEED_REPEAT: 10 12345
 
 
 LCFIT:
