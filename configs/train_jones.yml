@@ -6,7 +6,7 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 5.0
     GLOBAL:
-      NGEN_UNIT: 0.5
+      NGEN_UNIT: 5.0
       RANDSEED_REPEAT: 10 12345
 
 
