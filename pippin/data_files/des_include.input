@@ -53,6 +53,8 @@ LENSING_PROBMAP_FILE:  $SNDATA_ROOT/models/lensing/LENSING_PROBMAP_LogNormal+MIC
 APPLY_CUTWIN_OPT: 1
 CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
 CUTWIN_SNRMAX:   3 griz 2 -20. 60.  # 2 filters with SNRAMX>3
+CUTWIN_TRESTMIN: -19 3
+CUTWIN_TRESTMAX: 10 80
 
 # cosmological params for lightcurve generation and redshift distribution
 OMEGA_MATTER:  0.3
