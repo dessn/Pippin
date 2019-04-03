@@ -110,12 +110,14 @@ class SNANASimulation(ConfigBasedExecutable):
         if regenerate:
             self.logger.info(f"Running simulation, hash check failed")
             # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
-            if "//" not in self.output_dir and "Pippin" in self.output_dir:
+            if "//" not in self.output_dir and len(self.output_dir) > 30:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
                 mkdirs(self.output_dir)
                 self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
                 copytree(temp_dir, self.output_dir)
+            else:
+                self.logger.error(f"Seems to be an issue with the output dir path: {self.output_dir}")
             with open(hash_file, "w") as f:
                 f.write(str(new_hash))
                 self.logger.debug(f"New hash saved to {hash_file}")
