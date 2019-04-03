@@ -5,7 +5,7 @@ import yaml
 import sys
 import logging
 
-from pippin.config import get_config, mkdirs
+from pippin.config import get_config, mkdirs, get_logger
 from pippin.manager import Manager
 
 if __name__ == "__main__":
@@ -33,6 +33,9 @@ if __name__ == "__main__":
             logging.StreamHandler()
         ]
     )
+
+    logger = get_logger()
+    logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
     # Load YAML config file
     config_path = os.path.dirname(inspect.stack()[0][1]) + args.config
