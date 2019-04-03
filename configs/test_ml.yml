@@ -6,8 +6,16 @@ SIM:
       BASE: sn_ia_salt2_c11.input
     IAX:
       BASE: sn_iax.input
+    IA91BG:
+      BASE: sn_ia91bg.input
+    IBC_MOSFIT:
+      BASE: sn_ibc_mosfit.input
+    IBC_TEMPLATES:
+      BASE: sn_ibc_templates.input
     II_NMF:
       BASE: sn_ii_nmf.input
+    II_TEMPLATES:
+      BASE: sn_ii_templates.input
     GLOBAL:
       NGEN_UNIT: 0.1
 

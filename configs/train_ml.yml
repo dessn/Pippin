@@ -7,7 +7,7 @@ SIM:
       DNDZ_ALLSCALE: 5.0
     GLOBAL:
       NGEN_UNIT: 5.0
-      RANDSEED_REPEAT: 10 12345
+      RANDSEED_REPEAT: 40 12345
 
 
 LCFIT:
@@ -21,3 +21,8 @@ CLASSIFICATION:
     OPTS:
       TRAIN: True
       USE_PHOTOMETRY: True
+
+  ARGONNE:
+    CLASSIFIER: ArgonneClassifier
+    OPTS:
+      TRAIN: True

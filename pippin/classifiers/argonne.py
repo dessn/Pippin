@@ -9,7 +9,7 @@ from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config
 
 
-class SuperNNovaClassifier(Classifier):
+class ArgonneClassifier(Classifier):
     def __init__(self, light_curve_dir, fit_dir, output_dir, options):
         super().__init__(light_curve_dir, fit_dir, output_dir, options)
         self.global_config = get_config()
@@ -22,8 +22,8 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --time=05:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=gpu2
-#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --partition=broadwl
 #SBATCH --output=log_%j.out
 #SBATCH --error=log_%j.err
 #SBATCH --account=pi-rkessler
@@ -31,13 +31,15 @@ class SuperNNovaClassifier(Classifier):
 
 source ~/.bashrc
 conda activate {conda_env}
-module load cuda
 cd {path_to_classifier}
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {phot} {test_or_train}
 python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {phot}  {command}
+
+python ./ML_DES_typing_v3_2.py --ft x1 c z t0_err x1_err c_err --nclass 2 --filedir evk --data Spec  --plots ''
+
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
-        self.path_to_classifier = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
+        self.path_to_classifier = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["ArgonneClassifier"]["location"])
 
     def get_types(self):
         types = {}
