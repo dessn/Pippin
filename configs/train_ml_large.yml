@@ -1,0 +1,28 @@
+SIM:
+  DES:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 5.0
+    GLOBAL:
+      NGEN_UNIT: 20.0
+      RANDSEED_REPEAT: 40 12345
+
+
+LCFIT:
+  BASIC:
+      BASE: des.nml
+
+
+CLASSIFICATION:
+  SNN:
+    CLASSIFIER: SuperNNovaClassifier
+    OPTS:
+      TRAIN: True
+      USE_PHOTOMETRY: True
+
+  ARGONNE:
+    CLASSIFIER: ArgonneClassifier
+    OPTS:
+      TRAIN: True
