@@ -27,7 +27,7 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --output=log_%j.out
 #SBATCH --error=log_%j.err
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=80G
+#SBATCH --mem=64GB
 
 source activate {conda_env}
 module load cuda
