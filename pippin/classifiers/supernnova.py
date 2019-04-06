@@ -29,9 +29,9 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=40G
 
-source ~/.bashrc
-conda activate {conda_env}
+source activate {conda_env}
 module load cuda
+echo `which python`
 cd {path_to_classifier}
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {phot} {test_or_train}
 python run.py --use_cuda --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {phot}  {command}
