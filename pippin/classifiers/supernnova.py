@@ -19,7 +19,7 @@ class SuperNNovaClassifier(Classifier):
         self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
-#SBATCH --time=05:00:00
+#SBATCH --time=15:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=gpu2
