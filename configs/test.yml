@@ -4,7 +4,6 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     IA91BG:
       BASE: sn_ia91bg.input
-      DNDZ_ALLSCALE: 100.0
     GLOBAL:
       NGEN_UNIT: 0.1
 LCFIT:

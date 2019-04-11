@@ -11,24 +11,31 @@ from pippin.config import get_hash, chown_dir, copytree, mkdirs
 
 
 class SNANASimulation(ConfigBasedExecutable):
-    def __init__(self, output_dir, genversion, config, global_config, combine="combine.input"):
+    def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-
-        super().__init__(output_dir, self.data_dir + combine, ":")
+        super().__init__(name, output_dir, self.data_dir + combine, ":")
 
         self.genversion = genversion
+        self.config = config
         self.reserved_keywords = ["BASE"]
-        self.set_property("GENVERSION", genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = [config[k]["BASE"] for k in config.keys() if k.startswith("IA_") or k == "IA"]
         self.base_cc = [config[k]["BASE"] for k in config.keys() if not k.startswith("IA_") and k != "IA" and k != "GLOBAL"]
         self.global_config = global_config
-        self.hash_file = None
-        self.hash = None
 
-        for k in config.keys():
+        rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
+        value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
+        self.set_num_jobs(2 * value)
+
+        self.done_file = None
+        self.sim_log_dir = None
+        self.logging_file = None
+
+    def write_input(self):
+        self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
+        for k in self.config.keys():
             if k.upper() != "GLOBAL":
-                run_config = config[k]
+                run_config = self.config[k]
                 run_config_keys = list(run_config.keys())
                 assert "BASE" in run_config_keys, "You must specify a base file for each option"
                 for key in run_config_keys:
@@ -38,10 +45,10 @@ class SNANASimulation(ConfigBasedExecutable):
                     match = base_file.split(".")[0]
                     self.set_property(f"GENOPT({match})", f"{key} {run_config[key]}", section_end="ENDLIST_GENVERSION")
 
-        for key in config.get("GLOBAL", []):
+        for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
-            self.set_property(key, config['GLOBAL'][key])
+            self.set_property(key, self.config['GLOBAL'][key])
             if key == "RANSEED_CHANGE":
                 self.delete_property("RANSEED_REPEAT")
             elif key == "RANSEED_REPEAT":
@@ -50,9 +57,6 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_property("SIMGEN_INFILE_Ia", " ".join(self.base_ia))
         self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc))
         self.set_property("GENPREFIX", self.genversion)
-
-    def write_input(self):
-        # Load previous hash here if it exists
 
         old_hash = None
         hash_file = f"{self.output_dir}/hash.txt"
@@ -134,61 +138,57 @@ class SNANASimulation(ConfigBasedExecutable):
         if not regenerate:
             return new_hash
 
-        logging_file = self.config_path.replace(".input", ".input_log")
-        with open(logging_file, "w") as f:
+        self.logging_file = self.config_path.replace(".input", ".input_log")
+        with open(self.logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
-        shutil.chown(logging_file, group=self.global_config["SNANA"]["group"])
+        shutil.chown(self.logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim running and logging outputting to {logging_file}")
-        sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
-        done_file = f"{sim_log_dir}/SIMJOB_ALL.DONE"
+        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
+        self.done_file = f"{sim_log_dir}/SIMJOB_ALL.DONE"
 
-        # Monitor for success or failure
-        time.sleep(10)
-        while True:
-            # Check log for errors and if found, print the rest of the log so you dont have to look up the file
-            output_error = False
-            if os.path.exists(logging_file):
-                with open(logging_file, "r") as f:
-                    for line in f.read().splitlines():
-                        if "ERROR" in line or "***** ABORT *****" in line:
-                            self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
-                            output_error = True
-                        if output_error:
-                            self.logger.error(f"Excerpt: {line}")
-                if output_error:
-                    self.logger.debug("Removing hash on failure")
-                    os.remove(self.hash_file)
-                    chown_dir(self.output_dir)
-                    return False
-            for file in os.listdir(sim_log_dir):
-                if not file.startswith("TMP") or not file.endswith(".LOG"):
-                    continue
-                with open(sim_log_dir + "/" + file, "r") as f:
-                    for line in f.read().splitlines():
-                        if (" ABORT " in line or "FATAL[" in line) and not output_error:
-                            output_error = True
-                            self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
-                        if output_error:
-                            self.logger.error(f"Excerpt: {line}")
-                if output_error:
-                    self.logger.debug("Removing hash on failure")
-                    os.remove(self.hash_file)
-                    chown_dir(self.output_dir)
-                    return False
-
-            # Check to see if the done file exists
-            if os.path.exists(done_file):
-                sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-                sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
-                self.logger.info("Done file found, creating symlinks")
-                self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
-                os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
+    def check_completion(self):
+        # Check log for errors and if found, print the rest of the log so you dont have to look up the file
+        output_error = False
+        if os.path.exists(self.logging_file):
+            with open(self.logging_file, "r") as f:
+                for line in f.read().splitlines():
+                    if "ERROR" in line or "***** ABORT *****" in line:
+                        self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
+                        output_error = True
+                    if output_error:
+                        self.logger.error(f"Excerpt: {line}")
+            if output_error:
+                self.logger.debug("Removing hash on failure")
+                os.remove(self.hash_file)
                 chown_dir(self.output_dir)
-                return new_hash
+                return False
+        for file in os.listdir(self.sim_log_dir):
+            if not file.startswith("TMP") or not file.endswith(".LOG"):
+                continue
+            with open(self.sim_log_dir + "/" + file, "r") as f:
+                for line in f.read().splitlines():
+                    if (" ABORT " in line or "FATAL[" in line) and not output_error:
+                        output_error = True
+                        self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
+                    if output_error:
+                        self.logger.error(f"Excerpt: {line}")
+            if output_error:
+                self.logger.debug("Removing hash on failure")
+                os.remove(self.hash_file)
+                chown_dir(self.output_dir)
+                return False
 
-            time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-
+        # Check to see if the done file exists
+        if os.path.exists(self.done_file):
+            sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
+            sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
+            self.logger.info("Done file found, creating symlinks")
+            self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
+            os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
+            chown_dir(self.output_dir)
+            return True
+        return False
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")

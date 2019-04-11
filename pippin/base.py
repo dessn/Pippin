@@ -2,23 +2,12 @@ import os
 from abc import ABC, abstractmethod
 
 from pippin.config import get_logger, mkdirs
+from pippin.task import Task
 
 
-class OutputExecutable(ABC):
-    def __init__(self, output_dir):
-        self.logger = get_logger()
-        self.output_dir = output_dir
-        mkdirs(self.output_dir)
-
-    @abstractmethod
-    def run(self):
-        """ Returns the hash of the step if successful, False if not. """
-        pass
-
-
-class ConfigBasedExecutable(OutputExecutable):
-    def __init__(self, output_dir, base_file, default_assignment):
-        super().__init__(output_dir)
+class ConfigBasedExecutable(Task):
+    def __init__(self, name, output_dir, base_file, default_assignment):
+        super().__init__(name, output_dir)
         self.default_assignment = default_assignment
         self.base_file = base_file
         self.logger.debug(f"Loading base file from {self.base_file}")

@@ -67,7 +67,11 @@ def copytree(src, dst, symlinks=False, ignore=None):
 def chown_dir(directory):
     global_config = get_config()
     logger = get_logger()
-    shutil.chown(directory, group=global_config["SNANA"]["group"])
+    try:
+        shutil.chown(directory, group=global_config["SNANA"]["group"])
+    except LookupError as e:
+        logger.warning(str(e))
+        return
     for root, dirs, files in os.walk(directory):
         for d in dirs:
             try:

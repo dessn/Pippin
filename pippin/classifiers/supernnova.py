@@ -10,8 +10,13 @@ from pippin.config import chown_dir, mkdirs, get_config
 
 
 class SuperNNovaClassifier(Classifier):
-    def __init__(self, light_curve_dir, fit_dir, output_dir, options):
-        super().__init__(light_curve_dir, fit_dir, output_dir, options)
+
+    @staticmethod
+    def get_requirements(options):
+        return True, options.get("USE_PHOTOMETRY", False)
+
+    def __init__(self, name, light_curve_dir, fit_dir, output_dir, options):
+        super().__init__(name, light_curve_dir, fit_dir, output_dir, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
@@ -97,7 +102,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
             "photometry_dir": self.light_curve_dir,
             "fit_dir": self.fit_dir,
             "path_to_classifier": self.path_to_classifier,
-            "job_name": f"train_{self.job_base_name}",
+            "job_name": self.job_base_name,
             "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
             "model": "" if training else f"--model_files {model_path}",
@@ -133,3 +138,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
 
         chown_dir(self.output_dir)
         return True  # change to hash
+
+    def check_completion(self):
+        num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l"))
+        return num_jobs == 0

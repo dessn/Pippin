@@ -2,16 +2,23 @@ from abc import abstractmethod, ABC
 
 import logging
 
+from pippin.task import Task
 
-class Classifier(ABC):
-    def __init__(self, light_curve_dir, fit_dir, output_dir, options):
+
+class Classifier(Task):
+    def __init__(self, name, light_curve_dir, fit_dir, output_dir, options):
+        super().__init__(name, output_dir)
         self.light_curve_dir = light_curve_dir
         self.fit_dir = fit_dir
-        self.output_dir = output_dir
         self.options = options
-        self.logger = logging.getLogger("pippin")
 
     @abstractmethod
     def classify(self):
         pass
 
+    @staticmethod
+    def get_requirements(config):
+        return True, True
+
+    def run(self):
+        self.classify()

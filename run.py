@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Initialise logging
     logging.basicConfig(
         level=level,
-        format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)20s]   %(message)s",
+        format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s",
         handlers=[
             logging.FileHandler(logging_filename),
             logging.StreamHandler()

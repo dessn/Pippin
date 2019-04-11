@@ -8,7 +8,7 @@ from pippin.config import chown_dir, mkdirs
 
 class ToyClassifier(Classifier):
     def __init__(self, light_curve_dir, fit_dir, output_dir, options):
-        super().__init__(light_curve_dir, fit_dir, output_dir, options)
+        super().__init__(light_curve_dir, fit_dir, output_dir, options, needs_sim=False)
 
     def classify(self):
         mkdirs(self.output_dir)
