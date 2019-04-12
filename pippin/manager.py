@@ -18,8 +18,8 @@ class Manager:
         self.global_config = get_config()
 
         self.prefix = self.global_config["GLOBAL"]["prefix"] + "_" + filename
-        self.max_jobs = self.global_config["GLOBAL"]["max_jobs"] + filename
-        self.max_jobs_in_queue = self.global_config["GLOBAL"]["max_jobs_in_queue"] + filename
+        self.max_jobs = int(self.global_config["GLOBAL"]["max_jobs"] + filename)
+        self.max_jobs_in_queue = int(self.global_config["GLOBAL"]["max_jobs_in_queue"] + filename)
 
         self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + self.global_config['OUTPUT']['output_dir'] + "/" + self.filename)
         self.tasks = None
