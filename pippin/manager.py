@@ -109,7 +109,7 @@ class Manager:
         return tasks
 
     def get_num_running_jobs(self):
-        num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l"))
+        num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l".split(" ")))
         return num_jobs
 
     def get_task_index_to_run(self, tasks_to_run, done_tasks):
