@@ -34,7 +34,6 @@ class Task(ABC):
             with open(file, "r") as f:
                 string_to_hash += f.read()
         new_hash = self.get_hash_from_string(string_to_hash)
-        self.logger.debug(f"Current hash set to {new_hash} from {output_files}")
         return new_hash
 
     def get_hash_from_string(self, string_to_hash):
