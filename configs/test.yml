@@ -22,7 +22,7 @@ SIM:
 
 LCFIT:
   FIT:
-      BASE: des.nml
+    BASE: des.nml
 
 CLASSIFICATION:
   SNNTRAIN:
@@ -39,3 +39,11 @@ CLASSIFICATION:
     OPTS:
       USE_PHOTOMETRY: True
       MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load
+
+  RANDOTEST:
+    CLASSIFIER: ToyClassifier
+    MODE: predict
+
+AGGREGATION:
+  AGG:
+    MASK: TEST
