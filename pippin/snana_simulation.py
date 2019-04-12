@@ -8,6 +8,7 @@ import tempfile
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import get_hash, chown_dir, copytree, mkdirs
+from pippin.task import Task
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -58,13 +59,6 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc))
         self.set_property("GENPREFIX", self.genversion)
 
-        old_hash = None
-        hash_file = f"{self.output_dir}/hash.txt"
-        if os.path.exists(hash_file):
-            with open(hash_file, "r") as f:
-                old_hash = f.read().strip()
-                self.logger.debug(f"Previous result found, hash is {old_hash}")
-
         # Put config in a temp directory
         temp_dir_obj = tempfile.TemporaryDirectory()
         temp_dir = temp_dir_obj.name
@@ -103,12 +97,8 @@ class SNANASimulation(ConfigBasedExecutable):
         output_files.append(os.path.abspath(inspect.stack()[0][1]))
 
         # Get current hash
-        string_to_hash = ""
-        for file in output_files:
-            with open(file, "r") as f:
-                string_to_hash += f.read()
-        new_hash = get_hash(string_to_hash)
-        self.logger.debug(f"Current hash set to {new_hash}")
+        new_hash = self.get_hash_from_files(output_files)
+        old_hash = self.get_old_hash()
         regenerate = old_hash is None or old_hash != new_hash
 
         if regenerate:
@@ -120,12 +110,10 @@ class SNANASimulation(ConfigBasedExecutable):
                 mkdirs(self.output_dir)
                 self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
                 copytree(temp_dir, self.output_dir)
+                self.save_new_hash(new_hash)
             else:
                 self.logger.error(f"Seems to be an issue with the output dir path: {self.output_dir}")
-            with open(hash_file, "w") as f:
-                f.write(str(new_hash))
-                self.logger.debug(f"New hash saved to {hash_file}")
-                self.hash_file = hash_file
+
             chown_dir(self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
@@ -136,7 +124,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         regenerate, new_hash = self.write_input()
         if not regenerate:
-            return new_hash
+            return True
 
         self.logging_file = self.config_path.replace(".input", ".input_log")
         with open(self.logging_file, "w") as f:
@@ -162,7 +150,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)
                 chown_dir(self.output_dir)
-                return False
+                return Task.FINISHED_CRASH
         for file in os.listdir(self.sim_log_dir):
             if not file.startswith("TMP") or not file.endswith(".LOG"):
                 continue
@@ -177,18 +165,19 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)
                 chown_dir(self.output_dir)
-                return False
+                return Task.FINISHED_CRASH
 
         # Check to see if the done file exists
         if os.path.exists(self.done_file):
             sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
             sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
-            self.logger.info("Done file found, creating symlinks")
-            self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
-            os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
-            chown_dir(self.output_dir)
-            return True
-        return False
+            if not os.path.exists(sim_folder_endpoint):
+                self.logger.info("Done file found, creating symlinks")
+                self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
+                os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
+                chown_dir(self.output_dir)
+            return Task.FINISHED_GOOD
+        return 0  # TODO: Update to num jobs
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")

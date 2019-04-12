@@ -77,20 +77,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property("VERSION", self.sim_version + "*", assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
 
-        # Load old hash
-        old_hash = None
-        hash_file = f"{self.output_dir}/hash.txt"
-        if os.path.exists(hash_file):
-            with open(hash_file, "r") as f:
-                old_hash = f.read().strip()
-                self.logger.debug(f"Previous result found, hash is {old_hash}")
-
         # We want to do our hashing check here
-        total_string = self.fitopts + self.base
-        string_to_hash = self.sim_hash + "".join(total_string)
+        string_to_hash = self.fitopts + self.base
         with open(os.path.abspath(inspect.stack()[0][1]), "r") as f:
             string_to_hash += f.read()
-        new_hash = get_hash(string_to_hash)
+        new_hash = self.get_hash_from_string(string_to_hash)
+        old_hash = self.get_old_hash()
 
         self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
@@ -100,12 +92,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
             # Write main file
             with open(self.config_path, "w") as f:
-                f.writelines(map(lambda s: s + '\n', total_string))
+                f.writelines(map(lambda s: s + '\n', string_to_hash))
             self.logger.info(f"NML file written to {self.config_path}")
-
-            with open(hash_file, "w") as f:
-                f.write(str(new_hash))
-                self.logger.debug(f"New hash saved to {hash_file}")
+            self.save_new_hash(new_hash)
             chown_dir(self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")

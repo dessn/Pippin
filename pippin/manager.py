@@ -8,6 +8,7 @@ from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_simulation import SNANASimulation
+from pippin.task import Task
 
 
 class Manager:
@@ -33,6 +34,7 @@ class Manager:
         self.logger.info("Listing tasks:")
         for task in total_tasks:
             self.logger.info(str(task))
+        self.logger.info("")
         return total_tasks
 
     def get_simulation_tasks(self, c):
@@ -113,13 +115,13 @@ class Manager:
         return num_jobs
 
     def get_task_index_to_run(self, tasks_to_run, done_tasks):
-        for index, t in enumerate(tasks_to_run):
+        for t in tasks_to_run:
             can_run = True
             for dep in t.dependencies:
                 if dep not in done_tasks:
                     can_run = False
             if can_run:
-                return index
+                return t
         return None
 
     def execute(self):
@@ -130,23 +132,40 @@ class Manager:
         self.tasks = self.get_tasks(c)
         running_tasks = []
         done_tasks = []
+        failed_tasks = []
+        blocked_tasks = []
 
         while self.tasks or running_tasks:
 
             # Check status of current jobs
-            for i, t in enumerate(running_tasks):
-                if t.check_completion:
-                    running_tasks.pop(i)
-                    done_tasks.append(t)
+            for t in running_tasks:
+                result = t.check_completion
+                if result in [Task.FINISHED_GOOD, Task.FINISHED_CRASH]:
+                    running_tasks.remove(t)
+                    if result == Task.FINISHED_GOOD:
+                        self.logger.info("Task {t} finished successfully")
+                        done_tasks.append(t)
+                    else:
+                        failed_tasks.append(t)
+                        self.logger.error("Task {t} crashed")
+                        if os.path.exists(t.hash_file):
+                            os.remove(t.hash_file)
+                        for t2 in self.tasks:
+                            if t in t2.dependencies:
+                                self.tasks.remove(t2)
+                                blocked_tasks.append(t2)
 
             # Submit new jobs if needed
             num_running = self.get_num_running_jobs()
-            if num_running < self.max_jobs:
-                i = self.get_task_index_to_run(self.tasks, done_tasks)
-                if i is not None:
-                    t = self.tasks.pop(i)
+            while num_running < self.max_jobs:
+                t = self.get_task_index_to_run(self.tasks, done_tasks)
+                if t is not None:
+                    self.tasks.remove(t)
                     running_tasks.append(t)
+                    num_running += t.num_jobs
                     t.run()
+                else:
+                    break
 
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
