@@ -1,12 +1,41 @@
 SIM:
-  DES:
+  TRAININGSIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
-    IA91BG:
-      BASE: sn_ia91bg.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 3.0
     GLOBAL:
       NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 20 12345
+
+  TESTSIM:
+    IA_C11:
+      BASE: sn_ia_salt2_c11.input
+    IBC_TEMPLATES:
+      BASE: sn_ibc_templates.input
+    II_TEMPLATES:
+      BASE: sn_ii_templates.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 20 12345
+
 LCFIT:
-  NOCHANGES:
+  FIT:
       BASE: des.nml
-      MASK: DES
+
+CLASSIFICATION:
+  SNNTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train # train or predict
+    MASK: TRAININGSIM
+    OPTS:
+      USE_PHOTOMETRY: True
+
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict # train or predict
+    MASK: TESTSIM
+    OPTS:
+      USE_PHOTOMETRY: True
+      MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load

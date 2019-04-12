@@ -27,6 +27,24 @@ def get_config():
     return config
 
 
+def get_output_dir():
+    output_dir = get_config()['OUTPUT']['output_dir']
+    if output_dir.startswith("$"):
+        output_dir = os.path.expandvars(output_dir)
+    elif not output_dir.startswith("/"):
+        output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + output_dir)
+    return output_dir
+
+
+def get_output_loc(path):
+    if path.startswith("$"):
+        return os.path.expandvars(path)
+    elif path.startswith("/"):
+        return path
+    else:
+        return os.path.join(get_output_dir(), path)
+
+
 def get_hash(input_string):
     return hashlib.sha256(input_string.encode('utf-8')).hexdigest()
 

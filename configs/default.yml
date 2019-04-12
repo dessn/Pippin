@@ -25,6 +25,7 @@ SIM: # Dont change
       DNDZ_ALLSCALE: 5.0
     GLOBAL:
       NGEN_UNIT: 0.5
+
 LCFIT: # Dont change
   NOCHANGES: # Name of the light curve fitting
       BASE: des.nml

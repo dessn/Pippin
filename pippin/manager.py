@@ -3,6 +3,7 @@ import inspect
 import subprocess
 import time
 
+from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
 from pippin.snana_fit import SNANALightCurveFit
@@ -30,7 +31,7 @@ class Manager:
         total_tasks = sim_tasks + lcfit_tasks + classification_tasks
         self.logger.info("")
         self.logger.info("Listing tasks:")
-        for task in self.tasks:
+        for task in total_tasks:
             self.logger.info(str(task))
         return total_tasks
 
@@ -64,8 +65,19 @@ class Manager:
             name = config["CLASSIFIER"]
             cls = ClassifierFactory.get(name)
             options = config.get("OPTS", {})
-            needs_sim, needs_lc = cls.get_requirements(options)
+            mode = config["MODE"].lower()
+            assert mode in ["train", "predict"], "MODE should be either train or predict"
+            if mode == "train":
+                mode = Classifier.TRAIN
+            else:
+                mode = Classifier.PREDICT
 
+            model = None
+            if mode == Classifier.PREDICT:
+                assert options.get("MODEL") is not None, "If predicting you need to give an opt for MODEL, which is either a model filename or a task name"
+                model = options.get("MODEL")
+            needs_sim, needs_lc = cls.get_requirements(options)
+            runs = []
             if needs_sim and needs_lc:
                 runs = [(l.dependencies[0], l) for l in lcfit_tasks]
             elif needs_sim:
@@ -76,13 +88,23 @@ class Manager:
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
+                mask = config.get("MASK", "")
+                if sim_name is not None and mask not in sim_name:
+                    continue
+                if fit_name is not None and mask not in fit_name:
+                    continue
                 clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
-                cc = cls(clas_name, self._get_phot_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, options)
+                cc = cls(clas_name, self._get_phot_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, mode, options)
                 self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                 if s is not None:
                     cc.add_dependency(s)
                 if l is not None:
                     cc.add_dependency(l)
+
+                if model is not None:
+                    for t in tasks:
+                        if model == t.name:
+                            cc.add_dependency(t)
                 tasks.append(cc)
         return tasks
 
@@ -147,8 +169,8 @@ if __name__ == "__main__":
         level=logging.DEBUG,
         format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s")
 
-    with open("../configs/train_ml.yml", "r") as f:
+    with open("../configs/test.yml", "r") as f:
         config = yaml.safe_load(f)
 
-    manager = Manager("train_ml", config)
+    manager = Manager("test", config)
     manager.execute()

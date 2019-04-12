@@ -18,11 +18,6 @@ LCFIT:
 CLASSIFICATION:
   SNN:
     CLASSIFIER: SuperNNovaClassifier
+    MODE: train # train or predict
     OPTS:
-      TRAIN: True
       USE_PHOTOMETRY: True
-
-  ARGONNE:
-    CLASSIFIER: ArgonneClassifier
-    OPTS:
-      TRAIN: True

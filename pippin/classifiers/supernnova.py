@@ -6,21 +6,21 @@ import collections
 import shutil
 import pickle
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config
+from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
 
 
 class SuperNNovaClassifier(Classifier):
 
     @staticmethod
     def get_requirements(options):
-        return True, options.get("USE_PHOTOMETRY", False)
+        return True, not options.get("USE_PHOTOMETRY", False)
 
-    def __init__(self, name, light_curve_dir, fit_dir, output_dir, options):
-        super().__init__(name, light_curve_dir, fit_dir, output_dir, options)
+    def __init__(self, name, light_curve_dir, fit_dir, output_dir, mode, options):
+        super().__init__(name, light_curve_dir, fit_dir, output_dir, mode, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
-
+        self.tmp_output = None
         self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
@@ -78,19 +78,29 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
         pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(".pickle")][0]
         return model_file, os.path.join(saved_dir, pred_file)
 
-    def classify(self):
+    def train(self):
+        return self.classify(True)
+
+    def predict(self):
+        return self.classify(False)
+
+    def classify(self, training):
         if os.path.exists(self.output_dir):
             self.logger.info(f"Removing old output files at {self.output_dir}")
             shutil.rmtree(self.output_dir)
         mkdirs(self.output_dir)
 
-        training = self.options.get("TRAIN") is not None
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
-        model_path = None
+
         if not training:
             assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
-            model_path = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../" + model)
+            for task in self.dependencies:
+                if model == task.name:
+                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model']}")
+                    model = task.output["model"]
+
+            model_path = get_output_loc(model)
             self.logger.debug(f"Looking for model in {model_path}")
             assert os.path.exists(model_path), f"Cannot find {model_path}"
 
@@ -137,8 +147,12 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
             self.logger.info(f"Predictions file can be found at {new_pred_file}")
 
         chown_dir(self.output_dir)
-        return True  # change to hash
+        self.tmp_output = {"model": new_model_file, "predictions": predictions}
+        return True
 
     def check_completion(self):
         num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l"))
-        return num_jobs == 0
+        done = num_jobs == 0
+        if done:
+            self.output = self.tmp_output
+        return done

@@ -10,6 +10,7 @@ class Task(ABC):
         self.num_jobs = 1
         self.dependencies = []
         self.hash = None
+        self.output = {}
         mkdirs(self.output_dir)
 
     def set_num_jobs(self, num_jobs):
