@@ -145,7 +145,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
-        self.done_file = f"{sim_log_dir}/SIMJOB_ALL.DONE"
+        self.done_file = f"{self.sim_log_dir}/SIMJOB_ALL.DONE"
 
     def check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
