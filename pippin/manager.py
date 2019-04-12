@@ -146,7 +146,7 @@ class Manager:
                 if i is not None:
                     t = self.tasks.pop(i)
                     running_tasks.append(t)
-                    t.execute()
+                    t.run()
 
             time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
