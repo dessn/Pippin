@@ -93,9 +93,6 @@ class SNANASimulation(ConfigBasedExecutable):
         output_files = [f"{temp_dir}/{a}" for a in sorted(os.listdir(temp_dir))]
         self.logger.debug(f"{len(output_files)} files used to create simulation. Hashing them.")
 
-        # Also add this file to the hash, so if the code changes we also regenerate. Smart.
-        output_files.append(os.path.abspath(inspect.stack()[0][1]))
-
         # Get current hash
         new_hash = self.get_hash_from_files(output_files)
         old_hash = self.get_old_hash()
