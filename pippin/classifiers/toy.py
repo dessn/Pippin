@@ -9,8 +9,8 @@ from pippin.task import Task
 
 class ToyClassifier(Classifier):
 
-    def __init__(self, name, light_curve_dir, fit_dir, output_dir, options):
-        super().__init__(name, light_curve_dir, fit_dir, output_dir, options)
+    def __init__(self, name, light_curve_dir, fit_dir, output_dir, mode, options):
+        super().__init__(name, light_curve_dir, fit_dir, output_dir,  mode, options)
         self.output_file = None
         self.passed = None
 
