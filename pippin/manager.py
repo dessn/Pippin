@@ -152,6 +152,7 @@ class Manager:
                                 self.tasks.remove(t2)
                                 blocked_tasks.append(t2)
 
+            submitted = False
             # Submit new jobs if needed
             num_running = self.get_num_running_jobs()
             while num_running < self.max_jobs:
@@ -161,10 +162,14 @@ class Manager:
                     running_tasks.append(t)
                     num_running += t.num_jobs
                     t.run()
+                    submitted = True
                 else:
                     break
 
-            time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+            if submitted:
+                time.sleep(1)
+            else:
+                time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"
