@@ -87,8 +87,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             string_to_hash += f.read()
         new_hash = self.get_hash_from_string("".join(string_to_hash))
         old_hash = self.get_old_hash()
-
-        self.logger.debug(f"Current hash set to {new_hash}")
         regenerate = old_hash is None or old_hash != new_hash
 
         if regenerate:

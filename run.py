@@ -24,9 +24,10 @@ if __name__ == "__main__":
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
     # Initialise logging
+    #         format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s",
     logging.basicConfig(
         level=level,
-        format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s",
+        format="[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s",
         handlers=[
             logging.FileHandler(logging_filename),
             logging.StreamHandler()
