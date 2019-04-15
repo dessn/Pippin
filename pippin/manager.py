@@ -136,7 +136,7 @@ class Manager:
 
             # Check status of current jobs
             for t in running_tasks:
-                result = t.check_completion
+                result = t.check_completion()
                 if result in [Task.FINISHED_GOOD, Task.FINISHED_CRASH]:
                     running_tasks.remove(t)
                     if result == Task.FINISHED_GOOD:

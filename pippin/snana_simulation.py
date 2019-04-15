@@ -148,6 +148,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 os.remove(self.hash_file)
                 chown_dir(self.output_dir)
                 return Task.FINISHED_CRASH
+        else:
+            self.logger.warn(f"Simulation {self.name} logging file does not exist: {self.logging_file}")
         for file in os.listdir(self.sim_log_dir):
             if not file.startswith("TMP") or not file.endswith(".LOG"):
                 continue
@@ -166,6 +168,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Check to see if the done file exists
         if os.path.exists(self.done_file):
+            self.logger.info("Simulation {self.name} found done file!")
             sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
             sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
             if not os.path.exists(sim_folder_endpoint):
