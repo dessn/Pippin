@@ -74,10 +74,6 @@ class Manager:
             else:
                 mode = Classifier.PREDICT
 
-            model = None
-            if mode == Classifier.PREDICT:
-                assert options.get("MODEL") is not None, "If predicting you need to give an opt for MODEL, which is either a model filename or a task name"
-                model = options.get("MODEL")
             needs_sim, needs_lc = cls.get_requirements(options)
             runs = []
             if needs_sim and needs_lc:
@@ -103,6 +99,7 @@ class Manager:
                 if l is not None:
                     cc.add_dependency(l)
 
+                model = options.get("MODEL")
                 if model is not None:
                     for t in tasks:
                         if model == t.name:
