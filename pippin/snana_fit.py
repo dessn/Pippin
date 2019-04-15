@@ -109,7 +109,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         regenerate, new_hash = self.write_nml()
         if not regenerate:
             return new_hash
-        self.logger.info(f"Light curve fitting outputting to {logging_file}")
+        self.logger.info(f"Light curve fitting outputting to {self.logging_file}")
         with open(self.logging_file, "w") as f:
             # TODO: Add queue to config and run
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
