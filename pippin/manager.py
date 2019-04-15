@@ -7,7 +7,7 @@ from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
 from pippin.snana_fit import SNANALightCurveFit
-from pippin.snana_simulation import SNANASimulation
+from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 
 
