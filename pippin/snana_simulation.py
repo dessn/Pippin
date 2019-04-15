@@ -28,9 +28,9 @@ class SNANASimulation(ConfigBasedExecutable):
         value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
         self.set_num_jobs(2 * value)
 
-        self.done_file = None
-        self.sim_log_dir = None
-        self.logging_file = None
+        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
+        self.done_file = f"{self.sim_log_dir}/SIMJOB_ALL.DONE"
+        self.logging_file = self.config_path.replace(".input", ".input_log")
 
     def write_input(self):
         self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
@@ -123,15 +123,11 @@ class SNANASimulation(ConfigBasedExecutable):
         if not regenerate:
             return True
 
-        self.logging_file = self.config_path.replace(".input", ".input_log")
         with open(self.logging_file, "w") as f:
             subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         shutil.chown(self.logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
-        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
-        self.done_file = f"{self.sim_log_dir}/SIMJOB_ALL.DONE"
-
     def check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
         output_error = False
