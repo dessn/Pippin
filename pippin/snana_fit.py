@@ -7,6 +7,7 @@ import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import get_hash, chown_dir
+from pippin.task import Task
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
@@ -28,12 +29,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.lc_output_dir = f"{self.output_dir}/output"
         self.set_num_jobs(int(config.get("NUM_JOBS", 100)))
 
-        logging_file = self.config_path.replace(".nml", ".nml_log")
-        self.logger.info(f"Light curve fitting outputting to {logging_file}")
+        self.logging_file = self.config_path.replace(".nml", ".nml_log")
         self.done_file = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
         secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
-        self.log_files = [logging_file, secondary_log]
+        self.log_files = [self.logging_file, secondary_log]
 
     def print_stats(self):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
@@ -109,11 +109,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         regenerate, new_hash = self.write_nml()
         if not regenerate:
             return new_hash
-
-        with open(logging_file, "w") as f:
+        self.logger.info(f"Light curve fitting outputting to {logging_file}")
+        with open(self.logging_file, "w") as f:
             # TODO: Add queue to config and run
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
-
 
     def check_completion(self):
         # Check for errors
@@ -129,7 +128,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                             self.logger.error(f"Excerpt: {line}")
 
                 if output_error:
-                    return False
+                    return Task.FINISHED_CRASH
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
@@ -143,8 +142,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
             chown_dir(self.output_dir)
             self.print_stats()
-            return True
-        return False
+            return Task.FINISHED_GOOD
+        return 0
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
