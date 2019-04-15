@@ -81,7 +81,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         string_to_hash = self.fitopts + self.base
         with open(os.path.abspath(inspect.stack()[0][1]), "r") as f:
             string_to_hash += f.read()
-        new_hash = self.get_hash_from_string(string_to_hash)
+        new_hash = self.get_hash_from_string("".join(string_to_hash))
         old_hash = self.get_old_hash()
 
         self.logger.debug(f"Current hash set to {new_hash}")

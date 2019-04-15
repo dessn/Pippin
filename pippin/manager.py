@@ -140,11 +140,11 @@ class Manager:
                 if result in [Task.FINISHED_GOOD, Task.FINISHED_CRASH]:
                     running_tasks.remove(t)
                     if result == Task.FINISHED_GOOD:
-                        self.logger.info("Task {t} finished successfully")
+                        self.logger.info(f"Task {t} finished successfully")
                         done_tasks.append(t)
                     else:
                         failed_tasks.append(t)
-                        self.logger.error("Task {t} crashed")
+                        self.logger.error(f"Task {t} crashed")
                         if os.path.exists(t.hash_file):
                             os.remove(t.hash_file)
                         for t2 in self.tasks:
