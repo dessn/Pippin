@@ -135,7 +135,7 @@ class SNANASimulation(ConfigBasedExecutable):
     def check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
         output_error = False
-        if os.path.exists(self.logging_file):
+        if self.logging_file is not None and os.path.exists(self.logging_file):
             with open(self.logging_file, "r") as f:
                 for line in f.read().splitlines():
                     if "ERROR" in line or "***** ABORT *****" in line:
