@@ -164,7 +164,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Check to see if the done file exists
         if os.path.exists(self.done_file):
-            self.logger.info("Simulation {self.name} found done file!")
+            self.logger.info(f"Simulation {self.name} found done file!")
             sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
             sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
             if not os.path.exists(sim_folder_endpoint):

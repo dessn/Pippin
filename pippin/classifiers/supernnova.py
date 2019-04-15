@@ -7,6 +7,7 @@ import shutil
 import pickle
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
+from pippin.task import Task
 
 
 class SuperNNovaClassifier(Classifier):
@@ -21,6 +22,7 @@ class SuperNNovaClassifier(Classifier):
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
         self.tmp_output = None
+        self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
@@ -39,10 +41,10 @@ module load cuda
 echo `which python`
 cd {path_to_classifier}
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {phot} {test_or_train}
-python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {model} {phot}  {command}
+python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {model} {phot} {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
-        self.path_to_classifier = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../../../" + self.global_config["SuperNNova"]["location"])
+        self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
 
     def get_types(self):
         types = {}
@@ -117,7 +119,8 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
             "sntypes": str_types,
             "model": "" if training else f"--model_files {model_path}",
             "phot": "" if not use_photometry else "--source_data photometry",
-            "test_or_train": "" if training else "--data_testing"
+            "test_or_train": "" if training else "--data_testing",
+            "done_file": self.output_dir
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
@@ -151,8 +154,11 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --dump_dir {dump_dir} {m
         return True
 
     def check_completion(self):
-        num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l"))
-        done = num_jobs == 0
-        if done:
-            self.output = self.tmp_output
-        return done
+        if os.path.exists(self.done_file):
+            return Task.FINISHED_GOOD
+        else:
+            num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l"))
+            if num_jobs == 0:
+                return Task.FINISHED_CRASH
+            return num_jobs
+
