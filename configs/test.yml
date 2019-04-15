@@ -43,6 +43,7 @@ CLASSIFICATION:
   RANDOTEST:
     CLASSIFIER: ToyClassifier
     MODE: predict
+    MASK: TESTSIM
 
 AGGREGATION:
   AGG:
