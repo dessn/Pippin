@@ -28,8 +28,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.lc_output_dir = f"{self.output_dir}/output"
         self.set_num_jobs(int(config.get("NUM_JOBS", 100)))
 
-        self.done_file = None
-        self.log_files = None
+        logging_file = self.config_path.replace(".nml", ".nml_log")
+        self.logger.info(f"Light curve fitting outputting to {logging_file}")
+        self.done_file = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
+        secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
+
+        self.log_files = [logging_file, secondary_log]
 
     def print_stats(self):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
@@ -106,15 +110,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         if not regenerate:
             return new_hash
 
-        logging_file = self.config_path.replace(".nml", ".nml_log")
         with open(logging_file, "w") as f:
             # TODO: Add queue to config and run
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
-        self.logger.info(f"Light curve fitting outputting to {logging_file}")
-        self.done_file = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
-        secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
-        self.log_files = [logging_file, secondary_log]
 
     def check_completion(self):
         # Check for errors
