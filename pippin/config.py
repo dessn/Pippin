@@ -37,9 +37,9 @@ def get_output_dir():
 
 
 def get_output_loc(path):
-    if path.startswith("$"):
-        return os.path.expandvars(path)
-    elif path.startswith("/"):
+    if "$" in path:
+        path = os.path.expandvars(path)
+    if path.startswith("/"):
         return path
     else:
         return os.path.join(get_output_dir(), path)
