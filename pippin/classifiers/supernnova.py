@@ -98,10 +98,10 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
         if not training:
             assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
-            for task in self.dependencies:
-                if model == task.name:
+            for t in self.dependencies:
+                if model == t.name:
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model']}")
-                    model = task.output["model"]
+                    model = t.output["model"]
 
             model_path = get_output_loc(model)
             self.logger.debug(f"Looking for model in {model_path}")
@@ -126,40 +126,56 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
         slurm_output_file = self.output_dir + "/job.slurm"
         self.logger.info(f"Running SuperNNova, slurm job outputting to {slurm_output_file}")
+        slurm_text = self.slurm.format(**format_dict)
 
-        with open(slurm_output_file, "w") as f:
-            f.write(self.slurm.format(**format_dict))
+        old_hash = self.get_old_hash()
+        new_hash = self.get_hash_from_string(slurm_text)
 
-        self.logger.info("Submitting batch job to train SuperNNova")
-        subprocess.run(["sbatch", "--wait", slurm_output_file], cwd=self.output_dir)
-        self.logger.info("Batch job finished")
+        if new_hash == old_hash:
+            self.logger.info("Hash check passed, not rerunning")
+        else:
+            self.logger.info("Hash check failed, rerunning")
+            with open(slurm_output_file, "w") as f:
+                f.write(slurm_text)
 
-        model, predictions = self.get_model_and_pred()
-        new_pred_file = self.output_dir + "/predictions.csv"
-        new_model_file = self.output_dir + "/model.pt"
+            self.logger.info("Submitting batch job to train SuperNNova")
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            self.save_new_hash(new_hash)
 
-        if model is not None:
-            shutil.move(model, new_model_file)
-            args_old, args_new = os.path.abspath(os.path.join(os.path.dirname(model), "cli_args.json")), self.output_dir + "/cli_args.json"
-            shutil.move(args_old, args_new)
-            self.logger.info(f"Model file can be found at {new_model_file}")
-
-        with open(predictions, "rb") as f:
-            dataframe = pickle.load(f)
-            final_dataframe = dataframe[["SNID", "all_class0"]]
-            final_dataframe.to_csv(new_pred_file)
-            self.logger.info(f"Predictions file can be found at {new_pred_file}")
-
-        chown_dir(self.output_dir)
-        self.tmp_output = {"model": new_model_file, "predictions": predictions}
         return True
 
     def check_completion(self):
         if os.path.exists(self.done_file):
+            self.logger.info("Batch job finished")
+
+            model, predictions = self.get_model_and_pred()
+            new_pred_file = self.output_dir + "/predictions.csv"
+            new_model_file = self.output_dir + "/model.pt"
+
+            if model is not None:
+                shutil.move(model, new_model_file)
+                args_old, args_new = os.path.abspath(
+                    os.path.join(os.path.dirname(model), "cli_args.json")), self.output_dir + "/cli_args.json"
+                shutil.move(args_old, args_new)
+                self.logger.info(f"Model file can be found at {new_model_file}")
+
+            with open(predictions, "rb") as f:
+                dataframe = pickle.load(f)
+                final_dataframe = dataframe[["SNID", "all_class0"]]
+                final_dataframe.to_csv(new_pred_file)
+                self.logger.info(f"Predictions file can be found at {new_pred_file}")
+
+            chown_dir(self.output_dir)
+
+            self.output = {"model": new_model_file, "predictions": new_pred_file}
+
             return Task.FINISHED_GOOD
         else:
             num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l"))
             if num_jobs == 0:
+                if os.path.exists(self.hash_file):
+                    self.logger.info("Removing hash on failure")
+                    os.remove(self.hash_file)
                 return Task.FINISHED_CRASH
             return num_jobs
 
