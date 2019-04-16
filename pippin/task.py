@@ -46,7 +46,8 @@ class Task(ABC):
     def save_new_hash(self, new_hash):
         with open(self.hash_file, "w") as f:
             f.write(str(new_hash))
-            self.logger.debug(f"New hash {new_hash} saved to {self.hash_file}")
+            self.logger.debug(f"New hash {new_hash}")
+            self.logger.debug(f"New hash saved to {self.hash_file}")
 
     def set_num_jobs(self, num_jobs):
         self.num_jobs = num_jobs
