@@ -181,7 +181,9 @@ class Manager:
         return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
 
     def _get_clas_output_dir(self, sim_name, fit_name, clas_name):
-        return f"{self.output_dir}/2_CLAS/{self.prefix}_{sim_name}_{fit_name}_{clas_name}"
+        fit_name = "" if fit_name is None else "_" + fit_name
+        sim_name = "" if sim_name is None else "_" + sim_name
+        return f"{self.output_dir}/2_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
 
 if __name__ == "__main__":
     import logging

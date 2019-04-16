@@ -21,7 +21,6 @@ class SuperNNovaClassifier(Classifier):
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
-        print("AAAAA", self.job_base_name, output_dir)
 
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
