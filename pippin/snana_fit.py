@@ -1,12 +1,13 @@
 import inspect
 import os
 import logging
+import shutil
 import subprocess
 import time
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash, chown_dir
+from pippin.config import get_hash, chown_dir, mkdirs
 from pippin.task import Task
 
 
@@ -90,8 +91,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         regenerate = old_hash is None or old_hash != new_hash
 
         if regenerate:
-            self.logger.info(f"Running Light curve fit, hash check failed")
-
+            self.logger.info(f"Running Light curve fit, hash check failed. Removing output_dir")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
             # Write main file
             with open(self.config_path, "w") as f:
                 f.writelines(map(lambda s: s + '\n', string_to_hash))

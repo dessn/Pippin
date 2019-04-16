@@ -134,7 +134,10 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         if new_hash == old_hash:
             self.logger.info("Hash check passed, not rerunning")
         else:
-            self.logger.info("Hash check failed, rerunning")
+            self.logger.info("Hash check failed, rerunning. Cleaning output_dir")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+
             with open(slurm_output_file, "w") as f:
                 f.write(slurm_text)
 

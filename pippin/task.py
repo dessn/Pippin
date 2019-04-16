@@ -37,8 +37,8 @@ class Task(ABC):
         return new_hash
 
     def get_hash_from_string(self, string_to_hash):
-        for dep in self.dependencies:
-            string_to_hash += dep.get_old_hash()
+        hashes = sorted([dep.get_old_hash() for dep in self.dependencies])
+        string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash} from string and dependencies")
         return new_hash
