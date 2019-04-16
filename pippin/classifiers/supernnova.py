@@ -174,7 +174,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
             return Task.FINISHED_GOOD
         else:
-            num_jobs = int(subprocess.check_output(f"squeue -h -u $USER | grep {self.job_base_name} | wc -l", shell=True))
+            num_jobs = int(subprocess.check_output(f"squeue -h -u $USER -o '%.70j' | grep {self.job_base_name} | wc -l", shell=True))
             if num_jobs == 0:
                 if os.path.exists(self.hash_file):
                     self.logger.info("Removing hash on failure")
