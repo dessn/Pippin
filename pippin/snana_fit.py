@@ -130,17 +130,18 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
-            self.logger.info("Tarball found, fitting complete, cleaning up the directory")
-            try:
-                logging_file2 = self.logging_file.replace("_log", "_log2")
-                with open(logging_file2, "w") as f:
-                    subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
-                    time.sleep(10)
-            except subprocess.CalledProcessError as e:
-                self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
-            chown_dir(self.output_dir)
-            self.print_stats()
-            return Task.FINISHED_GOOD
+            logging_file2 = self.logging_file.replace("_log", "_log2")
+            if not os.path.exists(logging_file2):
+                self.logger.info("Tarball found, fitting complete, cleaning up the directory")
+                try:
+                    with open(logging_file2, "w") as f:
+                        subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+                        time.sleep(2)
+                except subprocess.CalledProcessError as e:
+                    self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
+                chown_dir(self.output_dir)
+                self.print_stats()
+                return Task.FINISHED_GOOD
         return 0
 
 if __name__ == "__main__":
