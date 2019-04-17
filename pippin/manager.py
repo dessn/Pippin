@@ -133,6 +133,7 @@ class Manager:
         blocked_tasks = []
 
         while self.tasks or running_tasks:
+            print(self.tasks, running_tasks)
 
             # Check status of current jobs
             for t in running_tasks:
@@ -161,6 +162,7 @@ class Manager:
                     self.tasks.remove(t)
                     running_tasks.append(t)
                     num_running += t.num_jobs
+                    self.logger.info("")
                     t.run()
                     submitted = True
                 else:
