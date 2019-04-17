@@ -143,7 +143,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 chown_dir(self.output_dir)
                 self.print_stats()
-                return Task.FINISHED_GOOD
+            return Task.FINISHED_GOOD
         return 0
 
 if __name__ == "__main__":
