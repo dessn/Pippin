@@ -88,11 +88,6 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         return self.classify(False)
 
     def classify(self, training):
-        if os.path.exists(self.output_dir):
-            self.logger.info(f"Removing old output files at {self.output_dir}")
-            shutil.rmtree(self.output_dir)
-        mkdirs(self.output_dir)
-
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
 
@@ -137,13 +132,13 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             self.logger.info("Hash check failed, rerunning. Cleaning output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
+            self.save_new_hash(new_hash)
 
             with open(slurm_output_file, "w") as f:
                 f.write(slurm_text)
 
             self.logger.info("Submitting batch job to train SuperNNova")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
-            self.save_new_hash(new_hash)
 
         return True
 
