@@ -7,11 +7,13 @@ class Task(ABC):
     FINISHED_GOOD = -1
     FINISHED_CRASH = -9
 
-    def __init__(self, name, output_dir, dependencies):
+    def __init__(self, name, output_dir, dependencies=None):
         self.logger = get_logger()
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
+        if dependencies is None:
+            dependencies = []
         self.dependencies = dependencies
         self.hash = None
         self.output = {

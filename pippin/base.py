@@ -2,8 +2,8 @@ from pippin.task import Task
 
 
 class ConfigBasedExecutable(Task):
-    def __init__(self, name, output_dir, dependencies, base_file, default_assignment):
-        super().__init__(name, output_dir, dependencies)
+    def __init__(self, name, output_dir, base_file, default_assignment, dependencies=None):
+        super().__init__(name, output_dir, dependencies=dependencies)
         self.default_assignment = default_assignment
         self.base_file = base_file
         self.logger.debug(f"Loading base file from {self.base_file}")

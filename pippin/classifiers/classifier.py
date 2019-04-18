@@ -10,7 +10,7 @@ class Classifier(Task):
     PREDICT = 1
 
     def __init__(self, name, output_dir, dependencies, mode, options):
-        super().__init__(name, output_dir, dependencies)
+        super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.mode = mode
 
