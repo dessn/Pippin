@@ -21,7 +21,7 @@ SIM:
       RANSEED_REPEAT: 5 12345
 
 LCFIT:
-  TESTFIT:
+  FIT:
     BASE: des.nml
 
 CLASSIFICATION:

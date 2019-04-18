@@ -85,10 +85,11 @@ class Manager:
             else:
                 self.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 
+            num_gen = 0
+            mask = config.get("MASK", "")
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
-                mask = config.get("MASK", "")
                 if sim_name is not None and mask not in sim_name:
                     continue
                 if fit_name is not None and mask not in fit_name:
@@ -108,8 +109,10 @@ class Manager:
                 clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
                 cc = cls(clas_name, clas_output_dir, deps, mode, options)
                 self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
-
+                num_gen += 1
                 tasks.append(cc)
+            if num_gen == 0:
+                self.logger.error(f"Classifier {name} with mask {mask} matched no combination of sims and fits")
         return tasks
 
     def get_num_running_jobs(self):
