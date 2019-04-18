@@ -1,5 +1,4 @@
 import os
-import inspect
 import subprocess
 import json
 import collections
@@ -90,7 +89,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
     def classify(self, training):
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
-
+        model_path = ""
         if not training:
             assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
             for t in self.dependencies:
@@ -160,7 +159,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             with open(predictions, "rb") as f:
                 dataframe = pickle.load(f)
                 final_dataframe = dataframe[["SNID", "all_class0"]]
-                final_dataframe.to_csv(new_pred_file)
+                final_dataframe.to_csv(new_pred_file, index=False, float_format="0.4f")
                 self.logger.info(f"Predictions file can be found at {new_pred_file}")
 
             chown_dir(self.output_dir)
