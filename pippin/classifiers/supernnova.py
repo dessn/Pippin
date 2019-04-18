@@ -70,7 +70,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
     def get_types(self):
         t = self.get_simulation_dependency()
-        return t.output["types"]
+        return t["types"]
 
     def classify(self, training):
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
