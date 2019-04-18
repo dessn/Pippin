@@ -145,25 +145,27 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         if os.path.exists(self.done_file):
             self.logger.info("Batch job finished")
 
-            model, predictions = self.get_model_and_pred()
             new_pred_file = self.output_dir + "/predictions.csv"
             new_model_file = self.output_dir + "/model.pt"
 
-            if model is not None:
-                shutil.move(model, new_model_file)
-                args_old, args_new = os.path.abspath(
-                    os.path.join(os.path.dirname(model), "cli_args.json")), self.output_dir + "/cli_args.json"
-                shutil.move(args_old, args_new)
-                self.logger.info(f"Model file can be found at {new_model_file}")
+            if not os.path.exists(new_pred_file) or not os.path.exists(new_model_file):
+                model, predictions = self.get_model_and_pred()
 
-            with open(predictions, "rb") as f:
-                dataframe = pickle.load(f)
-                final_dataframe = dataframe[["SNID", "all_class0"]]
-                final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
-                final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")
-                self.logger.info(f"Predictions file can be found at {new_pred_file}")
-
-            chown_dir(self.output_dir)
+                if not os.path.exists(new_model_file):
+                    if model is not None:
+                        shutil.move(model, new_model_file)
+                        args_old, args_new = os.path.abspath(
+                            os.path.join(os.path.dirname(model), "cli_args.json")), self.output_dir + "/cli_args.json"
+                        shutil.move(args_old, args_new)
+                        self.logger.info(f"Model file can be found at {new_model_file}")
+                if not os.path.exists(new_pred_file):
+                    with open(predictions, "rb") as f:
+                        dataframe = pickle.load(f)
+                        final_dataframe = dataframe[["SNID", "all_class0"]]
+                        final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
+                        final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")
+                        self.logger.info(f"Predictions file can be found at {new_pred_file}")
+                chown_dir(self.output_dir)
 
             self.output = {"model": new_model_file, "predictions": new_pred_file}
 
