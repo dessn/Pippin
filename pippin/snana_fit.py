@@ -28,6 +28,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.sim_version = sim_version
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
+        self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
         self.set_num_jobs(int(config.get("NUM_JOBS", 100)))
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
@@ -143,8 +144,17 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 chown_dir(self.output_dir)
                 self.print_stats()
+
+            self.output = {
+                "name": self.name,
+                "output_dir": self.output_dir,
+                "fitres_dir": self.fitres_dir,
+                "nml_file": self.config_path,
+                "fitres_file": os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES.gz"))  # TODO: Ask rick if there
+            }
             return Task.FINISHED_GOOD
         return 0
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")

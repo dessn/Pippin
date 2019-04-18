@@ -1,16 +1,16 @@
 from abc import abstractmethod
 
 from pippin.task import Task
+from pippin.snana_sim import SNANASimulation
+from pippin.snana_fit import SNANALightCurveFit
 
 
 class Classifier(Task):
     TRAIN = 0
     PREDICT = 1
 
-    def __init__(self, name, light_curve_dir, fit_dir, output_dir, mode, options):
+    def __init__(self, name, output_dir, mode, options):
         super().__init__(name, output_dir)
-        self.light_curve_dir = light_curve_dir
-        self.fit_dir = fit_dir
         self.options = options
         self.mode = mode
 
@@ -25,6 +25,18 @@ class Classifier(Task):
     @staticmethod
     def get_requirements(config):
         return True, True
+
+    def get_fit_dependency(self):
+        for t in self.dependencies:
+            if isinstance(t, SNANALightCurveFit):
+                return t.output
+        return None
+
+    def get_simulation_dependency(self):
+        for t in self.dependencies:
+            if isinstance(t, SNANASimulation):
+                return t.output
+        return None
 
     def run(self):
         if self.mode == Classifier.TRAIN:

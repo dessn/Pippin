@@ -10,12 +10,21 @@ from pippin.config import chown_dir, mkdirs, get_config
 
 
 class ArgonneClassifier(Classifier):
+    def predict(self):
+        pass
+
+    def train(self):
+        pass
+
+    def check_completion(self):
+        return Task.FINISHED_CRASH
+
     @staticmethod
     def get_requirements(options):
         return False, True
 
-    def __init__(self, name, light_curve_dir, fit_dir, output_dir, options):
-        super().__init__(name, light_curve_dir, fit_dir, output_dir, options)
+    def __init__(self, name, output_dir, options):
+        super().__init__(name, output_dir, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)

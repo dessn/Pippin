@@ -1,7 +1,6 @@
 import os
 import subprocess
 import json
-import collections
 import shutil
 import pickle
 from pippin.classifiers.classifier import Classifier
@@ -15,8 +14,8 @@ class SuperNNovaClassifier(Classifier):
     def get_requirements(options):
         return True, not options.get("USE_PHOTOMETRY", False)
 
-    def __init__(self, name, light_curve_dir, fit_dir, output_dir, mode, options):
-        super().__init__(name, light_curve_dir, fit_dir, output_dir, mode, options)
+    def __init__(self, name, output_dir, mode, options):
+        super().__init__(name, output_dir, mode, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
@@ -46,23 +45,6 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
 
-    def get_types(self):
-        types = {}
-        sim_config_dir = os.path.abspath(os.path.join(self.light_curve_dir, os.pardir))
-        self.logger.debug(f"Searching {sim_config_dir} for types")
-        for f in [f for f in os.listdir(sim_config_dir) if f.endswith(".input")]:
-            path = os.path.join(sim_config_dir, f)
-            name = f.split(".")[0]
-            with open(path, "r") as file:
-                for line in file.readlines():
-                    if line.startswith("GENTYPE"):
-                        number = "1" + "%02d" % int(line.split(":")[1].strip())
-                        types[number] = name
-                        break
-        sorted_types = collections.OrderedDict(sorted(types.items()))
-        self.logger.info(f"Types found: {json.dumps(sorted_types)}")
-        return sorted_types
-
     def get_model_and_pred(self):
         model_folder = self.dump_dir + "/models"
         files = [f for f in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, f))]
@@ -85,6 +67,10 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
     def predict(self):
         return self.classify(False)
+
+    def get_types(self):
+        t = self.get_simulation_dependency()
+        return t.output["types"]
 
     def classify(self, training):
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
@@ -167,8 +153,13 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
                         self.logger.info(f"Predictions file can be found at {new_pred_file}")
                 chown_dir(self.output_dir)
 
-            self.output = {"model": new_model_file, "predictions": new_pred_file}
-
+            self.output = {
+                "name": self.name,
+                "model_filename": new_model_file,
+                "predictions_filename": new_pred_file,
+                "prob_column_name": self.get_prob_column_name(),
+                "output_dir": self.output_dir
+            }
             return Task.FINISHED_GOOD
         else:
             num_jobs = int(subprocess.check_output(f"squeue -h -u $USER -o '%.70j' | grep {self.job_base_name} | wc -l", shell=True))

@@ -4,6 +4,8 @@ import logging
 import shutil
 import subprocess
 import tempfile
+import collections
+import json
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, copytree, mkdirs
@@ -127,6 +129,7 @@ class SNANASimulation(ConfigBasedExecutable):
         shutil.chown(self.logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
+
     def check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
         output_error = False
@@ -134,7 +137,7 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(self.logging_file, "r") as f:
                 for line in f.read().splitlines():
                     if "ERROR" in line or "***** ABORT *****" in line:
-                        self.logger.critical(f"Fatal error in simulation. See {logging_file} for details.")
+                        self.logger.critical(f"Fatal error in simulation. See {self.logging_file} for details.")
                         output_error = True
                     if output_error:
                         self.logger.error(f"Excerpt: {line}")
@@ -152,7 +155,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 for line in f.read().splitlines():
                     if (" ABORT " in line or "FATAL[" in line) and not output_error:
                         output_error = True
-                        self.logger.critical(f"Fatal error in simulation. See {sim_log_dir}/{file} for details.")
+                        self.logger.critical(f"Fatal error in simulation. See {self.sim_log_dir}/{file} for details.")
                     if output_error:
                         self.logger.error(f"Excerpt: {line}")
             if output_error:
@@ -171,8 +174,31 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 chown_dir(self.output_dir)
+            self.output = {
+                "name": self.name,
+                "output_dir": self.output_dir,
+                "types": self.get_types(), # TODO: Also useful to add number of SN using ricks new info in log
+            }
             return Task.FINISHED_GOOD
         return 0  # TODO: Update to num jobs
+
+    def get_types(self):
+        types = {}
+        sim_config_dir = os.path.abspath(os.path.join(self.output_dir, os.pardir))
+        self.logger.debug(f"Searching {sim_config_dir} for types")
+        for f in [f for f in os.listdir(sim_config_dir) if f.endswith(".input")]:
+            path = os.path.join(sim_config_dir, f)
+            name = f.split(".")[0]
+            with open(path, "r") as file:
+                for line in file.readlines():
+                    if line.startswith("GENTYPE"):
+                        number = "1" + "%02d" % int(line.split(":")[1].strip())
+                        types[number] = name
+                        break
+        sorted_types = collections.OrderedDict(sorted(types.items()))
+        self.logger.info(f"Types found: {json.dumps(sorted_types)}")
+        return sorted_types
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
