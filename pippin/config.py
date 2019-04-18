@@ -48,7 +48,7 @@ def get_output_loc(path):
 def get_hash(input_string):
     return hashlib.sha256(input_string.encode('utf-8')).hexdigest()
 
-
+@singleton
 def get_logger():
     return logging.getLogger("pippin")
 

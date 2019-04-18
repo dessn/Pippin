@@ -45,3 +45,8 @@ class ToyClassifier(Classifier):
 
     def predict(self):
         return self.classify()
+
+    @staticmethod
+    def get_requirements(config):
+        # Does not need simulations, does not light curve fits
+        return False, True
