@@ -143,7 +143,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
     def check_completion(self):
         if os.path.exists(self.done_file):
-            self.logger.info("Batch job finished")
+            self.logger.info("Job complete")
 
             new_pred_file = self.output_dir + "/predictions.csv"
             new_model_file = self.output_dir + "/model.pt"
