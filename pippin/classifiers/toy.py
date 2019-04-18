@@ -11,6 +11,7 @@ class ToyClassifier(Classifier):
         super().__init__(name, output_dir, dependencies,  mode, options)
         self.output_file = None
         self.passed = False
+        self.num_jobs = 1  # This is the default. Can get this from options if needed.
 
     def classify(self):
         mkdirs(self.output_dir)
