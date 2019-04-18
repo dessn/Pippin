@@ -33,6 +33,8 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
 
+        self.output["sim_version"] = self.genversion
+
     def write_input(self):
         self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
@@ -175,9 +177,6 @@ class SNANASimulation(ConfigBasedExecutable):
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 chown_dir(self.output_dir)
             self.output = {
-                "name": self.name,
-                "output_dir": self.output_dir,
-                "sim_version": self.genversion,
                 "photometry_dir": sim_folder_endpoint,
                 "types": self.get_types(), # TODO: Also useful to add number of SN using ricks new info in log
             }

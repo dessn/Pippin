@@ -7,14 +7,17 @@ class Task(ABC):
     FINISHED_GOOD = -1
     FINISHED_CRASH = -9
 
-    def __init__(self, name, output_dir):
+    def __init__(self, name, output_dir, dependencies):
         self.logger = get_logger()
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
-        self.dependencies = []
+        self.dependencies = dependencies
         self.hash = None
-        self.output = {}
+        self.output = {
+            "name": name,
+            "output_dir": output_dir
+        }
         self.hash_file = f"{self.output_dir}/hash.txt"
         mkdirs(self.output_dir)
 

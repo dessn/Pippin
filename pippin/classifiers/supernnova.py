@@ -14,8 +14,8 @@ class SuperNNovaClassifier(Classifier):
     def get_requirements(options):
         return True, not options.get("USE_PHOTOMETRY", False)
 
-    def __init__(self, name, output_dir, mode, options):
-        super().__init__(name, output_dir, mode, options)
+    def __init__(self, name, output_dir, dependencies, mode, options):
+        super().__init__(name, output_dir, dependencies, mode, options)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
@@ -156,13 +156,11 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
                         self.logger.info(f"Predictions file can be found at {new_pred_file}")
                 chown_dir(self.output_dir)
 
-            self.output = {
-                "name": self.name,
+            self.output.update({
                 "model_filename": new_model_file,
                 "predictions_filename": new_pred_file,
                 "prob_column_name": self.get_prob_column_name(),
-                "output_dir": self.output_dir
-            }
+            })
             return Task.FINISHED_GOOD
         else:
             num_jobs = int(subprocess.check_output(f"squeue -h -u $USER -o '%.70j' | grep {self.job_base_name} | wc -l", shell=True))

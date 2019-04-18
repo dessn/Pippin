@@ -13,7 +13,7 @@ from pippin.task import Task
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, config, global_config):
+    def __init__(self, name, output_dir, sim_task, config, global_config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
 
         self.config = config
@@ -24,10 +24,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.base_file = self.data_dir + base
         self.fitopts_file = self.data_dir + fitopts
 
-        super().__init__(name, output_dir, self.base_file, "=")
+        super().__init__(name, output_dir, [sim_task], self.base_file, "=")
 
-        sim_output = self.get_sim_dependency()
-        self.sim_version = sim_output["sim_version"]
+        self.sim_version = sim_task.output["sim_version"]
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
         self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
@@ -38,6 +37,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
         self.log_files = [self.logging_file, secondary_log]
+
+        self.output["fitres_dir"] = self.fitres_dir,
+        self.output["nml_file"] = self.config_path,
 
     def get_sim_dependency(self):
         for t in self.dependencies:
@@ -153,13 +155,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 chown_dir(self.output_dir)
                 self.print_stats()
 
-            self.output = {
-                "name": self.name,
-                "output_dir": self.output_dir,
-                "fitres_dir": self.fitres_dir,
-                "nml_file": self.config_path,
-                "fitres_file": os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES.gz"))  # TODO: Ask rick if there
-            }
+            self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES.gz"))  # TODO: Ask rick if there
             return Task.FINISHED_GOOD
         return 0
 

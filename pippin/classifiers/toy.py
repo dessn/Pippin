@@ -7,8 +7,8 @@ from pippin.task import Task
 
 class ToyClassifier(Classifier):
 
-    def __init__(self, name, output_dir, mode, options):
-        super().__init__(name, output_dir,  mode, options)
+    def __init__(self, name, output_dir, dependencies, mode, options):
+        super().__init__(name, output_dir, dependencies,  mode, options)
         self.output_file = None
         self.passed = False
 
@@ -35,11 +35,9 @@ class ToyClassifier(Classifier):
         return True
 
     def check_completion(self):
-        self.output = {
-            "name": self.name,
-            "output_dir": self.output_dir,
+        self.output.update({
             "predictions_filename": self.output_file
-        }
+        })
         return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
 
     def train(self):

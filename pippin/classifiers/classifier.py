@@ -9,8 +9,8 @@ class Classifier(Task):
     TRAIN = 0
     PREDICT = 1
 
-    def __init__(self, name, output_dir, mode, options):
-        super().__init__(name, output_dir)
+    def __init__(self, name, output_dir, dependencies, mode, options):
+        super().__init__(name, output_dir, dependencies)
         self.options = options
         self.mode = mode
 

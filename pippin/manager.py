@@ -53,9 +53,8 @@ class Manager:
             for sim in sim_tasks:
                 if fit_config.get("MASK") is None or fit_config.get("MASK") in sim.name:
                     fit_output_dir = self._get_lc_output_dir(sim.name, fit_name)
-                    f = SNANALightCurveFit(fit_name, fit_output_dir, f"{self.prefix}_{sim.name}", fit_config, self.global_config)
+                    f = SNANALightCurveFit(fit_name, fit_output_dir, sim, f"{self.prefix}_{sim.name}", fit_config, self.global_config)
                     self.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
-                    f.add_dependency(sim)
                     tasks.append(f)
         return tasks
 
@@ -91,19 +90,22 @@ class Manager:
                     continue
                 if fit_name is not None and mask not in fit_name:
                     continue
-                clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
-                cc = cls(clas_name, clas_output_dir, mode, options)
-                self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                deps = []
                 if s is not None:
-                    cc.add_dependency(s)
+                    deps.append(s)
                 if l is not None:
-                    cc.add_dependency(l)
+                    deps.append(l)
 
                 model = options.get("MODEL")
                 if model is not None:
                     for t in tasks:
                         if model == t.name:
-                            cc.add_dependency(t)
+                            deps.append(t)
+
+                clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
+                cc = cls(clas_name, clas_output_dir, deps, mode, options)
+                self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+
                 tasks.append(cc)
         return tasks
 
