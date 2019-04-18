@@ -70,11 +70,11 @@ if __name__ == "__main__":
     manager.execute()
     logger.info("")
     ws = message_store.get_warnings()
-    logger.info(f"{len(ws)} warnings:")
+    logger.info(f"{len(ws)} warnings")
     for w in ws:
         logger.info(f"\t{w.message}")
     ws = message_store.get_errors()
-    logger.info(f"{len(ws)} warnings:")
+    logger.info(f"{len(ws)} errors")
     for w in ws:
         logger.info(f"\t{w.message}")
 

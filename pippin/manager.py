@@ -176,7 +176,7 @@ class Manager:
                     break
 
             if small_wait:
-                time.sleep(1)
+                time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
         self.logger.info("")
