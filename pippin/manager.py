@@ -133,8 +133,6 @@ class Manager:
         blocked_tasks = []
 
         while self.tasks or running_tasks:
-            print(self.tasks, running_tasks)
-
             # Check status of current jobs
             for t in running_tasks:
                 result = t.check_completion()
