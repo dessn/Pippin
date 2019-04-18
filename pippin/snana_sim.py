@@ -15,7 +15,7 @@ from pippin.task import Task
 class SNANASimulation(ConfigBasedExecutable):
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        super().__init__(name, output_dir, [], self.data_dir + combine, ":")
+        super().__init__(name, output_dir, self.data_dir + combine, ":")
 
         self.genversion = genversion
         self.config = config
