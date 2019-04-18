@@ -12,7 +12,7 @@ class MessageStore(logging.Handler):
     store = None
 
     def __init__(self, *args, **kwargs):
-        super(MsgCounterHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.store = {}
 
     def emit(self, record):
