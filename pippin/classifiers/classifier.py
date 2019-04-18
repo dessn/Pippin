@@ -1,6 +1,4 @@
-from abc import abstractmethod, ABC
-
-import logging
+from abc import abstractmethod
 
 from pippin.task import Task
 
@@ -33,3 +31,6 @@ class Classifier(Task):
             return self.train()
         elif self.mode == Classifier.PREDICT:
             return self.predict()
+
+    def get_prob_column_name(self):
+        return f"PROB_{self.name}"

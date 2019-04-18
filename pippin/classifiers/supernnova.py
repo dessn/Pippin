@@ -159,6 +159,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             with open(predictions, "rb") as f:
                 dataframe = pickle.load(f)
                 final_dataframe = dataframe[["SNID", "all_class0"]]
+                final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()}, inplace=True)
                 final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")
                 self.logger.info(f"Predictions file can be found at {new_pred_file}")
 
