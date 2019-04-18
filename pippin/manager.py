@@ -53,7 +53,7 @@ class Manager:
             for sim in sim_tasks:
                 if fit_config.get("MASK") is None or fit_config.get("MASK") in sim.name:
                     fit_output_dir = self._get_lc_output_dir(sim.name, fit_name)
-                    f = SNANALightCurveFit(fit_name, fit_output_dir, sim, f"{self.prefix}_{sim.name}", fit_config, self.global_config)
+                    f = SNANALightCurveFit(fit_name, fit_output_dir, sim, fit_config, self.global_config)
                     self.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
         return tasks
