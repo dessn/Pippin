@@ -22,10 +22,10 @@ class MessageStore(logging.Handler):
         self.store[l].append(record)
 
     def get_warnings(self):
-        return self.store["WARNING"]
+        return self.store.get("WARNING", [])
 
     def get_errors(self):
-        return self.store["CRITICAL"] + self.store["ERROR"]
+        return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
 if __name__ == "__main__":
@@ -69,7 +69,6 @@ if __name__ == "__main__":
     manager = Manager(config_filename, config)
     manager.execute()
     logger.info("")
-    print(message_store.store)
     ws = message_store.get_warnings()
     logger.info(f"{len(ws)} warnings:")
     for w in ws:
