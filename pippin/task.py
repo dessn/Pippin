@@ -18,11 +18,12 @@ class Task(ABC):
         self.hash_file = f"{self.output_dir}/hash.txt"
         mkdirs(self.output_dir)
 
-    def get_old_hash(self):
+    def get_old_hash(self, quiet=False):
         if os.path.exists(self.hash_file):
             with open(self.hash_file, "r") as f:
                 old_hash = f.read().strip()
-                self.logger.debug(f"Previous result found, hash is {old_hash}")
+                if not quiet:
+                    self.logger.debug(f"Previous result found, hash is {old_hash}")
                 return old_hash
         else:
             self.logger.debug("No hash found")
@@ -37,7 +38,7 @@ class Task(ABC):
         return new_hash
 
     def get_hash_from_string(self, string_to_hash):
-        hashes = sorted([dep.get_old_hash() for dep in self.dependencies])
+        hashes = sorted([dep.get_old_hash(quiet=True) for dep in self.dependencies])
         string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash} from string and dependencies")
