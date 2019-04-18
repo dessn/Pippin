@@ -1,7 +1,3 @@
-import os
-from abc import ABC, abstractmethod
-
-from pippin.config import get_logger, mkdirs
 from pippin.task import Task
 
 
