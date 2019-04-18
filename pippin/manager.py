@@ -175,7 +175,7 @@ class Manager:
         self.logger.info("Successfully completed tasks:")
         for t in done_tasks:
             self.logger.info(f"\t{t}")
-        if not done_tasks
+        if not done_tasks:
             self.logger.info("\tNo successful tasks")
         self.logger.info("Failed Tasks:")
         for t in failed_tasks:
