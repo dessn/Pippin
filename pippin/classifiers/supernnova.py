@@ -89,11 +89,14 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
         types = self.get_types()
         str_types = json.dumps(types)
+        light_curve_dir = self.get_simulation_dependency()["photometry_dir"]
+        fit = self.get_fit_dependency()
+        fit_dir = "" if fit is None else ["fitres_dir"]
         format_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
-            "photometry_dir": self.light_curve_dir,
-            "fit_dir": self.fit_dir,
+            "photometry_dir": light_curve_dir,
+            "fit_dir": fit_dir,
             "path_to_classifier": self.path_to_classifier,
             "job_name": self.job_base_name,
             "command": "--train_rnn" if training else "--validate_rnn",

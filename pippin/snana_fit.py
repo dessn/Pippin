@@ -7,12 +7,13 @@ import time
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash, chown_dir, mkdirs
+from pippin.config import chown_dir, mkdirs
+from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, sim_version, config, global_config):
+    def __init__(self, name, output_dir, config, global_config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
 
         self.config = config
@@ -25,7 +26,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         super().__init__(name, output_dir, self.base_file, "=")
 
-        self.sim_version = sim_version
+        sim_output = self.get_sim_dependency()
+        self.sim_version = sim_output["sim_version"]
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
         self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
@@ -36,6 +38,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
         self.log_files = [self.logging_file, secondary_log]
+
+    def get_sim_dependency(self):
+        for t in self.dependencies:
+            if isinstance(t, SNANASimulation):
+                return t.output
+        return None
 
     def print_stats(self):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]

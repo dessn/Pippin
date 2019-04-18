@@ -165,10 +165,10 @@ class SNANASimulation(ConfigBasedExecutable):
                 return Task.FINISHED_CRASH
 
         # Check to see if the done file exists
+        sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
             sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-            sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
             if not os.path.exists(sim_folder_endpoint):
                 self.logger.info("Done file found, creating symlinks")
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
@@ -177,6 +177,8 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output = {
                 "name": self.name,
                 "output_dir": self.output_dir,
+                "sim_version": self.genversion,
+                "photometry_dir": sim_folder_endpoint,
                 "types": self.get_types(), # TODO: Also useful to add number of SN using ricks new info in log
             }
             return Task.FINISHED_GOOD

@@ -92,7 +92,7 @@ class Manager:
                 if fit_name is not None and mask not in fit_name:
                     continue
                 clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
-                cc = cls(clas_name, self._get_phot_output_dir(sim_name), self._get_lc_output_dir(sim_name, fit_name) + f"/output/{self.prefix}_{sim_name}", clas_output_dir, mode, options)
+                cc = cls(clas_name, clas_output_dir, mode, options)
                 self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                 if s is not None:
                     cc.add_dependency(s)
