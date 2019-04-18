@@ -28,14 +28,14 @@ CLASSIFICATION:
   SNNTRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train # train or predict
-    MASK: TRAININGSIM
+    MASK: TRAINING
     OPTS:
       USE_PHOTOMETRY: True
 
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict # train or predict
-    MASK: TESTSIM
+    MASK: TEST
     OPTS:
       USE_PHOTOMETRY: True
       MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load
@@ -43,7 +43,7 @@ CLASSIFICATION:
   RANDOTEST:
     CLASSIFIER: ToyClassifier
     MODE: predict
-    MASK: TESTSIM
+    MASK: TEST
 
 AGGREGATION:
   AGG:

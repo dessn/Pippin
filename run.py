@@ -7,6 +7,27 @@ import logging
 from pippin.config import get_config, mkdirs, get_logger
 from pippin.manager import Manager
 
+
+class MessageStore(logging.Handler):
+    store = None
+
+    def __init__(self, *args, **kwargs):
+        super(MsgCounterHandler, self).__init__(*args, **kwargs)
+        self.store = {}
+
+    def emit(self, record):
+        l = record.levelname
+        if l not in self.store:
+            self.store[l] = []
+        self.store[l].append(record)
+
+    def get_warnings(self):
+        return self.store["WARNING"]
+
+    def get_errors(self):
+        return self.store["CRITICAL"] + self.store["ERROR"]
+
+
 if __name__ == "__main__":
     # Set up command line arguments
     parser = argparse.ArgumentParser()
@@ -25,12 +46,14 @@ if __name__ == "__main__":
 
     # Initialise logging
     #         format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s",
+    message_store = MessageStore()
     logging.basicConfig(
         level=level,
         format="[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s",
         handlers=[
             logging.FileHandler(logging_filename),
-            logging.StreamHandler()
+            logging.StreamHandler(),
+            message_store,
         ]
     )
 
@@ -45,4 +68,13 @@ if __name__ == "__main__":
 
     manager = Manager(config_filename, config)
     manager.execute()
+    logger.info("")
+    ws = message_store.get_warnings()
+    logger.info(f"{len(ws)} warnings:")
+    for w in ws:
+        logger.info(f"\t{w.message}")
+    ws = message_store.get_errors()
+    logger.info(f"{len(ws)} warnings:")
+    for w in ws:
+        logger.info(f"\t{w.message}")
 

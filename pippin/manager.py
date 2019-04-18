@@ -176,10 +176,8 @@ class Manager:
                     break
 
             if small_wait:
-                self.logger.debug("Small sleep")
                 time.sleep(1)
             else:
-                self.logger.debug("Waiting")
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
         self.logger.info("")
         self.logger.info("All tasks finished. Task summary as follows.")
