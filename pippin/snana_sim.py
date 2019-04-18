@@ -3,11 +3,10 @@ import inspect
 import logging
 import shutil
 import subprocess
-import time
 import tempfile
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import get_hash, chown_dir, copytree, mkdirs
+from pippin.config import chown_dir, copytree, mkdirs
 from pippin.task import Task
 
 
@@ -29,7 +28,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_num_jobs(2 * value)
 
         self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
-        self.done_file = f"{self.sim_log_dir}/SIMJOB_ALL.DONE"
+        self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
 
     def write_input(self):

@@ -31,7 +31,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_num_jobs(int(config.get("NUM_JOBS", 100)))
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
-        self.done_file = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT.tar.gz"
+        self.done_file = f"{self.output_dir}/FINISHED.DONE"
         secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
         self.log_files = [self.logging_file, secondary_log]
