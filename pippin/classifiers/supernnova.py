@@ -70,7 +70,6 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
     def get_types(self):
         t = self.get_simulation_dependency()
-        print("AAAA ", t)
         return t["types"]
 
     def classify(self, training):
@@ -82,7 +81,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             for t in self.dependencies:
                 if model == t.name:
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model']}")
-                    model = t.output["model"]
+                    model = t.output["model_filename"]
 
             model_path = get_output_loc(model)
             self.logger.debug(f"Looking for model in {model_path}")
