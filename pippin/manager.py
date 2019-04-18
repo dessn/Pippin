@@ -204,6 +204,7 @@ class Manager:
         sim_name = "" if sim_name is None else "_" + sim_name
         return f"{self.output_dir}/2_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
 
+
 if __name__ == "__main__":
     import logging
     import yaml

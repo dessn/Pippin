@@ -39,7 +39,7 @@ source activate {conda_env}
 module load cuda
 echo `which python`
 cd {path_to_classifier}
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} --fits_dir {fit_dir} {phot} {test_or_train}
+python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {test_or_train}
 python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {model} {phot} {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
@@ -70,6 +70,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
     def get_types(self):
         t = self.get_simulation_dependency()
+        print("AAAA ", t)
         return t["types"]
 
     def classify(self, training):
@@ -91,7 +92,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         str_types = json.dumps(types)
         light_curve_dir = self.get_simulation_dependency()["photometry_dir"]
         fit = self.get_fit_dependency()
-        fit_dir = "" if fit is None else ["fitres_dir"]
+        fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dir']}"
         format_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
