@@ -170,6 +170,23 @@ class Manager:
                 time.sleep(1)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+        self.logger.info("")
+        self.logger.info("All tasks finished. Task summary as follows.")
+        self.logger.info("Successfully completed tasks:")
+        for t in done_tasks:
+            self.logger.info(f"\t{t}")
+        else:
+            self.logger.info("\tNo successful tasks")
+        self.logger.info("Failed Tasks:")
+        for t in failed_tasks:
+            self.logger.info(f"\t{t}")
+        else:
+            self.logger.info("\tNo failed tasks")
+        self.logger.info("Blocked Tasks:")
+        for t in blocked_tasks:
+            self.logger.info(f"\t{t}")
+        else:
+            self.logger.info("\tNo blocked tasks")
 
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"
