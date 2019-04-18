@@ -80,7 +80,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
             for t in self.dependencies:
                 if model == t.name:
-                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model']}")
+                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
 
             model_path = get_output_loc(model)
@@ -138,6 +138,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             new_model_file = self.output_dir + "/model.pt"
 
             if not os.path.exists(new_pred_file) or not os.path.exists(new_model_file):
+                self.logger.info("Updating model location or generating predictions file")
                 model, predictions = self.get_model_and_pred()
 
                 if not os.path.exists(new_model_file):
