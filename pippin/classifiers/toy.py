@@ -29,7 +29,7 @@ class ToyClassifier(Classifier):
 
         self.output_file = self.output_dir + "/predictions.csv"
         self.logger.info(f"Saving probabilities to {self.output_file}")
-        df.to_csv(self.output_file, index=False, float_fmt="%0.4f")
+        df.to_csv(self.output_file, index=False, float_format="%0.4f")
         chown_dir(self.output_dir)
         self.passed = True
         return True
