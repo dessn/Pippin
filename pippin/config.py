@@ -54,8 +54,9 @@ def get_logger():
 
 
 def mkdirs(path):
-    os.makedirs(path, exist_ok=True, mode=0o775)
-    chown_dir(path)
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True, mode=0o775)
+        chown_dir(path)
 
 
 def copytree(src, dst, symlinks=False, ignore=None):
@@ -88,19 +89,19 @@ def chown_dir(directory):
     try:
         shutil.chown(directory, group=global_config["SNANA"]["group"])
     except Exception as e:
-        logger.warning(str(e))
+        logger.debug(str(e))
         return
     for root, dirs, files in os.walk(directory):
         for d in dirs:
             try:
                 shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
             except Exception:
-                logger.warning(f"Chown error: {os.path.join(root, d)}")
+                logger.debug(f"Chown error: {os.path.join(root, d)}")
         for f in files:
             try:
                 shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
             except Exception:
-                logger.warning(f"Chown error: {os.path.join(root, f)}")
+                logger.debug(f"Chown error: {os.path.join(root, f)}")
 
 
 if __name__ == "__main__":
