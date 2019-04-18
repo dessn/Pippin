@@ -74,6 +74,7 @@ class Manager:
                 mode = Classifier.PREDICT
 
             needs_sim, needs_lc = cls.get_requirements(options)
+            print(name, needs_sim, needs_lc)
             runs = []
             if needs_sim and needs_lc:
                 runs = [(l.dependencies[0], l) for l in lcfit_tasks]
@@ -81,7 +82,8 @@ class Manager:
                 runs = [(s, None) for s in sim_tasks]
             elif needs_lc:
                 runs = [(None, l) for l in lcfit_tasks]
-
+            else:
+                self.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
