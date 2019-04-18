@@ -74,7 +74,7 @@ class Manager:
                 mode = Classifier.PREDICT
 
             needs_sim, needs_lc = cls.get_requirements(options)
-            print(name, needs_sim, needs_lc)
+
             runs = []
             if needs_sim and needs_lc:
                 runs = [(l.dependencies[0], l) for l in lcfit_tasks]
@@ -84,6 +84,7 @@ class Manager:
                 runs = [(None, l) for l in lcfit_tasks]
             else:
                 self.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
+
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
@@ -171,8 +172,10 @@ class Manager:
                     break
 
             if submitted:
+                self.logger.debug("Small sleep")
                 time.sleep(1)
             else:
+                self.logger.debug("Waiting")
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
         self.logger.info("")
         self.logger.info("All tasks finished. Task summary as follows.")
