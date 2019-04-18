@@ -141,6 +141,7 @@ class Manager:
         blocked_tasks = []
 
         while self.tasks or running_tasks:
+            small_wait = False
             # Check status of current jobs
             for t in running_tasks:
                 result = t.check_completion()
@@ -158,8 +159,8 @@ class Manager:
                             if t in t2.dependencies:
                                 self.tasks.remove(t2)
                                 blocked_tasks.append(t2)
+                    small_wait = True
 
-            submitted = False
             # Submit new jobs if needed
             num_running = self.get_num_running_jobs()
             while num_running < self.max_jobs:
@@ -170,11 +171,11 @@ class Manager:
                     num_running += t.num_jobs
                     self.logger.info("")
                     t.run()
-                    submitted = True
+                    small_wait = True
                 else:
                     break
 
-            if submitted:
+            if small_wait:
                 self.logger.debug("Small sleep")
                 time.sleep(1)
             else:
