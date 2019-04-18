@@ -69,6 +69,7 @@ if __name__ == "__main__":
     manager = Manager(config_filename, config)
     manager.execute()
     logger.info("")
+    print(message_store.store)
     ws = message_store.get_warnings()
     logger.info(f"{len(ws)} warnings:")
     for w in ws:

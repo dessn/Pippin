@@ -38,8 +38,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.log_files = [self.logging_file, secondary_log]
 
-        self.output["fitres_dir"] = self.fitres_dir,
-        self.output["nml_file"] = self.config_path,
+        self.output["fitres_dir"] = self.fitres_dir
+        self.output["nml_file"] = self.config_path
 
     def get_sim_dependency(self):
         for t in self.dependencies:
