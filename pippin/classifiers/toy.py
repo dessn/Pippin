@@ -49,5 +49,5 @@ class ToyClassifier(Classifier):
 
     @staticmethod
     def get_requirements(config):
-        # Does not need simulations, does not light curve fits
+        # Does not need simulations, does light curve fits
         return False, True
