@@ -40,7 +40,7 @@ class Aggregator(Task):
                 dataframe = pd.read_csv(f)
                 col = dataframe.columns[0]
                 if df is None:
-                    df = df.rename(columns={col: self.id})
+                    df = dataframe.rename(columns={col: self.id})
                     self.logger.debug(f"Merging on column {self.id}")
                 else:
                     df = pd.merge(df, dataframe, left_on=self.id, right_on=col)  # Inner join atm, should I make this outer?
