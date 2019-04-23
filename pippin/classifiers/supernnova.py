@@ -125,7 +125,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             with open(slurm_output_file, "w") as f:
                 f.write(slurm_text)
 
-            self.logger.info("Submitting batch job to train SuperNNova")
+            self.logger.info(f"Submitting batch job to {'train' if training else 'predict using'} SuperNNova")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
 
         return True

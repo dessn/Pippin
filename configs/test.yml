@@ -6,8 +6,8 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 3.0
     GLOBAL:
-      NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 0.5
+      RANSEED_REPEAT: 20 12345
 
   TESTSIM:
     IA_C11:
@@ -17,8 +17,8 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 0.5
+      RANSEED_REPEAT: 20 12345
 
 LCFIT:
   TESTFIT:

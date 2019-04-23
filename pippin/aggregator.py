@@ -125,12 +125,14 @@ class Aggregator(Task):
         bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
         columns = [c for c in df.columns if "PROB_" in c]
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(5, 4))
         for c in columns:
             actual_prob, _, _ = binned_statistic(df[c], df["IA"].astype(np.float), bins=prob_bins, statistic="mean")
-            ax.hist(bin_center, weights=actual_prob, label=c, bins=prob_bins, histtype="step")
-
+            ax.scatter(bin_center, actual_prob, s=20, label=c)
+        ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
         ax.legend(loc=4, frameon=False)
+        ax.set_xlabel("Reported confidence")
+        ax.set_ylabel("Actual chance of being Ia")
         plt.show()
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_prob_acc.png")
