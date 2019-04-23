@@ -22,13 +22,14 @@ class Aggregator(Task):
 
         if new_hash != old_hash:
             self.logger.info("Hash check failed, regenerating")
-            return True
+            return new_hash
         else:
             self.logger.info("Hash check passed, not rerunning")
             return False
 
     def run(self):
-        if self.check_regenerate():
+        new_hash = self.check_regenerate()
+        if new_hash:
             mkdirs(self.output_dirt)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
 
@@ -46,6 +47,7 @@ class Aggregator(Task):
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
             self.logger.debug(f"Saving merged dataframe to {self.output_df}")
+            self.save_new_hash(new_hash)
 
         self.output["merge_predictions_filename"] = self.output_df
         self.passed = True

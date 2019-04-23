@@ -13,25 +13,42 @@ class FitProbClassifier(Classifier):
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
 
-    def classify(self):
-        mkdirs(self.output_dir)
+    def check_regenerate(self):
 
-        input = self.get_fit_dependency()
-        fitres_file = input["fitres_file"]
-        self.logger.debug(f"Looking for {fitres_file}")
-        if not os.path.exists(fitres_file):
-            self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
-            self.passed = False
+        new_hash = self.get_hash_from_string(self.name)
+        old_hash = self.get_old_hash(quiet=True)
+
+        if new_hash != old_hash:
+            self.logger.info("Hash check failed, regenerating")
+            return True
+        else:
+            self.logger.info("Hash check passed, not rerunning")
             return False
 
-        df = pd.read_csv(fitres_file, sep='\s+', comment="#", compression="infer")
-        df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
+    def classify(self):
+        new_hash = self.check_regenerate()
+        if new_hash:
+            mkdirs(self.output_dir)
 
-        self.output_file = self.output_dir + "/predictions.csv"
-        self.logger.info(f"Saving probabilities to {self.output_file}")
-        df.to_csv(self.output_file, index=False, float_format="%0.4f")
-        chown_dir(self.output_dir)
+            input = self.get_fit_dependency()
+            fitres_file = input["fitres_file"]
+            self.logger.debug(f"Looking for {fitres_file}")
+            if not os.path.exists(fitres_file):
+                self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
+                self.passed = False
+                return False
+
+            df = pd.read_csv(fitres_file, sep='\s+', comment="#", compression="infer")
+            df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
+
+            self.output_file = self.output_dir + "/predictions.csv"
+            self.logger.info(f"Saving probabilities to {self.output_file}")
+            df.to_csv(self.output_file, index=False, float_format="%0.4f")
+            self.save_new_hash(new_hash)
+            chown_dir(self.output_dir)
+
         self.passed = True
+
         return True
 
     def check_completion(self):
