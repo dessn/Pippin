@@ -148,7 +148,6 @@ class Aggregator(Task):
             self._plot_prob_acc(df)
 
 
-
 if __name__ == "__main__":
     df = pd.read_csv("merged.csv")
     Aggregator("AGG", "", [], {})._plot(df)
