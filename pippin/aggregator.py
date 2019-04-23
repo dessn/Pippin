@@ -34,10 +34,13 @@ class Aggregator(Task):
 
     def get_underlying_sim_tasks(self):
         tasks = []
-        check = [] + self.dependencies
+        check = []
         for task in self.dependencies:
-            if isinstance(task, SNANALightCurveFit):
-                check += task.dependencies
+            for t in task.dependencies:
+                check.append(t)
+                if isinstance(task, SNANALightCurveFit):
+                    check += task.dependencies
+
         for task in check:
             if isinstance(task, SNANASimulation):
                 tasks.append(task)
