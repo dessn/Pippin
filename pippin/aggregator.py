@@ -1,24 +1,28 @@
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs
+from pippin.snana_fit import SNANALightCurveFit
+from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 import pandas as pd
 import os
+from astropy.io import fits
 
 
 class Aggregator(Task):
-    def __init__(self, name, output_dir, dependencies):
+    def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
         self.id = "SNID"
+        self.options = options
+        self.include_type = bool(options.get("INCLUDE_TYPE", False))
 
     def check_completion(self):
         return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
 
     def check_regenerate(self):
-
-        new_hash = self.get_hash_from_string(self.name)
+        new_hash = self.get_hash_from_string(self.name + str(self.include_type))
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
@@ -27,6 +31,18 @@ class Aggregator(Task):
         else:
             self.logger.info("Hash check passed, not rerunning")
             return False
+
+    def get_underlying_sim_tasks(self):
+        tasks = []
+        check = [] + self.dependencies
+        for task in self.dependencies:
+            if isinstance(task, SNANALightCurveFit):
+                check += task.dependencies
+        for task in check:
+            if isinstance(task, SNANASimulation):
+                tasks.append(task)
+        self.logger.debug(f"Found simulation dependencies: {tasks}")
+        return tasks
 
     def run(self):
         new_hash = self.check_regenerate()
@@ -45,6 +61,26 @@ class Aggregator(Task):
                     self.logger.debug(f"Merging on column {self.id}")
                 else:
                     df = pd.merge(df, dataframe, on=self.id)  # Inner join atm, should I make this outer?
+
+            if self.include_type:
+                self.logger.info("Finding original types")
+                sim_tasks = self.get_underlying_sim_tasks()
+                type_df = None
+                for s in sim_tasks:
+                    phot_dir = s.output["photometry_dir"]
+                    headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                    for h in headers:
+                        with fits.open(h) as hdul:
+                            data = hdul[1].data
+                            snid = data.field("SNID")
+                            sntype = data.field("SNTYPE")
+                            dataframe = pd.DataFrame({self.id: snid, "SNTYPE": sntype})
+                            if type_df is None:
+                                type_df = dataframe
+                            else:
+                                type_df = pd.concat(type_df, dataframe)
+
+                df = pd.merge(df, type_df, on=self.id)
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
