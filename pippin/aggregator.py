@@ -8,6 +8,7 @@ import os
 from astropy.io import fits
 import numpy as np
 
+
 class Aggregator(Task):
     def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
