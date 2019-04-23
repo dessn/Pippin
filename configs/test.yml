@@ -49,4 +49,4 @@ AGGREGATION:
   AGG:
     MASK: TEST
     OPTS:
-      INCLUDE_TYPE: False
+      INCLUDE_TYPE: True

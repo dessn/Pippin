@@ -46,6 +46,8 @@ class Aggregator(Task):
             if isinstance(task, SNANASimulation):
                 tasks.append(task)
         self.logger.debug(f"Found simulation dependencies: {tasks}")
+
+        tasks = list(set(tasks))
         return tasks
 
     def run(self):
