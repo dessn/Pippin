@@ -11,6 +11,7 @@ class Aggregator(Task):
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
+        self.id = "SNID"
 
     def check_completion(self):
         return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
@@ -34,16 +35,15 @@ class Aggregator(Task):
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
 
             df = None
-            col = "CID"
+
             for f in prediction_files:
                 dataframe = pd.read_csv(f)
+                col = dataframe.columns[0]
                 if df is None:
-                    df = dataframe
-                    col = dataframe.columns[0]
-                    self.logger.debug(f"Merging on column {col}")
+                    df = df.rename(columns={col: self.id})
+                    self.logger.debug(f"Merging on column {self.id}")
                 else:
-                    print(df.columns, dataframe.columns)
-                    df = pd.merge(df, dataframe, on=col)  # Inner join atm, should I make this outer?
+                    df = pd.merge(df, dataframe, left_on=self.id, right_on=col)  # Inner join atm, should I make this outer?
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
@@ -51,5 +51,6 @@ class Aggregator(Task):
             self.save_new_hash(new_hash)
 
         self.output["merge_predictions_filename"] = self.output_df
+        self.output["sn_column_name"] = self.id
         self.passed = True
         return True
