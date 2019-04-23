@@ -39,11 +39,12 @@ class Aggregator(Task):
             for f in prediction_files:
                 dataframe = pd.read_csv(f)
                 col = dataframe.columns[0]
+                dataframe = dataframe.rename(columns={col: self.id})
                 if df is None:
-                    df = dataframe.rename(columns={col: self.id})
+                    df = dataframe
                     self.logger.debug(f"Merging on column {self.id}")
                 else:
-                    df = pd.merge(df, dataframe, left_on=self.id, right_on=col)  # Inner join atm, should I make this outer?
+                    df = pd.merge(df, dataframe, on=self.id)  # Inner join atm, should I make this outer?
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
