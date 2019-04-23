@@ -81,7 +81,7 @@ class Aggregator(Task):
                             if type_df is None:
                                 type_df = dataframe
                             else:
-                                type_df = pd.concat(type_df, dataframe)
+                                type_df = pd.concat([type_df, dataframe])
 
                 df = pd.merge(df, type_df, on=self.id)
 
