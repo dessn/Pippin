@@ -82,7 +82,8 @@ class Aggregator(Task):
                                 type_df = dataframe
                             else:
                                 type_df = pd.concat([type_df, dataframe])
-
+                print(df.columns, df.dtypes)
+                print(type_df.columns, type_df.dtypes)
                 df = pd.merge(df, type_df, on=self.id)
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
