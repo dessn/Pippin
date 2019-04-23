@@ -83,7 +83,7 @@ class Manager:
             elif needs_sim:
                 runs = [(s, None) for s in sim_tasks]
             elif needs_lc:
-                runs = [(None, l) for l in lcfit_tasks]
+                runs = [(l.dependencies[0], l) for l in lcfit_tasks]
             else:
                 self.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 
