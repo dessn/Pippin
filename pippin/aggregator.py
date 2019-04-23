@@ -30,7 +30,7 @@ class Aggregator(Task):
     def run(self):
         new_hash = self.check_regenerate()
         if new_hash:
-            mkdirs(self.output_dirt)
+            mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
 
             df = None
