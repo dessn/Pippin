@@ -186,6 +186,7 @@ class Manager:
                     running_tasks.append(t)
                     num_running += t.num_jobs
                     self.logger.info("")
+                    self.logger.info(f"RUNNING: {t}")
                     t.run()
                     small_wait = True
                 else:

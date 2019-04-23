@@ -40,7 +40,7 @@ CLASSIFICATION:
       USE_PHOTOMETRY: True
       MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load
 
-  FITPROB:
+  FITPROBTEST:
     CLASSIFIER: FitProbClassifier
     MODE: predict
     MASK: TEST
