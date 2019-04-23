@@ -5,7 +5,7 @@ from pippin.config import chown_dir, mkdirs
 from pippin.task import Task
 
 
-class ToyClassifier(Classifier):
+class FitProbClassifier(Classifier):
 
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies,  mode, options)

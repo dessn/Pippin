@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, mkdirs, get_hash
+from pippin.config import get_logger, get_hash
 import os
 
 
@@ -21,7 +21,7 @@ class Task(ABC):
             "output_dir": output_dir
         }
         self.hash_file = f"{self.output_dir}/hash.txt"
-        mkdirs(self.output_dir)
+        # mkdirs(self.output_dir)
 
     def get_old_hash(self, quiet=False):
         if os.path.exists(self.hash_file):

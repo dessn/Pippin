@@ -38,5 +38,5 @@ LCFIT: # Dont change
 #          CUTWIN_NFILT_SNRMAX:  3.0, 99.
 
 CLASSIFICATION: # Dont change this
-  TOY: # Name of the classification step
-    CLASSIFIER: ToyClassifier
+  FITPROB: # Name of the classification step
+    CLASSIFIER: FitProbClassifier

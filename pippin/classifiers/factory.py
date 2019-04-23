@@ -1,7 +1,7 @@
 from pippin.classifiers.argonne import ArgonneClassifier
 from pippin.classifiers.nearest_neighbor import NearestNeighborClassifier
 from pippin.classifiers.supernnova import SuperNNovaClassifier
-from pippin.classifiers.toy import ToyClassifier
+from pippin.classifiers.fitprob import FitProbClassifier
 
 
 class ClassifierFactory:
@@ -15,7 +15,7 @@ class ClassifierFactory:
     def add_factory(cls, classifierClass):
         cls.ids[classifierClass.__name__] = classifierClass
 
-ClassifierFactory.add_factory(ToyClassifier)
+ClassifierFactory.add_factory(FitProbClassifier)
 ClassifierFactory.add_factory(SuperNNovaClassifier)
 ClassifierFactory.add_factory(ArgonneClassifier)
 ClassifierFactory.add_factory(NearestNeighborClassifier)

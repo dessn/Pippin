@@ -1,1 +1,5 @@
 pyyaml
+pandas
+numpy
+scipy
+matplotlib

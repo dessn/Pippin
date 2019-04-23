@@ -3,6 +3,7 @@ import inspect
 import subprocess
 import time
 
+from pippin.aggregator import Aggregator
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
@@ -29,7 +30,8 @@ class Manager:
         sim_tasks = self.get_simulation_tasks(config)
         lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks)
         classification_tasks = self.get_classification_tasks(config, sim_tasks, lcfit_tasks)
-        total_tasks = sim_tasks + lcfit_tasks + classification_tasks
+        aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
+        total_tasks = sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks
         self.logger.info("")
         self.logger.info("Listing tasks:")
         for task in total_tasks:
@@ -113,6 +115,20 @@ class Manager:
                 tasks.append(cc)
             if num_gen == 0:
                 self.logger.error(f"Classifier {name} with mask {mask} matched no combination of sims and fits")
+        return tasks
+
+    def get_aggregator_tasks(self, c, classifier_tasks):
+        tasks = []
+        for agg_name in c.get("AGGREGATION", []):
+            config = c["AGGREGATION"][agg_name]
+            mask = config.get("MASK")
+            deps = [c for c in classifier_tasks if mask is None or mask in c.name]
+            if len(deps) == 0:
+                self.logger.error("Aggregator {agg_name} with mask {mask} matched no classifier tasks")
+            else:
+                a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps)
+                self.logger.info(f"Creating aggregation task {agg_name} with {a.num_jobs}")
+                tasks.append(a)
         return tasks
 
     def get_num_running_jobs(self):
@@ -210,6 +226,9 @@ class Manager:
         fit_name = "" if fit_name is None else "_" + fit_name
         sim_name = "" if sim_name is None else "_" + sim_name
         return f"{self.output_dir}/2_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
+
+    def _get_aggregator_dir(self, agg_name):
+        return f"{self.output_dir}/3_AGG/{self.prefix}_{agg_name}"
 
 
 if __name__ == "__main__":
