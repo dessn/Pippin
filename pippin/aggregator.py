@@ -6,7 +6,7 @@ from pippin.task import Task
 import pandas as pd
 import os
 from astropy.io import fits
-
+import numpy as np
 
 class Aggregator(Task):
     def __init__(self, name, output_dir, dependencies, options):
@@ -75,7 +75,7 @@ class Aggregator(Task):
                     for h in headers:
                         with fits.open(h) as hdul:
                             data = hdul[1].data
-                            snid = data.field("SNID")
+                            snid = data.field("SNID").array.astype(np.int64)
                             sntype = data.field("SNTYPE")
                             dataframe = pd.DataFrame({self.id: snid, "SNTYPE": sntype})
                             if type_df is None:
