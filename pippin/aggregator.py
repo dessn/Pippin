@@ -15,6 +15,7 @@ class Aggregator(Task):
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
         self.id = "SNID"
+        self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
 
@@ -77,13 +78,11 @@ class Aggregator(Task):
                             data = hdul[1].data
                             snid = np.array(data.field("SNID")).astype(np.int64)
                             sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                            dataframe = pd.DataFrame({self.id: snid, "SNTYPE": sntype})
+                            dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
                             if type_df is None:
                                 type_df = dataframe
                             else:
                                 type_df = pd.concat([type_df, dataframe])
-                print(df.columns, df.dtypes)
-                print(type_df.columns, type_df.dtypes)
                 df = pd.merge(df, type_df, on=self.id)
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
@@ -93,5 +92,8 @@ class Aggregator(Task):
 
         self.output["merge_predictions_filename"] = self.output_df
         self.output["sn_column_name"] = self.id
+        if self.include_type:
+            self.output["sn_type_name"] = self.type_name
+
         self.passed = True
         return True
