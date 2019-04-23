@@ -47,7 +47,7 @@ class Aggregator(Task):
                 tasks.append(task)
 
         tasks = list(set(tasks))
-        self.logger.debug(f"Found simulatiless on dependencies: {tasks}")
+        self.logger.debug(f"Found simulation dependencies: {tasks}")
         return tasks
 
     def run(self):
