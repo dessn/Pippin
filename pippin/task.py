@@ -31,7 +31,7 @@ class Task(ABC):
                     self.logger.debug(f"Previous result found, hash is {old_hash}")
                 return old_hash
         else:
-            self.logger.debug("No hash found")
+            self.logger.debug(f"No hash found for {self}")
         return None
 
     def get_hash_from_files(self, output_files):

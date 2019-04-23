@@ -87,6 +87,7 @@ class Manager:
             else:
                 self.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 
+            print("AAAAA", runs)
             num_gen = 0
             mask = config.get("MASK", "")
             for s, l in runs:
