@@ -50,3 +50,4 @@ AGGREGATION:
     MASK: TEST
     OPTS:
       INCLUDE_TYPE: True
+      PLOT: True

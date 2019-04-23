@@ -18,12 +18,13 @@ class Aggregator(Task):
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
+        self.plot = bool(options.get("PLOT", False))
 
     def check_completion(self):
         return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
 
     def check_regenerate(self):
-        new_hash = self.get_hash_from_string(self.name + str(self.include_type))
+        new_hash = self.get_hash_from_string(self.name + str(self.include_type) + str(self.plot))
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
@@ -86,6 +87,8 @@ class Aggregator(Task):
                             else:
                                 type_df = pd.concat([type_df, dataframe])
                 df = pd.merge(df, type_df, on=self.id)
+            if self.plot:
+                self._plot(df)
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
@@ -101,6 +104,7 @@ class Aggregator(Task):
         return True
 
     def _plot_corr(self, df):
+        self.logger.debug("Making prob correlation plot")
         import matplotlib.pyplot as plt
         import seaborn as sb
 
@@ -108,9 +112,12 @@ class Aggregator(Task):
         sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
         plt.show()
         if self.output_dir:
-            fig.savefig(os.path.join(self.output_dir, "plt_corr.png"), transparent=True, dpi=300, bbox_inches="tight")
+            filename = os.path.join(self.output_dir, "plt_corr.png")
+            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
+            self.logger.info(f"Prob corr plot saved to {filename}")
 
     def _plot_prob_acc(self, df):
+        self.logger.debug("Making prob accuracy plot")
         import matplotlib.pyplot as plt
         from scipy.stats import binned_statistic
 
@@ -121,25 +128,27 @@ class Aggregator(Task):
         fig, ax = plt.subplots()
         for c in columns:
             actual_prob, _, _ = binned_statistic(df[c], df["IA"].astype(np.float), bins=prob_bins, statistic="mean")
-            print(actual_prob)
             ax.hist(bin_center, weights=actual_prob, label=c, bins=prob_bins, histtype="step")
 
         ax.legend(loc=4, frameon=False)
         plt.show()
         if self.output_dir:
-            fig.savefig(os.path.join(self.output_dir, "plt_prob_acc.png"), transparent=True, dpi=300, bbox_inches="tight")
+            filename = os.path.join(self.output_dir, "plt_prob_acc.png")
+            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
+            self.logger.info(f"Prob accuracy plot saved to {filename}")
 
-    def plot(self, df):
-        ia = (df["SNTYPE"] == 101) | (df["SNTYPE"] == 1)
-        df["IA"] = ia
-        df = df.drop(["SNID", "SNTYPE"], axis=1)
-
-        self._plot_corr(df)
-        self._plot_prob_acc(df)
-        print(df.head())
+    def _plot(self, df):
+        if self.type_name not in df.columns:
+            self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
+        else:
+            ia = (df["SNTYPE"] == 101) | (df["SNTYPE"] == 1)
+            df["IA"] = ia
+            df = df.drop(["SNID", "SNTYPE"], axis=1)
+            self._plot_corr(df)
+            self._plot_prob_acc(df)
 
 
 
 if __name__ == "__main__":
     df = pd.read_csv("merged.csv")
-    Aggregator("AGG", "", [], {}).plot(df)
+    Aggregator("AGG", "", [], {})._plot(df)
