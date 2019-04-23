@@ -121,12 +121,13 @@ class Manager:
         tasks = []
         for agg_name in c.get("AGGREGATION", []):
             config = c["AGGREGATION"][agg_name]
+            options = config.get("OPTS", {})
             mask = config.get("MASK")
             deps = [c for c in classifier_tasks if mask is None or mask in c.name]
             if len(deps) == 0:
                 self.logger.error("Aggregator {agg_name} with mask {mask} matched no classifier tasks")
             else:
-                a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps)
+                a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps, options)
                 self.logger.info(f"Creating aggregation task {agg_name} with {a.num_jobs}")
                 tasks.append(a)
         return tasks
