@@ -42,6 +42,7 @@ class Aggregator(Task):
                     col = dataframe.columns[0]
                     self.logger.debug(f"Merging on column {col}")
                 else:
+                    print(df.columns, dataframe.columns)
                     df = pd.merge(df, dataframe, on=col)  # Inner join atm, should I make this outer?
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
