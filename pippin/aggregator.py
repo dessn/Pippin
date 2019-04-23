@@ -99,3 +99,47 @@ class Aggregator(Task):
 
         self.passed = True
         return True
+
+    def _plot_corr(self, df):
+        import matplotlib.pyplot as plt
+        import seaborn as sb
+
+        fig, ax = plt.subplots(figsize=(6, 5))
+        sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
+        plt.show()
+        if self.output_dir:
+            fig.savefig(os.path.join(self.output_dir, "plt_corr.png"), transparent=True, dpi=300, bbox_inches="tight")
+
+    def _plot_prob_acc(self, df):
+        import matplotlib.pyplot as plt
+        from scipy.stats import binned_statistic
+
+        prob_bins = np.linspace(0, 1, 11)
+        bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
+        columns = [c for c in df.columns if "PROB_" in c]
+
+        fig, ax = plt.subplots()
+        for c in columns:
+            actual_prob, _, _ = binned_statistic(df[c], df["IA"].astype(np.float), bins=prob_bins, statistic="mean")
+            print(actual_prob)
+            ax.hist(bin_center, weights=actual_prob, label=c, bins=prob_bins, histtype="step")
+
+        ax.legend(loc=4, frameon=False)
+        plt.show()
+        if self.output_dir:
+            fig.savefig(os.path.join(self.output_dir, "plt_prob_acc.png"), transparent=True, dpi=300, bbox_inches="tight")
+
+    def plot(self, df):
+        ia = (df["SNTYPE"] == 101) | (df["SNTYPE"] == 1)
+        df["IA"] = ia
+        df = df.drop(["SNID", "SNTYPE"], axis=1)
+
+        self._plot_corr(df)
+        self._plot_prob_acc(df)
+        print(df.head())
+
+
+
+if __name__ == "__main__":
+    df = pd.read_csv("merged.csv")
+    Aggregator("AGG", "", [], {}).plot(df)
