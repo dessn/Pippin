@@ -198,6 +198,10 @@ class Manager:
                 time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+
+        self.log_finals(done_tasks, failed_tasks, blocked_tasks)
+
+    def log_finals(self, done_tasks, failed_tasks, blocked_tasks):
         self.logger.info("")
         self.logger.info("All tasks finished. Task summary as follows.")
 
@@ -261,7 +265,7 @@ if __name__ == "__main__":
         format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s")
 
     with open("../configs/test.yml", "r") as f:
-        config = yaml.safe_load(f)
+        cc = yaml.safe_load(f)
 
-    manager = Manager("test", config)
+    manager = Manager("test", cc)
     manager.execute()
