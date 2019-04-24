@@ -52,7 +52,7 @@ if __name__ == "__main__":
         if self.isEnabledFor(NOTICE_LEVELV_NUM):
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
     logging.Logger.notice = notice
-    fmt = "[%(levelname)8s |%(filename)20s:%(lineno)3d]   %(message)s"
+    fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     level = logging.DEBUG
     logging.basicConfig(
         level=level,
