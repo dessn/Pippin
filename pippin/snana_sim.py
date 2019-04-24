@@ -182,6 +182,7 @@ class SNANASimulation(ConfigBasedExecutable):
                             key = line.strip().split(" ")[0]
                         if line.strip().startswith(self.genversion):
                             count = line.split(" ")[2]
+                            print(line.split(" "))
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             else:
                 self.logger.debug(f"Cannot find {self.total_summary}")
