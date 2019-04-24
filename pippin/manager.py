@@ -217,7 +217,7 @@ class Manager:
         for t in failed_tasks:
             self.logger.error(f"\t{t}")
         if not failed_tasks:
-            self.logger.error("\tNo failed tasks")
+            self.logger.info("\tNo failed tasks")
         self.logger.info("Blocked Tasks:")
         for t in blocked_tasks:
             self.logger.warning(f"\t{t}")
