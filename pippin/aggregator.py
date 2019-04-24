@@ -122,14 +122,14 @@ class Aggregator(Task):
         import matplotlib.pyplot as plt
         from scipy.stats import binned_statistic
 
-        prob_bins = np.linspace(0, 1, 11)
+        prob_bins = np.linspace(0, 1, 21)
         bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
         columns = [c for c in df.columns if "PROB_" in c]
 
         fig, ax = plt.subplots(figsize=(5, 4))
         for c in columns:
             actual_prob, _, _ = binned_statistic(df[c], df["IA"].astype(np.float), bins=prob_bins, statistic="mean")
-            ax.scatter(bin_center, actual_prob, s=20, label=c)
+            ax.scatter(bin_center, actual_prob, s=20, label=c, alpha=0.5)
         ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
         ax.legend(loc=4, frameon=False)
         ax.set_xlabel("Reported confidence")

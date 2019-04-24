@@ -69,6 +69,7 @@ if __name__ == "__main__":
             'debug=8;notice=green;warning=yellow;error=red,bold;critical=red,inverse')
 
     )
+    logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
