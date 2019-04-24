@@ -3,6 +3,7 @@ import inspect
 import os
 import yaml
 import logging
+import coloredlogs
 
 from pippin.config import get_config, mkdirs, get_logger
 from pippin.manager import Manager
@@ -49,12 +50,16 @@ if __name__ == "__main__":
     message_store = MessageStore()
     logging.basicConfig(
         level=level,
-        format="[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s",
         handlers=[
             logging.FileHandler(logging_filename),
             logging.StreamHandler(),
             message_store,
         ]
+    )
+    coloredlogs.install(
+        level=level,
+        fmt="[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s",
+        reconfigure=True
     )
 
     logger = get_logger()

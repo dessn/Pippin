@@ -1,0 +1,19 @@
+SIM:
+  DES:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 2 12345
+
+LCFIT:
+  BASIC:
+      BASE: des.nml
+
+CLASSIFICATION:
+  NN:
+    CLASSIFIER: NearestNeighborClassifier
+    OPTS:
+      EXAMPLE_OPT: 1.0
