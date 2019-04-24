@@ -165,7 +165,7 @@ class Manager:
                 if result in [Task.FINISHED_GOOD, Task.FINISHED_CRASH]:
                     running_tasks.remove(t)
                     if result == Task.FINISHED_GOOD:
-                        self.logger.info(f"Task {t} finished successfully")
+                        self.logger.notice(f"Task {t} finished successfully")
                         done_tasks.append(t)
                     else:
                         failed_tasks.append(t)
@@ -187,7 +187,7 @@ class Manager:
                     running_tasks.append(t)
                     num_running += t.num_jobs
                     self.logger.info("")
-                    self.logger.info(f"RUNNING: {t}")
+                    self.logger.notice(f"RUNNING: {t}")
                     t.run()
                     small_wait = True
                 else:

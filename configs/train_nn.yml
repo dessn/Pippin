@@ -15,5 +15,6 @@ LCFIT:
 CLASSIFICATION:
   NN:
     CLASSIFIER: NearestNeighborClassifier
+    MODE: train
     OPTS:
       EXAMPLE_OPT: 1.0

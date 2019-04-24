@@ -45,11 +45,18 @@ if __name__ == "__main__":
     mkdirs(logging_folder)
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
-    # Initialise logging
-    #         format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s",
     message_store = MessageStore()
+    NOTICE_LEVELV_NUM = 25
+    logging.addLevelName(NOTICE_LEVELV_NUM, "NOTICE")
+    def notice(self, message, *args, **kws):
+        if self.isEnabledFor(NOTICE_LEVELV_NUM):
+            self._log(NOTICE_LEVELV_NUM, message, args, **kws)
+    logging.Logger.notice = notice
+    fmt = "[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s"
+    level = logging.DEBUG
     logging.basicConfig(
         level=level,
+        format=fmt,
         handlers=[
             logging.FileHandler(logging_filename),
             logging.StreamHandler(),
@@ -58,8 +65,11 @@ if __name__ == "__main__":
     )
     coloredlogs.install(
         level=level,
-        fmt="[%(levelname)8s |%(filename)15s:%(lineno)3d]   %(message)s",
-        reconfigure=True
+        fmt=fmt,
+        reconfigure=True,
+        level_styles=coloredlogs.parse_encoded_styles(
+            'debug=8;notice=green;warning=yellow;error=red,bold;critical=red,inverse')
+
     )
 
     logger = get_logger()
