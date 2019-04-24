@@ -172,17 +172,13 @@ class SNANASimulation(ConfigBasedExecutable):
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
             if os.path.exists(self.total_summary):
-                print(self.genversion)
                 with open(self.total_summary) as f:
                     key, count = None, None
-
                     for line in f.readlines():
-                        print(line)
                         if line.strip().startswith("SUM-"):
-                            key = line.strip().split(" ")[0]
+                            key = line.strip().split()[0]
                         if line.strip().startswith(self.genversion):
-                            count = line.split(" ")[2]
-                            print(line.split(" "))
+                            count = line.split()[2]
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             else:
                 self.logger.debug(f"Cannot find {self.total_summary}")
