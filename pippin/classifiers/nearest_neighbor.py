@@ -3,8 +3,8 @@ from pippin.task import Task
 
 
 class NearestNeighborClassifier(Classifier):
-    def __init__(self, name, output_dir, mode, options):
-        super().__init__(name, output_dir, mode, options)
+    def __init__(self, name, output_dir, dependencies, mode, options):
+        super().__init__(name, output_dir, dependencies, mode, options)
         self.logger.info(f"Creating Nearest Neighbor classifier with options: {options}")
 
     def predict(self):
