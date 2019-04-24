@@ -172,12 +172,15 @@ class SNANASimulation(ConfigBasedExecutable):
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
             if os.path.exists(self.total_summary):
+                print(self.genversion)
                 with open(self.total_summary) as f:
                     key, count = None, None
+
                     for line in f.readlines():
+                        print(line)
                         if line.strip().startswith("SUM-"):
                             key = line.strip().split(" ")[0]
-                        if line.startswith(self.genversion):
+                        if line.strip().startswith(self.genversion):
                             count = line.split(" ")[2]
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             else:
@@ -190,7 +193,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 chown_dir(self.output_dir)
             self.output = {
                 "photometry_dir": sim_folder_endpoint,
-                "types": self.get_types(), # TODO: Also useful to add number of SN using ricks new info in log
+                "types": self.get_types(),
             }
             return Task.FINISHED_GOOD
         return 0  # TODO: Update to num jobs
