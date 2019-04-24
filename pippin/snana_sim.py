@@ -180,6 +180,8 @@ class SNANASimulation(ConfigBasedExecutable):
                         if line.startswith(self.genversion):
                             count = line.split(" ")[2]
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
+            else:
+                self.logger.debug(f"Cannot find {self.total_summary}")
             if not os.path.exists(sim_folder_endpoint):
                 sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
                 self.logger.info("Done file found, creating symlinks")
