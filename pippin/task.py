@@ -78,4 +78,4 @@ class Task(ABC):
         pass
 
     def __str__(self):
-        return f"{self.__class__.__name__}: {self.name} task, {self.num_jobs} jobs, deps are {[d.name for d in self.dependencies]}"
+        return f"{self.__class__.__name__} {self.name} task ({self.num_jobs} jobs, deps {[d.name for d in self.dependencies]})"

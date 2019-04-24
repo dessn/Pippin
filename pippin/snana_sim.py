@@ -30,6 +30,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_num_jobs(2 * value)
 
         self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
+        self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
 
@@ -170,8 +171,17 @@ class SNANASimulation(ConfigBasedExecutable):
         sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
-            sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
+            if os.path.exists(self.total_summary):
+                with open(self.total_summary) as f:
+                    key, count = None, None
+                    for line in f.readline():
+                        if line.strip().startswith("SUM-"):
+                            key = line.strip().split(" ")[0]
+                        if line.startswith(self.genversion):
+                            count = line.split(" ")[2]
+                            self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             if not os.path.exists(sim_folder_endpoint):
+                sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
                 self.logger.info("Done file found, creating symlinks")
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
@@ -195,7 +205,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         types[number] = name
                         break
         sorted_types = collections.OrderedDict(sorted(types.items()))
-        self.logger.info(f"Types found: {json.dumps(sorted_types)}")
+        self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
         return sorted_types
 
 
