@@ -143,6 +143,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
+            self.logger.info("Light curve done file found")
             logging_file2 = self.logging_file.replace("_log", "_log2")
             if not os.path.exists(logging_file2):
                 self.logger.info("Tarball found, fitting complete, cleaning up the directory")

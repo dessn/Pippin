@@ -174,7 +174,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if os.path.exists(self.total_summary):
                 with open(self.total_summary) as f:
                     key, count = None, None
-                    for line in f.readline():
+                    for line in f.readlines():
                         if line.strip().startswith("SUM-"):
                             key = line.strip().split(" ")[0]
                         if line.startswith(self.genversion):

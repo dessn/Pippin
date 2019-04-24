@@ -6,10 +6,9 @@ class ConfigBasedExecutable(Task):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.default_assignment = default_assignment
         self.base_file = base_file
-        self.logger.debug(f"Loading base file from {self.base_file}")
         with open(base_file, "r") as f:
             self.base = list(f.read().splitlines())
-            self.logger.info(f"Loaded base file from {self.base_file}")
+            self.logger.debug(f"Loaded base file from {self.base_file}")
 
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)

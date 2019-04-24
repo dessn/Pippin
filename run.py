@@ -44,7 +44,7 @@ if __name__ == "__main__":
     mkdirs(logging_folder)
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
-    message_store = MessageStore()
+    message_store = MessageStore()b
     NOTICE_LEVELV_NUM = 25
     logging.addLevelName(NOTICE_LEVELV_NUM, "NOTICE")
     def notice(self, message, *args, **kws):
