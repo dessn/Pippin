@@ -18,4 +18,5 @@ class NearestNeighborClassifier(Classifier):
             "name": self.name,
             "output_dir": self.output_dir
         }
+        self.logger.critical("Oh no, this hasn't been implemented yet")
         return Task.FINISHED_CRASH
