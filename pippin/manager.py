@@ -220,6 +220,7 @@ class Manager:
         if not blocked_tasks:
             self.logger.info("\tNo blocked tasks")
 
+        self.logger.info("")
         if len(ws) == 0:
             self.logger.info(f"No warnings")
         else:
