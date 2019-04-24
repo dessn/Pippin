@@ -38,6 +38,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     level = logging.DEBUG if args.verbose else logging.INFO
+    print(level, args.verbose)
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
