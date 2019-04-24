@@ -36,9 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
 
     args = parser.parse_args()
-
     level = logging.DEBUG if args.verbose else logging.INFO
-    print(level, args.verbose)
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
@@ -54,7 +52,6 @@ if __name__ == "__main__":
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
-    level = logging.DEBUG
     logging.basicConfig(
         level=level,
         format=fmt,
