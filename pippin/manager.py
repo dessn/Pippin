@@ -13,8 +13,9 @@ from pippin.task import Task
 
 
 class Manager:
-    def __init__(self, filename, config):
+    def __init__(self, filename, config, message_store):
         self.logger = get_logger()
+        self.message_store = message_store
         self.filename = filename
         self.run_config = config
         self.global_config = get_config()
@@ -33,9 +34,9 @@ class Manager:
         aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
         total_tasks = sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks
         self.logger.info("")
-        self.logger.info("Listing tasks:")
+        self.logger.notice("Listing tasks:")
         for task in total_tasks:
-            self.logger.info(str(task))
+            self.logger.notice(f"\t{task}")
         self.logger.info("")
         return total_tasks
 
@@ -199,21 +200,39 @@ class Manager:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
         self.logger.info("")
         self.logger.info("All tasks finished. Task summary as follows.")
+
+        ws = self.message_store.get_warnings()
+        es = self.message_store.get_errors()
+
         self.logger.info("Successfully completed tasks:")
         for t in done_tasks:
-            self.logger.info(f"\t{t}")
+            self.logger.notice(f"\t{t}")
         if not done_tasks:
             self.logger.info("\tNo successful tasks")
         self.logger.info("Failed Tasks:")
         for t in failed_tasks:
-            self.logger.info(f"\t{t}")
+            self.logger.error(f"\t{t}")
         if not failed_tasks:
-            self.logger.info("\tNo failed tasks")
+            self.logger.error("\tNo failed tasks")
         self.logger.info("Blocked Tasks:")
         for t in blocked_tasks:
-            self.logger.info(f"\t{t}")
+            self.logger.warning(f"\t{t}")
         if not blocked_tasks:
             self.logger.info("\tNo blocked tasks")
+
+        if len(ws) == 0:
+            self.logger.info(f"No warnings")
+        else:
+            self.logger.warning(f"{len(ws)} warnings")
+        for w in ws:
+            self.logger.warning(f"\t{w.message}")
+        if len(es) == 0:
+            self.logger.info(f"No errors")
+        else:
+            self.logger.error(f"{len(es)} errors")
+
+        for w in es:
+            self.logger.error(f"\t{w.message}")
 
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"

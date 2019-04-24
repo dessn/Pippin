@@ -81,15 +81,6 @@ if __name__ == "__main__":
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
 
-    manager = Manager(config_filename, config)
+    manager = Manager(config_filename, config, message_store)
     manager.execute()
-    logger.info("")
-    ws = message_store.get_warnings()
-    logger.info(f"{len(ws)} warnings")
-    for w in ws:
-        logger.info(f"\t{w.message}")
-    ws = message_store.get_errors()
-    logger.info(f"{len(ws)} errors")
-    for w in ws:
-        logger.info(f"\t{w.message}")
 
