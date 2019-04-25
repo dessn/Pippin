@@ -20,6 +20,7 @@ class Aggregator(Task):
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = bool(options.get("PLOT", False))
+        self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
 
     def check_completion(self):
         return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
@@ -140,6 +141,108 @@ class Aggregator(Task):
             fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
             self.logger.info(f"Prob accuracy plot saved to {filename}")
 
+    def _get_matrix(self, classified, truth):
+        true_positives = classified & truth
+        false_positive = classified & ~truth
+        true_negative = ~classified & ~truth
+        false_negative = ~classified & truth
+        return true_positives.sum(), false_positive.sum(), true_negative.sum(), false_negative.sum()
+
+    def _get_metrics(self, classified, truth):
+        tp, fp, tn, fn = self._get_matrix(classified, truth)
+        return {
+            "purity": tp / (tp + fp),  # also known as precision
+            "efficiency": tp / (tp + fn),  # also known as recall
+            "accuracy": (tp + tn) / (tp + tn + fp + fn),
+            "specificity": fp / (fp + tn)
+        }
+
+    def _plot_thresholds(self, df):
+        self.logger.debug("Making threshold plot")
+        import matplotlib.pyplot as plt
+
+        thresholds = np.linspace(0.5, 0.999, 100)
+        columns = [c for c in df.columns if "PROB_" in c]
+
+        fig, ax = plt.subplots(figsize=(5, 4))
+        ls = ["-", "--", ":", ":-", "-", "--", ":"]
+        keys = ["purity", "efficiency"]
+        for c, col in zip(columns, self.colours):
+            res = {}
+            for t in thresholds:
+                passed = df[c] > t
+                metrics = self._get_metrics(passed, df["IA"])
+                for key in keys:
+                    if res.get(key) is None:
+                        res[key] = []
+                    res[key].append(metrics[key])
+            for key, l in zip(keys, ls):
+                ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c.split('_')[1]} {key}")
+
+        ax.set_xlabel("Classification probability threshold")
+        ax.legend()
+        plt.show()
+        if self.output_dir:
+            filename = os.path.join(self.output_dir, "plt_thresholds.png")
+            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
+            self.logger.info(f"Prob threshold plot saved to {filename}")
+
+    def _plot_pr(self, df):
+        self.logger.debug("Making roc plot")
+        import matplotlib.pyplot as plt
+
+        thresholds = np.linspace(0.01, 1, 100)
+        columns = [c for c in df.columns if "PROB_" in c]
+
+        fig, ax = plt.subplots(figsize=(5, 4))
+
+        for c, col in zip(columns, self.colours):
+            efficiency, purity = [], []
+            for t in thresholds:
+                passed = df[c] > t
+                metrics = self._get_metrics(passed, df["IA"])
+                efficiency.append(metrics["efficiency"])
+                purity.append(metrics["purity"])
+            ax.plot(purity, efficiency, color=col,  label=f"{c.split('_')[1]}")
+
+        ax.set_xlabel("Precision (aka purity)")
+        ax.set_ylabel("Recall (aka efficiency)")
+        ax.set_title("PR Curve")
+        ax.legend()
+        plt.show()
+        if self.output_dir:
+            filename = os.path.join(self.output_dir, "plt_pr.png")
+            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
+            self.logger.info(f"Prob threshold plot saved to {filename}")
+
+    def _plot_roc(self, df):
+        self.logger.debug("Making pr plot")
+        import matplotlib.pyplot as plt
+
+        thresholds = np.linspace(0.01, 0.999, 100)
+        columns = [c for c in df.columns if "PROB_" in c]
+
+        fig, ax = plt.subplots(figsize=(5, 4))
+
+        for c, col in zip(columns, self.colours):
+            efficiency, specificity = [], []
+            for t in thresholds:
+                passed = df[c] > t
+                metrics = self._get_metrics(passed, df["IA"])
+                efficiency.append(metrics["efficiency"])
+                specificity.append(metrics["specificity"])
+            ax.plot(specificity, efficiency, color=col,  label=f"{c.split('_')[1]}")
+
+        ax.set_xlabel("False Positive Rate")
+        ax.set_ylabel("True Positive Rate")
+        ax.set_title("ROC Curve")
+        ax.legend()
+        plt.show()
+        if self.output_dir:
+            filename = os.path.join(self.output_dir, "plt_roc.png")
+            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
+            self.logger.info(f"Prob threshold plot saved to {filename}")
+
     def _plot(self, df):
         if self.type_name not in df.columns:
             self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
@@ -149,6 +252,9 @@ class Aggregator(Task):
             df = df.drop(["SNID", "SNTYPE"], axis=1)
             self._plot_corr(df)
             self._plot_prob_acc(df)
+            self._plot_thresholds(df)
+            self._plot_roc(df)
+            self._plot_pr(df)
 
 
 if __name__ == "__main__":
