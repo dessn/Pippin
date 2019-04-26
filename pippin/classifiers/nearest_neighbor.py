@@ -176,9 +176,12 @@ class NearestNeighborClassifier(Classifier):
         inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'
         outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
         cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
-        cmd_done = f'touch {self.done_file}'
-        cmd = ('%s ; %s' % (cmd_job, cmd_done))
-        self.logger.debug(f"Executing command {cmd}")
+        self.logger.debug(f"Executing command {cmd_job}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(cmd.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+            with open(self.done_file, "w") as f:
+                if val.returncode == 0:
+                    f.write("SUCCESS")
+                else:
+                    f.write("FAILURE")
         return True
