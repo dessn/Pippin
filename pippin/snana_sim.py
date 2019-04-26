@@ -132,6 +132,7 @@ class SNANASimulation(ConfigBasedExecutable):
         shutil.chown(self.logging_file, group=self.global_config["SNANA"]["group"])
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
+        return True
 
     def _check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
