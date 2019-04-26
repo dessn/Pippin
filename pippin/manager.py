@@ -161,6 +161,16 @@ class Manager:
                 self.tasks.remove(t2)
                 blocked.append(t2)
 
+    def log_status(self, waiting, running, done, failed, blocked):
+        self.logger.debug("")
+        self.logger.debug("Status:")
+        self.logger.debug(f"\t Waiting: {[t.name for t in waiting]}")
+        self.logger.debug(f"\t Running: {[t.name for t in running]}")
+        self.logger.debug(f"\t Done:    {[t.name for t in done]}")
+        self.logger.debug(f"\t Failed:  {[t.name for t in failed]}")
+        self.logger.debug(f"\t Blocked: {[t.name for t in blocked]}")
+        self.logger.debug("")
+
     def execute(self):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
@@ -206,6 +216,7 @@ class Manager:
                 else:
                     break
 
+            self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
             if small_wait:
                 time.sleep(0.5)
             else:
