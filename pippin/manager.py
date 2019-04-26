@@ -156,19 +156,25 @@ class Manager:
         self.logger.error(f"Task {t} crashed")
         if os.path.exists(t.hash_file):
             os.remove(t.hash_file)
-        for t2 in self.tasks:
-            if t in t2.dependencies:
-                self.tasks.remove(t2)
-                blocked.append(t2)
+
+        modified = True
+        while modified:
+            modified = False
+            for t2 in self.tasks:
+                for d in t2.dependencies:
+                    if d in failed or d in blocked:
+                        self.tasks.remove(t2)
+                        blocked.append(t2)
+                        modified = True
 
     def log_status(self, waiting, running, done, failed, blocked):
         self.logger.debug("")
         self.logger.debug("Status:")
-        self.logger.debug(f"\t Waiting: {[t.name for t in waiting]}")
-        self.logger.debug(f"\t Running: {[t.name for t in running]}")
-        self.logger.debug(f"\t Done:    {[t.name for t in done]}")
-        self.logger.debug(f"\t Failed:  {[t.name for t in failed]}")
-        self.logger.debug(f"\t Blocked: {[t.name for t in blocked]}")
+        self.logger.debug(f"    Waiting: {[t.name for t in waiting]}")
+        self.logger.debug(f"    Running: {[t.name for t in running]}")
+        self.logger.debug(f"    Done:    {[t.name for t in done]}")
+        self.logger.debug(f"    Failed:  {[t.name for t in failed]}")
+        self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
         self.logger.debug("")
 
     def execute(self):
