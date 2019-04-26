@@ -177,8 +177,8 @@ class NearestNeighborClassifier(Classifier):
         outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
         cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
         cmd_done = f'touch {self.done_file}'
-        cmd = ('%s && %s' % (cmd_job, cmd_done))
+        cmd = ('%s ; %s' % (cmd_job, cmd_done))
         self.logger.debug(f"Executing command {cmd}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return True
