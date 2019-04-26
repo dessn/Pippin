@@ -130,7 +130,7 @@ class NearestNeighborClassifier(Classifier):
                     output_error = False
                     for line in f.read().splitlines():
                         if ("ERROR" in line or ("ABORT" in line and " 0 " not in line)) and not output_error:
-                            self.logger.critical(f"Fatal error in light curve fitting. See {self.logging_file} for details.")
+                            self.logger.error(f"Fatal error in light curve fitting. See {self.logging_file} for details.")
                             output_error = True
                         if output_error:
                             self.logger.info(f"Excerpt: {line}")

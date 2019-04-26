@@ -141,7 +141,7 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(self.logging_file, "r") as f:
                 for line in f.read().splitlines():
                     if "ERROR" in line or "***** ABORT *****" in line:
-                        self.logger.critical(f"Fatal error in simulation. See {self.logging_file} for details.")
+                        self.logger.error(f"Fatal error in simulation. See {self.logging_file} for details.")
                         output_error = True
                     if output_error:
                         self.logger.info(f"Excerpt: {line}")
@@ -159,7 +159,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 for line in f.read().splitlines():
                     if (" ABORT " in line or "FATAL[" in line) and not output_error:
                         output_error = True
-                        self.logger.critical(f"Fatal error in simulation. See {self.sim_log_dir}/{file} for details.")
+                        self.logger.error(f"Fatal error in simulation. See {self.sim_log_dir}/{file} for details.")
                     if output_error:
                         self.logger.info(f"Excerpt: {line}")
             if output_error:
