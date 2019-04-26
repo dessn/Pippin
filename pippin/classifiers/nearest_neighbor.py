@@ -143,7 +143,9 @@ class NearestNeighborClassifier(Classifier):
 
         model_path = get_output_loc(model)
         self.logger.debug(f"Looking for model in {model_path}")
-        assert os.path.exists(model_path), f"Cannot find {model_path}"
+        if not os.path.exists(model_path):
+            self.logger.error(f"Cannot find {model_path}")
+            return False
 
         job_name = 'nearnbr_apply.exe'
         inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'

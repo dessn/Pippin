@@ -149,6 +149,17 @@ class Manager:
                 return t
         return None
 
+    def fail_task(self, t, running, failed, blocked):
+        running.remove(t)
+        failed.append(t)
+        self.logger.error(f"Task {t} crashed")
+        if os.path.exists(t.hash_file):
+            os.remove(t.hash_file)
+        for t2 in self.tasks:
+            if t in t2.dependencies:
+                self.tasks.remove(t2)
+                blocked.append(t2)
+
     def execute(self):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
@@ -166,19 +177,13 @@ class Manager:
             for t in running_tasks:
                 result = t.check_completion()
                 if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
-                    running_tasks.remove(t)
                     if result == Task.FINISHED_SUCCESS:
+                        running_tasks.remove(t)
                         self.logger.notice(f"Task {t} finished successfully")
                         done_tasks.append(t)
                     else:
-                        failed_tasks.append(t)
-                        self.logger.error(f"Task {t} crashed")
-                        if os.path.exists(t.hash_file):
-                            os.remove(t.hash_file)
-                        for t2 in self.tasks:
-                            if t in t2.dependencies:
-                                self.tasks.remove(t2)
-                                blocked_tasks.append(t2)
+                        self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+
                     small_wait = True
 
             # Submit new jobs if needed
@@ -187,11 +192,15 @@ class Manager:
                 t = self.get_task_index_to_run(self.tasks, done_tasks)
                 if t is not None:
                     self.tasks.remove(t)
-                    running_tasks.append(t)
-                    num_running += t.num_jobs
+                    started = t.run()
                     self.logger.info("")
-                    self.logger.notice(f"RUNNING: {t}")
-                    t.run()
+                    if started:
+                        num_running += t.num_jobs
+                        self.logger.notice(f"RUNNING: {t}")
+                        running_tasks.append(t)
+                    else:
+                        self.logger.error(f"Task {t} failed to run")
+                        self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
                     small_wait = True
                 else:
                     break
