@@ -83,6 +83,8 @@ class Task(ABC):
         result = self._check_completion()
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
             self.end_time = os.path.getmtime(self.done_file)
+            if self.start_time is None and os.path.exists(self.hash_file):
+                self.start_time = os.path.getmtime(self.hash_file)
             self.wall_time = self.end_time - self.start_time
             self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
         return result
