@@ -212,9 +212,9 @@ class Manager:
             while num_running < self.max_jobs:
                 t = self.get_task_to_run(self.tasks, done_tasks)
                 if t is not None:
+                    self.logger.info("")
                     self.tasks.remove(t)
                     started = t.run()
-                    self.logger.info("")
                     if started:
                         num_running += t.num_jobs
                         self.logger.notice(f"RUNNING: {t}")

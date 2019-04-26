@@ -98,15 +98,14 @@ class NearestNeighborClassifier(Classifier):
 
         # open NML file in append mode and tack on NNINP namelist
         with open(nml_file_train, 'a') as f:
-            f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n"
-                    % time.ctime())
-            f.write("\n &NNINP \n")
+            f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n" % time.ctime())
+            f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % version_dir)
-            f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % fitres_file)  # TODO: Check with Rick, I replaced a generic FITOPT000.FITRES with a file, this all good?
+            f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))  # TODO: Check with Rick, I replaced a generic FITOPT000.FITRES with a file, this all good?
             f.write("   NEARNBR_SEPMAX_VARDEF  = '%s' \n" % self.nn_options)
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
-            f.write("\n &END\n")
+            f.write("\n&END\n")
         return train_info_local
 
     def run_train_job(self):
@@ -123,10 +122,14 @@ class NearestNeighborClassifier(Classifier):
         # check global DONE stamp to see if all is DONE
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found at {self.done_file}")
+            with open(self.done_file) as f:
+                if "FAILURE" in f.read().upper():
+                    self.logger.error("Done file has FAILURE stamp!")
+                    return Task.FINISHED_FAILURE
             if os.path.exists(tarball):
                 return Task.FINISHED_SUCCESS
             else:
-                self.logger.error("Error, no tarball found at {tarball}")
+                self.logger.error(f"Error, no tarball found at {tarball}")
                 return Task.FINISHED_FAILURE
         else:
             if os.path.exists(self.logging_file):
