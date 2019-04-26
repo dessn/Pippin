@@ -95,9 +95,9 @@ class Manager:
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
-                if sim_name is not None and (mask not in sim_name and mask_sim not in sim_name):
+                if sim_name is not None and (mask not in sim_name or mask_sim not in sim_name):
                     continue
-                if fit_name is not None and (mask not in fit_name and mask_fit not in fit_name):
+                if fit_name is not None and (mask not in fit_name or mask_fit not in fit_name):
                     continue
                 deps = []
                 if s is not None:
