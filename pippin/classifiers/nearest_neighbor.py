@@ -53,8 +53,6 @@ class NearestNeighborClassifier(Classifier):
             "outdir_NNtrain": outdir_train,
             "nml_file_NNtrain": nml_file_train,
         }
-
-        print(' Prepare %s training job' % self.name)
         # create output dir [clobber existing dir]
         if os.path.isdir(self.output_dir):
             shutil.rmtree(self.output_dir)
@@ -163,6 +161,11 @@ class NearestNeighborClassifier(Classifier):
         if not os.path.exists(model_path):
             self.logger.error(f"Cannot find {model_path}")
             return False
+
+        # Do regen check, for now, nuke
+        if os.path.exists(self.output_dir):
+            shutil.rmtree(self.output_dir)
+        mkdirs(self.output_dir)
 
         job_name = 'nearnbr_apply.exe'
         inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'

@@ -170,7 +170,7 @@ class Manager:
 
     def log_status(self, waiting, running, done, failed, blocked):
         self.logger.debug("")
-        self.logger.debug("Status:")
+        self.logger.debug(f"Status as of {time.ctime()}:")
         self.logger.debug(f"    Waiting: {[t.name for t in waiting]}")
         self.logger.debug(f"    Running: {[t.name for t in running]}")
         if done:
@@ -227,11 +227,11 @@ class Manager:
                 else:
                     break
 
-            self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
             if small_wait:
                 time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+                self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 
