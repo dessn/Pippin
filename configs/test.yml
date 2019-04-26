@@ -48,12 +48,12 @@ CLASSIFICATION:
   NNTRAIN:
     CLASSIFIER: NearestNeighborClassifier
     MODE: train
-    MASK: TRAINING
+    MASK_SIM: TRAINING
 
   NNTEST:
     CLASSIFIER: NearestNeighborClassifier
     MODE: predict
-    MASK: TEST
+    MASK_SIM: TEST
     OPTS:
         MODEL: NNTRAIN
 
