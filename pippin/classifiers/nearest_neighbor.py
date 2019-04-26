@@ -180,5 +180,5 @@ class NearestNeighborClassifier(Classifier):
         cmd = ('%s && %s' % (cmd_job, cmd_done))
         self.logger.debug(f"Executing command {cmd}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
         return True
