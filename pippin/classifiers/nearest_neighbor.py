@@ -116,7 +116,7 @@ class NearestNeighborClassifier(Classifier):
 
         # check global DONE stamp to see if all is DONE
         if os.path.exists(self.done_file):
-            self.logger.debug("Done file found at {self.done_file}")
+            self.logger.debug(f"Done file found at {self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read().upper():
                     self.logger.error("Done file has FAILURE stamp!")
@@ -178,7 +178,7 @@ class NearestNeighborClassifier(Classifier):
         cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
         cmd_done = f'touch {self.done_file}'
         cmd = ('%s ; %s' % (cmd_job, cmd_done))
-
+        self.logger.debug(f"Executing command {cmd}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return True
