@@ -144,7 +144,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         self.logger.critical(f"Fatal error in simulation. See {self.logging_file} for details.")
                         output_error = True
                     if output_error:
-                        self.logger.error(f"Excerpt: {line}")
+                        self.logger.info(f"Excerpt: {line}")
             if output_error:
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)
@@ -161,7 +161,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         output_error = True
                         self.logger.critical(f"Fatal error in simulation. See {self.sim_log_dir}/{file} for details.")
                     if output_error:
-                        self.logger.error(f"Excerpt: {line}")
+                        self.logger.info(f"Excerpt: {line}")
             if output_error:
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)

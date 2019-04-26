@@ -137,7 +137,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                             self.logger.critical(f"Fatal error in light curve fitting. See {file} for details.")
                             output_error = True
                         if output_error:
-                            self.logger.error(f"Excerpt: {line}")
+                            self.logger.info(f"Excerpt: {line}")
 
                 if output_error:
                     return Task.FINISHED_FAILURE

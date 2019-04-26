@@ -125,6 +125,18 @@ class NearestNeighborClassifier(Classifier):
             else:
                 return Task.FINISHED_FAILURE
         else:
+            if os.path.exists(self.logging_file):
+                with open(self.logging_file, "r") as f:
+                    output_error = False
+                    for line in f.read().splitlines():
+                        if ("ERROR" in line or ("ABORT" in line and " 0 " not in line)) and not output_error:
+                            self.logger.critical(f"Fatal error in light curve fitting. See {self.logging_file} for details.")
+                            output_error = True
+                        if output_error:
+                            self.logger.info(f"Excerpt: {line}")
+
+                if output_error:
+                    return Task.FINISHED_FAILURE
             # check how many jobs remain
             donePath = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
             num_done = len(glob.glob1(donePath, "*.DONE"))
