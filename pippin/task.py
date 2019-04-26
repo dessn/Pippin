@@ -67,7 +67,7 @@ class Task(ABC):
 
     def run(self):
         self.start_time = time.time()
-        self._run()
+        return self._run()
 
     @abstractmethod
     def _run(self):

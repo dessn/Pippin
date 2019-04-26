@@ -139,7 +139,7 @@ class Manager:
         num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT))
         return num_jobs
 
-    def get_task_index_to_run(self, tasks_to_run, done_tasks):
+    def get_task_to_run(self, tasks_to_run, done_tasks):
         for t in tasks_to_run:
             can_run = True
             for dep in t.dependencies:
@@ -207,7 +207,7 @@ class Manager:
             # Submit new jobs if needed
             num_running = self.get_num_running_jobs()
             while num_running < self.max_jobs:
-                t = self.get_task_index_to_run(self.tasks, done_tasks)
+                t = self.get_task_to_run(self.tasks, done_tasks)
                 if t is not None:
                     self.tasks.remove(t)
                     started = t.run()
