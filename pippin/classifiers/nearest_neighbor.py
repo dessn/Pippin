@@ -178,7 +178,7 @@ class NearestNeighborClassifier(Classifier):
         cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
         self.logger.debug(f"Executing command {cmd_job}")
         with open(self.logging_file, "w") as f:
-            val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+            val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             with open(self.done_file, "w") as f:
                 if val.returncode == 0:
                     f.write("SUCCESS")
