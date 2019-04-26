@@ -55,7 +55,7 @@ class NearestNeighborClassifier(Classifier):
         }
         # create output dir [clobber existing dir]
         if os.path.isdir(self.output_dir):
-            shutil.rmtree(self.output_dir)
+            shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.output_dir)
 
         # construct sed to copy original NMLFILE and to
@@ -169,7 +169,7 @@ class NearestNeighborClassifier(Classifier):
 
         # Do regen check, for now, nuke
         if os.path.exists(self.output_dir):
-            shutil.rmtree(self.output_dir)
+            shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.output_dir)
 
         job_name = 'nearnbr_apply.exe'

@@ -91,7 +91,7 @@ python ./ML_DES_typing_v3_2.py --ft x1 c z t0_err x1_err c_err --nclass 2 --file
     def classify(self):
         if os.path.exists(self.output_dir):
             self.logger.info(f"Removing old output files at {self.output_dir}")
-            shutil.rmtree(self.output_dir)
+            shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.output_dir)
 
         training = self.options.get("TRAIN") is not None
