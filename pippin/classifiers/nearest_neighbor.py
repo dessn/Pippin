@@ -18,6 +18,8 @@ class NearestNeighborClassifier(Classifier):
         self.outfile_train = f'{output_dir}/NN_trainResult.out'
         self.outfile_predict = f'{output_dir}/NN_predictResult.out'
         self.logging_file = os.path.join(output_dir, "split_and_fit_output.log")
+        self.splitfit_output_dir = f'{self.output_dir}/output'
+
         self.options = options
         self.nn_options = 'z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04'
         self.train_info_local = {}
@@ -45,12 +47,10 @@ class NearestNeighborClassifier(Classifier):
         nml_file_orig = fit_output["nml_file"]
 
         outfile_train = f'{self.name}_train.out'
-        outdir_train = f'{self.output_dir}/output'
         nml_file_train = f'{self.output_dir}/{genversion}-2.nml'
 
         train_info_local = {
             "outfile_NNtrain": outfile_train,
-            "outdir_NNtrain": outdir_train,
             "nml_file_NNtrain": nml_file_train,
         }
         # create output dir [clobber existing dir]
@@ -69,7 +69,7 @@ class NearestNeighborClassifier(Classifier):
         afterBurn = f'nearnbr_maxFoM.exe FITOPT000.ROOT -truetype 1 -outfile {outfile_train} ; cp {outfile_train} {self.outfile_train}'
 
         sedstr = 'sed'
-        sedstr += (r" -e '/OUTDIR:/a\OUTDIR: %s' " % outdir_train)
+        sedstr += (r" -e '/OUTDIR:/a\OUTDIR: %s' " % self.splitfit_output_dir)
         sedstr += r" -e '/OUTDIR:/d'"
         sedstr += r" -e '/DONE_STAMP:/d'"
         sedstr += r" -e '/SNTABLE_LIST/a\    ROOTFILE_OUT = \"bla.root\"'"
@@ -112,7 +112,7 @@ class NearestNeighborClassifier(Classifier):
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
     def _check_completion(self):
-        outdir = self.train_info_local["outdir_NNtrain"]
+        outdir = self.splitfit_output_dir
         tarball = os.path.join(outdir, 'SPLIT_JOBS_LCFIT.tar.gz')
 
         # check global DONE stamp to see if all is DONE
