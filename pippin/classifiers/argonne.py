@@ -16,7 +16,7 @@ class ArgonneClassifier(Classifier):
     def train(self):
         pass
 
-    def check_completion(self):
+    def _check_completion(self):
         return Task.FINISHED_CRASH
 
     @staticmethod

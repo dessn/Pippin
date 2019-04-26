@@ -51,7 +51,7 @@ class FitProbClassifier(Classifier):
 
         return True
 
-    def check_completion(self):
+    def _check_completion(self):
         self.output.update({
             "predictions_filename": self.output_file
         })

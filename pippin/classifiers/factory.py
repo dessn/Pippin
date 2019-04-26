@@ -12,8 +12,9 @@ class ClassifierFactory:
         return cls.ids[name]
 
     @classmethod
-    def add_factory(cls, classifierClass):
-        cls.ids[classifierClass.__name__] = classifierClass
+    def add_factory(cls, classifier_class):
+        cls.ids[classifier_class.__name__] = classifier_class
+
 
 ClassifierFactory.add_factory(FitProbClassifier)
 ClassifierFactory.add_factory(SuperNNovaClassifier)

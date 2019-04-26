@@ -13,6 +13,7 @@ class Classifier(Task):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.mode = mode
+        self.output["prob_column_name"] = self.get_prob_column_name()
 
     @abstractmethod
     def predict(self):
@@ -38,7 +39,7 @@ class Classifier(Task):
                 return t.output
         return None
 
-    def run(self):
+    def _run(self):
         if self.mode == Classifier.TRAIN:
             return self.train()
         elif self.mode == Classifier.PREDICT:

@@ -130,7 +130,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
         return True
 
-    def check_completion(self):
+    def _check_completion(self):
         if os.path.exists(self.done_file):
             self.logger.info("Job complete")
 
@@ -159,8 +159,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
 
             self.output.update({
                 "model_filename": new_model_file,
-                "predictions_filename": new_pred_file,
-                "prob_column_name": self.get_prob_column_name(),
+                "predictions_filename": new_pred_file
             })
             return Task.FINISHED_SUCCESS
         else:

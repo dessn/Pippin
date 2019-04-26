@@ -1,7 +1,8 @@
+import time
 from abc import ABC, abstractmethod
 from pippin.config import get_logger, get_hash
 import os
-
+import datetime
 
 class Task(ABC):
     FINISHED_SUCCESS = -1
@@ -20,8 +21,11 @@ class Task(ABC):
             "name": name,
             "output_dir": output_dir
         }
-        self.hash_file = f"{self.output_dir}/hash.txt"
-        # mkdirs(self.output_dir)
+        self.hash_file = os.path.join(self.output_dir, "hash.txt")
+        self.done_file = os.path.join(self.output_dir, "done.txt")
+        self.start_time = None
+        self.end_time = None
+        self.wall_time = None
 
     def get_old_hash(self, quiet=False):
         if os.path.exists(self.hash_file):
@@ -61,13 +65,30 @@ class Task(ABC):
     def add_dependency(self, task):
         self.dependencies.append(task)
 
-    @abstractmethod
     def run(self):
+        self.start_time = time.time()
+        self._run()
+
+    @abstractmethod
+    def _run(self):
         """ Returns the hash of the step if successful, False if not. """
         pass
 
-    @abstractmethod
+    def get_wall_time_str(self):
+        if self.end_time is not None and self.start_time is not None:
+            return str(datetime.timedelta(seconds=self.wall_time))
+        return None
+
     def check_completion(self):
+        result = self._check_completion()
+        if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+            self.end_time = os.path.getmtime(self.done_file)
+            self.wall_time = self.end_time - self.start_time
+            self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
+        return result
+
+    @abstractmethod
+    def _check_completion(self):
         """ Checks if the job is complete or has failed. 
         
         If it is complete it should also load in the any useful results that 
@@ -78,4 +99,9 @@ class Task(ABC):
         pass
 
     def __str__(self):
-        return f"{self.__class__.__name__} {self.name} task ({self.num_jobs} jobs, deps {[d.name for d in self.dependencies]})"
+        wall_time = self.get_wall_time_str()
+        if wall_time is not None:
+            extra = f"wall time {wall_time}, "
+        else:
+            extra = ""
+        return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {[d.name for d in self.dependencies]})"

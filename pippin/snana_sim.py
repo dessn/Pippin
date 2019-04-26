@@ -34,7 +34,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
 
-        self.output["sim_version"] = self.genversion
+        self.output["genversion"] = self.genversion
 
     def write_input(self):
         self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
@@ -121,7 +121,7 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir_obj.cleanup()
         return regenerate, new_hash
 
-    def run(self):
+    def _run(self):
 
         regenerate, new_hash = self.write_input()
         if not regenerate:
@@ -133,7 +133,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
 
-    def check_completion(self):
+    def _check_completion(self):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
         output_error = False
         if self.logging_file is not None and os.path.exists(self.logging_file):

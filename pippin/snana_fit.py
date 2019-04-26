@@ -26,7 +26,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         super().__init__(name, output_dir, self.base_file, "=", dependencies=[sim_task])
 
-        self.sim_version = sim_task.output["sim_version"]
+        self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
         self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
@@ -40,6 +40,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.output["fitres_dir"] = self.fitres_dir
         self.output["nml_file"] = self.config_path
+        self.output["genversion"] = self.sim_version
 
     def get_sim_dependency(self):
         for t in self.dependencies:
@@ -116,7 +117,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         return regenerate, new_hash
 
-    def run(self):
+    def _run(self):
         regenerate, new_hash = self.write_nml()
         if not regenerate:
             return new_hash
@@ -125,7 +126,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             # TODO: Add queue to config and run
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
-    def check_completion(self):
+    def _check_completion(self):
         # Check for errors
         for file in self.log_files:
             if os.path.exists(file):

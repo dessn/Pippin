@@ -15,6 +15,7 @@ class Aggregator(Task):
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
+        self.output_df_key = os.path.join(self.output_dir, "merged.key")
         self.id = "SNID"
         self.type_name = "SNTYPE"
         self.options = options
@@ -22,7 +23,7 @@ class Aggregator(Task):
         self.plot = bool(options.get("PLOT", False))
         self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
 
-    def check_completion(self):
+    def _check_completion(self):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self):
@@ -53,7 +54,15 @@ class Aggregator(Task):
         self.logger.debug(f"Found simulation dependencies: {tasks}")
         return tasks
 
-    def run(self):
+    def load_prediction_file(self, filename):
+        df = pd.read_csv(filename, sep=r'[,\s+]', comment="#")
+        print("AAAAAAAAAAAAAAAAAAAAAAA", df.columns)
+        if "VARNAMES:" in df.columns:
+            df = df.drop(columns="VARNAMES:")
+        print("BBBBBBBBBBBBBBBBBBBBBBB", df.columns)
+        return df
+
+    def _run(self):
         new_hash = self.check_regenerate()
         if new_hash:
             mkdirs(self.output_dir)
@@ -62,7 +71,7 @@ class Aggregator(Task):
             df = None
 
             for f in prediction_files:
-                dataframe = pd.read_csv(f)
+                dataframe = self.load_prediction_file(f)
                 col = dataframe.columns[0]
                 dataframe = dataframe.rename(columns={col: self.id})
                 if df is None:
@@ -94,6 +103,7 @@ class Aggregator(Task):
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
+            self.save_key_format(df)
             self.logger.debug(f"Saving merged dataframe to {self.output_df}")
             self.save_new_hash(new_hash)
 
@@ -104,6 +114,11 @@ class Aggregator(Task):
 
         self.passed = True
         return True
+
+    def save_key_format(self, df):
+        df2 = df.copy()
+        df2.insert(0, "VARNAMES:", ["SN:"]*df2.shape[0])
+        df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
     def _plot_corr(self, df):
         self.logger.debug("Making prob correlation plot")
