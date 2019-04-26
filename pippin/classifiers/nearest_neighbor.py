@@ -122,9 +122,11 @@ class NearestNeighborClassifier(Classifier):
 
         # check global DONE stamp to see if all is DONE
         if os.path.exists(self.done_file):
+            self.logger.debug("Done file found at {self.done_file}")
             if os.path.exists(tarball):
                 return Task.FINISHED_SUCCESS
             else:
+                self.logger.error("Error, no tarball found at {tarball}")
                 return Task.FINISHED_FAILURE
         else:
             if os.path.exists(self.logging_file):
