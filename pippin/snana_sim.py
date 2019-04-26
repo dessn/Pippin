@@ -148,7 +148,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)
                 chown_dir(self.output_dir)
-                return Task.FINISHED_CRASH
+                return Task.FINISHED_FAILURE
         else:
             self.logger.warn(f"Simulation {self.name} logging file does not exist: {self.logging_file}")
         for file in os.listdir(self.sim_log_dir):
@@ -165,7 +165,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug("Removing hash on failure")
                 os.remove(self.hash_file)
                 chown_dir(self.output_dir)
-                return Task.FINISHED_CRASH
+                return Task.FINISHED_FAILURE
 
         # Check to see if the done file exists
         sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
@@ -192,7 +192,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 "photometry_dir": sim_folder_endpoint,
                 "types": self.get_types(),
             }
-            return Task.FINISHED_GOOD
+            return Task.FINISHED_SUCCESS
         return 0  # TODO: Update to num jobs
 
     def get_types(self):

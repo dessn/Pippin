@@ -23,7 +23,7 @@ class Aggregator(Task):
         self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
 
     def check_completion(self):
-        return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
+        return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self):
         new_hash = self.get_hash_from_string(self.name + str(self.include_type) + str(self.plot))

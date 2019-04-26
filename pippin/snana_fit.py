@@ -139,7 +139,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                             self.logger.error(f"Excerpt: {line}")
 
                 if output_error:
-                    return Task.FINISHED_CRASH
+                    return Task.FINISHED_FAILURE
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
@@ -157,7 +157,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.print_stats()
 
             self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES.gz"))  # TODO: Ask rick if there
-            return Task.FINISHED_GOOD
+            return Task.FINISHED_SUCCESS
         return 0
 
 

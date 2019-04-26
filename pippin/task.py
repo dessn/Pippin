@@ -4,8 +4,8 @@ import os
 
 
 class Task(ABC):
-    FINISHED_GOOD = -1
-    FINISHED_CRASH = -9
+    FINISHED_SUCCESS = -1
+    FINISHED_FAILURE = -9
 
     def __init__(self, name, output_dir, dependencies=None):
         self.logger = get_logger()

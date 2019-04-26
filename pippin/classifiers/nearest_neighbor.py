@@ -19,4 +19,4 @@ class NearestNeighborClassifier(Classifier):
             "output_dir": self.output_dir
         }
         self.logger.critical("CRITICAL ERROR, this hasn't been implemented yet")
-        return Task.FINISHED_CRASH
+        return Task.FINISHED_FAILURE

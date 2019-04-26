@@ -55,7 +55,7 @@ class FitProbClassifier(Classifier):
         self.output.update({
             "predictions_filename": self.output_file
         })
-        return Task.FINISHED_GOOD if self.passed else Task.FINISHED_CRASH
+        return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self):
         return self.classify()

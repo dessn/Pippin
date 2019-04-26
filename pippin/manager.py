@@ -163,9 +163,9 @@ class Manager:
             # Check status of current jobs
             for t in running_tasks:
                 result = t.check_completion()
-                if result in [Task.FINISHED_GOOD, Task.FINISHED_CRASH]:
+                if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
                     running_tasks.remove(t)
-                    if result == Task.FINISHED_GOOD:
+                    if result == Task.FINISHED_SUCCESS:
                         self.logger.notice(f"Task {t} finished successfully")
                         done_tasks.append(t)
                     else:

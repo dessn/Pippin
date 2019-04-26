@@ -162,13 +162,13 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
                 "predictions_filename": new_pred_file,
                 "prob_column_name": self.get_prob_column_name(),
             })
-            return Task.FINISHED_GOOD
+            return Task.FINISHED_SUCCESS
         else:
             num_jobs = int(subprocess.check_output(f"squeue -h -u $USER -o '%.70j' | grep {self.job_base_name} | wc -l", shell=True))
             if num_jobs == 0:
                 if os.path.exists(self.hash_file):
                     self.logger.info("Removing hash on failure")
                     os.remove(self.hash_file)
-                return Task.FINISHED_CRASH
+                return Task.FINISHED_FAILURE
             return num_jobs
 
