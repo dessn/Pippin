@@ -173,9 +173,12 @@ class Manager:
         self.logger.debug("Status:")
         self.logger.debug(f"    Waiting: {[t.name for t in waiting]}")
         self.logger.debug(f"    Running: {[t.name for t in running]}")
-        self.logger.debug(f"    Done:    {[t.name for t in done]}")
-        self.logger.debug(f"    Failed:  {[t.name for t in failed]}")
-        self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
+        if done:
+            self.logger.debug(f"    Done:    {[t.name for t in done]}")
+        if failed:
+            self.logger.debug(f"    Failed:  {[t.name for t in failed]}")
+        if blocked:
+            self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
         self.logger.debug("")
 
     def execute(self):

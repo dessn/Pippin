@@ -29,6 +29,7 @@ class FitProbClassifier(Classifier):
         new_hash = self.check_regenerate()
         if new_hash:
             mkdirs(self.output_dir)
+            self.save_new_hash(new_hash)
 
             input = self.get_fit_dependency()
             fitres_file = input["fitres_file"]
@@ -44,9 +45,9 @@ class FitProbClassifier(Classifier):
             self.output_file = self.output_dir + "/predictions.csv"
             self.logger.info(f"Saving probabilities to {self.output_file}")
             df.to_csv(self.output_file, index=False, float_format="%0.4f")
-            self.save_new_hash(new_hash)
             chown_dir(self.output_dir)
-
+            with open(self.done_file, "w") as f:
+                f.write("SUCCESS")
         self.passed = True
 
         return True
