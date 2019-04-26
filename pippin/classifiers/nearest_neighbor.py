@@ -16,7 +16,7 @@ class NearestNeighborClassifier(Classifier):
         self.num_jobs = 40
         # TODO: Ask rick how the ncore is set. Atm I dont think it is.
         self.outfile_train = f'{output_dir}/NN_trainResult.out'
-        self.outfile_predict = f'{output_dir}/predictions.key'
+        self.outfile_predict = f'{output_dir}/predictions.out'
         self.logging_file = os.path.join(output_dir, "split_and_fit_output.log")
         self.splitfit_output_dir = f'{self.output_dir}/output'
 
