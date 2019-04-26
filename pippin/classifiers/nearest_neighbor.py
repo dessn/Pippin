@@ -45,15 +45,13 @@ class NearestNeighborClassifier(Classifier):
         nml_file_orig = fit_output["nml_file"]
 
         outfile_train = f'{self.name}_train.out'
-        outdir_train = f'{self.output_dir}/OUT_NNTRAIN'
+        outdir_train = f'{self.output_dir}/output'
         nml_file_train = f'{self.output_dir}/{genversion}-2.nml'
-        version_dir = os.path.join(fitres_dir, genversion)
 
         train_info_local = {
             "outfile_NNtrain": outfile_train,
             "outdir_NNtrain": outdir_train,
             "nml_file_NNtrain": nml_file_train,
-            "version_dir": version_dir
         }
 
         print(' Prepare %s training job' % self.name)
@@ -100,7 +98,7 @@ class NearestNeighborClassifier(Classifier):
         with open(nml_file_train, 'a') as f:
             f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n" % time.ctime())
             f.write("\n&NNINP \n")
-            f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % version_dir)
+            f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
             f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))  # TODO: Check with Rick, I replaced a generic FITOPT000.FITRES with a file, this all good?
             f.write("   NEARNBR_SEPMAX_VARDEF  = '%s' \n" % self.nn_options)
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")

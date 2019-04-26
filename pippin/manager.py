@@ -153,7 +153,7 @@ class Manager:
         if t in running:
             running.remove(t)
         failed.append(t)
-        self.logger.error(f"Task {t} crashed")
+        self.logger.error(f"Task {t} failed")
         if os.path.exists(t.hash_file):
             os.remove(t.hash_file)
 
@@ -214,13 +214,14 @@ class Manager:
                 if t is not None:
                     self.logger.info("")
                     self.tasks.remove(t)
+                    self.logger.notice(f"LAUNCHING: {t}")
                     started = t.run()
                     if started:
                         num_running += t.num_jobs
                         self.logger.notice(f"RUNNING: {t}")
                         running_tasks.append(t)
                     else:
-                        self.logger.error(f"Task {t} failed to run")
+                        self.logger.error(f"FAILED TO LAUNCH: {t}")
                         self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
                     small_wait = True
                 else:
