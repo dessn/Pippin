@@ -114,7 +114,7 @@ class NearestNeighborClassifier(Classifier):
         self.logger.debug(f'Launching training via {cmd}')
         self.output["model_filename"] = self.outfile_train
         with open(self.logging_file, "w") as f:
-            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
     def _check_completion(self):
         outdir = self.train_info_local["outdir_NNtrain"]
