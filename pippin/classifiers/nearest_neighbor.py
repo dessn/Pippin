@@ -36,6 +36,7 @@ class NearestNeighborClassifier(Classifier):
         return True
 
     def prepare_train_job(self, ):
+        self.logger.debug("Preparing NML file for Nearest Neighbour training")
         fit_output = self.get_fit_dependency()
 
         genversion = fit_output["genversion"]
@@ -82,6 +83,7 @@ class NearestNeighborClassifier(Classifier):
         sed_command = ("%s %s > %s" % (sedstr, nml_file_orig, nml_file_train))
 
         # use system call to apply sed command
+        self.logger.debug(f"Running sed command {sed_command}")
         subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
 
         # make sure that the new NML file is really there

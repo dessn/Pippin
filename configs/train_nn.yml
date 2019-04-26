@@ -13,8 +13,12 @@ LCFIT:
       BASE: des.nml
 
 CLASSIFICATION:
-  NN:
+  NNTRAIN:
     CLASSIFIER: NearestNeighborClassifier
     MODE: train
+
+  NNTEST:
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: predict
     OPTS:
-      EXAMPLE_OPT: 1.0
+        MODEL: NNTRAIN
