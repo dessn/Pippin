@@ -128,6 +128,13 @@ class NearestNeighborClassifier(Classifier):
                 else:
                     self.logger.error(f"Error, no tarball found at {tarball}")
                     return Task.FINISHED_FAILURE
+            else:
+                if os.path.exists(self.outfile_predict):
+                    self.logger.debug(f"Predictions can be found at {self.outfile_predict}")
+                    return Task.FINISHED_SUCCESS
+                else:
+                    self.logger.error(f"No predictions found at {self.outfile_predict}")
+                    return Task.FINISHED_FAILURE
         else:
             if os.path.exists(self.logging_file):
                 with open(self.logging_file, "r") as f:
