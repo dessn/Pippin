@@ -17,7 +17,7 @@ class NearestNeighborClassifier(Classifier):
         # TODO: Ask rick how the ncore is set. Atm I dont think it is.
         self.outfile_train = f'{output_dir}/NN_trainResult.out'
         self.outfile_predict = f'{output_dir}/predictions.out'
-        self.logging_file = os.path.join(output_dir, "split_and_fit_output.log")
+        self.logging_file = os.path.join(output_dir, "output.log")
         self.splitfit_output_dir = f'{self.output_dir}/output'
 
         self.options = options
@@ -177,7 +177,7 @@ class NearestNeighborClassifier(Classifier):
         outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
         cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
         cmd_done = f'touch {self.done_file}'
-        cmd = ('%s ; %s' % (cmd_job, cmd_done))
+        cmd = ('%s && %s' % (cmd_job, cmd_done))
         self.logger.debug(f"Executing command {cmd}")
         with open(self.logging_file, "w") as f:
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
