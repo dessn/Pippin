@@ -150,7 +150,8 @@ class Manager:
         return None
 
     def fail_task(self, t, running, failed, blocked):
-        running.remove(t)
+        if t in running:
+            running.remove(t)
         failed.append(t)
         self.logger.error(f"Task {t} crashed")
         if os.path.exists(t.hash_file):
