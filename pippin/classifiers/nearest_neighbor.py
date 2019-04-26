@@ -16,7 +16,7 @@ class NearestNeighborClassifier(Classifier):
         self.num_jobs = 40
         # TODO: Ask rick how the ncore is set. Atm I dont think it is.
         self.outfile_train = f'{output_dir}/NN_trainResult.out'
-        self.outfile_predict = f'{output_dir}/NN_predictResult.out'
+        self.outfile_predict = f'{output_dir}/predictions.key'
         self.logging_file = os.path.join(output_dir, "split_and_fit_output.log")
         self.splitfit_output_dir = f'{self.output_dir}/output'
 
@@ -113,7 +113,6 @@ class NearestNeighborClassifier(Classifier):
 
     def _check_completion(self):
         outdir = self.splitfit_output_dir
-        tarball = os.path.join(outdir, 'SPLIT_JOBS_LCFIT.tar.gz')
 
         # check global DONE stamp to see if all is DONE
         if os.path.exists(self.done_file):
@@ -122,11 +121,13 @@ class NearestNeighborClassifier(Classifier):
                 if "FAILURE" in f.read().upper():
                     self.logger.error("Done file has FAILURE stamp!")
                     return Task.FINISHED_FAILURE
-            if os.path.exists(tarball):
-                return Task.FINISHED_SUCCESS
-            else:
-                self.logger.error(f"Error, no tarball found at {tarball}")
-                return Task.FINISHED_FAILURE
+            if self.mode == Classifier.TRAIN:
+                tarball = os.path.join(outdir, 'SPLIT_JOBS_LCFIT.tar.gz')
+                if os.path.exists(tarball):
+                    return Task.FINISHED_SUCCESS
+                else:
+                    self.logger.error(f"Error, no tarball found at {tarball}")
+                    return Task.FINISHED_FAILURE
         else:
             if os.path.exists(self.logging_file):
                 with open(self.logging_file, "r") as f:
@@ -140,11 +141,15 @@ class NearestNeighborClassifier(Classifier):
 
                 if output_error:
                     return Task.FINISHED_FAILURE
-            # check how many jobs remain
-            donePath = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
-            num_done = len(glob.glob1(donePath, "*.DONE"))
-            num_remain = self.num_jobs - num_done
-            return num_remain
+
+            if self.mode == Classifier.TRAIN:
+                # check how many jobs remain
+                donePath = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
+                num_done = len(glob.glob1(donePath, "*.DONE"))
+                num_remain = self.num_jobs - num_done
+                return num_remain
+            else:
+                return 0
 
     def predict(self):
         train_info = self.get_fit_dependency()
