@@ -166,6 +166,7 @@ class Manager:
                         self.tasks.remove(t2)
                         blocked.append(t2)
                         modified = True
+                        break
 
     def log_status(self, waiting, running, done, failed, blocked):
         self.logger.debug("")
