@@ -50,6 +50,8 @@ class Manager:
         self.finish = self.resolve_stage(stage)
 
     def resolve_stage(self, stage):
+        if stage is None:
+            return None
         if stage.isdigit():
             num = int(stage)
         else:
