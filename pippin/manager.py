@@ -40,7 +40,7 @@ class Manager:
         self.finish = None
         self.force_refresh = False
 
-    def force_refresh(self, force_refresh):
+    def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
 
     # def set_start(self, stage):

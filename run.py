@@ -84,7 +84,7 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     manager = Manager(config_filename, config, message_store)
-    manager.set_start(args.start)
+    # manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.execute()
