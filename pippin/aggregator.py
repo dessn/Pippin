@@ -65,8 +65,8 @@ class Aggregator(Task):
         print("BBBBBBBBBBBBBBBBBBBBBBB", df.columns)
         return df
 
-    def _run(self,force_refresh):
-        new_hash = self.check_regenerate()
+    def _run(self, force_refresh):
+        new_hash = self.check_regenerate(force_refresh)
         if new_hash:
             mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
