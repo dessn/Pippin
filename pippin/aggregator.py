@@ -130,6 +130,7 @@ class Aggregator(Task):
         import seaborn as sb
 
         fig, ax = plt.subplots(figsize=(6, 5))
+        df = df.dropna()
         sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
         plt.show()
         if self.output_dir:
@@ -148,7 +149,8 @@ class Aggregator(Task):
 
         fig, ax = plt.subplots(figsize=(5, 4))
         for c in columns:
-            actual_prob, _, _ = binned_statistic(df[c], df["IA"].astype(np.float), bins=prob_bins, statistic="mean")
+            data, truth = self._get_data_and_truth(df[c], df["IA"])
+            actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
             ax.scatter(bin_center, actual_prob, s=10, alpha=0.5, label=c)
         ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
         ax.legend(loc=4, frameon=False)
@@ -176,6 +178,12 @@ class Aggregator(Task):
             "specificity": fp / (fp + tn)
         }
 
+    def _get_data_and_truth(self, data, truth):
+        mask = ~data.isna()
+        data = data[mask]
+        truth = truth[mask]
+        return data, truth
+
     def _plot_thresholds(self, df):
         self.logger.debug("Making threshold plot")
         import matplotlib.pyplot as plt
@@ -183,14 +191,15 @@ class Aggregator(Task):
         thresholds = np.linspace(0.5, 0.999, 100)
         columns = [c for c in df.columns if "PROB_" in c]
 
-        fig, ax = plt.subplots(figsize=(5, 4))
+        fig, ax = plt.subplots(figsize=(7, 5))
         ls = ["-", "--", ":", ":-", "-", "--", ":"]
         keys = ["purity", "efficiency"]
         for c, col in zip(columns, self.colours):
+            data, truth = self._get_data_and_truth(df[c], df["IA"])
             res = {}
             for t in thresholds:
-                passed = df[c] > t
-                metrics = self._get_metrics(passed, df["IA"])
+                passed = data >= t
+                metrics = self._get_metrics(passed, truth)
                 for key in keys:
                     if res.get(key) is None:
                         res[key] = []
@@ -199,7 +208,7 @@ class Aggregator(Task):
                 ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c.split('_')[1]} {key}")
 
         ax.set_xlabel("Classification probability threshold")
-        ax.legend()
+        ax.legend(loc=3, frameon=False, ncol=2)
         plt.show()
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_thresholds.png")
@@ -213,13 +222,14 @@ class Aggregator(Task):
         thresholds = np.linspace(0.01, 1, 100)
         columns = [c for c in df.columns if "PROB_" in c]
 
-        fig, ax = plt.subplots(figsize=(5, 4))
+        fig, ax = plt.subplots(figsize=(7, 5))
 
         for c, col in zip(columns, self.colours):
             efficiency, purity = [], []
+            data, truth = self._get_data_and_truth(df[c], df["IA"])
             for t in thresholds:
-                passed = df[c] > t
-                metrics = self._get_metrics(passed, df["IA"])
+                passed = data >= t
+                metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 purity.append(metrics["purity"])
             ax.plot(purity, efficiency, color=col,  label=f"{c.split('_')[1]}")
@@ -227,7 +237,7 @@ class Aggregator(Task):
         ax.set_xlabel("Precision (aka purity)")
         ax.set_ylabel("Recall (aka efficiency)")
         ax.set_title("PR Curve")
-        ax.legend()
+        ax.legend(frameon=False, loc=3)
         plt.show()
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_pr.png")
@@ -241,13 +251,14 @@ class Aggregator(Task):
         thresholds = np.linspace(0.01, 0.999, 100)
         columns = [c for c in df.columns if "PROB_" in c]
 
-        fig, ax = plt.subplots(figsize=(5, 4))
+        fig, ax = plt.subplots(figsize=(7, 5))
 
         for c, col in zip(columns, self.colours):
             efficiency, specificity = [], []
+            data, truth = self._get_data_and_truth(df[c], df["IA"])
             for t in thresholds:
-                passed = df[c] > t
-                metrics = self._get_metrics(passed, df["IA"])
+                passed = data >= t
+                metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 specificity.append(metrics["specificity"])
             ax.plot(specificity, efficiency, color=col,  label=f"{c.split('_')[1]}")
@@ -255,7 +266,7 @@ class Aggregator(Task):
         ax.set_xlabel("False Positive Rate")
         ax.set_ylabel("True Positive Rate")
         ax.set_title("ROC Curve")
-        ax.legend()
+        ax.legend(frameon=False, loc=4)
         plt.show()
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_roc.png")
@@ -277,5 +288,5 @@ class Aggregator(Task):
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("merged.csv")
-    Aggregator("AGG", "", [], {})._plot(df)
+    df = pd.read_csv("debug/merged.csv")
+    Aggregator("AGG", "debug", [], {})._plot(df)
