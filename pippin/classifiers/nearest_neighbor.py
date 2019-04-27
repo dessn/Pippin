@@ -36,7 +36,7 @@ class NearestNeighborClassifier(Classifier):
             return False
 
         # run split_and_fit job
-        self.run_train_job(new_hash)
+        self.run_train_job()
         return True
 
     def prepare_train_job(self, force_refresh):
