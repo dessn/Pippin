@@ -120,7 +120,7 @@ class Aggregator(Task):
         return True
 
     def save_key_format(self, df):
-        df2 = df.copy()
+        df2 = df.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"]*df2.shape[0])
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
