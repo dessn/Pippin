@@ -16,11 +16,11 @@ class Classifier(Task):
         self.output["prob_column_name"] = self.get_prob_column_name()
 
     @abstractmethod
-    def predict(self):
+    def predict(self, force_refresh):
         pass
 
     @abstractmethod
-    def train(self):
+    def train(self, force_refresh):
         pass
 
     @staticmethod
@@ -39,11 +39,11 @@ class Classifier(Task):
                 return t.output
         return None
 
-    def _run(self):
+    def _run(self, force_refresh):
         if self.mode == Classifier.TRAIN:
-            return self.train()
+            return self.train(force_refresh)
         elif self.mode == Classifier.PREDICT:
-            return self.predict()
+            return self.predict(force_refresh)
 
     def get_prob_column_name(self):
         return f"PROB_{self.name}"

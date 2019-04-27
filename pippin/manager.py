@@ -13,6 +13,15 @@ from pippin.task import Task
 
 
 class Manager:
+    stages = {
+        "SIM": 0,
+        "LCFIT": 1,
+        "CLASSIFY": 2,
+        "AGGREGATE": 3,
+        "MERGE": 4,
+        "BIASCOR": 5
+    }
+
     def __init__(self, filename, config, message_store):
         self.logger = get_logger()
         self.message_store = message_store
@@ -26,6 +35,29 @@ class Manager:
 
         self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + self.global_config['OUTPUT']['output_dir'] + "/" + self.filename)
         self.tasks = None
+
+        # self.start = None
+        self.finish = None
+        self.force_refresh = False
+
+    def force_refresh(self, force_refresh):
+        self.force_refresh = force_refresh
+
+    # def set_start(self, stage):
+    #     self.start = self.resolve_stage(stage)
+
+    def set_finish(self, stage):
+        self.finish = self.resolve_stage(stage)
+
+    def resolve_stage(self, stage):
+        if stage.isdigit():
+            num = int(stage)
+        else:
+            key = stage.upper()
+            assert key in Manager.stages.keys(), f"Stage {key} is not in recognised keys {Manager.stages.keys()}"
+            num = Manager.stages[key]
+        assert num in Manager.stages.values(), f"Stage {num} is not in recognised values {Manager.stages.values()}"
+        return num
 
     def get_tasks(self, config):
         sim_tasks = self.get_simulation_tasks(config)
@@ -42,6 +74,8 @@ class Manager:
 
     def get_simulation_tasks(self, c):
         tasks = []
+        if self.finish is not None and self.finish < Manager.stages["SIM"]:
+            return tasks
         for sim_name in c.get("SIM", []):
             sim_output_dir = self._get_sim_output_dir(sim_name)
             s = SNANASimulation(sim_name, sim_output_dir, f"{self.prefix}_{sim_name}", c["SIM"][sim_name], self.global_config)
@@ -51,6 +85,8 @@ class Manager:
 
     def get_lcfit_tasks(self, c, sim_tasks):
         tasks = []
+        if self.finish is not None and self.finish < Manager.stages["LCFIT"]:
+            return tasks
         for fit_name in c.get("LCFIT", []):
             fit_config = c["LCFIT"][fit_name]
             for sim in sim_tasks:
@@ -63,7 +99,8 @@ class Manager:
 
     def get_classification_tasks(self, c, sim_tasks, lcfit_tasks):
         tasks = []
-
+        if self.finish is not None and self.finish < Manager.stages["CLASSIFY"]:
+            return tasks
         for clas_name in c.get("CLASSIFICATION", []):
             config = c["CLASSIFICATION"][clas_name]
             name = config["CLASSIFIER"]
@@ -122,6 +159,8 @@ class Manager:
 
     def get_aggregator_tasks(self, c, classifier_tasks):
         tasks = []
+        if self.finish is not None and self.finish < Manager.stages["AGGREGATE"]:
+            return tasks
         for agg_name in c.get("AGGREGATION", []):
             config = c["AGGREGATION"][agg_name]
             options = config.get("OPTS", {})
@@ -215,7 +254,7 @@ class Manager:
                     self.logger.info("")
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
-                    started = t.run()
+                    started = t.run(self.force_refresh)
                     if started:
                         num_running += t.num_jobs
                         self.logger.notice(f"RUNNING: {t}")
@@ -274,21 +313,21 @@ class Manager:
             self.logger.error(f"\t{w.message}")
 
     def _get_sim_output_dir(self, sim_name):
-        return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}"
+        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{self.prefix}_{sim_name}"
 
     def _get_phot_output_dir(self, sim_name):
-        return f"{self.output_dir}/0_SIM/{self.prefix}_{sim_name}/{self.prefix}_{sim_name}"
+        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{self.prefix}_{sim_name}/{self.prefix}_{sim_name}"
 
     def _get_lc_output_dir(self, sim_name, fit_name):
-        return f"{self.output_dir}/1_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
+        return f"{self.output_dir}/{Manager.stages['LCFIT']}_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
 
     def _get_clas_output_dir(self, sim_name, fit_name, clas_name):
         fit_name = "" if fit_name is None else "_" + fit_name
         sim_name = "" if sim_name is None else "_" + sim_name
-        return f"{self.output_dir}/2_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
+        return f"{self.output_dir}/{Manager.stages['CLASSIFY']}_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
 
     def _get_aggregator_dir(self, agg_name):
-        return f"{self.output_dir}/3_AGG/{self.prefix}_{agg_name}"
+        return f"{self.output_dir}/{Manager.stages['AGGREGATE']}_AGG/{self.prefix}_{agg_name}"
 
 
 if __name__ == "__main__":

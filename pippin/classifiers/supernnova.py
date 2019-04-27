@@ -62,17 +62,17 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(".pickle")][0]
         return model_file, os.path.join(saved_dir, pred_file)
 
-    def train(self):
-        return self.classify(True)
+    def train(self, force_refresh):
+        return self.classify(True, force_refresh)
 
-    def predict(self):
-        return self.classify(False)
+    def predict(self, force_refresh):
+        return self.classify(False, force_refresh)
 
     def get_types(self):
         t = self.get_simulation_dependency()
         return t["types"]
 
-    def classify(self, training):
+    def classify(self, training, force_refresh):
         use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
         model_path = ""
@@ -114,10 +114,10 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_string(slurm_text)
 
-        if new_hash == old_hash:
+        if not force_refresh and new_hash == old_hash:
             self.logger.info("Hash check passed, not rerunning")
         else:
-            self.logger.info("Hash check failed, rerunning. Cleaning output_dir")
+            self.logger.info("Rerunning. Cleaning output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)

@@ -13,24 +13,25 @@ class FitProbClassifier(Classifier):
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
 
-    def check_regenerate(self):
+    def check_regenerate(self, force_refresh):
 
         new_hash = self.get_hash_from_string(self.name)
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
             self.logger.info("Hash check failed, regenerating")
-            return True
+            return new_hash
+        elif force_refresh:
+            self.logger.debug("Force refresh, regenerating")
+            return new_hash
         else:
             self.logger.info("Hash check passed, not rerunning")
             return False
 
-    def classify(self):
-        new_hash = self.check_regenerate()
+    def classify(self, force_refresh):
+        new_hash = self.check_regenerate(force_refresh)
         if new_hash:
             mkdirs(self.output_dir)
-            self.save_new_hash(new_hash)
-
             input = self.get_fit_dependency()
             fitres_file = input["fitres_file"]
             self.logger.debug(f"Looking for {fitres_file}")
@@ -48,6 +49,7 @@ class FitProbClassifier(Classifier):
             chown_dir(self.output_dir)
             with open(self.done_file, "w") as f:
                 f.write("SUCCESS")
+            self.save_new_hash(new_hash)
         self.passed = True
 
         return True
@@ -58,11 +60,11 @@ class FitProbClassifier(Classifier):
         })
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
-    def train(self):
-        return self.classify()
+    def train(self, force_refresh):
+        return self.classify(force_refresh)
 
-    def predict(self):
-        return self.classify()
+    def predict(self, force_refresh):
+        return self.classify(force_refresh)
 
     @staticmethod
     def get_requirements(config):

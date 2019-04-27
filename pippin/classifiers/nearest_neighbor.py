@@ -24,7 +24,7 @@ class NearestNeighborClassifier(Classifier):
         self.nn_options = 'z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04'
         self.train_info_local = {}
 
-    def train(self):
+    def train(self, force_refresh):
         # Created April 2019 by R.Kessler
         # Train nearest nbr.
 
@@ -158,7 +158,7 @@ class NearestNeighborClassifier(Classifier):
             else:
                 return 0
 
-    def predict(self):
+    def predict(self, force_refresh):
         train_info = self.get_fit_dependency()
 
         model = self.options.get("MODEL")

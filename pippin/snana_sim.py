@@ -36,7 +36,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.output["genversion"] = self.genversion
 
-    def write_input(self):
+    def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
             if k.upper() != "GLOBAL":
@@ -100,10 +100,10 @@ class SNANASimulation(ConfigBasedExecutable):
         # Get current hash
         new_hash = self.get_hash_from_files(output_files)
         old_hash = self.get_old_hash()
-        regenerate = old_hash is None or old_hash != new_hash
+        regenerate = force_refresh or (old_hash is None or old_hash != new_hash)
 
         if regenerate:
-            self.logger.info(f"Running simulation, hash check failed")
+            self.logger.info(f"Running simulation")
             # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
             if "//" not in self.output_dir and len(self.output_dir) > 30:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
@@ -121,9 +121,9 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir_obj.cleanup()
         return regenerate, new_hash
 
-    def _run(self):
+    def _run(self, force_refresh):
 
-        regenerate, new_hash = self.write_input()
+        regenerate, new_hash = self.write_input(force_refresh)
         if not regenerate:
             return True
 

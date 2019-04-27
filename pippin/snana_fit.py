@@ -80,7 +80,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         """
         self.set_property(name, value, section_start="&FITINP", section_end="&END")
 
-    def write_nml(self):
+    def write_nml(self, force_refresh):
         self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
         with open(self.fitopts_file, "r") as f:
             self.fitopts = list(f.read().splitlines())
@@ -100,10 +100,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         #     string_to_hash += f.read()
         new_hash = self.get_hash_from_string("".join(string_to_hash))
         old_hash = self.get_old_hash()
-        regenerate = old_hash is None or old_hash != new_hash
+        regenerate = force_refresh or (old_hash is None or old_hash != new_hash)
 
         if regenerate:
-            self.logger.info(f"Running Light curve fit, hash check failed. Removing output_dir")
+            self.logger.info(f"Running Light curve fit. Removing output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             # Write main file
@@ -117,8 +117,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         return regenerate, new_hash
 
-    def _run(self):
-        regenerate, new_hash = self.write_nml()
+    def _run(self, force_refresh):
+        regenerate, new_hash = self.write_nml(force_refresh)
         if not regenerate:
             return True
         self.logger.info(f"Light curve fitting outputting to {self.logging_file}")

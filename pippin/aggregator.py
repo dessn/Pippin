@@ -26,12 +26,15 @@ class Aggregator(Task):
     def _check_completion(self):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
-    def check_regenerate(self):
+    def check_regenerate(self, force_refresh):
         new_hash = self.get_hash_from_string(self.name + str(self.include_type) + str(self.plot))
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
             self.logger.info("Hash check failed, regenerating")
+            return new_hash
+        elif force_refresh:
+            self.logger.debug("Force refresh deteted")
             return new_hash
         else:
             self.logger.info("Hash check passed, not rerunning")
@@ -62,7 +65,7 @@ class Aggregator(Task):
         print("BBBBBBBBBBBBBBBBBBBBBBB", df.columns)
         return df
 
-    def _run(self):
+    def _run(self,force_refresh):
         new_hash = self.check_regenerate()
         if new_hash:
             mkdirs(self.output_dir)

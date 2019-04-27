@@ -65,12 +65,12 @@ class Task(ABC):
     def add_dependency(self, task):
         self.dependencies.append(task)
 
-    def run(self):
+    def run(self, force_refresh):
         self.start_time = time.time()
-        return self._run()
+        return self._run(force_refresh)
 
     @abstractmethod
-    def _run(self):
+    def _run(self, force_refresh):
         """ Returns the hash of the step if successful, False if not. """
         pass
 
@@ -87,7 +87,10 @@ class Task(ABC):
 
                 if self.start_time is None and os.path.exists(self.hash_file):
                     self.start_time = os.path.getmtime(self.hash_file)
+                print("AAAAAAA", self.start_time)
+                print("BBBBBBB", self.end_time)
                 self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
+                print("CCCCCCC", self.wall_time)
                 self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
         return result
 
