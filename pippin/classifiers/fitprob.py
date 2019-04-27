@@ -12,6 +12,7 @@ class FitProbClassifier(Classifier):
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
+        self.output_file = os.path.join(self.output_dir, "predictions.csv")
 
     def check_regenerate(self, force_refresh):
 
@@ -43,7 +44,6 @@ class FitProbClassifier(Classifier):
             df = pd.read_csv(fitres_file, sep='\s+', comment="#", compression="infer")
             df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
 
-            self.output_file = self.output_dir + "/predictions.csv"
             self.logger.info(f"Saving probabilities to {self.output_file}")
             df.to_csv(self.output_file, index=False, float_format="%0.4f")
             chown_dir(self.output_dir)
