@@ -102,7 +102,7 @@ class Aggregator(Task):
             if self.plot:
                 self._plot(df)
 
-            self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {df.columns}")
+            self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
             self.save_key_format(df)
             self.logger.debug(f"Saving merged dataframe to {self.output_df}")
