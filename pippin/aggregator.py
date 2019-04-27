@@ -59,10 +59,8 @@ class Aggregator(Task):
 
     def load_prediction_file(self, filename):
         df = pd.read_csv(filename, sep=r'[,\s+]', comment="#")
-        print("AAAAAAAAAAAAAAAAAAAAAAA", df.columns)
-        if "VARNAMES:" in df.columns:
-            df = df.drop(columns="VARNAMES:")
-        print("BBBBBBBBBBBBBBBBBBBBBBB", df.columns)
+        remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
+        df = df.drop(columns=remove_columns)
         return df
 
     def _run(self, force_refresh):
@@ -70,9 +68,6 @@ class Aggregator(Task):
         if new_hash:
             mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
-            print(self.classifiers)
-            print(prediction_files)
-
             df = None
 
             for f in prediction_files:
