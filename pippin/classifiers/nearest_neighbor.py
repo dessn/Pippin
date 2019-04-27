@@ -1,10 +1,11 @@
 import subprocess
 import os
 import shutil
+import tempfile
 import time
 import glob
 from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs, get_output_loc
+from pippin.config import mkdirs, get_output_loc, copytree
 from pippin.task import Task
 
 
@@ -14,7 +15,6 @@ class NearestNeighborClassifier(Classifier):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.passed = False
         self.num_jobs = 40
-        # TODO: Ask rick how the ncore is set. Atm I dont think it is.
         self.outfile_train = f'{output_dir}/NN_trainResult.out'
         self.outfile_predict = f'{output_dir}/predictions.out'
         self.logging_file = os.path.join(output_dir, "output.log")
@@ -29,15 +29,17 @@ class NearestNeighborClassifier(Classifier):
         # Train nearest nbr.
 
         # prepare new split-and_fit NML file with extra NNINP namelist
-        self.train_info_local = self.prepare_train_job()
+        new_hash, self.train_info_local = self.prepare_train_job(force_refresh)
+        if new_hash is None:
+            return True
         if self.train_info_local is None:
             return False
 
         # run split_and_fit job
-        self.run_train_job()
+        self.run_train_job(new_hash)
         return True
 
-    def prepare_train_job(self, ):
+    def prepare_train_job(self, force_refresh):
         self.logger.debug("Preparing NML file for Nearest Neighbour training")
         fit_output = self.get_fit_dependency()
 
@@ -46,17 +48,17 @@ class NearestNeighborClassifier(Classifier):
         fitres_file = fit_output["fitres_file"]
         nml_file_orig = fit_output["nml_file"]
 
+        # Put config in a temp directory
+        temp_dir_obj = tempfile.TemporaryDirectory()
+        temp_dir = temp_dir_obj.name
+
         outfile_train = f'{self.name}_train.out'
-        nml_file_train = f'{self.output_dir}/{genversion}-2.nml'
+        nml_file_train = f'{temp_dir}/{genversion}-2.nml'
 
         train_info_local = {
             "outfile_NNtrain": outfile_train,
             "nml_file_NNtrain": nml_file_train,
         }
-        # create output dir [clobber existing dir]
-        if os.path.isdir(self.output_dir):
-            shutil.rmtree(self.output_dir, ignore_errors=True)
-        mkdirs(self.output_dir)
 
         # construct sed to copy original NMLFILE and to
         #   + replace OUTDIR:
@@ -80,7 +82,7 @@ class NearestNeighborClassifier(Classifier):
 
         # use system call to apply sed command
         self.logger.debug(f"Running sed command {sed_command}")
-        subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+        subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
         # make sure that the new NML file is really there
         if not os.path.isfile(nml_file_train):
@@ -102,7 +104,22 @@ class NearestNeighborClassifier(Classifier):
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
             f.write("\n&END\n")
-        return train_info_local
+
+        input_files = [nml_file_train]
+        old_hash = self.get_old_hash()
+        new_hash = self.get_hash_from_files(input_files)
+
+        if force_refresh or new_hash != old_hash:
+            self.logger.debug("Regenerating")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+            self.logger.debug(f"Copying from {temp_dir} to {self.output_dir}")
+            copytree(temp_dir, self.output_dir)
+            self.save_new_hash(new_hash)
+            return new_hash, train_info_local
+        else:
+            self.logger.debug("Not regenerating")
+            return None, train_info_local
 
     def run_train_job(self):
         cmd = ["split_and_fit.pl", self.train_info_local["nml_file_NNtrain"], "NOPROMPT"]
@@ -150,9 +167,8 @@ class NearestNeighborClassifier(Classifier):
                     return Task.FINISHED_FAILURE
 
             if self.mode == Classifier.TRAIN:
-                # check how many jobs remain
-                donePath = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
-                num_done = len(glob.glob1(donePath, "*.DONE"))
+                done_path = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
+                num_done = len(glob.glob1(done_path, "*.DONE"))
                 num_remain = self.num_jobs - num_done
                 return num_remain
             else:
@@ -174,21 +190,29 @@ class NearestNeighborClassifier(Classifier):
             self.logger.error(f"Cannot find {model_path}")
             return False
 
-        # Do regen check, for now, nuke
-        if os.path.exists(self.output_dir):
-            shutil.rmtree(self.output_dir, ignore_errors=True)
-        mkdirs(self.output_dir)
+        old_hash = self.get_old_hash()
+        new_hash = self.get_hash_from_string(self.name + model_path)
 
-        job_name = 'nearnbr_apply.exe'
-        inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'
-        outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
-        cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
-        self.logger.debug(f"Executing command {cmd_job}")
-        with open(self.logging_file, "w") as f:
-            val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
-            with open(self.done_file, "w") as f:
-                if val.returncode == 0:
-                    f.write("SUCCESS")
-                else:
-                    f.write("FAILURE")
+        if force_refresh or new_hash != old_hash:
+            self.logger.debug("Regenerating")
+
+            if os.path.exists(self.output_dir):
+                shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+            self.save_new_hash(new_hash)
+
+            job_name = 'nearnbr_apply.exe'
+            inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'
+            outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
+            cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
+            self.logger.debug(f"Executing command {cmd_job}")
+            with open(self.logging_file, "w") as f:
+                val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                with open(self.done_file, "w") as f:
+                    if val.returncode == 0:
+                        f.write("SUCCESS")
+                    else:
+                        f.write("FAILURE")
+        else:
+            self.logger.debug("Not regenerating")
         return True

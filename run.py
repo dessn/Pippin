@@ -50,6 +50,7 @@ if __name__ == "__main__":
     message_store = MessageStore()
     NOTICE_LEVELV_NUM = 25
     logging.addLevelName(NOTICE_LEVELV_NUM, "NOTICE")
+
     def notice(self, message, *args, **kws):
         if self.isEnabledFor(NOTICE_LEVELV_NUM):
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
