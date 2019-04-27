@@ -30,6 +30,7 @@ class NearestNeighborClassifier(Classifier):
 
         # prepare new split-and_fit NML file with extra NNINP namelist
         new_hash, self.train_info_local = self.prepare_train_job(force_refresh)
+        self.output["model_filename"] = self.outfile_train
         if new_hash is None:
             return True
         if self.train_info_local is None:
@@ -125,7 +126,6 @@ class NearestNeighborClassifier(Classifier):
     def run_train_job(self):
         cmd = ["split_and_fit.pl", self.train_info_local["nml_file_NNtrain"], "NOPROMPT"]
         self.logger.debug(f'Launching training via {cmd}')
-        self.output["model_filename"] = self.outfile_train
         with open(self.logging_file, "w") as f:
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
