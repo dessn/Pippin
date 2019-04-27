@@ -100,7 +100,7 @@ class NearestNeighborClassifier(Classifier):
             f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n" % time.ctime())
             f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
-            f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))  # TODO: Check with Rick, I replaced a generic FITOPT000.FITRES with a file, this all good?
+            f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))
             f.write("   NEARNBR_SEPMAX_VARDEF  = '%s' \n" % self.nn_options)
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
@@ -149,6 +149,7 @@ class NearestNeighborClassifier(Classifier):
             else:
                 if os.path.exists(self.outfile_predict):
                     self.logger.debug(f"Predictions can be found at {self.outfile_predict}")
+                    self.output["predictions_filename"] = self.outfile_predict
                     return Task.FINISHED_SUCCESS
                 else:
                     self.logger.error(f"No predictions found at {self.outfile_predict}")

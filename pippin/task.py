@@ -50,7 +50,7 @@ class Task(ABC):
         hashes = sorted([dep.get_old_hash(quiet=True) for dep in self.dependencies])
         string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
-        self.logger.debug(f"Current hash set to {new_hash} from string and dependencies")
+        self.logger.debug(f"Current hash set to {new_hash}")
         return new_hash
 
     def save_new_hash(self, new_hash):
