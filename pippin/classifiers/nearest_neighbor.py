@@ -83,7 +83,7 @@ class NearestNeighborClassifier(Classifier):
         sed_command = ("%s %s > %s" % (sedstr, nml_file_orig, nml_file_train1))
 
         # use system call to apply sed command
-        self.logger.debug(f"Running sed command {sed_command}")
+        # self.logger.debug(f"Running sed command {sed_command}")
         subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
         # make sure that the new NML file is really there

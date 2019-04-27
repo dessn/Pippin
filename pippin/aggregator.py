@@ -54,7 +54,7 @@ class Aggregator(Task):
                 tasks.append(task)
 
         tasks = list(set(tasks))
-        self.logger.debug(f"Found simulation dependencies: {tasks}")
+        self.logger.debug(f"Found simulation dependencies: {[t.name for t in tasks]}")
         return tasks
 
     def load_prediction_file(self, filename):
