@@ -97,7 +97,7 @@ class NearestNeighborClassifier(Classifier):
 
         # open NML file in append mode and tack on NNINP namelist
         with open(nml_file_train1, 'a') as f:
-            f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n" % time.ctime())
+            f.write("\n# NNINP below added by prepare_NNtrainJob\n")
             f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
             f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))
