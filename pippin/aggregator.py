@@ -70,6 +70,8 @@ class Aggregator(Task):
         if new_hash:
             mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
+            print(self.classifiers)
+            print(prediction_files)
 
             df = None
 
