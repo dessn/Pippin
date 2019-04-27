@@ -58,7 +58,10 @@ class Aggregator(Task):
         return tasks
 
     def load_prediction_file(self, filename):
-        df = pd.read_csv(filename, sep=r'[,\s+]', comment="#")
+        df = pd.read_csv(filename, comment="#")
+        columns = df.columns
+        if len(columns) == 1 and "VARNAME" in columns[0]:
+            df = pd.read_csv(filename, comment="#", sep=r"\s+")
         print(filename)
         print(df.head())
         if "VARNAMES:" in df.columns:
