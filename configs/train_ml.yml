@@ -45,6 +45,18 @@ CLASSIFICATION:
     MODE: predict
     MASK: TEST
 
+  NNTRAIN:
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  NNTEST:
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+        MODEL: NNTRAIN
+
 AGGREGATION:
   AGG:
     MASK: TEST
