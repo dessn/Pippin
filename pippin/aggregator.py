@@ -59,6 +59,8 @@ class Aggregator(Task):
 
     def load_prediction_file(self, filename):
         df = pd.read_csv(filename, sep=r'[,\s+]', comment="#")
+        if "VARNAMES:" in df.columns:
+            df = df.drop(columns="VARNAMES:")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
         df = df.drop(columns=remove_columns)
         print(df.columns)
