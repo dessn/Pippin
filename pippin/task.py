@@ -1,8 +1,8 @@
-import time
 from abc import ABC, abstractmethod
 from pippin.config import get_logger, get_hash
 import os
 import datetime
+
 
 class Task(ABC):
     FINISHED_SUCCESS = -1
@@ -66,7 +66,6 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self, force_refresh):
-        self.start_time = time.time()
         return self._run(force_refresh)
 
     @abstractmethod
@@ -84,14 +83,11 @@ class Task(ABC):
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
             if os.path.exists(self.done_file):
                 self.end_time = os.path.getmtime(self.done_file)
-
                 if self.start_time is None and os.path.exists(self.hash_file):
                     self.start_time = os.path.getmtime(self.hash_file)
-                print("AAAAAAA", datetime.datetime.fromtimestamp(self.start_time).strftime("%A, %B %d, %Y %I:%M:%S"))
-                print("BBBBBBB", datetime.datetime.fromtimestamp(self.end_time).strftime("%A, %B %d, %Y %I:%M:%S"))
-                self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
-                print("CCCCCCC", self.wall_time)
-                self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
+                if self.end_time is not None and self.start_time is not None:
+                    self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
+                    self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
         return result
 
     @abstractmethod
