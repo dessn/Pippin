@@ -87,8 +87,8 @@ class Task(ABC):
 
                 if self.start_time is None and os.path.exists(self.hash_file):
                     self.start_time = os.path.getmtime(self.hash_file)
-                print("AAAAAAA", self.start_time)
-                print("BBBBBBB", self.end_time)
+                print("AAAAAAA", datetime.datetime.fromtimestamp(self.start_time).strftime("%A, %B %d, %Y %I:%M:%S"))
+                print("BBBBBBB", datetime.datetime.fromtimestamp(self.end_time).strftime("%A, %B %d, %Y %I:%M:%S"))
                 self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
                 print("CCCCCCC", self.wall_time)
                 self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
