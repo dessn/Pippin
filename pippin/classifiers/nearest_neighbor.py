@@ -53,11 +53,12 @@ class NearestNeighborClassifier(Classifier):
         temp_dir = temp_dir_obj.name
 
         outfile_train = f'{self.name}_train.out'
-        nml_file_train = f'{temp_dir}/{genversion}-2.nml'
+        nml_file_train1 = f'{temp_dir}/{genversion}-2.nml'
+        nml_file_train2 = f'{self.output_dir}/{genversion}-2.nml'
 
         train_info_local = {
             "outfile_NNtrain": outfile_train,
-            "nml_file_NNtrain": nml_file_train,
+            "nml_file_NNtrain": nml_file_train2,
         }
 
         # construct sed to copy original NMLFILE and to
@@ -78,15 +79,15 @@ class NearestNeighborClassifier(Classifier):
         sedstr += r" -e '/_OUT/d '"
         sedstr += (r" -e '/VERSION:/a\VERSION_AFTERBURNER: %s'" % afterBurn)
         sedstr += (r" -e '/VERSION:/a\DONE_STAMP: %s'" % self.done_file)
-        sed_command = ("%s %s > %s" % (sedstr, nml_file_orig, nml_file_train))
+        sed_command = ("%s %s > %s" % (sedstr, nml_file_orig, nml_file_train1))
 
         # use system call to apply sed command
         self.logger.debug(f"Running sed command {sed_command}")
         subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
         # make sure that the new NML file is really there
-        if not os.path.isfile(nml_file_train):
-            self.logger.error(f"Unable to create {nml_file_train} with sed command {sed_command}")
+        if not os.path.isfile(nml_file_train1):
+            self.logger.error(f"Unable to create {nml_file_train1} with sed command {sed_command}")
             return None
 
         # check that expected FITRES ref file is really there.
@@ -95,7 +96,7 @@ class NearestNeighborClassifier(Classifier):
             return None
 
         # open NML file in append mode and tack on NNINP namelist
-        with open(nml_file_train, 'a') as f:
+        with open(nml_file_train1, 'a') as f:
             f.write("\n# NNINP below added by prepare_NNtrainJob (%s)\n" % time.ctime())
             f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
@@ -105,7 +106,7 @@ class NearestNeighborClassifier(Classifier):
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
             f.write("\n&END\n")
 
-        input_files = [nml_file_train]
+        input_files = [nml_file_train1]
         old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_files(input_files)
 
