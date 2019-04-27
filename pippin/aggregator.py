@@ -63,6 +63,8 @@ class Aggregator(Task):
             df = df.drop(columns="VARNAMES:")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
         df = df.drop(columns=remove_columns)
+        print(filename)
+        print(df.head())
         return df
 
     def _run(self, force_refresh):
