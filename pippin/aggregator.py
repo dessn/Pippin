@@ -62,8 +62,6 @@ class Aggregator(Task):
         columns = df.columns
         if len(columns) == 1 and "VARNAME" in columns[0]:
             df = pd.read_csv(filename, comment="#", sep=r"\s+")
-        print(filename)
-        print(df.head())
         if "VARNAMES:" in df.columns:
             df = df.drop(columns="VARNAMES:")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
