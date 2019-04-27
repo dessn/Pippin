@@ -61,6 +61,7 @@ class Aggregator(Task):
         df = pd.read_csv(filename, sep=r'[,\s+]', comment="#")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
         df = df.drop(columns=remove_columns)
+        print(df.columns)
         return df
 
     def _run(self, force_refresh):
@@ -72,8 +73,7 @@ class Aggregator(Task):
 
             for f in prediction_files:
                 dataframe = self.load_prediction_file(f)
-                col = dataframe.columns[0]
-                dataframe = dataframe.rename(columns={col: self.id})
+                dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                 if df is None:
                     df = dataframe
                     self.logger.debug(f"Merging on column {self.id}")
