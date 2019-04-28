@@ -270,9 +270,9 @@ class Manager:
 
             if small_wait:
                 time.sleep(0.5)
+                self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-                self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 
