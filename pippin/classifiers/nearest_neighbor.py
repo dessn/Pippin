@@ -20,6 +20,8 @@ class NearestNeighborClassifier(Classifier):
         self.logging_file = os.path.join(output_dir, "output.log")
         self.splitfit_output_dir = f'{self.output_dir}/output'
 
+        self.num_check = 0
+        self.max_check = 5
         self.options = options
         self.nn_options = 'z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04'
         self.train_info_local = {}
@@ -144,8 +146,13 @@ class NearestNeighborClassifier(Classifier):
                 if os.path.exists(tarball):
                     return Task.FINISHED_SUCCESS
                 else:
-                    self.logger.error(f"Error, no tarball found at {tarball}")
-                    return Task.FINISHED_FAILURE
+                    # Because the tarbal can be delayed, allow a few checks before failing
+                    self.num_check += 1
+                    if self.num_check >= self.max_check:
+                        self.logger.error(f"Error, no tarball found at {tarball}")
+                        return Task.FINISHED_FAILURE
+                    else:
+                        return 0
             else:
                 if os.path.exists(self.outfile_predict):
                     self.logger.debug(f"Predictions can be found at {self.outfile_predict}")
