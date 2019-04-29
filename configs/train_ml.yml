@@ -4,25 +4,20 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_jones.input
-      DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 10
+      NGEN_UNIT: 1
       RANSEED_REPEAT: 40 12345
 
   TESTSIM:
     IA_C11:
       BASE: sn_ia_salt2_c11.input
-    IAX:
-      BASE: sn_iax.input
     IBC_TEMPLATES:
       BASE: sn_ibc_templates.input
     II_TEMPLATES:
       BASE: sn_ii_templates.input
-    II_NMF:
-      BASE: sn_ii_nmf.input
     GLOBAL:
-      NGEN_UNIT: 2
-      RANSEED_REPEAT: 40 12345
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
 
 LCFIT:
   TESTFIT:
@@ -31,18 +26,31 @@ LCFIT:
 CLASSIFICATION:
   SNNTRAIN:
     CLASSIFIER: SuperNNovaClassifier
-    MODE: train # train or predict
+    MODE: train
     MASK: TRAINING
     OPTS:
       USE_PHOTOMETRY: True
 
+  SNNTRAINLC:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK: TRAINING
+
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
-    MODE: predict # train or predict
+    MODE: predict
     MASK: TEST
     OPTS:
       USE_PHOTOMETRY: True
-      MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load
+      MODEL: SNNTRAIN
+
+  SNNTESTLC:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      USE_PHOTOMETRY: True
+      MODEL: SNNTRAINLC
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier

@@ -315,21 +315,21 @@ class Manager:
             self.logger.error(f"\t{w.message}")
 
     def _get_sim_output_dir(self, sim_name):
-        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{self.prefix}_{sim_name}"
+        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{sim_name}"
 
     def _get_phot_output_dir(self, sim_name):
-        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{self.prefix}_{sim_name}/{self.prefix}_{sim_name}"
+        return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{sim_name}/{self.prefix}_{sim_name}"
 
     def _get_lc_output_dir(self, sim_name, fit_name):
-        return f"{self.output_dir}/{Manager.stages['LCFIT']}_LCFIT/{self.prefix}_{sim_name}_{fit_name}"
+        return f"{self.output_dir}/{Manager.stages['LCFIT']}_LCFIT/{fit_name}_{sim_name}"
 
     def _get_clas_output_dir(self, sim_name, fit_name, clas_name):
         fit_name = "" if fit_name is None else "_" + fit_name
         sim_name = "" if sim_name is None else "_" + sim_name
-        return f"{self.output_dir}/{Manager.stages['CLASSIFY']}_CLAS/{self.prefix}{sim_name}{fit_name}_{clas_name}"
+        return f"{self.output_dir}/{Manager.stages['CLASSIFY']}_CLAS/{clas_name}{sim_name}{fit_name}"
 
     def _get_aggregator_dir(self, agg_name):
-        return f"{self.output_dir}/{Manager.stages['AGGREGATE']}_AGG/{self.prefix}_{agg_name}"
+        return f"{self.output_dir}/{Manager.stages['AGGREGATE']}_AGG/{agg_name}"
 
 
 if __name__ == "__main__":
