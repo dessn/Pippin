@@ -26,6 +26,10 @@ class Task(ABC):
         self.start_time = None
         self.end_time = None
         self.wall_time = None
+        self.stage = None
+
+    def set_stage(self, stage):
+        self.stage = stage
 
     def get_old_hash(self, quiet=False):
         if os.path.exists(self.hash_file):

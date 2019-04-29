@@ -34,7 +34,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the name of the yml config file to run. For example: configs/default.yml")
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    # parser.add_argument("-s", "--start", help="Stage to start at", default=None)
+    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
     parser.add_argument("-f", "--finish", help="Stage to finish at", default=None)
     parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", default=False, type=bool)
 
@@ -85,7 +85,9 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     manager = Manager(config_filename, config, message_store)
-    # manager.set_start(args.start)
+    if args.start is not None:
+        args.refresh = True
+    manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.execute()

@@ -36,15 +36,20 @@ class Manager:
         self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + self.global_config['OUTPUT']['output_dir'] + "/" + self.filename)
         self.tasks = None
 
-        # self.start = None
+        self.start = None
         self.finish = None
         self.force_refresh = False
+
+    def get_force_refresh(self, task):
+        if self.start is None:
+            return self.force_refresh
+        return task.stage >= self.start
 
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
 
-    # def set_start(self, stage):
-    #     self.start = self.resolve_stage(stage)
+    def set_start(self, stage):
+        self.start = self.resolve_stage(stage)
 
     def set_finish(self, stage):
         self.finish = self.resolve_stage(stage)
@@ -76,18 +81,21 @@ class Manager:
 
     def get_simulation_tasks(self, c):
         tasks = []
-        if self.finish is not None and self.finish < Manager.stages["SIM"]:
+        stage = Manager.stages["SIM"]
+        if self.finish is not None and self.finish <= stage:
             return tasks
         for sim_name in c.get("SIM", []):
             sim_output_dir = self._get_sim_output_dir(sim_name)
             s = SNANASimulation(sim_name, sim_output_dir, f"{self.prefix}_{sim_name}", c["SIM"][sim_name], self.global_config)
+            s.set_stage(stage)
             self.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
             tasks.append(s)
         return tasks
 
     def get_lcfit_tasks(self, c, sim_tasks):
         tasks = []
-        if self.finish is not None and self.finish < Manager.stages["LCFIT"]:
+        stage = Manager.stages["LCFIT"]
+        if self.finish is not None and self.finish <= stage:
             return tasks
         for fit_name in c.get("LCFIT", []):
             fit_config = c["LCFIT"][fit_name]
@@ -95,13 +103,15 @@ class Manager:
                 if fit_config.get("MASK") is None or fit_config.get("MASK") in sim.name:
                     fit_output_dir = self._get_lc_output_dir(sim.name, fit_name)
                     f = SNANALightCurveFit(fit_name, fit_output_dir, sim, fit_config, self.global_config)
+                    f.set_stage(stage)
                     self.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
         return tasks
 
     def get_classification_tasks(self, c, sim_tasks, lcfit_tasks):
         tasks = []
-        if self.finish is not None and self.finish < Manager.stages["CLASSIFY"]:
+        stage = Manager.stages["CLASSIFY"]
+        if self.finish is not None and self.finish <= stage:
             return tasks
         for clas_name in c.get("CLASSIFICATION", []):
             config = c["CLASSIFICATION"][clas_name]
@@ -152,6 +162,7 @@ class Manager:
 
                 clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
                 cc = cls(clas_name, clas_output_dir, deps, mode, options)
+                cc.set_stage(stage)
                 self.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                 num_gen += 1
                 tasks.append(cc)
@@ -256,7 +267,7 @@ class Manager:
                     self.logger.info("")
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
-                    started = t.run(self.force_refresh)
+                    started = t.run(self.get_force_refresh(t))
                     if started:
                         num_running += t.num_jobs
                         self.logger.notice(f"RUNNING: {t}")
