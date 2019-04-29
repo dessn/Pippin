@@ -34,7 +34,7 @@ CLASSIFICATION:
   SNNTRAINLC:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK: TRAINING
+    MASK_SIM: TRAINING
 
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier

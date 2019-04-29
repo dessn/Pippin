@@ -152,7 +152,7 @@ class Manager:
 
                 clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
                 cc = cls(clas_name, clas_output_dir, deps, mode, options)
-                self.logger.info(f"Creating classification task {clas_name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                self.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                 num_gen += 1
                 tasks.append(cc)
             if num_gen == 0:
