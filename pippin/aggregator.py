@@ -15,7 +15,7 @@ class Aggregator(Task):
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
-        self.output_df_key = os.path.join(self.output_dir, "merged.key")
+        self.output_df_key = os.path.join(self.output_dir, "merged.key.gz")
         self.id = "SNID"
         self.type_name = "SNTYPE"
         self.options = options
@@ -120,7 +120,8 @@ class Aggregator(Task):
         return True
 
     def save_key_format(self, df):
-        df2 = df.fillna(0.0)
+        df2 = df.drop(columns=[self.type_name, "IA"])
+        df2 = df2.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"]*df2.shape[0])
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 

@@ -146,7 +146,7 @@ class NearestNeighborClassifier(Classifier):
                 if os.path.exists(tarball):
                     return Task.FINISHED_SUCCESS
                 else:
-                    # Because the tarbal can be delayed, allow a few checks before failing
+                    # Because the tarball can be delayed, allow a few checks before failing
                     self.num_check += 1
                     if self.num_check >= self.max_check:
                         self.logger.error(f"Error, no tarball found at {tarball}")
