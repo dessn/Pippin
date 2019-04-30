@@ -179,8 +179,9 @@ class Aggregator(Task):
             "specificity": fp / (fp + tn)
         }
 
-    def _get_data_and_truth(self, data, truth):
+    def _get_data_and_truth(self, data, truth, name=None):
         mask = ~data.isna()
+        print(name, mask.sum())
         data = data[mask]
         truth = truth[mask]
         return data, truth
@@ -196,7 +197,7 @@ class Aggregator(Task):
         ls = ["-", "--", ":", ":-", "-", "--", ":"]
         keys = ["purity", "efficiency"]
         for c, col in zip(columns, self.colours):
-            data, truth = self._get_data_and_truth(df[c], df["IA"])
+            data, truth = self._get_data_and_truth(df[c], df["IA"], name=c)
             res = {}
             for t in thresholds:
                 passed = data >= t
