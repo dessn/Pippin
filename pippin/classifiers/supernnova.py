@@ -22,6 +22,9 @@ class SuperNNovaClassifier(Classifier):
 
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
+        self.variant = options.get("VARIANT", "vanilla").lower()
+        assert self.variant in ["vanilla", "variational", "bayesian"], \
+            f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
@@ -40,7 +43,7 @@ module load cuda
 echo `which python`
 cd {path_to_classifier}
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {test_or_train}
-python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {model} {phot} {command}
+python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
@@ -92,6 +95,8 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
         light_curve_dir = self.get_simulation_dependency()["photometry_dir"]
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dir']}"
+        cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] else ""
+        variant = f"--model {self.variant}"
         format_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
@@ -101,10 +106,12 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
             "job_name": self.job_base_name,
             "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
+            "variant": variant,
+            "cyclic": cyclic,
             "model": "" if training else f"--model_files {model_path}",
             "phot": "" if not use_photometry else "--source_data photometry",
             "test_or_train": "" if training else "--data_testing",
-            "done_file": self.output_dir
+            "done_file": self.done_file
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
@@ -151,6 +158,7 @@ python run.py --use_cuda --cyclic --sntypes '{sntypes}' --done_file {done_file} 
                 if not os.path.exists(new_pred_file):
                     with open(predictions, "rb") as f:
                         dataframe = pickle.load(f)
+                        print(dataframe.columns)
                         final_dataframe = dataframe[["SNID", "all_class0"]]
                         final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
                         final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")

@@ -24,33 +24,54 @@ LCFIT:
     BASE: des.nml
 
 CLASSIFICATION:
-  SNNTRAIN:
+  SNNVANILLATRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
     MASK: TRAINING
     OPTS:
       USE_PHOTOMETRY: True
 
-  SNNTRAINLC:
+  SNNVANILLATEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      USE_PHOTOMETRY: True
+      MODEL: SNNVANILLATRAIN
+
+  SNNVARIATIONALTRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK_SIM: TRAINING
+    MASK: TRAINING
+    OPTS:
+      USE_PHOTOMETRY: True
+      VARIANT: variational
 
-  SNNTEST:
+  SNNVARIATIONALTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     MASK: TEST
     OPTS:
       USE_PHOTOMETRY: True
-      MODEL: SNNTRAIN
+      MODEL: SNNVARIATIONALTRAIN
+      VARIANT: variational
 
-  SNNTESTLC:
+  SNNBAYESIANTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK: TRAINING
+    OPTS:
+      USE_PHOTOMETRY: True
+      VARIANT: bayesian
+
+  SNNBAYESIANTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     MASK: TEST
     OPTS:
       USE_PHOTOMETRY: True
-      MODEL: SNNTRAINLC
+      MODEL: SNNBAYESIANTRAIN
+      VARIANT: bayesian
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
