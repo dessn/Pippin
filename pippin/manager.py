@@ -221,7 +221,7 @@ class Manager:
                     num_gen += 1
                     task = Merger(name, self._get_merge_output_dir(name, lcfit.name, agg.name), [lcfit, agg], options)
                     self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
-                    tasks.append(tasks)
+                    tasks.append(task)
             if num_gen == 0:
                 self.logger.error(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
         return tasks
