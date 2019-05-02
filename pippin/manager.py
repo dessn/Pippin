@@ -194,6 +194,7 @@ class Manager:
         if self.finish is not None and self.finish < Manager.stages["MERGE"]:
             return tasks
         for name in c.get("MERGE", []):
+            print("AAAA", name)
             config = c["MERGE"][name]
             options = config.get("OPTS", {})
             mask = config.get("MASK", "")
@@ -202,6 +203,7 @@ class Manager:
             mask_agg = config.get("MASK_AGG", "")
 
             for lcfit in lcfit_tasks:
+                print("BBBBB", lcfit.name)
                 if mask and mask not in lcfit.name:
                     continue
                 if mask_lc and mask_lc not in lcfit.name:
@@ -213,6 +215,8 @@ class Manager:
                     continue
 
                 for agg in agg_tasks:
+                    print("CCCCC", lcfit.name)
+
                     if mask_agg and mask_agg not in agg.name:
                         continue
                     if mask and mask not in agg.name:
