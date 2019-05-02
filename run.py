@@ -36,7 +36,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
     parser.add_argument("-f", "--finish", help="Stage to finish at", default=None)
-    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", default=False, type=bool)
+    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
 
     args = parser.parse_args()
     level = logging.DEBUG if args.verbose else logging.INFO

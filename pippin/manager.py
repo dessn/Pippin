@@ -174,6 +174,7 @@ class Manager:
 
     def get_aggregator_tasks(self, c, classifier_tasks):
         tasks = []
+        stage = Manager.stages["AGGREGATE"]
         if self.finish is not None and self.finish < Manager.stages["AGGREGATE"]:
             return tasks
         for agg_name in c.get("AGGREGATION", []):
@@ -185,12 +186,14 @@ class Manager:
                 self.logger.error("Aggregator {agg_name} with mask {mask} matched no classifier tasks")
             else:
                 a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps, options)
+                a.set_stage(stage)
                 self.logger.info(f"Creating aggregation task {agg_name} with {a.num_jobs}")
                 tasks.append(a)
         return tasks
 
     def get_merge_tasks(self, c, agg_tasks, lcfit_tasks):
         tasks = []
+        stage = Manager.stages["MERGE"]
         if self.finish is not None and self.finish < Manager.stages["MERGE"]:
             return tasks
         for name in c.get("MERGE", []):
@@ -220,6 +223,7 @@ class Manager:
                         continue
                     num_gen += 1
                     task = Merger(name, self._get_merge_output_dir(name, lcfit.name, agg.name), [lcfit, agg], options)
+                    task.set_stage(stage)
                     self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
                     tasks.append(task)
             if num_gen == 0:
