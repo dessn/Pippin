@@ -7,6 +7,7 @@ from pippin.aggregator import Aggregator
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
+from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
@@ -71,7 +72,8 @@ class Manager:
         lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks)
         classification_tasks = self.get_classification_tasks(config, sim_tasks, lcfit_tasks)
         aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
-        total_tasks = sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks
+        merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
+        total_tasks = sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
         self.logger.info("")
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
@@ -185,6 +187,40 @@ class Manager:
                 a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps, options)
                 self.logger.info(f"Creating aggregation task {agg_name} with {a.num_jobs}")
                 tasks.append(a)
+        return tasks
+
+    def get_merge_tasks(self, c, agg_tasks, lcfit_tasks):
+        tasks = []
+        if self.finish is not None and self.finish < Manager.stages["MERGE"]:
+            return tasks
+        for name in c.get("MERGE", []):
+            config = c["MERGE"][name]
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", "")
+            mask_sim = config.get("MASK_SIM", "")
+            mask_lc = config.get("MASK_FIT", "")
+            mask_agg = config.get("MASK_AGG", "")
+
+            for lcfit in lcfit_tasks:
+                if mask and mask not in lcfit.name:
+                    continue
+                if mask_lc and mask_lc not in lcfit.name:
+                    continue
+                sim = lcfit.get_dep(SNANASimulation)
+                if mask and mask not in sim.name:
+                    continue
+                if mask_sim and mask_sim not in sim.name:
+                    continue
+
+                for agg in agg_tasks:
+                    if mask_agg and mask_agg not in agg.name:
+                        continue
+                    if mask and mask not in agg.name:
+                        continue
+
+                    task = Merger(name, self._get_merge_output_dir(name, lcfit.name, agg.name), [lcfit, agg], options)
+                    self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
+                    tasks.append(tasks)
         return tasks
 
     def get_num_running_jobs(self):
@@ -341,6 +377,9 @@ class Manager:
 
     def _get_aggregator_dir(self, agg_name):
         return f"{self.output_dir}/{Manager.stages['AGGREGATE']}_AGG/{agg_name}"
+
+    def _get_merge_output_dir(self, merge_name, lcfit_name, agg_name):
+        return f"{self.output_dir}/{Manager.stages['MERGE']}_MERGE/{merge_name}_{lcfit_name}_{agg_name}"
 
 
 if __name__ == "__main__":

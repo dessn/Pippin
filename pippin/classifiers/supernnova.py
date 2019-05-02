@@ -62,7 +62,8 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         else:
             self.logger.debug("No model found. Not an issue if you've specified a model.")
             model_file = None
-        pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(".pickle")][0]
+        ending = "_aggregated.pickle" if self.variant in ["variational", "bayesian"] else ".pickle"
+        pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(ending)][0]
         return model_file, os.path.join(saved_dir, pred_file)
 
     def train(self, force_refresh):
@@ -158,9 +159,17 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
                 if not os.path.exists(new_pred_file):
                     with open(predictions, "rb") as f:
                         dataframe = pickle.load(f)
-                        print(dataframe.columns)
-                        final_dataframe = dataframe[["SNID", "all_class0"]]
-                        final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
+                        if self.variant in ["variational", "bayesian"]:
+                            final_dataframe = dataframe[["SNID", "all_class0_median", "all_class0_std"]]
+                            final_dataframe = final_dataframe.rename(columns={
+                                "all_class0_median": self.get_prob_column_name(),
+                                "all_class0_std": self.get_prob_column_name() + "_ERR",
+                            })
+                        else:
+                            final_dataframe = dataframe[["SNID", "all_class0"]]
+                            final_dataframe = final_dataframe.rename(columns={
+                                "all_class0_": self.get_prob_column_name()
+                            })
                         final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")
                         self.logger.info(f"Predictions file can be found at {new_pred_file}")
                 chown_dir(self.output_dir)

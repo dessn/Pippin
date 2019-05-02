@@ -112,6 +112,7 @@ class Aggregator(Task):
             self.save_new_hash(new_hash)
 
         self.output["merge_predictions_filename"] = self.output_df
+        self.output["merge_key_filename"] = self.output_df_key
         self.output["sn_column_name"] = self.id
         if self.include_type:
             self.output["sn_type_name"] = self.type_name

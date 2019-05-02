@@ -25,37 +25,54 @@ LCFIT:
     BASE: des.nml
 
 CLASSIFICATION:
-  SNNTRAIN:
+  SNN-VAN-TRAIN:
     CLASSIFIER: SuperNNovaClassifier
-    MODE: train # train or predict
+    MODE: train
     MASK: TRAINING
     OPTS:
       USE_PHOTOMETRY: True
 
-  SNNTEST:
+  SNN-VAN-TEST:
     CLASSIFIER: SuperNNovaClassifier
-    MODE: predict # train or predict
+    MODE: predict
     MASK: TEST
     OPTS:
       USE_PHOTOMETRY: True
-      MODEL: SNNTRAIN  # Can point to a classification task or a saved model file to load
+      MODEL: SNNVANILLATRAIN
 
-  FITPROBTEST:
-    CLASSIFIER: FitProbClassifier
+  SNN-VAR-TRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK: TRAINING
+    OPTS:
+      USE_PHOTOMETRY: True
+      VARIANT: variational
+
+  SNN-VAR-TEST:
+    CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     MASK: TEST
-
-  NNTRAIN:
-    CLASSIFIER: NearestNeighborClassifier
-    MODE: train
-    MASK_SIM: TRAINING
-
-  NNTEST:
-    CLASSIFIER: NearestNeighborClassifier
-    MODE: predict
-    MASK_SIM: TEST
     OPTS:
-        MODEL: NNTRAIN
+      USE_PHOTOMETRY: True
+      MODEL: SNNVARIATIONALTRAIN
+      VARIANT: variational
+
+  SNN-BAY-TRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK: TRAINING
+    OPTS:
+      USE_PHOTOMETRY: True
+      VARIANT: bayesian
+
+  SNN-BAY-TEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      USE_PHOTOMETRY: True
+      MODEL: SNNBAYESIANTRAIN
+      VARIANT: bayesian
 
 AGGREGATION:
   AGG:
@@ -63,3 +80,7 @@ AGGREGATION:
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
+
+MERGE:
+  MERGE:
+    MASK: TEST
