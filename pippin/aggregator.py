@@ -182,7 +182,6 @@ class Aggregator(Task):
 
     def _get_data_and_truth(self, data, truth, name=None):
         mask = ~data.isna()
-        print(name, mask.sum())
         data = data[mask]
         truth = truth[mask]
         return data, truth
