@@ -1,7 +1,8 @@
+import shutil
 import subprocess
 
 from pippin.aggregator import Aggregator
-from pippin.config import chown_dir
+from pippin.config import chown_dir, mkdirs
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
 import os
@@ -64,6 +65,8 @@ class Merger(Task):
         new_hash = self.get_hash_from_string(" ".join(command))
 
         if force_refresh or new_hash != old_hash:
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
             self.logger.debug("Regenerating, running combine_fitres")
             with open(self.logfile, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
