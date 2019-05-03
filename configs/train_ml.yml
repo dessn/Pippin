@@ -96,3 +96,8 @@ AGGREGATION:
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
+
+MERGE:
+  MERGE:
+    MASK_SIM: TEST
+    MASK_FIT: TEST

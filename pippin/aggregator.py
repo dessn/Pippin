@@ -137,7 +137,7 @@ class Aggregator(Task):
         import matplotlib.pyplot as plt
         import seaborn as sb
 
-        fig, ax = plt.subplots(figsize=(6, 5))
+        fig, ax = plt.subplots(figsize=(8, 6))
         df = df.dropna()
         sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
         plt.show()
