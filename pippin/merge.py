@@ -38,6 +38,7 @@ class Merger(Task):
 
     def _check_completion(self):
         if os.path.exists(self.done_file):
+            self.logger.debug(f"Merger finished, see combined fitres at {self.done_file}")
             return Task.FINISHED_SUCCESS
         else:
             output_error = False
