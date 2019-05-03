@@ -73,6 +73,7 @@ class Aggregator(Task):
         if new_hash:
             mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
+            print(prediction_files)
             df = None
 
             for f in prediction_files:
@@ -80,7 +81,7 @@ class Aggregator(Task):
                 dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                 if df is None:
                     df = dataframe
-                    self.logger.debug(f"Merging on column {self.id}")
+                    self.logger.debug(f"Merging on column {self.id} for file {f}")
                 else:
                     df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
 
@@ -147,7 +148,7 @@ class Aggregator(Task):
 
         prob_bins = np.linspace(0, 1, 21)
         bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
-        columns = [c for c in df.columns if "PROB_" in c]
+        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         fig, ax = plt.subplots(figsize=(5, 4))
         for c in columns:
@@ -191,7 +192,7 @@ class Aggregator(Task):
         import matplotlib.pyplot as plt
 
         thresholds = np.linspace(0.5, 0.999, 100)
-        columns = [c for c in df.columns if "PROB_" in c]
+        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         fig, ax = plt.subplots(figsize=(7, 5))
         ls = ["-", "--", ":", ":-", "-", "--", ":"]
@@ -222,7 +223,7 @@ class Aggregator(Task):
         import matplotlib.pyplot as plt
 
         thresholds = np.linspace(0.01, 1, 100)
-        columns = [c for c in df.columns if "PROB_" in c]
+        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -251,7 +252,7 @@ class Aggregator(Task):
         import matplotlib.pyplot as plt
 
         thresholds = np.linspace(0.01, 0.999, 100)
-        columns = [c for c in df.columns if "PROB_" in c]
+        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         fig, ax = plt.subplots(figsize=(7, 5))
 
