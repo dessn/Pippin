@@ -1,4 +1,4 @@
-from pippin.classifiers.argonne import ArgonneClassifier
+from pippin.classifiers.snirf import SnirfClassifier
 from pippin.classifiers.nearest_neighbor import NearestNeighborClassifier
 from pippin.classifiers.supernnova import SuperNNovaClassifier
 from pippin.classifiers.fitprob import FitProbClassifier
@@ -18,7 +18,7 @@ class ClassifierFactory:
 
 ClassifierFactory.add_factory(FitProbClassifier)
 ClassifierFactory.add_factory(SuperNNovaClassifier)
-ClassifierFactory.add_factory(ArgonneClassifier)
+ClassifierFactory.add_factory(SnirfClassifier)
 ClassifierFactory.add_factory(NearestNeighborClassifier)
 
 if __name__ == "__main__":

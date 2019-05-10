@@ -7,7 +7,7 @@ from pippin.config import get_config, get_output_loc, mkdirs
 from pippin.task import Task
 
 
-class ArgonneClassifier(Classifier):
+class SnirfClassifier(Classifier):
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.global_config = get_config()
@@ -76,9 +76,9 @@ class ArgonneClassifier(Classifier):
             f"--nclass 2"
             f"--ft {self.features} "
             f"--restore "
-            f"--pklfile={self.output_pk_file} "
+            f"--pklfile {self.output_pk_file} "
             f"--pklformat fitres "
-            f"--train {self.get_fits_file()} "
+            f"--test {self.get_fits_file()} "
             f"--done_file {self.done_file} "
             f"&> output.log"
         )
@@ -89,9 +89,9 @@ class ArgonneClassifier(Classifier):
             f"--nclass 2 "
             f"--ft {self.features} "
             f"--train_only "
-            f"--test "
-            f"--pklfile={self.output_pk_file} "
-            f"--filedir={self.output_dir} "
+            f"--test ''"
+            f"--pklfile {self.output_pk_file} "
+            f"--filedir {self.output_dir} "
             f"--train {self.get_fits_file()} "
             f"--done_file {self.done_file} "
             f"&> output.log "
@@ -105,7 +105,7 @@ class ArgonneClassifier(Classifier):
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
                 else:
-                    self.output["model_filename"] = "UNKNOWN"
+                    self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.modelpkl)][0]
                     self.output["predictions_filename"] = "UNKNOWN"
                     return Task.FINISHED_SUCCESS
         return self.num_jobs
