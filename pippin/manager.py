@@ -77,7 +77,6 @@ class Manager:
         aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
-        print(total_tasks)
         self.logger.info("")
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
@@ -92,7 +91,7 @@ class Manager:
             return tasks
         for name in c.get("DATAPREP", []):
             output_dir = self._get_data_prep_output_dir(name)
-            s = DataPrep(name, output_dir, f"{self.prefix}_{name}", c["DATAPREP"][name])
+            s = DataPrep(name, output_dir, c["DATAPREP"][name])
             s.set_stage(stage)
             self.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
             tasks.append(s)
