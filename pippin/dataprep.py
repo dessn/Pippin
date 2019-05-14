@@ -16,7 +16,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.options = options
         self.global_config = get_config()
 
-        self.logfile = os.path.join(self.output_dir, "output.log")
+        self.log_filename = "output.log"
+        self.logfile = os.path.join(self.output_dir, self.log_filename)
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = get_output_loc(self.global_config["DataSkimmer"]["location"])
 
@@ -57,7 +58,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
         format_dict = {
             "job_name": self.name,
-            "log_file": self.logfile,
+            "log_file": self.log_filename,
             "conda_env": self.conda_env,
             "path_to_task": self.path_to_task,
             "command_opts": command_opts
