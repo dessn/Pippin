@@ -7,6 +7,7 @@ from pippin.aggregator import Aggregator
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
+from pippin.dataprep import DataPrep
 from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -15,12 +16,13 @@ from pippin.task import Task
 
 class Manager:
     stages = {
-        "SIM": 0,
-        "LCFIT": 1,
-        "CLASSIFY": 2,
-        "AGGREGATE": 3,
-        "MERGE": 4,
-        "BIASCOR": 5
+        "DATAPREP": 0,
+        "SIM": 1,
+        "LCFIT": 2,
+        "CLASSIFY": 3,
+        "AGGREGATE": 4,
+        "MERGE": 5,
+        "BIASCOR": 6
     }
 
     def __init__(self, filename, config, message_store):
@@ -68,18 +70,32 @@ class Manager:
         return num
 
     def get_tasks(self, config):
+        data_tasks = self.get_dataset_prep_tasks(config)
         sim_tasks = self.get_simulation_tasks(config)
         lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks)
         classification_tasks = self.get_classification_tasks(config, sim_tasks, lcfit_tasks)
         aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
-        total_tasks = sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
+        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
         self.logger.info("")
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
             self.logger.notice(f"\t{task}")
         self.logger.info("")
         return total_tasks
+
+    def get_dataset_prep_tasks(self, c):
+        tasks = []
+        stage = Manager.stages["DATAPREP"]
+        if self.finish is not None and self.finish <= stage:
+            return tasks
+        for name in c.get("DATAPREP", []):
+            output_dir = self._get_data_prep_output_dir(name)
+            s = DataPrep(name, output_dir, f"{self.prefix}_{name}", c["DATAPREP"][name])
+            s.set_stage(stage)
+            self.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
+            tasks.append(s)
+        return tasks
 
     def get_simulation_tasks(self, c):
         tasks = []
@@ -370,6 +386,9 @@ class Manager:
 
         for w in es:
             self.logger.error(f"\t{w.message}")
+
+    def _get_data_prep_output_dir(self, name):
+        return f"{self.output_dir}/{Manager.stages['DATAPREP']}_DATAPREP/{name}"
 
     def _get_sim_output_dir(self, sim_name):
         return f"{self.output_dir}/{Manager.stages['SIM']}_SIM/{sim_name}"

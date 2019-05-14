@@ -102,6 +102,8 @@ class Task(ABC):
                 if self.end_time is not None and self.start_time is not None:
                     self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
                     self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
+            if result == Task.FINISHED_FAILURE and os.path.exists(self.hash_file):
+                os.remove(self.hash_file)
         return result
 
     @abstractmethod
