@@ -52,9 +52,9 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
     def _run(self, force_refresh):
 
-        command_opts = f"--raw_dir {self.raw_dir} " if self.raw_dir is not None else ""
-        command_opts += f"--fits_file {self.fits_file} " if self.fits_file is not None else ""
-        command_opts += f"--dump_dir {self.dump_dir} " if self.dump_dir is not None else ""
+        command_opts = f"--raw_dir {get_output_loc(self.raw_dir)} " if self.raw_dir is not None else ""
+        command_opts += f"--fits_file {get_output_loc(self.fits_file)} " if self.fits_file is not None else ""
+        command_opts += f"--dump_dir {get_output_loc(self.dump_dir)} " if self.dump_dir is not None else ""
 
         format_dict = {
             "job_name": self.name,
