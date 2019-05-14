@@ -17,14 +17,29 @@ class Classifier(Task):
 
     @abstractmethod
     def predict(self, force_refresh):
+        """ Predict probabilities for given dependencies
+
+        :param force_refresh: to force refresh and rerun - do not pass hash checks
+        :return: true or false for success in launching the job
+        """
         pass
 
     @abstractmethod
     def train(self, force_refresh):
+        """ Train a model to file for given dependencies
+
+        :param force_refresh: to force refresh and rerun - do not pass hash checks
+        :return: true or false for success in launching the job
+        """
         pass
 
     @staticmethod
     def get_requirements(config):
+        """ Return what data is actively used by the classifier
+
+        :param config: the input dictionary `OPTS` from the config file
+        :return: a two tuple - (needs simulation photometry, needs a fitres file)
+        """
         return True, True
 
     def get_fit_dependency(self):

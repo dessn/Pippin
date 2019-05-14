@@ -74,7 +74,11 @@ class Task(ABC):
 
     @abstractmethod
     def _run(self, force_refresh):
-        """ Returns the hash of the step if successful, False if not. """
+        """ Execute the primary function of the task
+
+        :param force_refresh: to force refresh and rerun - do not pass hash checks
+        :return: true or false if the job launched successfully
+        """
         pass
 
     def get_wall_time_str(self):
@@ -83,6 +87,12 @@ class Task(ABC):
         return None
 
     def check_completion(self):
+        """ Checks if the job has completed.
+
+        Invokes  `_check_completion` and determines wall time.
+
+        :return: Task.FINISHED_SUCCESS, Task.FNISHED_FAILURE or the number of jobs still running
+        """
         result = self._check_completion()
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
             if os.path.exists(self.done_file):
@@ -99,7 +109,7 @@ class Task(ABC):
         """ Checks if the job is complete or has failed. 
         
         If it is complete it should also load in the any useful results that 
-        other tasks may need. 
+        other tasks may need in `self.output` dictionary
         
         Such as the location of a trained model or output files.
         """

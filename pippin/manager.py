@@ -287,11 +287,14 @@ class Manager:
         failed_tasks = []
         blocked_tasks = []
 
+        # Welcome to the primary loop
         while self.tasks or running_tasks:
             small_wait = False
+
             # Check status of current jobs
             for t in running_tasks:
                 result = t.check_completion()
+                # If its finished, good or bad, juggle tasks
                 if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
                     if result == Task.FINISHED_SUCCESS:
                         running_tasks.remove(t)
@@ -299,7 +302,6 @@ class Manager:
                         done_tasks.append(t)
                     else:
                         self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
-
                     small_wait = True
 
             # Submit new jobs if needed
@@ -322,9 +324,10 @@ class Manager:
                 else:
                     break
 
+            # Check quickly if we've added a new job, etc, in case of immediate failure
             if small_wait:
-                time.sleep(0.5)
                 self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
+                time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
 

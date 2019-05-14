@@ -9,10 +9,17 @@ from pippin.task import Task
 
 
 class SuperNNovaClassifier(Classifier):
+    """ Classification task for the SuperNNova classifier.
 
-    @staticmethod
-    def get_requirements(options):
-        return True, not options.get("USE_PHOTOMETRY", False)
+    Current valid options are specific to SuperNNova are:
+
+        USE_PHOTOMETRY - Use only photometry and no fitres summaries
+        VARIANT - a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
+
+    Global classification options:
+
+        MODEL - a task name or file location with a trained model to use when predicting.
+    """
 
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
@@ -188,3 +195,6 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
                 return Task.FINISHED_FAILURE
             return num_jobs
 
+    @staticmethod
+    def get_requirements(options):
+        return True, not options.get("USE_PHOTOMETRY", False)
