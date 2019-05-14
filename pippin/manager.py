@@ -71,6 +71,7 @@ class Manager:
 
     def get_tasks(self, config):
         data_tasks = self.get_dataset_prep_tasks(config)
+        print(data_tasks)
         sim_tasks = self.get_simulation_tasks(config)
         lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks)
         classification_tasks = self.get_classification_tasks(config, sim_tasks, lcfit_tasks)
