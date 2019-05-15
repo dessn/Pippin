@@ -16,7 +16,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.options = options
         self.global_config = get_config()
 
-        self.logfile = os.path.join(self.output_dir, self.log_filename)
+        self.logfile = os.path.join(self.output_dir, "output.log")
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = get_output_loc(self.global_config["DataSkimmer"]["location"])
 
