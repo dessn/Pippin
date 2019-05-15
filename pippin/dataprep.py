@@ -26,20 +26,20 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.dump_dir = self.options.get("DUMP_DIR", self.output_dir)
 
         self.slurm = """#!/bin/bash
-        #SBATCH --job-name={job_name}
-        #SBATCH --time=1:00:00
-        #SBATCH --nodes=1
-        #SBATCH --ntasks-per-node=1
-        #SBATCH --partition=broadwl
-        #SBATCH --output={log_file}
-        #SBATCH --account=pi-rkessler
-        #SBATCH --mem=12GB
+#SBATCH --job-name={job_name}
+#SBATCH --time=1:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --partition=broadwl
+#SBATCH --output={log_file}
+#SBATCH --account=pi-rkessler
+#SBATCH --mem=12GB
 
-        source activate {conda_env}
-        echo `which python`
-        cd {path_to_task}
-        python skim_data_lcs.py {command_opts}
-        """
+source activate {conda_env}
+echo `which python`
+cd {path_to_task}
+python skim_data_lcs.py {command_opts}
+"""
 
     def _check_completion(self):
         if os.path.exists(self.done_file):
