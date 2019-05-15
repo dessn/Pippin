@@ -56,6 +56,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
             self.logger.debug(f"Running data prep on data directory {self.raw_dir}")
         else:
             self.logger.error(f"Data prep task {self.name} has no RAW_DIR set, please point it to some photometry!")
+            return False
+
         command_opts += f"--fits_file {get_output_loc(self.fits_file)} " if self.fits_file is not None else ""
         command_opts += f"--dump_dir {get_output_loc(self.dump_dir)} " if self.dump_dir is not None else ""
         command_opts += f"--done_file {get_output_loc(self.done_file)} "
