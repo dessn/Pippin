@@ -12,6 +12,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
     """
     def __init__(self, name, output_dir, options, dependencies=None):
+        print(options)
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
