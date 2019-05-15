@@ -43,11 +43,14 @@ python skim_data_lcs.py {command_opts}
 
     def _check_completion(self):
         if os.path.exists(self.done_file):
+            self.logger.debug(f"Done file found at f{self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
+        else:
+            self.logger.debug(f"NO DONE FILE at f{self.done_file}")
         return 1  # The number of CPUs being utilised
 
     def _run(self, force_refresh):
