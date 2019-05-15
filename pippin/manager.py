@@ -91,7 +91,7 @@ class Manager:
             return tasks
         for name in c.get("DATAPREP", []):
             output_dir = self._get_data_prep_output_dir(name)
-            s = DataPrep(name, output_dir, c["DATAPREP"][name])
+            s = DataPrep(name, output_dir, c["DATAPREP"][name]["OPTS"])
             s.set_stage(stage)
             self.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
             tasks.append(s)
