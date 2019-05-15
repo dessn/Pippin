@@ -16,7 +16,6 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.options = options
         self.global_config = get_config()
 
-        self.log_filename = "output.log"
         self.logfile = os.path.join(self.output_dir, self.log_filename)
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = get_output_loc(self.global_config["DataSkimmer"]["location"])
@@ -46,11 +45,10 @@ python skim_data_lcs.py {command_opts}
             self.logger.debug(f"Done file found at f{self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
+                    self.logger.info(f"Done file reported failure. Check output log {self.logfile}")
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
-        else:
-            self.logger.debug(f"NO DONE FILE at f{self.done_file}")
         return 1  # The number of CPUs being utilised
 
     def _run(self, force_refresh):
@@ -67,7 +65,7 @@ python skim_data_lcs.py {command_opts}
 
         format_dict = {
             "job_name": self.name,
-            "log_file": self.log_filename,
+            "log_file": self.logfile,
             "conda_env": self.conda_env,
             "path_to_task": self.path_to_task,
             "command_opts": command_opts
