@@ -4,6 +4,6 @@ DATAPREP:
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
 
-  TESTFAKES:
-    OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+#  TESTFAKES:
+#    OPTS:
+#      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
