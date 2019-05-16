@@ -72,8 +72,8 @@ class Manager:
     def get_tasks(self, config):
         data_tasks = self.get_dataset_prep_tasks(config)
         sim_tasks = self.get_simulation_tasks(config)
-        lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks)
-        classification_tasks = self.get_classification_tasks(config, sim_tasks, lcfit_tasks)
+        lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks + data_tasks)
+        classification_tasks = self.get_classification_tasks(config, sim_tasks + data_tasks, lcfit_tasks)
         aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks

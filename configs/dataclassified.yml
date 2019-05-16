@@ -1,0 +1,62 @@
+DATAPREP:
+
+  TESTDATA:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+
+  TESTFAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
+#SIM:
+#  TRAININGSIM:
+#    IA_G10:
+#      BASE: sn_ia_salt2_g10.input
+#    II_JONES:
+#      BASE: sn_collection_jones.input
+#    GLOBAL:
+#      NGEN_UNIT: 0.2
+#      RANSEED_REPEAT: 40 12345
+#
+#  TESTSIM:
+#    IA_C11:
+#      BASE: sn_ia_salt2_c11.input
+#    IBC_TEMPLATES:
+#      BASE: sn_ibc_templates.input
+#    II_TEMPLATES:
+#      BASE: sn_ii_templates.input
+#    GLOBAL:
+#      NGEN_UNIT: 0.1
+#      RANSEED_REPEAT: 20 12345
+
+LCFIT:
+  TESTFIT:
+    BASE: des.nml
+
+#CLASSIFICATION:
+#  SNNVANILLATRAIN:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: train
+#    MASK: TRAINING
+#    OPTS:
+#      USE_PHOTOMETRY: True
+#
+#  SNNVANILLATEST:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: predict
+#    MASK: TEST
+#    OPTS:
+#      USE_PHOTOMETRY: True
+#      MODEL: SNNVANILLATRAIN
+#
+#AGGREGATION:
+#  AGG:
+#    MASK: TEST
+#    OPTS:
+#      INCLUDE_TYPE: True
+#      PLOT: True
+#
+#MERGE:
+#  MERGE:
+#    MASK_SIM: TEST
+#    MASK_FIT: TEST

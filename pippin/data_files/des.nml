@@ -4,6 +4,7 @@ DONE_STAMP: FINISHED.DONE
 &SNLCINP
     USE_MINOS = T
 
+    PRIVATE_DATA_PATH = '$DES_ROOT/lcmerge'
     VERSION_PHOTOMETRY = 'DESALL_specType_forcePhoto_real_snana_text'
 
     PHOTFLAG_MSKREJ   = 1016, 0

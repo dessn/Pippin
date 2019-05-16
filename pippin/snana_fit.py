@@ -8,6 +8,7 @@ import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, mkdirs
+from pippin.dataprep import DataPrep
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 
@@ -26,6 +27,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         super().__init__(name, output_dir, self.base_file, "=", dependencies=[sim_task])
 
+        self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
@@ -93,6 +95,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_fitinp(key, value)
         self.set_property("VERSION", self.sim_version + "*", assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
+        if isinstance(self.sim_task, DataPrep):
+            self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['output_dir']}'")
 
         # We want to do our hashing check here
         string_to_hash = self.fitopts + self.base

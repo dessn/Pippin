@@ -24,6 +24,12 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.fits_file = self.options.get("FITS_FILE")
         self.dump_dir = self.options.get("DUMP_DIR", self.output_dir)
 
+        self.genversion = os.path.basename(self.raw_dir)
+
+        self.output["genversion"] = self.genversion
+        self.output["photometry_dir"] = os.path.join(self.output_dir, self.genversion)
+        self.output["types"] = "LOAD IN THE DICT FROM ANAIS"
+
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=1:00:00
@@ -39,6 +45,9 @@ echo `which python`
 cd {path_to_task}
 python skim_data_lcs.py {command_opts}
 """
+
+    def _compute_types(self):
+        """ Scan through the photometry and determine the types in the data """
 
     def _check_completion(self):
         if os.path.exists(self.done_file):
@@ -62,7 +71,7 @@ python skim_data_lcs.py {command_opts}
         command_opts += f"--fits_file {get_output_loc(self.fits_file)} " if self.fits_file is not None else ""
         command_opts += f"--dump_dir {get_output_loc(self.dump_dir)} " if self.dump_dir is not None else ""
         command_opts += f"--done_file {get_output_loc(self.done_file)} "
-        command_opts += f"--cut_version output"
+        command_opts += f"--cut_version {self.genversion}"
 
         format_dict = {
             "job_name": self.name,
