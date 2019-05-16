@@ -1,6 +1,8 @@
+import json
 import shutil
 import subprocess
 import os
+from collections import OrderedDict
 
 from pippin.config import mkdirs, get_output_loc, get_config
 from pippin.task import Task
@@ -27,8 +29,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.genversion = os.path.basename(self.raw_dir)
 
         self.output["genversion"] = self.genversion
-        self.output["photometry_dir"] = os.path.join(self.output_dir, self.genversion)
-        self.output["types"] = "LOAD IN THE DICT FROM ANAIS"
+        self.output["photometry_dir"] = os.path.dirname(self.raw_dir)
+        self.output["skimmed_photometry_dir"] = os.path.join(self.output_dir, self.genversion)
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -46,8 +48,17 @@ cd {path_to_task}
 python skim_data_lcs.py {command_opts}
 """
 
-    def _compute_types(self):
-        """ Scan through the photometry and determine the types in the data """
+    def _get_types(self):
+        """ Load the data types from json file """
+        filename = os.path.join(self.dump_dir, "sntypes.json")
+        if os.path.exists(filename):
+            self.logger.debug(f"Loading types from {filename}")
+            with open(filename) as f:
+                types = OrderedDict(json.load(f))
+                self.logger.debug(f"Found types {json.dumps(types)}")
+                return types
+        else:
+            self.logger.warn(f"Types not found at {filename}, why is this the case???")
 
     def _check_completion(self):
         if os.path.exists(self.done_file):
@@ -57,6 +68,7 @@ python skim_data_lcs.py {command_opts}
                     self.logger.info(f"Done file reported failure. Check output log {self.logfile}")
                     return Task.FINISHED_FAILURE
                 else:
+                    self.output["types"] = self._get_types()
                     return Task.FINISHED_SUCCESS
         return 1  # The number of CPUs being utilised
 
