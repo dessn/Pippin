@@ -17,7 +17,7 @@ class SnirfClassifier(Classifier):
         self.path_to_classifier = get_output_loc(self.global_config["ArgonneClassifier"]["location"])
         self.job_base_name = os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c FITPROB")
-        self.output_pk_file = os.path.join(self.output_dir, "modelpkl")
+        self.output_pk_file = os.path.join(self.output_dir, "modelpkl.pkl")
 
         self.slurm = """#!/bin/bash
 
@@ -80,6 +80,7 @@ class SnirfClassifier(Classifier):
             f"--pklformat fitres "
             f"--test {self.get_fits_file()} "
             f"--done_file {self.done_file} "
+            f"--use_filenames "
             f"&> output.log"
         )
         self.classify(force_refresh, command)
@@ -94,6 +95,7 @@ class SnirfClassifier(Classifier):
             f"--filedir {self.output_dir} "
             f"--train {self.get_fits_file()} "
             f"--done_file {self.done_file} "
+            f"--use_filenames "
             f"&> output.log "
         )
         self.classify(force_refresh, command)
