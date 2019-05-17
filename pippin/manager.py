@@ -302,7 +302,7 @@ class Manager:
         done_tasks = []
         failed_tasks = []
         blocked_tasks = []
-        squeue = []
+        squeue = None
 
         # Welcome to the primary loop
         while self.tasks or running_tasks:
