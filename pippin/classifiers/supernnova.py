@@ -190,7 +190,8 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         else:
             print("AAA ", squeue)
             print("BBB ", self.job_base_name)
-            print("CCC ", [i for i in squeue if self.job_base_name in squeue])
+            if squeue is not None:
+                print("CCC ", [i for i in squeue if self.job_base_name in squeue])
 
             num_jobs = self.num_jobs if squeue is None else len([i for i in squeue if self.job_base_name in squeue])
             if squeue is not None and num_jobs == 0:
