@@ -93,7 +93,7 @@ class Task(ABC):
 
         :return: Task.FINISHED_SUCCESS, Task.FNISHED_FAILURE or the number of jobs still running
         """
-        result = self._check_completion()
+        result = self._check_completion(squeue)
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
             if os.path.exists(self.done_file):
                 self.end_time = os.path.getmtime(self.done_file)
