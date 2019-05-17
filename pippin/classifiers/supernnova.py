@@ -40,8 +40,7 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --ntasks=1
 #SBATCH --partition=gpu2
 #SBATCH --gres=gpu:1
-#SBATCH --output=log_%j.out
-#SBATCH --error=log_%j.err
+#SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=64GB
 
