@@ -130,7 +130,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             subprocess.run(["split_and_fit.pl", self.config_path, "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return True
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         # Check for errors
         for file in self.log_files:
             if os.path.exists(file):

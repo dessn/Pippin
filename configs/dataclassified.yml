@@ -15,7 +15,7 @@ SIM:
       BASE: sn_collection_jones.input
     GLOBAL:
       NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 40 12345
+      RANSEED_REPEAT: 10 12345
 
   TESTSIM:
     IA_C11:
@@ -26,7 +26,7 @@ SIM:
       BASE: sn_ii_templates.input
     GLOBAL:
       NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 20 12345
+      RANSEED_REPEAT: 10 12345
 
 
 

@@ -23,7 +23,7 @@ class Aggregator(Task):
         self.plot = bool(options.get("PLOT", False))
         self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self, force_refresh):

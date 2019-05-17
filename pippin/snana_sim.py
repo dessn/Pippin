@@ -134,7 +134,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         # Check log for errors and if found, print the rest of the log so you dont have to look up the file
         output_error = False
         if self.logging_file is not None and os.path.exists(self.logging_file):

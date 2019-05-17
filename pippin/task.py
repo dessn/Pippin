@@ -86,7 +86,7 @@ class Task(ABC):
             return str(datetime.timedelta(seconds=self.wall_time))
         return None
 
-    def check_completion(self):
+    def check_completion(self, squeue):
         """ Checks if the job has completed.
 
         Invokes  `_check_completion` and determines wall time.
@@ -107,13 +107,14 @@ class Task(ABC):
         return result
 
     @abstractmethod
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         """ Checks if the job is complete or has failed. 
         
         If it is complete it should also load in the any useful results that 
         other tasks may need in `self.output` dictionary
         
         Such as the location of a trained model or output files.
+        :param squeue:
         """
         pass
 

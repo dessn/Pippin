@@ -27,6 +27,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.dump_dir = self.options.get("DUMP_DIR", self.output_dir)
 
         self.genversion = os.path.basename(self.raw_dir)
+        self.job_name = f"DATAPREP_{self.name}"
 
         self.output["genversion"] = self.genversion
         self.output["photometry_dir"] = os.path.dirname(self.raw_dir)
@@ -60,7 +61,7 @@ python skim_data_lcs.py {command_opts}
         else:
             self.logger.warn(f"Types not found at {filename}, why is this the case???")
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at f{self.done_file}")
             with open(self.done_file) as f:
@@ -86,7 +87,7 @@ python skim_data_lcs.py {command_opts}
         command_opts += f"--cut_version {self.genversion}"
 
         format_dict = {
-            "job_name": self.name,
+            "job_name": self.job_name,
             "log_file": self.logfile,
             "conda_env": self.conda_env,
             "path_to_task": self.path_to_task,

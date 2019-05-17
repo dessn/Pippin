@@ -131,7 +131,7 @@ class NearestNeighborClassifier(Classifier):
         with open(self.logging_file, "w") as f:
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         outdir = self.splitfit_output_dir
 
         # check global DONE stamp to see if all is DONE

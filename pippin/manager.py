@@ -302,6 +302,7 @@ class Manager:
         done_tasks = []
         failed_tasks = []
         blocked_tasks = []
+        squeue = []
 
         # Welcome to the primary loop
         while self.tasks or running_tasks:
@@ -309,7 +310,7 @@ class Manager:
 
             # Check status of current jobs
             for t in running_tasks:
-                result = t.check_completion()
+                result = t.check_completion(squeue)
                 # If its finished, good or bad, juggle tasks
                 if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
                     if result == Task.FINISHED_SUCCESS:
@@ -346,6 +347,8 @@ class Manager:
                 time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+                squeue = subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True)
+                print(squeue)
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 

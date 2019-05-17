@@ -100,7 +100,7 @@ class SnirfClassifier(Classifier):
         )
         self.classify(force_refresh, command)
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Found done file at {self.done_file}")
             with open(self.done_file) as f:

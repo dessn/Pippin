@@ -147,7 +147,7 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
 
         return True
 
-    def _check_completion(self):
+    def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.info("Job complete")
 
@@ -189,7 +189,7 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
             })
             return Task.FINISHED_SUCCESS
         else:
-            num_jobs = int(subprocess.check_output(f"squeue -h -u $USER -o '%.70j' | grep {self.job_base_name} | wc -l", shell=True))
+            num_jobs = len([i for i in squeue if self.job_base_name in squeue])
             if num_jobs == 0:
                 if os.path.exists(self.hash_file):
                     self.logger.info("Removing hash on failure")
