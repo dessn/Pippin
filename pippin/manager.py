@@ -347,7 +347,7 @@ class Manager:
                 time.sleep(0.5)
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-                squeue = subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True)
+                squeue = subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True).split("\n")
                 print(squeue)
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
