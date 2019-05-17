@@ -23,7 +23,7 @@ class MessageStore(logging.Handler):
         self.store[l].append(record)
 
     def get_warnings(self):
-        return self.store.get("WARNING", [])
+        return self.store.get("WARNING", []) + []
 
     def get_errors(self):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])

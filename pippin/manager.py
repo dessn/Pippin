@@ -382,6 +382,7 @@ class Manager:
             self.logger.warning(f"{len(ws)} warnings")
         for w in ws:
             self.logger.warning(f"\t{w.message}")
+
         if len(es) == 0:
             self.logger.info(f"No errors")
         else:
