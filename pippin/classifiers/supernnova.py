@@ -191,6 +191,7 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         else:
             num_jobs = len([i for i in squeue if self.job_base_name in squeue])
             if num_jobs == 0:
+                print(self.done_file)
                 print(squeue)
                 print(self.job_base_name)
                 print([i for i in squeue if self.job_base_name in squeue])
