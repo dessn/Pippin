@@ -1,5 +1,6 @@
 from abc import abstractmethod
 
+from pippin.dataprep import DataPrep
 from pippin.task import Task
 from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
@@ -50,7 +51,7 @@ class Classifier(Task):
 
     def get_simulation_dependency(self):
         for t in self.dependencies:
-            if isinstance(t, SNANASimulation):
+            if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
                 return t.output
         return None
 

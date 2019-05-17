@@ -345,6 +345,7 @@ class Manager:
             if small_wait:
                 self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
                 time.sleep(0.5)
+                squeue = None
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
                 squeue = subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True, text=True).splitlines()

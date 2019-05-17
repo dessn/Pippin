@@ -55,7 +55,16 @@ python skim_data_lcs.py {command_opts}
         if os.path.exists(filename):
             self.logger.debug(f"Loading types from {filename}")
             with open(filename) as f:
-                types = OrderedDict(json.load(f))
+                list_types = json.load(f)
+
+                def key(x):
+                    if x[1].lower() == "ia":
+                        return 0
+                    else:
+                        return 99999999 + x[0]
+
+                sorted_types = sorted(list_types, key=key)
+                types = OrderedDict(sorted_types)
                 self.logger.debug(f"Found types {json.dumps(types)}")
                 return types
         else:
