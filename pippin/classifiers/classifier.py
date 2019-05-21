@@ -52,7 +52,7 @@ class Classifier(Task):
     def get_simulation_dependency(self):
         for t in self.dependencies:
             if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
-                return t.output
+                return t
         return None
 
     def _run(self, force_refresh):

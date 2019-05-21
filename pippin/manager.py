@@ -74,7 +74,7 @@ class Manager:
         sim_tasks = self.get_simulation_tasks(config)
         lcfit_tasks = self.get_lcfit_tasks(config, sim_tasks + data_tasks)
         classification_tasks = self.get_classification_tasks(config, sim_tasks + data_tasks, lcfit_tasks)
-        aggregator_tasks = self.get_aggregator_tasks(config, classification_tasks)
+        aggregator_tasks = self.get_aggregator_tasks(config, sim_tasks + data_tasks, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
         self.logger.info("")
@@ -188,7 +188,7 @@ class Manager:
                 self.logger.error(f"Classifier {name} with mask {mask} matched no combination of sims and fits")
         return tasks
 
-    def get_aggregator_tasks(self, c, classifier_tasks):
+    def get_aggregator_tasks(self, c, sim_tasks, classifier_tasks):
         tasks = []
         stage = Manager.stages["AGGREGATE"]
         if self.finish is not None and self.finish < Manager.stages["AGGREGATE"]:
@@ -196,16 +196,22 @@ class Manager:
         for agg_name in c.get("AGGREGATION", []):
             config = c["AGGREGATION"][agg_name]
             options = config.get("OPTS", {})
-            mask = config.get("MASK")
-            deps = [c for c in classifier_tasks if mask is None or mask in c.name]
-            if len(deps) == 0:
-                self.logger.error("Aggregator {agg_name} with mask {mask} matched no classifier tasks")
-            else:
-                a = Aggregator(agg_name, self._get_aggregator_dir(agg_name), deps, options)
-                a.set_stage(stage)
-                self.logger.info(f"Creating aggregation task {agg_name} with {a.num_jobs}")
-                tasks.append(a)
-        return tasks
+            mask = config.get("MASK", "")
+            mask_sim = config.get("MASK_SIM", "")
+            mask_clas = config.get("MASK_CLAS", "")
+            for sim_task in sim_tasks:
+                if mask_sim not in sim_task.name or mask not in sim_task.name:
+                    continue
+                agg_name2 = f"{agg_name}_{sim_task.name}"
+                deps = [c for c in classifier_tasks if mask in c.name and mask_clas in c.name and c.get_simulation_dependency() == sim_task]
+                if len(deps) == 0:
+                    self.logger.error(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
+                else:
+                    a = Aggregator(agg_name2, self._get_aggregator_dir(agg_name2), deps, options)
+                    a.set_stage(stage)
+                    self.logger.info(f"Creating aggregation task {agg_name2} with {a.num_jobs}")
+                    tasks.append(a)
+            return tasks
 
     def get_merge_tasks(self, c, agg_tasks, lcfit_tasks):
         tasks = []

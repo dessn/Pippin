@@ -79,7 +79,7 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         return self.classify(False, force_refresh)
 
     def get_types(self):
-        t = self.get_simulation_dependency()
+        t = self.get_simulation_dependency().output
         return t["types"]
 
     def classify(self, training, force_refresh):
@@ -99,9 +99,9 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
 
         types = self.get_types()
         str_types = json.dumps(types)
-        light_curve_dir = self.get_simulation_dependency().get("skimmed_photometry_dir")
+        light_curve_dir = self.get_simulation_dependency().output.get("skimmed_photometry_dir")
         if light_curve_dir is None:
-            light_curve_dir = self.get_simulation_dependency()["photometry_dir"]
+            light_curve_dir = self.get_simulation_dependency().output["photometry_dir"]
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dir']}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] else ""
