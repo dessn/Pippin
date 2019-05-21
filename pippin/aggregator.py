@@ -1,5 +1,6 @@
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs
+from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
@@ -50,7 +51,7 @@ class Aggregator(Task):
                     check += task.dependencies
 
         for task in check:
-            if isinstance(task, SNANASimulation):
+            if isinstance(task, SNANASimulation) or isinstance(task, DataPrep):
                 tasks.append(task)
 
         tasks = list(set(tasks))
