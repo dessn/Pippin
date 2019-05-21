@@ -65,9 +65,7 @@ class Aggregator(Task):
         if "VARNAMES:" in df.columns:
             df = df.drop(columns="VARNAMES:")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
-        print("AAAA ", filename, df.columns)
         df = df.drop(columns=remove_columns)
-        print("BBBB ", filename, df.columns)
         return df
 
     def _run(self, force_refresh):
@@ -75,7 +73,6 @@ class Aggregator(Task):
         if new_hash:
             mkdirs(self.output_dir)
             prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
-            print(prediction_files)
             df = None
 
             for f in prediction_files:
@@ -84,11 +81,9 @@ class Aggregator(Task):
                 if df is None:
                     df = dataframe
                     self.logger.debug(f"Merging on column {self.id} for file {f}")
-                    print(df.columns)
                 else:
                     self.logger.debug(f"Merging on column {self.id} for file {f}")
                     df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
-                    print(df.columns)
 
             if self.include_type:
                 self.logger.info("Finding original types")
@@ -107,6 +102,10 @@ class Aggregator(Task):
                                 type_df = dataframe
                             else:
                                 type_df = pd.concat([type_df, dataframe])
+                            print("AAA Type is ", type_df)
+                            print("BBB Dataframe is ", dataframe)
+                            print("CCC snid is ", snid)
+                            print("DDD sntype is ", sntype)
                 df = pd.merge(df, type_df, on=self.id)
             if self.plot:
                 self._plot(df)
