@@ -94,6 +94,7 @@ class Aggregator(Task):
                     phot_dir = s.output["photometry_dir"]
                     headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
                     for h in headers:
+                        print(h)
                         with fits.open(h) as hdul:
                             data = hdul[1].data
                             snid = np.array(data.field("SNID")).astype(np.int64)
