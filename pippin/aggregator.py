@@ -93,22 +93,19 @@ class Aggregator(Task):
                 for s in sim_tasks:
                     phot_dir = s.output["photometry_dir"]
                     headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
-                    print(list(os.listdir(phot_dir)))
-                    for h in headers:
-                        print(h)
-                        with fits.open(h) as hdul:
-                            data = hdul[1].data
-                            snid = np.array(data.field("SNID")).astype(np.int64)
-                            sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                            dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                            if type_df is None:
-                                type_df = dataframe
-                            else:
-                                type_df = pd.concat([type_df, dataframe])
-                            print("AAA Type is ", type_df)
-                            print("BBB Dataframe is ", dataframe)
-                            print("CCC snid is ", snid)
-                            print("DDD sntype is ", sntype)
+                    if not headers:
+                        self.logger.error(f"Not HEAD fits files found in {phot_dir}!")
+                    else:
+                        for h in headers:
+                            with fits.open(h) as hdul:
+                                data = hdul[1].data
+                                snid = np.array(data.field("SNID")).astype(np.int64)
+                                sntype = np.array(data.field("SNTYPE")).astype(np.int64)
+                                dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                                if type_df is None:
+                                    type_df = dataframe
+                                else:
+                                    type_df = pd.concat([type_df, dataframe])
                 df = pd.merge(df, type_df, on=self.id)
             if self.plot:
                 self._plot(df)
