@@ -93,6 +93,7 @@ class Aggregator(Task):
                 for s in sim_tasks:
                     phot_dir = s.output["photometry_dir"]
                     headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                    print(list(os.listdir(phot_dir)))
                     for h in headers:
                         print(h)
                         with fits.open(h) as hdul:
