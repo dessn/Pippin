@@ -24,12 +24,11 @@ class SnirfClassifier(Classifier):
 #SBATCH --job-name={job_name}
 #SBATCH --time=15:00:00
 #SBATCH --nodes=1
-#SBATCH --ntasks-per-node=4
+#SBATCH --ntasks=1
 #SBATCH --partition=broadwl
 #SBATCH --output=log_%j.out
-#SBATCH --error=log_%j.err
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=64GB
+#SBATCH --mem=14GB
 
 source activate {conda_env}
 echo `which python`
