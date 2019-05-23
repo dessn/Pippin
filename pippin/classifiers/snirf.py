@@ -27,7 +27,7 @@ class SnirfClassifier(Classifier):
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --partition=broadwl
-#SBATCH --output=log_%j.out
+#SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=14GB
 
@@ -72,7 +72,7 @@ python SNIRF.py {command_opts}
 
     def predict(self, force_refresh):
         command = (
-            f"--nclass 2"
+            f"--nclass 2 "
             f"--ft {self.features} "
             f"--restore "
             f"--pklfile {self.output_pk_file} "
@@ -81,7 +81,6 @@ python SNIRF.py {command_opts}
             f"--filedir {self.output_dir} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
-            f"&> output.log"
         )
         return self.classify(force_refresh, command)
 
@@ -97,7 +96,6 @@ python SNIRF.py {command_opts}
             f"--train {self.get_fits_file()} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
-            f"&> output.log "
         )
         return self.classify(force_refresh, command)
 
