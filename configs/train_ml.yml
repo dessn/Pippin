@@ -5,7 +5,7 @@ SIM:
     II_JONES:
       BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 1
+      NGEN_UNIT: 4
       RANSEED_REPEAT: 40 12345
 
   TESTSIM:
@@ -16,7 +16,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 1
+      NGEN_UNIT: 3
       RANSEED_REPEAT: 20 12345
 
 LCFIT:

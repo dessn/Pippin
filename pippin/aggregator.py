@@ -155,13 +155,13 @@ class Aggregator(Task):
         bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
         columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
-        fig, ax = plt.subplots(figsize=(5, 4))
+        fig, ax = plt.subplots(figsize=(8, 6))
         for c in columns:
             data, truth = self._get_data_and_truth(df[c], df["IA"])
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
             ax.scatter(bin_center, actual_prob, s=10, alpha=0.5, label=c)
         ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
-        ax.legend(loc=4, frameon=False)
+        ax.legend(loc=4, frameon=False, markerfirst=False)
         ax.set_xlabel("Reported confidence")
         ax.set_ylabel("Actual chance of being Ia")
         plt.show()
@@ -243,6 +243,7 @@ class Aggregator(Task):
             ax.plot(purity, efficiency, color=col,  label=f"{c.split('_')[1]}")
 
         ax.set_xlabel("Precision (aka purity)")
+        ax.set_xlim(0.97, 1.0)
         ax.set_ylabel("Recall (aka efficiency)")
         ax.set_title("PR Curve")
         ax.legend(frameon=False, loc=3)
