@@ -71,11 +71,21 @@ python SNIRF.py {command_opts}
         return True
 
     def predict(self, force_refresh):
+        model = self.options.get("MODEL")
+        if model is None:
+            self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")
+            return False
+        if not os.path.exists(get_output_loc(model)):
+            # If its not a file, it must be a task
+            for t in self.dependencies:
+                if model == t.name:
+                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
+                    model = t.output["model_filename"]
         command = (
             f"--nclass 2 "
             f"--ft {self.features} "
             f"--restore "
-            f"--pklfile {self.output_pk_file} "
+            f"--pklfile {model} "
             f"--pklformat FITRES "
             f"--test {self.get_fits_file()} "
             f"--filedir {self.output_dir} "
