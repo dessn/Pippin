@@ -107,8 +107,20 @@ class SnirfClassifier(Classifier):
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
                 else:
-                    self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.modelpkl)][0]
-                    self.output["predictions_filename"] = "UNKNOWN"
+                    if self.mode == Classifier.PREDICT:
+                        # Rename output file myself
+                        # First check to see if this is already done
+                        predictions_filename = os.path.join(self.output_dir, "predictions.csv")
+                        if not os.path.exists(predictions_filename):
+                            # Find the output file
+                            output_files = [i for i in os.listdir(self.output_dir) if i.endswith("Classes.txt")]
+                            if len(output_files) != 1:
+                                self.logger.error(f"Could not find the output file in {self.output_dir}")
+                                return Task.FINISHED_FAILURE
+                            shutil.move(os.path.join(self.output_dir, output_files[0]), predictions_filename)
+                        self.output["predictions_filename"] = predictions_filename
+                    else:
+                        self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.modelpkl)][0]
                     return Task.FINISHED_SUCCESS
         return self.num_jobs
 
