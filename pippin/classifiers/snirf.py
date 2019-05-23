@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import pandas as pd
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
@@ -117,7 +118,10 @@ class SnirfClassifier(Classifier):
                             if len(output_files) != 1:
                                 self.logger.error(f"Could not find the output file in {self.output_dir}")
                                 return Task.FINISHED_FAILURE
-                            shutil.move(os.path.join(self.output_dir, output_files[0]), predictions_filename)
+                            df = pd.read_csv(os.path.join(self.output_dir, output_files[0]))
+                            df_final = df[["CID", "RFprobability0"]]
+                            df_final = df_final.rename(columns={"CID": "SNID", "RFprobability0": self.get_prob_column_name()})
+                            df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
                         self.output["predictions_filename"] = predictions_filename
                     else:
                         self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.modelpkl)][0]
