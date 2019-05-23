@@ -65,7 +65,6 @@ python SNIRF.py {command_opts}
             self.save_new_hash(new_hash)
             self.logger.info(f"Submitting batch job {slurm_output_file}")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
-
         else:
             self.logger.debug("Not regenerating")
         return True
@@ -76,28 +75,30 @@ python SNIRF.py {command_opts}
             f"--ft {self.features} "
             f"--restore "
             f"--pklfile {self.output_pk_file} "
-            f"--pklformat fitres "
+            f"--pklformat FITRES "
             f"--test {self.get_fits_file()} "
+            f"--filedir {self.output_dir} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
             f"&> output.log"
         )
-        self.classify(force_refresh, command)
+        return self.classify(force_refresh, command)
 
     def train(self, force_refresh):
         command = (
             f"--nclass 2 "
             f"--ft {self.features} "
             f"--train_only "
-            f"--test ''"
+            f"--test '' "
             f"--pklfile {self.output_pk_file} "
+            f"--pklformat FITRES "
             f"--filedir {self.output_dir} "
             f"--train {self.get_fits_file()} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
             f"&> output.log "
         )
-        self.classify(force_refresh, command)
+        return self.classify(force_refresh, command)
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
