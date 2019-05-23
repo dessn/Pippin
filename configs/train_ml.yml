@@ -90,6 +90,19 @@ CLASSIFICATION:
     OPTS:
         MODEL: NNTRAIN
 
+  SNIRF-TRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNIRF-TEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+      MODEL: SNIRF-TRAIN
+
+
 AGGREGATION:
   AGG:
     MASK: TEST
