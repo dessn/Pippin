@@ -18,7 +18,8 @@ class SnirfClassifier(Classifier):
         self.path_to_classifier = get_output_loc(self.global_config["ArgonneClassifier"]["location"])
         self.job_base_name = os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c FITPROB")
-        self.output_pk_file = os.path.join(self.output_dir, "modelpkl.pkl")
+        self.model_pk_file = "modelpkl.pkl"
+        self.output_pk_file = os.path.join(self.output_dir,  self.model_pk_file)
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -123,7 +124,7 @@ python SNIRF.py {command_opts}
                             df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
                         self.output["predictions_filename"] = predictions_filename
                     else:
-                        self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.modelpkl)][0]
+                        self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)][0]
                     return Task.FINISHED_SUCCESS
         return self.num_jobs
 
