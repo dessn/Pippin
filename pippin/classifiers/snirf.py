@@ -47,7 +47,7 @@ class SnirfClassifier(Classifier):
         format_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
-            "pathto_classifier": self.path_to_classifier,
+            "path_to_classifier": self.path_to_classifier,
             "command_opts": command
         }
         slurm_script = self.slurm.format(**format_dict)

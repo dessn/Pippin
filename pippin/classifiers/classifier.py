@@ -43,14 +43,17 @@ class Classifier(Task):
         """
         return True, True
 
-    def get_fit_dependency(self):
+    def get_fit_dependency(self, output=True):
         for t in self.dependencies:
             if isinstance(t, SNANALightCurveFit):
-                return t.output
+                return t.output if output else t
         return None
 
     def get_simulation_dependency(self):
         for t in self.dependencies:
+            if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
+                return t
+        for t in self.get_fit_dependency(output=False).dependencies:
             if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
                 return t
         return None

@@ -203,7 +203,7 @@ class Manager:
                 if mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
                 agg_name2 = f"{agg_name}_{sim_task.name}"
-                deps = [c for c in classifier_tasks if mask in c.name and mask_clas in c.name and c.get_simulation_dependency() == sim_task]
+                deps = [c for c in classifier_tasks if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task]
                 if len(deps) == 0:
                     self.logger.error(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
                 else:
@@ -351,11 +351,9 @@ class Manager:
             if small_wait:
                 self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
                 time.sleep(0.5)
-                print("SETTING SQUEUE TO NONE")
                 squeue = None
             else:
                 time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
-                print("GETTING SQUEUE")
                 squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True, text=True).splitlines()]
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
