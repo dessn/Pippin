@@ -21,22 +21,21 @@ class SnirfClassifier(Classifier):
         self.output_pk_file = os.path.join(self.output_dir, "modelpkl.pkl")
 
         self.slurm = """#!/bin/bash
+#SBATCH --job-name={job_name}
+#SBATCH --time=15:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=4
+#SBATCH --partition=broadwl
+#SBATCH --output=log_%j.out
+#SBATCH --error=log_%j.err
+#SBATCH --account=pi-rkessler
+#SBATCH --mem=64GB
 
-        #SBATCH --job-name={job_name}
-        #SBATCH --time=15:00:00
-        #SBATCH --nodes=1
-        #SBATCH --ntasks-per-node=4
-        #SBATCH --partition=broadwl
-        #SBATCH --output=log_%j.out
-        #SBATCH --error=log_%j.err
-        #SBATCH --account=pi-rkessler
-        #SBATCH --mem=64GB
-
-        source activate {conda_env}
-        echo `which python`
-        cd {path_to_classifier}
-        python SNIRF.py {command_opts}
-        """
+source activate {conda_env}
+echo `which python`
+cd {path_to_classifier}
+python SNIRF.py {command_opts}
+"""
 
     def get_fits_file(self):
         input = self.get_fit_dependency()
