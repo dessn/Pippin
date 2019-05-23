@@ -126,7 +126,7 @@ python SNIRF.py {command_opts}
                             if len(output_files) != 1:
                                 self.logger.error(f"Could not find the output file in {self.output_dir}")
                                 return Task.FINISHED_FAILURE
-                            df = pd.read_csv(os.path.join(self.output_dir, output_files[0]))
+                            df = pd.read_csv(os.path.join(self.output_dir, output_files[0]), delim_whitespace=True)
                             df_final = df[["CID", "RFprobability0"]]
                             df_final = df_final.rename(columns={"CID": "SNID", "RFprobability0": self.get_prob_column_name()})
                             df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
