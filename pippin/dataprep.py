@@ -31,6 +31,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
         self.output["genversion"] = self.genversion
         self.output["photometry_dir"] = get_output_loc(self.raw_dir)
+        self.output["raw_dir"] = self.raw_dir
         self.output["skimmed_photometry_dir"] = os.path.join(self.output_dir, self.genversion)
 
         self.slurm = """#!/bin/bash

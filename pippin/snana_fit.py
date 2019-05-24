@@ -47,7 +47,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def get_sim_dependency(self):
         for t in self.dependencies:
-            if isinstance(t, SNANASimulation):
+            if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
                 return t.output
         return None
 
@@ -98,6 +98,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
         if isinstance(self.sim_task, DataPrep):
             self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['output_dir']}'")
+            self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['raw_dir']}'")
 
         # We want to do our hashing check here
         string_to_hash = self.fitopts + self.base
