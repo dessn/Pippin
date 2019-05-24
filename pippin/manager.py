@@ -225,6 +225,8 @@ class Manager:
         for name in c.get("MERGE", []):
             num_gen = 0
             config = c["MERGE"].get(name, {})
+            if config is None:
+                config = {}
             options = config.get("OPTS", {})
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
