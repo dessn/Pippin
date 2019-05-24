@@ -6,8 +6,8 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.3
+      RANSEED_REPEAT: 10 12345
 
   TESTSIM:
     IA_C11:
@@ -17,7 +17,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.3
       RANSEED_REPEAT: 5 12345
 
 LCFIT:
@@ -25,17 +25,47 @@ LCFIT:
     BASE: des.nml
 
 CLASSIFICATION:
-  SNIRF-TRAIN:
+  SNIRF-TRAIN-x1cF:
     CLASSIFIER: SnirfClassifier
     MODE: train
     MASK_SIM: TRAINING
 
-  SNIRF-TEST:
+  SNIRF-TEST-x1cF:
     CLASSIFIER: SnirfClassifier
     MODE: predict
     MASK_SIM: TESTSIM
     OPTS:
-      MODEL: SNIRF-TRAIN
+      MODEL: SNIRF-TRAIN-x1cF
+
+  SNIRF-TRAIN-WERR:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR
+
+  SNIRF-TEST-WERR:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TESTSIM
+    OPTS:
+      MODEL: SNIRF-TRAIN-WERR
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR
+
+  SNIRF-TRAIN-WERR-FITPROB:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR FITPROB
+
+  SNIRF-TEST-WERR-FITPROB:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TESTSIM
+    OPTS:
+      MODEL: SNIRF-TRAIN-WERR-FITPROB
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR FITPROB
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier

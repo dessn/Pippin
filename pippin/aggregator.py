@@ -159,7 +159,7 @@ class Aggregator(Task):
         for c in columns:
             data, truth = self._get_data_and_truth(df[c], df["IA"])
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
-            ax.scatter(bin_center, actual_prob, s=10, alpha=0.5, label=c)
+            ax.plot(bin_center, actual_prob, label=c)
         ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
         ax.legend(loc=4, frameon=False, markerfirst=False)
         ax.set_xlabel("Reported confidence")
