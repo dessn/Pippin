@@ -74,5 +74,6 @@ class Merger(Task):
         else:
             self.logger.debug("Not regnerating")
         self.output["fitres_file"] = self.done_file
+        self.output["fitres_dir"] = os.path.dirname(self.done_file)
         return True
 

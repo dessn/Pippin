@@ -1,4 +1,18 @@
+DATAPREP:
+  TESTDATA:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+
 SIM:
+  TRAININGSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+    GLOBAL:
+      NGEN_UNIT: 0.3
+      RANSEED_REPEAT: 10 12345
+
   TESTSIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
@@ -6,7 +20,7 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.2
       RANSEED_REPEAT: 5 12345
 
   IADES:
@@ -15,10 +29,6 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 5 12345
-
-#  IALOWZ: Add lowz sims to the mix
-#    IA_G10:
-#      BASE: sn_ia_salt2_g10.input
 
   CCONLY:
     IBC_TEMPLATES:
@@ -34,10 +44,16 @@ LCFIT:
     BASE: des.nml
 
 CLASSIFICATION:
-  FITPROBTEST:
-    CLASSIFIER: FitProbClassifier
+  SNIRFTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
     MODE: predict
-    MASK: TEST
+    OPTS:
+      MODEL: SNIRFTRAIN
 
 AGGREGATION:
   AGG:
@@ -48,5 +64,10 @@ AGGREGATION:
 
 MERGE:
   MERGE:
-    MASK_SIM: TEST
-    MASK_FIT: TEST
+
+BIASCOR:
+  BIASCOR:
+    DATA: TESTDATA
+    BIAS_COR_FITS: IADES
+    CC_PRIOR_FITS: CCONLY
+    CLASSIFIER: SNIRFTEST

@@ -4,6 +4,7 @@ import subprocess
 import time
 
 from pippin.aggregator import Aggregator
+from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config
@@ -76,7 +77,10 @@ class Manager:
         classification_tasks = self.get_classification_tasks(config, sim_tasks + data_tasks, lcfit_tasks)
         aggregator_tasks = self.get_aggregator_tasks(config, sim_tasks + data_tasks, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
-        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks
+        biascor_tasks = self.get_biascor_tasks(config, merger_tasks, classification_tasks)
+
+        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks + biascor_tasks
+
         self.logger.info("")
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
@@ -252,6 +256,59 @@ class Manager:
                 self.logger.error(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
         return tasks
 
+    def _fail_config(self, message):
+        self.logger.error(message)
+        raise ValueError(message)
+
+    def get_biascor_tasks(self, c, merge_tasks, classifier_tasks):
+        tasks = []
+        stage = Manager.stages["BIASCOR"]
+        if self.finish is not None and self.finish < Manager.stages["BIASCOR"]:
+            return tasks
+        for name in c.get("BIASCOR", []):
+            config = c["BIASCOR"][name]
+            options = config.get("OPT", {})
+
+            data_mask = config.get("DATA")
+            if data_mask is None:
+                self._fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
+
+            biascor_mask = config.get("BIAS_COR_FITS")
+            if biascor_mask is None:
+                self._fail_config("For BIASCOR tasks you need to specify an input BIAS_COR_FITS which is a mask for a merged task used for the Ia bias correction")
+
+            ccprior_mask = config.get("CC_PRIOR_FITS")
+            if ccprior_mask is None:
+                self._fail_config("For BIASCOR tasks you need to specify an input CC_PRIOR_FITS which is a mask for a merged task used for the cc prior")
+
+            classifier_name = config.get("CLASSIFIER")
+            if classifier_name is None:
+                self._fail_config("For BIASCOR tasks you need to specify a classifier to work with so we can grab the right column.")
+
+            data_tasks = [m for m in merge_tasks if data_mask in m.name]
+            biascor_tasks = [m for m in merge_tasks if biascor_mask in m.name]
+            ccprior_tasks = [m for m in merge_tasks if ccprior_mask in m.name]
+            classifier_task = [m for m in classifier_tasks if classifier_name == m.name]
+
+            if len(classifier_task) != 1:
+                self._fail_config(f"Classifier name {classifier_name} cannot be matched to any classifier!")
+            else:
+                classifier_task = classifier_task[0]
+            if not data_tasks:
+                self._fail_config("Biascor has no data_tasks that match the mask")
+            if not biascor_tasks:
+                self._fail_config("Biascor has no biascor_tasks that match the mask")
+            if not ccprior_tasks:
+                self._fail_config("Biascor has no ccprior_tasks that match the mask")
+
+            deps = [classifier_task] + data_tasks + biascor_tasks + ccprior_tasks
+            task = BiasCor(name, self._get_biascor_output_dir(name, data_mask, classifier_name), deps, options, data_tasks, biascor_tasks, ccprior_tasks, classifier_task)
+            task.set_stage(stage)
+            self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
+            tasks.append(task)
+
+        return tasks
+
     def get_num_running_jobs(self):
         num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT))
         return num_jobs
@@ -420,6 +477,8 @@ class Manager:
     def _get_merge_output_dir(self, merge_name, lcfit_name, agg_name):
         return f"{self.output_dir}/{Manager.stages['MERGE']}_MERGE/{merge_name}_{lcfit_name}_{agg_name}"
 
+    def _get_biascor_output_dir(self, biascor_name, data_mask, classifier_name):
+        return f"{self.output_dir}/{Manager.stages['BIASCOR']}_BIASCOR/{biascor_name}_{data_mask}_{classifier_name}"
 
 if __name__ == "__main__":
     import logging
