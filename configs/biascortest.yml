@@ -1,0 +1,52 @@
+SIM:
+  TESTSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 5 12345
+
+  IADES:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 5 12345
+
+#  IALOWZ: Add lowz sims to the mix
+#    IA_G10:
+#      BASE: sn_ia_salt2_g10.input
+
+  CCONLY:
+    IBC_TEMPLATES:
+      BASE: sn_ibc_templates.input
+    II_TEMPLATES:
+      BASE: sn_ii_templates.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 5 12345
+
+LCFIT:
+  TESTFIT:
+    BASE: des.nml
+
+CLASSIFICATION:
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+    MASK: TEST
+
+AGGREGATION:
+  AGG:
+    MASK: TEST
+    OPTS:
+      INCLUDE_TYPE: True
+      PLOT: True
+
+MERGE:
+  MERGE:
+    MASK_SIM: TEST
+    MASK_FIT: TEST
