@@ -224,7 +224,7 @@ class Manager:
             return tasks
         for name in c.get("MERGE", []):
             num_gen = 0
-            config = c["MERGE"][name]
+            config = c["MERGE"].get(name, {})
             options = config.get("OPTS", {})
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
