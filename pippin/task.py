@@ -126,8 +126,9 @@ class Task(ABC):
             extra = ""
         return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {[d.name for d in self.dependencies]})"
 
-    def get_dep(self, cls):
+    def get_dep(self, *clss):
         for d in self.dependencies:
-            if isinstance(d, cls):
-                return d
+            for cls in clss:
+                if isinstance(d, cls):
+                    return d
         return None

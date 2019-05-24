@@ -199,6 +199,8 @@ class Manager:
             return tasks
         for agg_name in c.get("AGGREGATION", []):
             config = c["AGGREGATION"][agg_name]
+            if config is None:
+                config = {}
             options = config.get("OPTS", {})
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
@@ -213,7 +215,7 @@ class Manager:
                 else:
                     a = Aggregator(agg_name2, self._get_aggregator_dir(agg_name2), deps, options)
                     a.set_stage(stage)
-                    self.logger.info(f"Creating aggregation task {agg_name2} with {a.num_jobs}")
+                    self.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                     tasks.append(a)
             return tasks
 
@@ -238,7 +240,7 @@ class Manager:
                     continue
                 if mask_lc and mask_lc not in lcfit.name:
                     continue
-                sim = lcfit.get_dep(SNANASimulation)
+                sim = lcfit.get_dep(SNANASimulation, DataPrep)
                 if mask and mask not in sim.name:
                     continue
                 if mask_sim and mask_sim not in sim.name:
@@ -249,13 +251,19 @@ class Manager:
                         continue
                     if mask and mask not in agg.name:
                         continue
+
+                    # Check if the sim is the same for both
+                    if sim != agg.get_underlying_sim_task():
+                        continue
                     num_gen += 1
-                    task = Merger(name, self._get_merge_output_dir(name, lcfit.name, agg.name), [lcfit, agg], options)
+                    merge_name2 = f"{name}_{sim.name}_{lcfit.name}"
+
+                    task = Merger(merge_name2, self._get_merge_output_dir(name, lcfit.name, agg.name), [lcfit, agg], options)
                     task.set_stage(stage)
-                    self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
+                    self.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
                     tasks.append(task)
             if num_gen == 0:
-                self.logger.error(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
+                self.logger.error(f"Merger {merge_name2} with mask {mask} matched no combination of aggregators and fits")
         return tasks
 
     def _fail_config(self, message):
@@ -287,12 +295,17 @@ class Manager:
             if classifier_name is None:
                 self._fail_config("For BIASCOR tasks you need to specify a classifier to work with so we can grab the right column.")
 
-            data_tasks = [m for m in merge_tasks if data_mask in m.name]
-            biascor_tasks = [m for m in merge_tasks if biascor_mask in m.name]
-            ccprior_tasks = [m for m in merge_tasks if ccprior_mask in m.name]
+            def match_merge_to_sim(m, sim_name):
+                s = m.get_lcfit_dep()["sim_name"]
+                print(s, sim_name)
+                return sim_name in s
+
+            data_tasks = [m for m in merge_tasks if match_merge_to_sim(m, data_mask)]
+            biascor_tasks = [m for m in merge_tasks if match_merge_to_sim(m, biascor_mask)]
+            ccprior_tasks = [m for m in merge_tasks if match_merge_to_sim(m, ccprior_mask)]
             classifier_task = [m for m in classifier_tasks if classifier_name == m.name]
 
-            if len(classifier_task) != 1:
+            if not classifier_task:
                 self._fail_config(f"Classifier name {classifier_name} cannot be matched to any classifier!")
             else:
                 classifier_task = classifier_task[0]

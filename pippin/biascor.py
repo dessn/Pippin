@@ -16,12 +16,15 @@ class BiasCor(ConfigBasedExecutable):
         self.logging_file = os.path.join(self.output_dir, "output.log")
         self.global_config = get_config()
 
-        self.bias_cor_fits = ",".join([m.output["fitres_file"] for m in merged_iasim])
-        self.cc_prior_fits = ",".join([m.output["fitres_file"] for m in merged_ccsim])
+        self.merged_data = merged_data
+        self.merged_iasim = merged_iasim
+        self.merged_ccsim = merged_ccsim
 
-        self.data = [m.output["fitres_dir"] for m in merged_data] # merge task(s) or fitres file
+        self.bias_cor_fits = None
+        self.cc_prior_fits = None
+        self.data = None
+        self.genversion = "_".join([m.get_lcfit_dep()["sim_name"] for m in merged_data]) + "_" + classifier.name
 
-        self.genversion = "_".join([os.path.basename(i) for i in self.data]) + "_" + classifier.name
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
 
         self.probability_column_name = classifier.output["prob_column_name"]
@@ -30,6 +33,10 @@ class BiasCor(ConfigBasedExecutable):
         pass
 
     def write_input(self, force_refresh):
+        self.bias_cor_fits = ",".join([m.output["fitres_file"] for m in self.merged_iasim])
+        self.cc_prior_fits = ",".join([m.output["fitres_file"] for m in self.merged_ccsim])
+        self.data = [m.output["fitres_dir"] for m in self.merged_data]
+
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)

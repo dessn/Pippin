@@ -57,10 +57,6 @@ CLASSIFICATION:
 
 AGGREGATION:
   AGG:
-    MASK: TEST
-    OPTS:
-      INCLUDE_TYPE: True
-      PLOT: True
 
 MERGE:
   MERGE:

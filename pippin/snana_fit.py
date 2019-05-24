@@ -43,6 +43,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["fitres_dir"] = self.fitres_dir
         self.output["nml_file"] = self.config_path
         self.output["genversion"] = self.sim_version
+        self.output["sim_name"] = sim_task.output["name"]
 
     def get_sim_dependency(self):
         for t in self.dependencies:
