@@ -26,6 +26,7 @@ class SnirfClassifier(Classifier):
 #SBATCH --time=15:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
 #SBATCH --partition=broadwl
 #SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
@@ -82,6 +83,7 @@ python SNIRF.py {command_opts}
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
         command = (
+            f"--nc 4 "
             f"--nclass 2 "
             f"--ft {self.features} "
             f"--restore "
@@ -96,6 +98,7 @@ python SNIRF.py {command_opts}
 
     def train(self, force_refresh):
         command = (
+            f"--nc 4 "
             f"--nclass 2 "
             f"--ft {self.features} "
             f"--train_only "
