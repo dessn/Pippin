@@ -41,7 +41,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 #SBATCH --mem=2GB
 
 cd {path_to_task}
-snana.exe clump.nml NOPROMPT
+snana.exe clump.nml
 """
         self.clump_command = """#
 # Obtaining Clump fit
