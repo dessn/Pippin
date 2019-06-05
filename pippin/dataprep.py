@@ -40,8 +40,6 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=2GB
 
-source activate {conda_env}
-echo `which python`
 cd {path_to_task}
 snana.exe clump.nml NOPROMPT
 """
