@@ -28,7 +28,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.output["genversion"] = self.genversion
         self.output["photometry_dir"] = get_output_loc(self.raw_dir)
         self.output["raw_dir"] = self.raw_dir
-        self.output["header_dir"] = os.path.join(self.output_dir, self.genversion)
+        self.clump_file = os.path.join(self.output_dir, self.genversion + ".SNANA.TEXT")
+        self.output["clump_file"] = self.clump_file
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -42,20 +43,24 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
 cd {path_to_task}
 snana.exe clump.nml
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file}
+else
+    echo FAILURE > {done_file}
+fi
 """
         self.clump_command = """#
 # Obtaining Clump fit
 # to run:
 # snana.exe SNFIT_clump.nml
 # outputs csv file with space delimiters
-DONE_STAMP: FINISHED.DONE
 
   &SNLCINP
 
      ! For SNN-integration:
      OPT_SETPKMJD = 16
      SNTABLE_LIST = 'SNANA(text:key)'
-     TEXTFILE_PREFIX = 'DESALL_fake_clump'
+     TEXTFILE_PREFIX = '{genversion}'
 
      ! data
      PRIVATE_DATA_PATH = '{data_path}'
@@ -89,6 +94,7 @@ DONE_STAMP: FINISHED.DONE
             "job_name": self.job_name,
             "log_file": self.logfile,
             "path_to_task": self.path_to_task,
+            "done_file": self.done_file
         }
         final_slurm = self.slurm.format(**format_dict)
 
