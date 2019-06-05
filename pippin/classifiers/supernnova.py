@@ -3,6 +3,8 @@ import subprocess
 import json
 import shutil
 import pickle
+from collections import OrderedDict
+
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
 from pippin.task import Task
@@ -98,6 +100,8 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
             assert os.path.exists(model_path), f"Cannot find {model_path}"
 
         types = self.get_types()
+        if types is None:
+            types = OrderedDict({"1": "Ia", "0": "unknown", "2": "SNIax", "3": "SNIa-pec", "20": "SNIIP", "21": "SNIIL", "22": "SNIIn", "29": "SNII", "32": "SNIb", "33": "SNIc", "39": "SNIbc", "41": "SLSN-I", "42": "SLSN-II", "43": "SLSN-R", "80": "AGN", "81": "galaxy", "98": "None", "99": "pending"})
         str_types = json.dumps(types)
 
         sim_dep = self.get_simulation_dependency()
