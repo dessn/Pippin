@@ -78,13 +78,6 @@ class Manager:
         aggregator_tasks = self.get_aggregator_tasks(config, sim_tasks + data_tasks, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         biascor_tasks = self.get_biascor_tasks(config, merger_tasks, classification_tasks)
-        print("data_tasks ", data_tasks)
-        print("sim_tasks ", sim_tasks)
-        print("lcfit_tasks ", lcfit_tasks)
-        print("classification_tasks ", classification_tasks)
-        print("aggregator_tasks ", aggregator_tasks)
-        print("merger_tasks ", merger_tasks)
-        print("biascor_tasks ", biascor_tasks)
         total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks + biascor_tasks
 
         self.logger.info("")
@@ -223,7 +216,7 @@ class Manager:
                     a.set_stage(stage)
                     self.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                     tasks.append(a)
-            return tasks
+        return tasks
 
     def get_merge_tasks(self, c, agg_tasks, lcfit_tasks):
         tasks = []
