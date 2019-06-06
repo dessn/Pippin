@@ -97,7 +97,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property("VERSION", self.sim_version + "*", assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
         if isinstance(self.sim_task, DataPrep):
-            self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['output_dir']}'")
+            self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
 
         # We want to do our hashing check here
