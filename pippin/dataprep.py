@@ -71,7 +71,7 @@ fi
   &END
 """
     def _get_types(self):
-        self.logger.error("Have not implemented types yet")
+        self.logger.warning("Data does not report types, let's hope the defaults are up to date!")
         return None
 
     def _check_completion(self, squeue):
