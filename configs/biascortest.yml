@@ -27,8 +27,8 @@ SIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.3
+      RANSEED_REPEAT: 10 12345
 
   CCONLY:
     IBC_TEMPLATES:
@@ -36,7 +36,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.3
       RANSEED_REPEAT: 5 12345
 
 LCFIT:
