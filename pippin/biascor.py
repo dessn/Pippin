@@ -25,7 +25,8 @@ class BiasCor(ConfigBasedExecutable):
         self.data = None
         self.genversion = "_".join([m.get_lcfit_dep()["sim_name"] for m in merged_data]) + "_" + classifier.name
 
-        self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
+        self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
+        self.config_path = os.path.join(self.output_dir, self.config_filename)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, "ALL.DONE")
         self.probability_column_name = classifier.output["prob_column_name"]
@@ -69,7 +70,7 @@ class BiasCor(ConfigBasedExecutable):
     def _run(self, force_refresh):
         regenerating = self.write_input(force_refresh)
         if regenerating:
-            command = ["SALT2mu_fit.pl", self.config_path]
+            command = ["SALT2mu_fit.pl", self.config_filename]
             for d in self.data:
                 command += ["INPDIR+", d]
             command += ["NOPROMPT"]
