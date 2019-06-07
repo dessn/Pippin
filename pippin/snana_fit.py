@@ -95,8 +95,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
-        self.set_property("VERSION", self.sim_version + "*", assignment=":", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
-        self.set_property("OUTDIR",  self.lc_output_dir, assignment=":", section_end="&SNLCINP")
+        self.set_property("VERSION", self.sim_version + "*", assignment=": ", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("OUTDIR",  self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
         if isinstance(self.sim_task, DataPrep):
             self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
@@ -178,6 +178,6 @@ if __name__ == "__main__":
     s.set_snlcinp("HELLO", "'human'")
     s.set_fitinp("FITWIN_PROB", "0.05, 1.01")
     s.set_fitinp("GOODBYE", -1)
-    s.set_property("BATCH_INFO", "sbatch  $SBATCH_TEMPLATES/SBATCH_sandyb.TEMPLATE  96", assignment=":")
+    s.set_property("BATCH_INFO", "sbatch  $SBATCH_TEMPLATES/SBATCH_sandyb.TEMPLATE  96", assignment=": ")
     s.delete_property("GOODBYE")
     s.write_nml()
