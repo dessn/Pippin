@@ -69,6 +69,7 @@ class Merger(Task):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             self.logger.debug("Regenerating, running combine_fitres")
+            self.save_new_hash(new_hash)
             with open(self.logfile, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         else:
