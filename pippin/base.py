@@ -36,7 +36,7 @@ class ConfigBasedExecutable(Task):
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
-        desired_line = f"{name}{assignment} {value}"
+        desired_line = f"{name}{assignment}{value}"
         for i, line in enumerate(self.base):
             modified_line = line.upper().replace(assignment, " ").strip()
             if reached_section or modified_line.startswith(section_start.upper()):

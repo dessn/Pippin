@@ -26,8 +26,11 @@ class BiasCor(ConfigBasedExecutable):
         self.genversion = "_".join([m.get_lcfit_dep()["sim_name"] for m in merged_data]) + "_" + classifier.name
 
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
-
+        self.fit_output_dir = os.path.join(self.output_dir, "output")
+        self.done_file = os.path.join(self.fit_output_dir, "ALL.DONE")
         self.probability_column_name = classifier.output["prob_column_name"]
+
+        self.output["fit_output_dir"] = self.fit_output_dir
 
     def _check_completion(self, squeue):
         pass
@@ -40,7 +43,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-        self.set_property("OUTDIR_OVERRIDE", self.output_dir)
+        self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
 
         final_output = "\n".join(self.base)
 

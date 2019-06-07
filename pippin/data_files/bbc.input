@@ -1,6 +1,6 @@
 BATCH_INFO:  sbatch  $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 40
 
-OUTDIR_OVERRIDE=location
+OUTDIR_OVERRIDE: location
 varname_pIa=NN_PROB_IA
 simfile_biascor=something.FITRES
 simfile_ccprior=something.FITRES

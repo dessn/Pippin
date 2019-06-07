@@ -25,7 +25,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.base_file = self.data_dir + base
         self.fitopts_file = self.data_dir + fitopts
 
-        super().__init__(name, output_dir, self.base_file, "=", dependencies=[sim_task])
+        super().__init__(name, output_dir, self.base_file, "= ", dependencies=[sim_task])
 
         self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]

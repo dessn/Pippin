@@ -15,7 +15,7 @@ from pippin.task import Task
 class SNANASimulation(ConfigBasedExecutable):
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        super().__init__(name, output_dir, self.data_dir + combine, ":")
+        super().__init__(name, output_dir, self.data_dir + combine, ": ")
 
         self.genversion = genversion
         self.config = config
@@ -37,7 +37,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.output["genversion"] = self.genversion
 
     def write_input(self, force_refresh):
-        self.set_property("GENVERSION", self.genversion, assignment=":", section_end="ENDLIST_GENVERSION")
+        self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
             if k.upper() != "GLOBAL":
                 run_config = self.config[k]
