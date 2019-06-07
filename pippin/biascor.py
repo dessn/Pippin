@@ -40,6 +40,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
+        self.set_property("OUTDIR_OVERRIDE", self.output_dir)
 
         final_output = "\n".join(self.base)
 
@@ -64,7 +65,6 @@ class BiasCor(ConfigBasedExecutable):
 
     def _run(self, force_refresh):
         regenerating = self.write_input(force_refresh)
-        return False  # TODO: Remove this so it runs when I figure out how the output is location
         if regenerating:
             command = ["SALT2mu_fit.pl", self.config_path]
             for d in self.data:
