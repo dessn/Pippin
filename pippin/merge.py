@@ -39,6 +39,15 @@ class Merger(Task):
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Merger finished, see combined fitres at {self.done_file}")
+
+            # Copy MERGE.LOG and FITOPT.README if they aren't there
+            filenames = ["MERGE.LOG", "FITOPT.README"]
+            for f in filenames:
+                original = os.path.join(self.lc_fit["lc_output_dir"], f)
+                moved = os.path.join(self.output_dir, f)
+                if not os.path.exists(moved):
+                    self.logger.debug("Copying file {f} into output directory")
+                    shutil.move(original, moved)
             return Task.FINISHED_SUCCESS
         else:
             output_error = False
