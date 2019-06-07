@@ -39,7 +39,7 @@ class BiasCor(ConfigBasedExecutable):
     def write_input(self, force_refresh):
         self.bias_cor_fits = ",".join([m.output["fitres_file"] for m in self.merged_iasim])
         self.cc_prior_fits = ",".join([m.output["fitres_file"] for m in self.merged_ccsim])
-        self.data = [m.output["fitres_dir"] for m in self.merged_data]
+        self.data = [m.output["output_dir"] for m in self.merged_data]
 
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
