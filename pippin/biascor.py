@@ -74,6 +74,8 @@ class BiasCor(ConfigBasedExecutable):
             for d in self.data:
                 command += ["INPDIR+", d]
             command += ["NOPROMPT"]
+            self.logger.debug(f"Will check for done file at {self.done_file}")
+            self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
