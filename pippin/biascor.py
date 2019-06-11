@@ -37,6 +37,10 @@ class BiasCor(ConfigBasedExecutable):
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
+            with open(self.done_file) as f:
+                if "FAILURE" in f.read():
+                    self.logger.error("Done file reporting failure!")
+                    return Task.FINISHED_FAILURE
             return Task.FINISHED_SUCCESS
         return 1
 
