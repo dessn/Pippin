@@ -1,10 +1,11 @@
 import inspect
 import shutil
 import subprocess
+import os
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, mkdirs, get_config
-import os
+from pippin.task import Task
 
 
 class BiasCor(ConfigBasedExecutable):
@@ -34,7 +35,10 @@ class BiasCor(ConfigBasedExecutable):
         self.output["fit_output_dir"] = self.fit_output_dir
 
     def _check_completion(self, squeue):
-        pass
+        if os.path.exists(self.done_file):
+            self.logger.debug("Done file found, biascor task finishing")
+            return Task.FINISHED_SUCCESS
+        return 1
 
     def write_input(self, force_refresh):
         self.bias_cor_fits = ",".join([m.output["fitres_file"] for m in self.merged_iasim])
