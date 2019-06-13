@@ -58,7 +58,7 @@ class ConfigBasedExecutable(Task):
                 added = True
                 break
 
-            if only_add and value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
+            if value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
                 # Option doesn't exist, lets add it
                 self.base.insert(i, desired_line)
                 added = True
