@@ -28,6 +28,8 @@ CLASSIFICATION:
     CLASSIFIER: SnirfClassifier
     MODE: train
     MASK_SIM: TRAINING
+    OPTS:
+      FEATURES: x1 c FITPROB
 
   SNIRF-TEST-x1cF:
     CLASSIFIER: SnirfClassifier

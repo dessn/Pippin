@@ -296,7 +296,6 @@ class Manager:
 
             def match_merge_to_sim(m, sim_name):
                 s = m.get_lcfit_dep()["sim_name"]
-                print(s, sim_name)
                 return sim_name in s
 
             data_tasks = [m for m in merge_tasks if match_merge_to_sim(m, data_mask)]
