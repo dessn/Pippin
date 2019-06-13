@@ -13,7 +13,7 @@ class ConfigBasedExecutable(Task):
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
 
-    def set_property(self, name, value, section_start=None, section_end=None, assignment=None):
+    def set_property(self, name, value, section_start=None, section_end=None, assignment=None, only_add=False):
         """ Ensures the property name value pair is set in the base file.
         
         Set value to None to remove a property
@@ -30,6 +30,8 @@ class ConfigBasedExecutable(Task):
             What ends the section. Generally "&END"
         assignment : str, optional
             Method used to describe setting an attribute. Default determined by class init
+        only_add : bool, optional
+            Used to add duplicate keys where it would normally replace them.
         """
         if assignment is None:
             assignment = self.default_assignment
@@ -44,21 +46,24 @@ class ConfigBasedExecutable(Task):
             else:
                 continue
 
-            if modified_line and modified_line.split()[0] == name.upper():
+            if not only_add and modified_line and modified_line.split()[0] == name.upper():
                 # Replace existing option or remove it
                 if value is None:
                     self.base[i] = ""
+                    self.logger.debug(f"Removing line {i}")
                 else:
                     start = line.upper().split(name.upper())[0]
                     self.base[i] = start + desired_line
+                    self.logger.debug(f"Setting property on line {i}: {desired_line}")
                 added = True
                 break
 
-            if value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
+            if only_add and value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
                 # Option doesn't exist, lets add it
                 self.base.insert(i, desired_line)
                 added = True
+                self.logger.debug(f"Adding new line at location {i}: {desired_line}")
                 break
         if not added and value is not None:
             self.base.append(desired_line)
-        self.logger.debug(f"Line {i} set to {desired_line}")
+            self.logger.debug(f"Adding to end of file: {desired_line}")
