@@ -387,16 +387,8 @@ class Manager:
 
             # Check status of current jobs
             for t in running_tasks:
-                result = t.check_completion(squeue)
-                # If its finished, good or bad, juggle tasks
-                if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
-                    if result == Task.FINISHED_SUCCESS:
-                        running_tasks.remove(t)
-                        self.logger.notice(f"Task {t} finished successfully")
-                        done_tasks.append(t)
-                    else:
-                        self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
-                    small_wait = True
+                completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                small_wait = small_wait or completed
 
             # Submit new jobs if needed
             num_running = self.get_num_running_jobs()
@@ -428,6 +420,19 @@ class Manager:
                 squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True, text=True).splitlines()]
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
+
+    def check_task_completion(self, t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue):
+        result = t.check_completion(squeue)
+        # If its finished, good or bad, juggle tasks
+        if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+            if result == Task.FINISHED_SUCCESS:
+                running_tasks.remove(t)
+                self.logger.notice(f"Task {t} finished successfully")
+                done_tasks.append(t)
+            else:
+                self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+            return True
+        return False
 
     def log_finals(self, done_tasks, failed_tasks, blocked_tasks):
         self.logger.info("")
