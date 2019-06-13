@@ -46,7 +46,7 @@ class Merger(Task):
                 original = os.path.join(self.lc_fit["lc_output_dir"], f)
                 moved = os.path.join(self.output_dir, f)
                 if not os.path.exists(moved):
-                    self.logger.debug("Copying file {f} into output directory")
+                    self.logger.debug(f"Copying file {f} into output directory")
                     shutil.move(original, moved)
 
             # Dick around with folders and names to make it resemble split_and_fit output for salt2mu
