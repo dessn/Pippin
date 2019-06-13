@@ -341,7 +341,7 @@ class Manager:
         if t in running:
             running.remove(t)
         failed.append(t)
-        self.logger.error(f"Task {t} failed")
+        self.logger.error(f"FAILED: {t}")
         if os.path.exists(t.hash_file):
             os.remove(t.hash_file)
 
@@ -401,8 +401,10 @@ class Manager:
                     started = t.run(self.get_force_refresh(t))
                     if started:
                         num_running += t.num_jobs
-                        self.logger.notice(f"RUNNING: {t}")
+                        self.logger.notice(f"LAUNCHED: {t}")
                         running_tasks.append(t)
+                        completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                        small_wait = small_wait or completed
                     else:
                         self.logger.error(f"FAILED TO LAUNCH: {t}")
                         self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
@@ -427,7 +429,7 @@ class Manager:
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
             if result == Task.FINISHED_SUCCESS:
                 running_tasks.remove(t)
-                self.logger.notice(f"Task {t} finished successfully")
+                self.logger.notice(f"FINISHED: {t}")
                 done_tasks.append(t)
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
