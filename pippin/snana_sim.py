@@ -48,7 +48,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         continue
                     base_file = run_config["BASE"]
                     match = base_file.split(".")[0]
-                    self.set_property(f"GENOPT({match})", f"{key} {run_config[key]}", section_end="ENDLIST_GENVERSION")
+                    self.set_property(f"GENOPT({match})", f"{key} {run_config[key]}", section_end="ENDLIST_GENVERSION", only_add=True)
 
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
