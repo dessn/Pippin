@@ -47,7 +47,7 @@ class Merger(Task):
                 moved = os.path.join(self.output_dir, f)
                 if not os.path.exists(moved):
                     self.logger.debug("Copying file {f} into output directory")
-                    shutil.move(original, moved)
+                    shutil.copy(original, moved)
 
             # Dick around with folders and names to make it resemble split_and_fit output for salt2mu
             outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
