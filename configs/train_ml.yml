@@ -5,7 +5,7 @@ SIM:
     II_JONES:
       BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 40 12345
 
   TESTSIM:
@@ -28,15 +28,12 @@ CLASSIFICATION:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
     MASK: TRAINING
-    OPTS:
-      USE_PHOTOMETRY: True
 
   SNNVANILLATEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     MASK: TEST
     OPTS:
-      USE_PHOTOMETRY: True
       MODEL: SNNVANILLATRAIN
 
   SNNVARIATIONALTRAIN:
@@ -44,7 +41,6 @@ CLASSIFICATION:
     MODE: train
     MASK: TRAINING
     OPTS:
-      USE_PHOTOMETRY: True
       VARIANT: variational
 
   SNNVARIATIONALTEST:
@@ -52,7 +48,6 @@ CLASSIFICATION:
     MODE: predict
     MASK: TEST
     OPTS:
-      USE_PHOTOMETRY: True
       MODEL: SNNVARIATIONALTRAIN
       VARIANT: variational
 
@@ -61,7 +56,6 @@ CLASSIFICATION:
     MODE: train
     MASK: TRAINING
     OPTS:
-      USE_PHOTOMETRY: True
       VARIANT: bayesian
 
   SNNBAYESIANTEST:
@@ -69,7 +63,6 @@ CLASSIFICATION:
     MODE: predict
     MASK: TEST
     OPTS:
-      USE_PHOTOMETRY: True
       MODEL: SNNBAYESIANTRAIN
       VARIANT: bayesian
 
