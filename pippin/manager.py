@@ -189,6 +189,7 @@ class Manager:
                 tasks.append(cc)
             if num_gen == 0:
                 self.logger.error(f"Classifier {name} with mask {mask} matched no combination of sims and fits")
+                return None  # This should cause pippin to crash, which is probably what we want
         return tasks
 
     def get_aggregator_tasks(self, c, sim_tasks, classifier_tasks):

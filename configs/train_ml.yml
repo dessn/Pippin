@@ -27,7 +27,7 @@ CLASSIFICATION:
   SNNVANILLATRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK: TRAINING
+    MASK_SIM: TRAINING
 
   SNNVANILLATEST:
     CLASSIFIER: SuperNNovaClassifier
@@ -39,7 +39,7 @@ CLASSIFICATION:
   SNNVARIATIONALTRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK: TRAINING
+    MASK_SIM: TRAINING
     OPTS:
       VARIANT: variational
 
@@ -54,7 +54,7 @@ CLASSIFICATION:
   SNNBAYESIANTRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK: TRAINING
+    MASK_SIM: TRAINING
     OPTS:
       VARIANT: bayesian
 
