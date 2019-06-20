@@ -202,12 +202,14 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
             return Task.FINISHED_SUCCESS
         else:
             num_jobs = self.num_jobs if squeue is None else len([i for i in squeue if self.job_base_name in i])
+            print(squeue)
+            print(num_jobs)
             if squeue is not None and num_jobs == 0:
                 self.logger.warning("SuperNNova has no done file and has no active jobs. This is not good.")
-                if os.path.exists(self.hash_file):
-                    self.logger.info("Removing hash on failure")
-                    os.remove(self.hash_file)
-                return Task.FINISHED_FAILURE
+                # if os.path.exists(self.hash_file):
+                #     self.logger.info("Removing hash on failure")
+                #     os.remove(self.hash_file)
+                # return Task.FINISHED_FAILURE
             return num_jobs
 
     @staticmethod
