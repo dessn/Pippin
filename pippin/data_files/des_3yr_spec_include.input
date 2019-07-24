@@ -1,0 +1,87 @@
+# Dec 18 2017 RK,DB - start at random location in SIMLIB
+# Jan 08 2018 RK - GENSIGMA_VPEC = VPEC_ERR -> 300 (not 220)
+# April 17 2018 DB,RK  - added HOSTLIB_SERSIC_SCALE:  0.8
+# May 18 2018 DB - Changed to G10 SNLS as nominal c and x1 population
+# Juk 09 2018 RK - change back to DIFFIMG SIMLIB
+
+
+SIMLIB_FILE:  $DES_ROOT/simlibs/DES_DIFFIMG.SIMLIB
+SIMLIB_NREPEAT:  5  # generate 10 events per LIBID (for speed)
+
+# ----------------- host info ---------------
+HOSTLIB_FILE:    $DES_ROOT/fakeSN/LIBS/HOSTLIB_Y2/DES_SVA2_Y2.HOSTLIB
+HOSTLIB_GENRANGE_NSIGZ: -3. +3.  # not yet implemented
+HOSTLIB_SERSIC_SCALE:  0.8 
+SIMLIB_MAXRANSTART:  8000 #added by DB (mainly for bulk)
+
+LENSING_PROBMAP_FILE: $SNDATA_ROOT/models/lensing/LENSING_PROBMAP_LogNormal+MICECATv1.DAT
+
+FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES3YR_SIM_ERRORFUDGES.DAT
+
+HOSTLIB_MSKOPT:     258           # 2=noise, 256=vbose
+########HOSTLIB_STOREPAR:   Mi_abs
+SIMLIB_MSKOPT:    16  # ignore DIFFIMG template noise
+#######FUDGEOPT_FLUXERR:   1  # anomalous flux scatter # Not compatible with fluxerrmap
+
+SOLID_ANGLE:  0.0082     # 27 sq deg
+
+NGENTOT_LC:  100
+GENVERSION:  DES3YR_DES_BASE
+GENSOURCE:   RANDOM
+GENMODEL:    SALT2.JLA-B14_LAMOPEN
+GENMAG_SMEAR_MODELNAME: G10
+
+GENFILTERS:  griz
+KCOR_FILE:   $DES_ROOT/kcor/SpecIa_3yr/DES_Y3A2_noOOB.fits
+
+# selection criteria for generation
+GENRANGE_PEAKMJD: 56450.0  57450    # Y1+Y2+Y3
+GENSIGMA_SEARCH_PEAKMJD:  0.1     # sigma-smearing for  SEARCH_PEAKMJD (days)
+
+GENRANGE_TREST:  -40  100
+GENRANGE_REDSHIFT:  0.02  0.90
+GENSIGMA_REDSHIFT:  0.0001
+GENSIGMA_VPEC:      300  # km/sec
+VPEC_ERR:           300  # VPEC_ERR=GENSIGMA --> no correction
+
+OPT_MWEBV: 3         # 3=Shlaffly 2011
+OPT_MWCOLORLAW: 99   # 99=Fitpatrick 99
+
+RANSEED: 12945       # random number seed
+
+# smear flags: 0=off, 1=on
+SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  0  # smear zero-point with zptsig
+
+APPLY_SEARCHEFF_OPT:  3
+SEARCHEFF_SPEC_FILE:     $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_DES_G10.TXT
+SEARCHEFF_PIPELINE_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_DES.DAT
+SEARCHEFF_PIPELINE_LOGIC_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_LOGIC.DAT
+
+NEWMJD_DIF: 0.4  # each detect epoch separated by 1 night
+
+APPLY_CUTWIN_OPT: 1
+CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
+CUTWIN_SNRMAX:   3 griz 2 -20. 80.  # 2 filters with SNRAMX>5
+
+# cosmological params for lightcurve generation and redshift distribution
+OMEGA_MATTER:  0.3
+OMEGA_LAMBDA:  0.7
+W0_LAMBDA:    -1.00
+H0:           70.0
+
+SIMGEN_DUMP_PRESCALE:  1
+
+SIMGEN_DUMP:  37
+  CID GENTYPE  SNTYPE  NON1A_INDEX  GENZ GALZTRUE
+  LIBID RA DECL MWEBV MU MJD0
+  MAGT0_g MAGT0_r MAGT0_i MAGT0_z
+  SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z SNRMAX SNRMAX2 SNRMAX3
+  NOBS TRESTMIN TRESTMAX TGAPMAX
+  CUTMASK  SIM_EFFMASK
+  HOSTMAG_g HOSTMAG_r HOSTMAG_i HOSTMAG_z
+  SBFLUX_g  SBFLUX_r  SBFLUX_i  SBFLUX_z
+# ======
+
+FORMAT_MASK:  32  # 2=terse  8=BLIND  16=CIDRAN; 32=FITS
+

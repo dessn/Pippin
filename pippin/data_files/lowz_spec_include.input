@@ -1,0 +1,61 @@
+# Jan 8 2018: add VPEC_ERR=200 key, and GENSIGMA_VPEC->300
+
+SIMLIB_FILE:     $DES_ROOT/simlibs/DES3YR_LOWZ_COMBINED.SIMLIB
+SIMLIB_NREPEAT:  20  # ==> faster
+
+
+HOSTLIB_FILE:     $DES_ROOT/simlibs/LOWZ.HOSTLIB
+HOSTLIB_STOREPAR: LOGMASS
+HOSTLIB_MSKOPT:   256   # no HOSTLIB options for LOW-z
+HOSTLIB_DZTOL:    0.03  0.0  0.
+FUDGEOPT_FLUXERR:  0  # no error fudge for low-z
+
+
+SOLID_ANGLE:  6.0    # roughly half the sky
+
+NGENTOT_LC:  100
+GENVERSION: DES3YR_LOWZ_BASE
+GENSOURCE:  RANDOM
+
+USE_SIMLIB_REDSHIFT:  0
+USE_SIMLIB_PEAKMJD:   1
+
+GENFILTERS:   abcdefghijklmnopqrstuvwxyzA
+KCOR_FILE:  $DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits
+
+GENRANGE_PEAKMJD:  53200.0  55350
+GENSIGMA_SEARCH_PEAKMJD:  1.0       # sigma-smearing for  SEARCH_PEAKMJD
+
+GENRANGE_TREST:   -20.0  80.0     # rest epoch relative to peak (days)
+GENRANGE_REDSHIFT:  0.009    0.099
+GENSIGMA_REDSHIFT:  0.0001
+GENSIGMA_VPEC:      300  # peculiar velocity, km/sec
+VPEC_ERR:           250
+
+OPT_MWEBV:      3    # 3=Schlaffly 2011
+OPT_MWCOLORLAW: 99   # 99=Fitzpatrick99
+
+RANSEED:      28473   # random number seed
+
+SMEARFLAG_FLUX:    1   # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  1   # smear zero-point with zptsig
+
+APPLY_SEARCHEFF_OPT:  3  # use efficiency file
+SEARCHEFF_SPEC_FILE:  $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_LOWZ.DAT
+SEARCHEFF_PIPELINE_LOGIC_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_LOGIC.DAT
+
+NEWMJD_DIF: 0.002
+
+APPLY_CUTWIN_OPT:  1
+CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
+CUTWIN_TRESTMIN: -20  20
+CUTWIN_TRESTMAX:   0  40
+CUTWIN_MWEBV:      0  0.30
+
+# cosmological params for lightcurve generation and redshift distribution
+OMEGA_MATTER:  0.3
+OMEGA_LAMBDA:  0.7
+W0_LAMBDA:    -1.00
+H0:            70.0
+
+

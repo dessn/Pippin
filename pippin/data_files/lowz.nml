@@ -5,14 +5,14 @@ DONE_STAMP: FINISHED.DONE
     USE_MINOS = T
 
     PRIVATE_DATA_PATH = '$DES_ROOT/lcmerge'
-    VERSION_PHOTOMETRY = 'DESALL_specType_forcePhoto_real_snana_text'
+    VERSION_PHOTOMETRY = 'DES3YR_LOWZ_COMBINED_FITS'
 
-    PHOTFLAG_MSKREJ   = 1016, 0
+    PHOTFLAG_MSKREJ   = 0, 0
     SNTABLE_LIST      = 'FITRES'
-    TEXTFILE_PREFIX   = 'DES3YR_DES_CHANGEME'
+    TEXTFILE_PREFIX   = 'DES3YR_LOWZ_CHANGEME'
 
-    KCOR_FILE        = '$DES_ROOT/kcor/SpecIa_3yr/DES_Y3A2_noOOB.fits'
-    FLUXERRMODEL_FILE = '$DES_ROOT/simlibs/DES3YR_FAKE_ERRORFUDGES.DAT'
+    KCOR_FILE        = '$DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits'
+    FUDGE_HOSTNOISE_FILE = ''
 
     NFIT_ITERATION = 3
     INTERP_OPT     = 1
@@ -22,46 +22,44 @@ DONE_STAMP: FINISHED.DONE
     OMAT_REF =  0.30
     W0_REF   = -1.00
 
-    SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
+    SNCID_LIST  = 0
+    SNTYPE_LIST = 0      ! 0 = all
 
-    CUTWIN_MJD   = 56500, 57500
+    CUTWIN_MJD   = 20000, 99999
     OPT_SETPKMJD = 5
     OPT_MWEBV    = 3
     OPT_MWCOLORLAW  = 99
-    OPT_SETPKMJD = 16
 
     ABORT_ON_NOEPOCHS = F
     ABORT_ON_TRESTCUT = F
     ABORT_ON_DUPLCID  = F
 
     CUTWIN_NEPOCH    =  5
-    cutwin_redshift  =  0.05, 0.9
+    cutwin_redshift  =  0.01, 0.1
     cutwin_redshift_err   =  0.0, 0.01
     cutwin_Trest     = -20.0,   60.0
-    cutwin_Trestmin  = -20.0,   0.0
-    CUTWIN_TRESTMAX  =  10.0,  200.0
-    CUTWIN_MWEBV     = 0.0 0.25
+    cutwin_Trestmin   = -200.0,   10.0
+    CUTWIN_TRESTMAX   = 5, 99
+    CUTWIN_TRESTRANGE = 10, 999  ! TrestMax - TrestMin
+    CUTWIN_MWEBV      = 0.0 0.25
 
-    CUTWIN_PSF = 0.5, 2.75
     CUTWIN_SNRMAX       =  5.0, 1.0E8
     CUTWIN_NFILT_SNRMAX =  2.0, 99.
 
     cutwin_Nband_thresh = 1
 
-    CUTWIN_ZPNPE = 30.5, 100.  ! cut on ZP in Npe
-
-    FUDGE_MAG_ERROR = ''
-    VPEC_FILE = ''
-
     SNCID_IGNORE_FILE = '$DES3YR/config/35sigignore.list'
-&END
 
+    FUDGE_MAG_ERROR = 'u 0.01 v 0.01 w 0.01 x 0.01 y 0.01 z 0.01 A 0.01'
+
+
+&END
 
 &FITINP
     FITMODEL_NAME  = 'SALT2.JLA-B14'
-    FILTLIST_FIT = 'griz'
+    FILTLIST_FIT = 'bcdeghijlmnopqrsuvwxyzA'
 
-    FUDGEALL_ITER1_MAXFRAC = 0.03
+    FUDGEALL_ITER1_MAXFRAC = 0.01
     PRIOR_MJDSIG        = 10
     PRIOR_SHAPE_RANGE = -4.0, 4.0
 

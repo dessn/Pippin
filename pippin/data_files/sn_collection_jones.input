@@ -30,7 +30,7 @@
 #   SNTYPE  32  => Ib           (WGTSUM= 0.140)
 #   SNTYPE  33  => Ic+Ibc       (WGTSUM= 0.150)
 
-INPUT_FILE_INCLUDE:  des_include.input
+INPUT_FILE_INCLUDE:  des_5yr_phot_include.input
 
 GENTYPE:  20
 GENSOURCE:   RANDOM

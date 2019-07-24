@@ -1,6 +1,6 @@
 # MAGOFF = 2.100 -> 1.500 (0.6 mag brighter)
 #
-INPUT_FILE_INCLUDE:  des_include.input
+INPUT_FILE_INCLUDE:  des_5yr_phot_include.input
 
 
 GENTYPE:   20
