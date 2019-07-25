@@ -58,4 +58,6 @@ OMEGA_LAMBDA:  0.7
 W0_LAMBDA:    -1.00
 H0:            70.0
 
+DNDZ: POWERLAW  2.6E-5  1.5  # Dilday 2008
+
 
