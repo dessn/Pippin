@@ -289,7 +289,7 @@ class Manager:
 
             ccprior_mask = config.get("CC_PRIOR_FITS")
             if ccprior_mask is None:
-                self._fail_config("For BIASCOR tasks you need to specify an input CC_PRIOR_FITS which is a mask for a merged task used for the cc prior")
+                self.logger.warning(f"BIASCOR task {name} does not have a CCPRIOR input - I hope you're doing a spectroscopic analysis")
 
             classifier_name = config.get("CLASSIFIER")
             if classifier_name is None:
