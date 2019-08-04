@@ -301,7 +301,7 @@ class Manager:
 
             data_tasks = [m for m in merge_tasks if match_merge_to_sim(m, data_mask)]
             biascor_tasks = [m for m in merge_tasks if match_merge_to_sim(m, biascor_mask)]
-            ccprior_tasks = [m for m in merge_tasks if match_merge_to_sim(m, ccprior_mask)]
+            ccprior_tasks = None if ccprior_mask is None else [m for m in merge_tasks if match_merge_to_sim(m, ccprior_mask)]
             classifier_task = [m for m in classifier_tasks if classifier_name == m.name]
 
             if not classifier_task:
@@ -312,10 +312,10 @@ class Manager:
                 self._fail_config("Biascor has no data_tasks that match the mask")
             if not biascor_tasks:
                 self._fail_config("Biascor has no biascor_tasks that match the mask")
-            if not ccprior_tasks:
-                self._fail_config("Biascor has no ccprior_tasks that match the mask")
+            # if not ccprior_tasks:
+            #     self._fail_config("Biascor has no ccprior_tasks that match the mask")
 
-            deps = [classifier_task] + data_tasks + biascor_tasks + ccprior_tasks
+            deps = [classifier_task] + data_tasks + biascor_tasks + ([] if ccprior_tasks is None else ccprior_tasks)
             task = BiasCor(name, self._get_biascor_output_dir(name, data_mask, classifier_name), deps, options, data_tasks, biascor_tasks, ccprior_tasks, classifier_task)
             task.set_stage(stage)
             self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
