@@ -1,0 +1,38 @@
+SIM:
+  LOWZSIM:
+    IA_G10_LOWZ:
+      BASE: sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
+
+  DESDIM:
+    IA_G10_DES3YR:
+      BASE: sn_ia_salt2_g10_des3yr.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
+
+LCFIT:
+  LOWZFIT:
+    BASE: lowz.nml
+    MASK: LOWZ
+  DESFIT:
+    BASE: des.nml
+    MASK: DES
+
+# Note the stuff below does effectively nothing, but allows
+# us to treat spec and photometric samples identically
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+AGGREGATION:
+  AGG:
+    OPTS:
+      INCLUDE_TYPE: True
+      PLOT: True
+
+MERGE:
+  MERGE:
