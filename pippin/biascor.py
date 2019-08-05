@@ -42,6 +42,17 @@ class BiasCor(ConfigBasedExecutable):
                     self.logger.error("Done file reporting failure!")
                     return Task.FINISHED_FAILURE
             return Task.FINISHED_SUCCESS
+        if os.path.exists(self.logging_file):
+            with open(self.logging_file) as f:
+                output_error = False
+                for line in f.readlines():
+                    if "ABORT ON FATAL ERROR" in line:
+                        self.logger.error(f"Output log showing abort: {self.logging_file}")
+                        output_error = True
+                    if output_error:
+                        self.logger.error(line)
+                if output_error:
+                    return Task.FINISHED_FAILURE
         return 1
 
     def write_input(self, force_refresh):
