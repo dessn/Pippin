@@ -68,9 +68,13 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.sim_names), assignment=": ")
 
         # self.set_property("INPDIR", ",".join(self.data))
-        self.set_property("INPDIR", self.data[0])
-        if len(self.data) > 1:
-            self.set_property("INPDIR+", self.data[1])
+        bullshit_hack = ""
+        for i, d in enumerate(self.data):
+            if i > 0:
+                bullshit_hack += "\nINPDIR: "
+            bullshit_hack += d
+
+        self.set_property("INPDIR+", bullshit_hack, assignment=": ")
 
         final_output = "\n".join(self.base)
 
