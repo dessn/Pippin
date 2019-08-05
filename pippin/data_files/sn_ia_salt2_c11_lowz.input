@@ -23,12 +23,12 @@ GENRANGE_SALT2c:   -0.4   0.4     # color range
 GENSIGMA_SALT2c:    0.0  0.15     # bifurcated sigmas
 
 # SALT2 alpha and beta
-GENMEAN_SALT2ALPHA:   0.15
+GENPEAK_SALT2ALPHA:   0.15
 GENSIGMA_SALT2ALPHA:  0.0  0.0   # override to 1E8 for 5D biasCor sample
 GENRANGE_SALT2ALPHA:  0.10 0.24  # grid for biasCor sample
 GENGRID_SALT2ALPHA:   2
 
-GENMEAN_SALT2BETA:   3.8
+GENPEAK_SALT2BETA:   3.8
 GENSIGMA_SALT2BETA:  0.0  0.0  # override to 1E8 for 5D biasCor sample
 GENRANGE_SALT2BETA:  3.3  4.3  # grid for COH & G10 0biasCor samples
 GENGRID_SALT2BETA:   2

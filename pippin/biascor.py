@@ -66,6 +66,8 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.sim_names), assignment=": ")
+        if self.options.get("BATCH_INFO"):
+            self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
 
         # self.set_property("INPDIR", ",".join(self.data))
         bullshit_hack = ""

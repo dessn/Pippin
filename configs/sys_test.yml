@@ -5,6 +5,7 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
 
   DESSIM:
     IA_G10_DES3YR:
@@ -12,48 +13,71 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
 
   LOWZBIASCOR:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
       GENSIGMA_SALT2ALPHA: 1E8  1E8
-      GENRANGE_SALT2ALPHA: 0.12 0.20
-      GENGRID_SALT2ALPHA: 2
       GENSIGMA_SALT2BETA: 1E8  1E8
-      GENRANGE_SALT2BETA: 2.6  3.6
-      GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
+      NGEN_UNIT: 2
       RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
+
+  LOWZBIASSYS_C11:
+    IA_C11_LOWZ:
+      BASE: sn_ia_salt2_c11_lowz.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENSIGMA_SALT2BETA: 1E8  1E8
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
 
   DESBIASCOR:
     IA_G10_DES3YR:
       BASE: sn_ia_salt2_g10_des3yr.input
       GENSIGMA_SALT2ALPHA: 1E8  1E8
-      GENRANGE_SALT2ALPHA: 0.12 0.20
-      GENGRID_SALT2ALPHA: 2
       GENSIGMA_SALT2BETA: 1E8  1E8
-      GENRANGE_SALT2BETA: 2.6  3.6
-      GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
+      NGEN_UNIT: 2
       RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
+
+  DESBIASSYS_C11:
+    IA_C11_DES3YR:
+      BASE: sn_ia_salt2_c11_des3yr.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENSIGMA_SALT2BETA: 1E8  1E8
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
 
 LCFIT:
   LOWZFITSYS:
     BASE: lowz.nml
     FITOPTS: test.fitops
     MASK: LOWZSIM
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
   DESFITSYS:
     BASE: des.nml
     FITOPTS: test.fitops
     MASK: DESSIM
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
   LOWZFIT:
     BASE: lowz.nml
-    MASK: LOWZBIASCOR
+    MASK: LOWZBIAS
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
   DESFIT:
     BASE: des.nml
-    MASK: DESBIASCOR
+    MASK: DESBIAS
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40
 
 # Note the stuff below does effectively nothing, but allows
 # us to treat spec and photometric samples identically
@@ -80,3 +104,5 @@ BIASCOR:
       - DESBIASCOR
       - LOWZBIASCOR
     CLASSIFIER: UNITY
+    OTPS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_debug.TEMPLATE 40

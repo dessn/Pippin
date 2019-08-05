@@ -46,6 +46,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["sim_name"] = sim_task.output["name"]
         self.output["lc_output_dir"] = self.lc_output_dir
 
+        self.options = self.config.get("OPTS")
+
     def get_sim_dependency(self):
         for t in self.dependencies:
             if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
@@ -97,6 +99,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
+        if self.options.get("BATCH_INFO"):
+            self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
         self.set_property("VERSION", self.sim_version + "*", assignment=": ", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR",  self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
         if isinstance(self.sim_task, DataPrep):
