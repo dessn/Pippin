@@ -7,6 +7,7 @@ simfile_ccprior=something.FITRES
 prefix=None
 surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
 file=None
+STRINGMATCH_IGNORE:
 
 WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
 powzbin=6.
