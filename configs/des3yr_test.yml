@@ -3,14 +3,14 @@ SIM:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 1
       RANSEED_REPEAT: 1 12345
 
   DESSIM:
     IA_G10_DES3YR:
       BASE: sn_ia_salt2_g10_des3yr.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 1
       RANSEED_REPEAT: 1 12345
 
   LOWZBIASCOR:
