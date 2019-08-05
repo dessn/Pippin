@@ -65,10 +65,10 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
 
-        self.set_property("INPDIR", ",".join(self.data))
-        # self.set_property("INPDIR", self.data[0])
-        # if len(self.data) > 1:
-        # self.set_property("INPDIR+", self.data[1])
+        # self.set_property("INPDIR", ",".join(self.data))
+        self.set_property("INPDIR", self.data[0])
+        if len(self.data) > 1:
+            self.set_property("INPDIR+", self.data[1])
 
         final_output = "\n".join(self.base)
 
