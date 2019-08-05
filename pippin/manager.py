@@ -282,14 +282,20 @@ class Manager:
             data_mask = config.get("DATA")
             if data_mask is None:
                 self._fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
+            if not isinstance(data_mask, list):
+                data_mask = [data_mask]
 
             biascor_mask = config.get("BIAS_COR_FITS")
             if biascor_mask is None:
                 self._fail_config("For BIASCOR tasks you need to specify an input BIAS_COR_FITS which is a mask for a merged task used for the Ia bias correction")
+            if not isinstance(biascor_mask, list):
+                biascor_mask = [biascor_mask]
 
             ccprior_mask = config.get("CC_PRIOR_FITS")
             if ccprior_mask is None:
                 self.logger.warning(f"BIASCOR task {name} does not have a CCPRIOR input - I hope you're doing a spectroscopic analysis")
+            elif not isinstance(ccprior_mask, list):
+                data_mask = [ccprior_mask]
 
             classifier_name = config.get("CLASSIFIER")
             if classifier_name is None:
@@ -299,9 +305,9 @@ class Manager:
                 s = m.get_lcfit_dep()["sim_name"]
                 return sim_name in s
 
-            data_tasks = [m for m in merge_tasks if match_merge_to_sim(m, data_mask)]
-            biascor_tasks = [m for m in merge_tasks if match_merge_to_sim(m, biascor_mask)]
-            ccprior_tasks = None if ccprior_mask is None else [m for m in merge_tasks if match_merge_to_sim(m, ccprior_mask)]
+            data_tasks = [m for m in merge_tasks for d in data_mask if match_merge_to_sim(m, d)]
+            biascor_tasks = [m for m in merge_tasks for b in biascor_mask if match_merge_to_sim(m, b)]
+            ccprior_tasks = None if ccprior_mask is None else [m for m in merge_tasks for c in ccprior_mask if match_merge_to_sim(m, c)]
             classifier_task = [m for m in classifier_tasks if classifier_name == m.name]
 
             if not classifier_task:
@@ -316,7 +322,7 @@ class Manager:
             #     self._fail_config("Biascor has no ccprior_tasks that match the mask")
 
             deps = [classifier_task] + data_tasks + biascor_tasks + ([] if ccprior_tasks is None else ccprior_tasks)
-            task = BiasCor(name, self._get_biascor_output_dir(name, data_mask, classifier_name), deps, options, data_tasks, biascor_tasks, ccprior_tasks, classifier_task)
+            task = BiasCor(name, self._get_biascor_output_dir(name), deps, options, data_tasks, biascor_tasks, ccprior_tasks, classifier_task)
             task.set_stage(stage)
             self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
             tasks.append(task)
@@ -498,8 +504,8 @@ class Manager:
     def _get_merge_output_dir(self, merge_name, lcfit_name, agg_name):
         return f"{self.output_dir}/{Manager.stages['MERGE']}_MERGE/{merge_name}_{lcfit_name}_{agg_name}"
 
-    def _get_biascor_output_dir(self, biascor_name, data_mask, classifier_name):
-        return f"{self.output_dir}/{Manager.stages['BIASCOR']}_BIASCOR/{biascor_name}_{data_mask}_{classifier_name}"
+    def _get_biascor_output_dir(self, biascor_name):
+        return f"{self.output_dir}/{Manager.stages['BIASCOR']}_BIASCOR/{biascor_name}"
 
 if __name__ == "__main__":
     import logging
