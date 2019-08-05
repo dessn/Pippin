@@ -71,7 +71,7 @@ class BiasCor(ConfigBasedExecutable):
         bullshit_hack = ""
         for i, d in enumerate(self.data):
             if i > 0:
-                bullshit_hack += "\nINPDIR: "
+                bullshit_hack += "\nINPDIR+: "
             bullshit_hack += d
 
         self.set_property("INPDIR+", bullshit_hack, assignment=": ")
