@@ -45,7 +45,7 @@ class BiasCor(ConfigBasedExecutable):
         if os.path.exists(self.logging_file):
             with open(self.logging_file) as f:
                 output_error = False
-                for line in f.readlines():
+                for line in f.read().splitlines():
                     if "ABORT ON FATAL ERROR" in line:
                         self.logger.error(f"Output log showing abort: {self.logging_file}")
                         output_error = True
@@ -64,6 +64,11 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
+
+        self.set_property("INPDIR", ",".join(self.data))
+        # self.set_property("INPDIR", self.data[0])
+        # if len(self.data) > 1:
+        # self.set_property("INPDIR+", self.data[1])
 
         final_output = "\n".join(self.base)
 
@@ -89,10 +94,7 @@ class BiasCor(ConfigBasedExecutable):
     def _run(self, force_refresh):
         regenerating = self.write_input(force_refresh)
         if regenerating:
-            command = ["SALT2mu_fit.pl", self.config_filename]
-            for d in self.data:
-                command += ["INPDIR+", d]
-            command += ["NOPROMPT"]
+            command = ["SALT2mu_fit.pl", self.config_filename, "NOPROMPT"]
             self.logger.debug(f"Will check for done file at {self.done_file}")
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
