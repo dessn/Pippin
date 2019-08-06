@@ -81,7 +81,7 @@ class BiasCor(ConfigBasedExecutable):
 
         # Set MUOPTS at top of file
         mu_str = ""
-        for label, value in self.config.get("MUOPTS"):
+        for label, value in self.config.get("MUOPTS").items():
             if mu_str != "":
                 mu_str += "\nMUOPT: "
             mu_str += f"[{label}] "
