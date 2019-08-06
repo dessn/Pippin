@@ -297,8 +297,9 @@ class Manager:
                     raise ValueError(message)
                 return task[0]  # We only care about the prob column name
 
-            def resolve_merged_fitres_files(name, classifier_task):
-                task = [m for m in merge_tasks if classifier_task in m.output["classifiers"] and m.output["sim_name"] == name]
+            def resolve_merged_fitres_files(name, classifier_name):
+                v = [m.output["classifier_names"] for m in merge_tasks]
+                task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["sim_name"] == name]
                 if len(task) == 0:
                     message = f"Unable to resolve merge merge {name} from list of merge_tasks {merge_tasks}"
                     self.logger.error(message)
@@ -326,6 +327,7 @@ class Manager:
                 if classifier_name is not None:
                     classifier_task = resolve_classifier(classifier_name)
                 classifier_dep = classifier_task or default.get("CLASSIFIER")  # For resolving merge tasks
+                classifier_dep = classifier_dep.name
                 if "CLASSIFIER" in subdict:
                     subdict["CLASSIFIER"] = classifier_task
                     deps.append(classifier_task)
@@ -359,7 +361,7 @@ class Manager:
             if data_names is None:
                 self._fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
             data_names = ensure_list(data_names)
-            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"]) for s in data_names]
+            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"].name) for s in data_names]
             deps += data_tasks
             config["DATA"] = data_tasks
 

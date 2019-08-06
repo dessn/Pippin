@@ -20,6 +20,7 @@ class Merger(Task):
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
         self.output["classifiers"] = self.agg["classifiers"]
+        self.output["classifier_names"] = [c.name for c in self.agg["classifiers"]]
         self.output["sim_name"] = self.lc_fit["sim_name"]
 
     def get_lcfit_dep(self):
