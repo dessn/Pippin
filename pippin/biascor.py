@@ -91,7 +91,7 @@ class BiasCor(ConfigBasedExecutable):
                 mu_str += f"simfile_ccprior={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_CCPRIOR')])} "
             if value.get("CLASSIFIER"):
                 mu_str += f"varname_pIa={value.get('CLASSIFIER').output['prob_column_name']} "
-            if value.get("FITOPT"):
+            if value.get("FITOPT") is not None:
                 mu_str += f"FITOPT={value.get('FITOPT')} "
             mu_str += "\n"
         self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")

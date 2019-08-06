@@ -102,7 +102,7 @@ BIASCOR:
       - LOWZBIASCOR
     CLASSIFIER: UNITY
     MUOPTS:
-      c11:
+      C11:
         SIMFILE_BIASCOR:
           - DESBIASSYS_C11
           - LOWZBIASSYS_C11

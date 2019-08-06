@@ -435,7 +435,7 @@ class Manager:
         blocked_tasks = []
         squeue = None
 
-        config_file_output = os.path.join(self.output_dir, self.filename)
+        config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         self.logger.info(f"Copying config file to {config_file_output}")
         shutil.copy(self.filename_path, config_file_output)
 
