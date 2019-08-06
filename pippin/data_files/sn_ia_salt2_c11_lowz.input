@@ -8,6 +8,7 @@ GENMAG_SMEAR_MODELNAME: C11
 DNDZ: POWERLAW  2.6E-5  1.5  # Dilday 2008
 
 
+
 # ---------------------------
 # double peak x1 params from Pantheon Appendix C
 GENPEAK_SALT2x1:     0.55
