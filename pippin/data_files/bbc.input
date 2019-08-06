@@ -1,14 +1,18 @@
 BATCH_INFO:  sbatch  $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 40
 
 OUTDIR_OVERRIDE: location
+
+#MUOPT_END
+
 varname_pIa=NN_PROB_IA
 simfile_biascor=something.FITRES
 simfile_ccprior=something.FITRES
-prefix=None
-surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
-file=None
 STRINGMATCH_IGNORE: _
+INPDIR+: _
+surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
 
+prefix=None
+file=None
 WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
 powzbin=6.
 dumpflag_nobiascor=1  # added by RK, 4/18/2017

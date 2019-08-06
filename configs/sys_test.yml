@@ -87,22 +87,25 @@ CLASSIFICATION:
     MODE: predict
 
 AGGREGATION:
-  AGG:
-    OPTS:
-      INCLUDE_TYPE: True
-      PLOT: True
+  AGG:  # Leaving this blank, no plots or type column
 
 MERGE:
-  MERGE:
+  MERGE: # Leaving the options blank will do the default - all applicable classifiers, sims and fits
 
 BIASCOR:
   BCOR:
     DATA:
       - DESSIM
       - LOWZSIM
-    BIAS_COR_FITS:
+    SIMFILE_BIASCOR:
       - DESBIASCOR
       - LOWZBIASCOR
     CLASSIFIER: UNITY
+    MUOPTS:
+      c11:
+        SIMFILE_BIASCOR:
+          - DESBIASSYS_C11
+          - LOWZBIASSYS_C11
+        FITOPT: 0
     OTPS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10

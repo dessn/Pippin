@@ -23,6 +23,7 @@ class Aggregator(Task):
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = bool(options.get("PLOT", False))
         self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
+        self.output["classifiers"] = self.classifiers
 
     def _check_completion(self, squeue):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
@@ -90,7 +91,7 @@ class Aggregator(Task):
                 phot_dir = s.output["photometry_dir"]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
                 if not headers:
-                    self.logger.error(f"Not HEAD fits files found in {phot_dir}!")
+                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:

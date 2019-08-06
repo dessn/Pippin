@@ -104,6 +104,11 @@ def chown_dir(directory):
                 logger.debug(f"Chown error: {os.path.join(root, f)}")
 
 
+def ensure_list(a):
+    if isinstance(a, list):
+        return a
+    return [a]
+
 if __name__ == "__main__":
     c = get_config()
     print(c.sections())

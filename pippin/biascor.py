@@ -9,29 +9,31 @@ from pippin.task import Task
 
 
 class BiasCor(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, dependencies, options, merged_data, merged_iasim, merged_ccsim, classifier):
+    def __init__(self, name, output_dir, dependencies, options, config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
         super().__init__(name, output_dir, os.path.join(self.data_dir, "bbc.input"), "=", dependencies=dependencies)
 
         self.options = options
+        self.config = config
         self.logging_file = os.path.join(self.output_dir, "output.log")
         self.global_config = get_config()
 
-        self.merged_data = merged_data
-        self.merged_iasim = merged_iasim
-        self.merged_ccsim = merged_ccsim
+        self.merged_data = config.get("DATA")
+        self.merged_iasim = config.get("SIMFILE_BIASCOR")
+        self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
+        self.classifier = config.get("CLASSIFIER")
 
         self.bias_cor_fits = None
         self.cc_prior_fits = None
         self.data = None
-        self.sim_names = [m.get_lcfit_dep()["sim_name"] for m in merged_data]
-        self.genversion = "_".join(self.sim_names) + "_" + classifier.name
+        self.sim_names = [m.output["sim_name"] for m in self.merged_data]
+        self.genversion = "_".join(self.sim_names) + "_" + self.classifier.name
 
         self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"FITJOBS/ALL.DONE")
-        self.probability_column_name = classifier.output["prob_column_name"]
+        self.probability_column_name = self.classifier.output["prob_column_name"]
 
         self.output["fit_output_dir"] = self.fit_output_dir
 
@@ -75,8 +77,24 @@ class BiasCor(ConfigBasedExecutable):
             if i > 0:
                 bullshit_hack += "\nINPDIR+: "
             bullshit_hack += d
-
         self.set_property("INPDIR+", bullshit_hack, assignment=": ")
+
+        # Set MUOPTS at top of file
+        mu_str = ""
+        for label, value in self.config.get("MUOPTS"):
+            if mu_str != "":
+                mu_str += "\nMUOPT: "
+            mu_str += f"[{label}] "
+            if value.get("SIMFILE_BIASCOR"):
+                mu_str += f"simfile_biascor={','.join(value.get('SIMFILE_BIASCOR'))} "
+            if value.get("SIMFILE_CCPRIOR"):
+                mu_str += f"simfile_ccprior={','.join(value.get('SIMFILE_BIASCOR'))} "
+            if value.get("CLASSIFIER"):
+                mu_str += f"varname_pIa={value.get('CLASSIFIER').output['prob_column_name']} "
+            if value.get("FITOPT"):
+                mu_str += f"FITOPT={value.get('FITOPT')} "
+            mu_str += "\n"
+        self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
 
         final_output = "\n".join(self.base)
 
