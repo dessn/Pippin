@@ -58,6 +58,12 @@ class Merger(Task):
                 original_output = self.done_file
                 shutil.move(original_output, new_output)
 
+                # Create symlinks for all systematics
+                original_dir = self.lc_fit["fitres_dir"]
+                sys_files = [a for a in os.listdir(original_dir) if "FITOPT000" not in a and ".FITRES" in a]
+                for s in sys_files:
+                    os.symlink(os.path.join(original_dir, s), os.path.join(outdir, s))
+
                 # Recreate done file -_-
                 with open(self.done_file, "w") as f:
                     f.write("SUCCESS")
