@@ -22,6 +22,9 @@ class Merger(Task):
         self.output["classifiers"] = self.agg["classifiers"]
         self.output["sim_name"] = self.lc_fit["sim_name"]
 
+    def __str__(self):
+        return f"Merger {self.name} (sim: {self.output['sim_name']}, classifiers: {self.output['classifiers']})"
+
     def get_lcfit_dep(self):
         for d in self.dependencies:
             if isinstance(d, SNANALightCurveFit):
