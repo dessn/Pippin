@@ -14,9 +14,9 @@ class Merger(Task):
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.cmd_prefix = ["combine_fitres.exe"]
-        self.cmd_suffix = ["-outfile_text ", "merged.FITRES.gz"]
-        self.done_file = os.path.join(self.output_dir, "merged.FITRES.gz")
+        self.cmd_prefix = ["combine_fitres.exe", "t"]
+        self.cmd_suffix = ["-outprefix", "merged"]
+        self.done_file = os.path.join(self.output_dir, "merged.text")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
         self.output["classifiers"] = self.agg["classifiers"]
