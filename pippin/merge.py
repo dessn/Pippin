@@ -50,6 +50,7 @@ class Merger(Task):
             self.logger.debug(f"Merger finished, see combined fitres at {self.fitres_outdir}")
             return Task.FINISHED_SUCCESS
         elif os.path.exists(self.original_output):
+            self.logger.debug(f"Merger finished for the first time, see combined fitres at {self.fitres_outdir}")
 
             # Copy MERGE.LOG and FITOPT.README if they aren't there
             filenames = ["MERGE.LOG", "FITOPT.README"]
