@@ -14,14 +14,20 @@ class Merger(Task):
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.cmd_prefix = ["combine_fitres.exe", "t"]
-        self.cmd_suffix = ["-outprefix", "merged"]
-        self.done_file = os.path.join(self.output_dir, "merged.text")
+        self.cmd_prefix = ["combine_fitres.exe"]
+        self.cmd_suffix = ["-outfile_text ", "FITOPT000.FITRES.gz"]
+        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
+        self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
         self.output["classifiers"] = self.agg["classifiers"]
         self.output["classifier_names"] = [c.name for c in self.agg["classifiers"]]
         self.output["sim_name"] = self.lc_fit["sim_name"]
+
+        self.fitres_outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
+        self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES.gz")
+        self.output["fitres_file"] = self.new_output
+        self.output["fitres_dir"] = self.fitres_outdir
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
@@ -41,7 +47,9 @@ class Merger(Task):
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug(f"Merger finished, see combined fitres at {self.done_file}")
+            self.logger.debug(f"Merger finished, see combined fitres at {self.fitres_outdir}")
+            return Task.FINISHED_SUCCESS
+        elif os.path.exists(self.original_output):
 
             # Copy MERGE.LOG and FITOPT.README if they aren't there
             filenames = ["MERGE.LOG", "FITOPT.README"]
@@ -53,26 +61,21 @@ class Merger(Task):
                     shutil.copy(original, moved)
 
             # Dick around with folders and names to make it resemble split_and_fit output for salt2mu
-            outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
-            new_output = os.path.join(outdir, "FITOPT000.FITRES")
-            if not os.path.exists(outdir):
-                os.makedirs(outdir, exist_ok=True)
 
-                original_output = self.done_file
-                shutil.move(original_output, new_output)
+            if not os.path.exists(self.fitres_outdir):
+                os.makedirs(self.fitres_outdir, exist_ok=True)
+
+                shutil.move(self.original_output, self.new_output)
 
                 # Create symlinks for all systematics
                 original_dir = self.lc_fit["fitres_dir"]
                 sys_files = [a for a in os.listdir(original_dir) if "FITOPT000" not in a and ".FITRES" in a]
                 for s in sys_files:
-                    os.symlink(os.path.join(original_dir, s), os.path.join(outdir, s))
+                    os.symlink(os.path.join(original_dir, s), os.path.join(self.fitres_outdir, s))
 
                 # Recreate done file -_-
                 with open(self.done_file, "w") as f:
                     f.write("SUCCESS")
-
-            self.output["fitres_file"] = new_output
-            self.output["fitres_dir"] = outdir
             return Task.FINISHED_SUCCESS
         else:
             output_error = False
