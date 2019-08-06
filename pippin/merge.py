@@ -15,7 +15,7 @@ class Merger(Task):
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.cmd_prefix = ["combine_fitres.exe"]
-        self.cmd_suffix = ["-outfile_text ", "FITOPT000.FITRES.gz"]
+        self.cmd_suffix = ["--outfile_text ", "FITOPT000.FITRES.gz"]
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
@@ -99,7 +99,7 @@ class Merger(Task):
 
     def _run(self, force_refresh):
         command = self.cmd_prefix + [self.lc_fit["fitres_file"], self.agg["merge_key_filename"]] + self.cmd_suffix
-
+        self.logger.debug("Computed command: ", " ".join(command))
         old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_string(" ".join(command))
 
