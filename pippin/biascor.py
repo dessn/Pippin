@@ -86,9 +86,9 @@ class BiasCor(ConfigBasedExecutable):
                 mu_str += "\nMUOPT: "
             mu_str += f"[{label}] "
             if value.get("SIMFILE_BIASCOR"):
-                mu_str += f"simfile_biascor={','.join(value.get('SIMFILE_BIASCOR'))} "
+                mu_str += f"simfile_biascor={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_BIASCOR')])} "
             if value.get("SIMFILE_CCPRIOR"):
-                mu_str += f"simfile_ccprior={','.join(value.get('SIMFILE_BIASCOR'))} "
+                mu_str += f"simfile_ccprior={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_CCPRIOR')])} "
             if value.get("CLASSIFIER"):
                 mu_str += f"varname_pIa={value.get('CLASSIFIER').output['prob_column_name']} "
             if value.get("FITOPT"):
