@@ -10,6 +10,7 @@ from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config, ensure_list
+from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
 from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
@@ -25,7 +26,8 @@ class Manager:
         "CLASSIFY": 3,
         "AGGREGATE": 4,
         "MERGE": 5,
-        "BIASCOR": 6
+        "BIASCOR": 6,
+        "CREATE_COV": 7
     }
 
     def __init__(self, filename, config_path, config, message_store):
@@ -81,7 +83,10 @@ class Manager:
         aggregator_tasks = self.get_aggregator_tasks(config, sim_tasks + data_tasks, classification_tasks)
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         biascor_tasks = self.get_biascor_tasks(config, merger_tasks, classification_tasks)
-        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + aggregator_tasks + merger_tasks + biascor_tasks
+        createcov_tasks = self.get_createcov_tasks(config, biascor_tasks)
+
+        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks \
+                      + aggregator_tasks + merger_tasks + biascor_tasks + createcov_tasks
 
         self.logger.info("")
         self.logger.notice("Listing tasks:")
@@ -366,7 +371,7 @@ class Manager:
             config["DATA"] = data_tasks
 
             # Resolve every MUOPT
-            muopts = config.get("MUOPTS")
+            muopts = config.get("MUOPTS", {})
             for label, mu_conf in muopts.items():
                 deps += resolve_conf(mu_conf, default=config)
 
@@ -374,6 +379,33 @@ class Manager:
             task.set_stage(stage)
             self.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
             tasks.append(task)
+
+        return tasks
+
+    def get_createcov_tasks(self, c, biascor_tasks):
+        tasks = []
+        stage = Manager.stages["CREATE_COV"]
+        if self.finish is not None and self.finish < Manager.stages["CREATE_COV"]:
+            return tasks
+        for cname in c.get("CREATE_COV", []):
+            config = c["CREATE_COV"][cname]
+            if config is None:
+                config = {}
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", "")
+
+            for btask in biascor_tasks:
+                if mask not in btask.name:
+                    continue
+
+                name = f"{cname}_{btask.name}"
+                a = CreateCov(name, self._get_createcov_dir(name), options, [btask])
+                a.set_stage(stage)
+                self.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(biascor_tasks) == 0:
+                self._fail_config("Create cov task {cname} has no biascor task to run on!")
 
         return tasks
 
@@ -558,6 +590,10 @@ class Manager:
 
     def _get_biascor_output_dir(self, biascor_name):
         return f"{self.output_dir}/{Manager.stages['BIASCOR']}_BIASCOR/{biascor_name}"
+
+    def _get_createcov_dir(self, name):
+        return f"{self.output_dir}/{Manager.stages['CREATE_COV']}_CREATE_COV/{name}"
+
 
 if __name__ == "__main__":
     import logging

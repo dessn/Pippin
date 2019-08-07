@@ -109,3 +109,15 @@ BIASCOR:
         FITOPT: 0
     OTPS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+
+CREATE_COV:
+  ALL:
+    OPTS:
+      FITOPT_SCALES:  # Optional
+        cal: 2.0  # checks if its in the label, not an exact match
+      MUOPT_SCALES: # Optional - used to construct SYSFILE input
+        C11: 0.5
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[CALIBRATION] [+cal,=DEFAULT]"
+        - "[SCATTER] [=DEFAULT,=C11]"

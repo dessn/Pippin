@@ -129,9 +129,11 @@ class Task(ABC):
     def __repr__(self):
         return self.__str__()
 
-    def get_dep(self, *clss):
+    def get_dep(self, *clss, fail=False):
         for d in self.dependencies:
             for cls in clss:
                 if isinstance(d, cls):
                     return d
+        if fail:
+            raise ValueError(f"No deps have class of type {clss}")
         return None

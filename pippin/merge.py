@@ -23,6 +23,7 @@ class Merger(Task):
         self.output["classifiers"] = self.agg["classifiers"]
         self.output["classifier_names"] = [c.name for c in self.agg["classifiers"]]
         self.output["sim_name"] = self.lc_fit["sim_name"]
+        self.output["genversion"] = self.lc_fit["genversion"]
 
         self.fitres_outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
         self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES.gz")
