@@ -41,7 +41,7 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
 #SBATCH --time=00:10:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl-lw
+#SBATCH --partition=broadwl-lc
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=1GB
@@ -63,7 +63,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
         return 1  # The number of CPUs being utilised
 
     def calculate_input(self):
-        os.makedirs(self.config_dir, exist_ok=True)
+        mkdirs(self.config_dir)
         self.logger.debug(f"Calculating input")
         self.set_property("COSMOMC_TEMPLATES", self.template_dir)
         self.set_property("BASEOUTPUT", self.name)
