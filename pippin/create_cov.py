@@ -24,7 +24,8 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
         self.global_config = get_config()
 
         self.job_name = f"CREATE_COV_{name}"
-        self.path_to_code = "external"
+        self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
+
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.sys_file_in = os.path.join(self.data_dir, "sys_scale.LIST")
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
@@ -63,7 +64,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
         self.logger.debug(f"Calculating input")
         self.set_property("COSMOMC_TEMPLATES", self.template_dir)
         # self.set_property("BASEOUTPUT", self.prefix)
-        self.set_property("SYS_FILE", self.sys_file_out)
+        self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
         self.set_property("OUTPUTDIR", self.output_dir)
         self.set_property("SUBDIR", self.biascor_dep.output["subdir"])
