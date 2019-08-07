@@ -41,7 +41,7 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
 #SBATCH --time=00:10:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl-wl
+#SBATCH --partition=broadwl-lw
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=1GB
