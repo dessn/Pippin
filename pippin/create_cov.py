@@ -89,7 +89,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                 for i, line in enumerate(sys_scale):
                     comps = line.split()
                     if label in comps[1]:
-                        sys_scale[i] = " ".join(comps[:-1] + [overwrite])
+                        sys_scale[i] = " ".join(comps[:-1] + [f"{overwrite}"])
 
             # Set the muopts scales
             muopt_scales = self.options.get("MUOPT_SCALES")
