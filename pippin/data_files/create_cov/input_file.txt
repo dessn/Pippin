@@ -1,7 +1,6 @@
 COSMOMC_TEMPLATES: /project/rkessler/SURVEYS/DES/ROOT/analysis_SpecIa_3yr/BBC/COSMO_MC_FILES_BROUT
 BASEOUTPUT: BBB
 TOPFILE: SALT2mu_FITOPT000_MUOPT000.M0DIF
-MAKEINI: AAA
 SYSFILE: sys_scale.LIST
 TOPDIR: /project/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/pippin/output/SYS_TEST_DILLON/6_BIASCOR/BCOR/output
 OUTPUTDIR: /scratch/midway2/djbrout/djbrout_workingdir/pippintest/cosmomc_startup

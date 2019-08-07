@@ -63,7 +63,6 @@ python create_covariance_staticbins.py {input_file} {done_file}
         return 1  # The number of CPUs being utilised
 
     def calculate_input(self):
-        mkdirs(self.config_dir)
         self.logger.debug(f"Calculating input")
         self.set_property("COSMOMC_TEMPLATES", self.template_dir)
         self.set_property("BASEOUTPUT", self.name)
@@ -122,6 +121,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
             self.logger.debug("Regenerating and launching task")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
+            mkdirs(self.config_dir)
             self.save_new_hash(new_hash)
             # Write sys scales and the main input file
             with open(self.sys_file_out, "w") as f:
