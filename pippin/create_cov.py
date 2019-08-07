@@ -65,7 +65,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
     def calculate_input(self):
         self.logger.debug(f"Calculating input")
         self.set_property("COSMOMC_TEMPLATES", self.template_dir)
-        # self.set_property("BASEOUTPUT", self.prefix)
+        self.set_property("BASEOUTPUT", self.name)
         self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
         self.set_property("OUTPUTDIR", self.config_dir)
