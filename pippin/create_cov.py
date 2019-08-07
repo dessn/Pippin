@@ -30,6 +30,7 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
         self.sys_file_in = os.path.join(self.data_dir, "sys_scale.LIST")
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
         self.chain_dir = os.path.join(self.output_dir, "chains")
+        self.config_dir = os.path.join(self.output_dir, "configs")
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdir"] + ".input")
@@ -46,6 +47,7 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
 #SBATCH --mem=1GB
 
 cd {path_to_code}
+source activate
 python create_covariance_staticbins.py {input_file} {done_file}
 """
 
@@ -66,10 +68,12 @@ python create_covariance_staticbins.py {input_file} {done_file}
         # self.set_property("BASEOUTPUT", self.prefix)
         self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
-        self.set_property("OUTPUTDIR", self.output_dir)
+        self.set_property("OUTPUTDIR", self.config_dir)
         self.set_property("SUBDIR", self.biascor_dep.output["subdir"])
         self.set_property("ROOTDIR", self.chain_dir)
         self.set_property("SYSDEFAULT", self.options.get("SYSDEFAULT", 0))
+
+        os.makedirs(self.config_dir, exist_ok=True)
 
         # More bs hacks
         covopt_str = ""
