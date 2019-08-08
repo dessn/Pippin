@@ -609,7 +609,6 @@ class FILE_INFO:
         self.USEFILE = parseLines(Lines, 'USE_SYSFILE:', 1, 1)
         self.SYSDEFAULT = parseLines(Lines, 'SYSDEFAULT:', 1, 1)
         self.OUTPUTDIR = parseLines(Lines, 'OUTPUTDIR:', 1, 1)
-        self.ROOTDIR = parseLines(Lines, 'ROOTDIR:', 1, 1)
         self.TOPFILE = parseLines(Lines, 'TOPFILE:', 1, 1)
         self.COVOPT = parseLines(Lines, 'COVOPT:', 1, 1)
         self.ERRSCALE = parseLines(Lines, 'ERRSCALE:', 99, 1)
@@ -623,9 +622,9 @@ class FILE_INFO:
 import os.path
 
 
-def makeini(outputdir, baseoutput, base, BASE_INI_AND_BATCH, extra=0, rootdir='', datasetnum=0):
+def makeini(outputdir, baseoutput, base, BASE_INI_AND_BATCH, extra=0, datasetnum=0):
     # dataset=outputdir+'/'+baseoutput+'.dataset'
-    dataset = '%s_%d.dataset' % (baseoutput, datasetnum)
+    dataset = os.path.join(outputdir, '%s_%d.dataset' % (baseoutput, datasetnum))
     # dvin_nosn_ocmb_omol.ini
     print('we are making ini files!')
     svec = ['sn_omw', 'omw', 'wwa', 'omol', 'snonly_omol', 'sn_omw_validation']
@@ -653,7 +652,7 @@ def makeini(outputdir, baseoutput, base, BASE_INI_AND_BATCH, extra=0, rootdir=''
                 h.write('jla_dataset=' + dataset + '\n')
                 if not os.path.exists(rootdir):
                     os.mkdir(rootdir)
-                h.write('root_dir = ' + rootdir + '\n')
+                h.write('root_dir = {root_dir}\n')
                 h.close()
                 g.close()
                 with open(BASE_INI_AND_BATCH + '/' + base + '_temp.sbatch', 'r') as f:
@@ -698,7 +697,6 @@ if __name__ == "__main__":
         print('SYSFILE', FileInfo.SYSFILE)
         print('SYSDEFAULT', FileInfo.SYSDEFAULT)
         print('OUTPUTDIR', FileInfo.OUTPUTDIR)
-        print('ROOTDIR', FileInfo.ROOTDIR)
         print('COVLINES', FileInfo.COVOPT)
         print('ERRSCALE', FileInfo.ERRSCALE)
         print('TOPFILE', FileInfo.TOPFILE)
@@ -710,9 +708,6 @@ if __name__ == "__main__":
         if not FileInfo.OUTPUTDIR:
             print('no OUTPUTDIR specified so making it COSMO/')
             FileInfo.OUTPUTDIR = 'COSMO'
-        if not FileInfo.ROOTDIR:
-            print('no ROOTDIR making it /scratch/midway/rkessler/djbrout/cosmomc/chains2/')
-            FileInfo.ROOTDIR = '/scratch/midway/rkessler/djbrout/cosmomc/chains2/'
         if not FileInfo.COVOPT:  FileInfo.COVOPT = 'NONE'
         if not FileInfo.ERRSCALE:  FileInfo.ERRSCALE = 'NONE'
         if not FileInfo.TOPFILE:  FileInfo.TOPFILE = 'NONE'
@@ -723,7 +718,7 @@ if __name__ == "__main__":
         # DILLON: I'm editing here for giving full outputdir path not relative to cwd
         with open('/'.join(FileInfo.OUTPUTDIR.split('/')[:-1]) + '/covopt.dict', 'w') as f:
             for d in range(len(FileInfo.COVOPT) + 1):
-                makeini(FileInfo.OUTPUTDIR, FileInfo.BASEOUTPUT, 'dvin', FileInfo.COSMOMC_TEMPLATES, extra=1, rootdir=FileInfo.ROOTDIR, datasetnum=d)
+                makeini(FileInfo.OUTPUTDIR, FileInfo.BASEOUTPUT, 'dvin', FileInfo.COSMOMC_TEMPLATES, extra=1, datasetnum=d)
                 if d == 0:
                     covwrite = 'ALLSYS'
                 else:
