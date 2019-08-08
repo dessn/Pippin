@@ -622,7 +622,7 @@ class FILE_INFO:
 import os.path
 
 
-def makeini(outputdir, baseoutput, base, BASE_INI_AND_BATCH, extra=0, datasetnum=0):
+def makeini(outputdir, baseoutput, BASE_INI_AND_BATCH, extra=0, datasetnum=0):
     # dataset=outputdir+'/'+baseoutput+'.dataset'
     dataset = os.path.join(outputdir, '%s_%d.dataset' % (baseoutput, datasetnum))
     # dvin_nosn_ocmb_omol.ini
@@ -641,21 +641,19 @@ def makeini(outputdir, baseoutput, base, BASE_INI_AND_BATCH, extra=0, datasetnum
             # print os.path.isfile(base+'_'+gvec[j]+svec[i]+'.ini')
             # stop
             # print(BASE_INI_AND_BATCH+'/'+base+'_'+gvec[j]+svec[i]+'.ini')
-            if os.path.isfile(BASE_INI_AND_BATCH + '/' + base + '_' + gvec[j] + svec[i] + '.ini'):
-                g = open(BASE_INI_AND_BATCH + '/' + base + '_' + gvec[j] + svec[i] + '.ini', 'r')
+            if os.path.isfile(BASE_INI_AND_BATCH + '/' + gvec[j] + svec[i] + '.ini'):
+                g = open(BASE_INI_AND_BATCH + '/' + '_' + gvec[j] + svec[i] + '.ini', 'r')
                 h = open(outputdir + '/' + gvec[j] + svec[i] + '_' + str(int(datasetnum)) + '.ini', 'w')
-                with open(BASE_INI_AND_BATCH + '/' + base + '_' + gvec[j] + svec[i] + '.ini', 'r') as f:
+                with open(BASE_INI_AND_BATCH + '/' + '_' + gvec[j] + svec[i] + '.ini', 'r') as f:
                     content = f.readlines()
                 for x in content:
                     h.write(x)
                 h.write('\nfile_root=' + gvec[j] + svec[i] + '_' + str(int(datasetnum)) + '\n')
                 h.write('jla_dataset=' + dataset + '\n')
-                if not os.path.exists(rootdir):
-                    os.mkdir(rootdir)
                 h.write('root_dir = {root_dir}\n')
                 h.close()
                 g.close()
-                with open(BASE_INI_AND_BATCH + '/' + base + '_temp.sbatch', 'r') as f:
+                with open(BASE_INI_AND_BATCH + '/' + '_temp.sbatch', 'r') as f:
                     content = f.readlines()
                 h = open(outputdir + '/' + gvec[j] + svec[i] + '_' + str(int(datasetnum)) + '.sbatch', 'w')
                 for x in content:
@@ -718,7 +716,7 @@ if __name__ == "__main__":
         # DILLON: I'm editing here for giving full outputdir path not relative to cwd
         with open('/'.join(FileInfo.OUTPUTDIR.split('/')[:-1]) + '/covopt.dict', 'w') as f:
             for d in range(len(FileInfo.COVOPT) + 1):
-                makeini(FileInfo.OUTPUTDIR, FileInfo.BASEOUTPUT, 'dvin', FileInfo.COSMOMC_TEMPLATES, extra=1, datasetnum=d)
+                makeini(FileInfo.OUTPUTDIR, FileInfo.BASEOUTPUT, FileInfo.COSMOMC_TEMPLATES, extra=1, datasetnum=d)
                 if d == 0:
                     covwrite = 'ALLSYS'
                 else:

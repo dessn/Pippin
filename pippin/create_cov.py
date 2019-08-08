@@ -9,9 +9,28 @@ from pippin.config import mkdirs, get_config
 from pippin.task import Task
 
 
-class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """ Smack the data into something that looks like the simulated data
+class CreateCov(ConfigBasedExecutable):
+    """ Create covariance matrices and data from salt2mu used for cosmomc
 
+    CONFIGURATION:
+    ==============
+    CREATE_COV:
+        label:
+            OPTS:
+                FITOPT_SCALES:  # Optional dict to scale fitopts
+                    fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
+              MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom, scale defaults to one
+                exact_muopt_name: float
+              COVOPTS:  # optional, note you'll get an 'ALL' covopt no matter what
+                - "[NOSYS] [=DEFAULT,=DEFAULT]"  # syntax for Dan&Dillons script. [label] [fitopts_to_match,muopts_to_match]. Does partial matching. =Default means dont do that systematic type
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        ini_dir : The directory the .ini files for cosmomc will be output to
+        covopts : a dictionary mapping a covopt label to a number
+        path_to_base : full path to cosmomc template directory
 
     """
     def __init__(self, name, output_dir, options, dependencies=None):
@@ -35,7 +54,12 @@ class CreateCov(ConfigBasedExecutable):  # TODO: Define the location of the outp
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdir"] + ".input")
 
-
+        self.output["ini_dir"] = self.config_dir
+        covopts_map = {"ALL": 0}
+        for i, covopt in enumerate(self.options.get("COVOPTS", [])):
+            covopts_map[covopt.split("]")[0][1:]] = i + 1
+        self.output["covopts"] = covopts_map
+        self.output["path_to_base"] = self.template_dir
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=00:10:00

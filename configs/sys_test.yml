@@ -111,7 +111,12 @@ CREATE_COV:
         cal: 2.0  # checks if its in the label, not an exact match
       MUOPT_SCALES: # Optional - used to construct SYSFILE input
         C11: 0.5 # This should exact match a MUOPT label in the biascor step
-      COVOPTS:
+      COVOPTS:  # note you'll get an 'ALL' covopt no matter what
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
         - "[CALIBRATION] [+cal,=DEFAULT]"
         - "[SCATTER] [=DEFAULT,=C11]"
+
+COSMOMC:
+  ALL:
+    INI: ocmb_omw
+    COVOPTS: [ALL, NOSYS]
