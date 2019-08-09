@@ -96,7 +96,7 @@ def dataset(output_dir, base_output, strex1, strex2, sys=1):
 
     if sys == 1:
         g.write('has_mag_covmat = T\n')
-        g.write('mag_covmat_file =  ' + '/' + output_dir + '/sys_' + base_output + strex1 + '.txt\n')
+        g.write('mag_covmat_file =  ' + output_dir + '/sys_' + base_output + strex1 + '.txt\n')
         # g.write('mag_covmat_file =  '+os.getcwd()+'/'+output_dir+'/sys_'+base_output+strex1+'.txt\n')
     if sys != 1: g.write('has_mag_covmat = F\n')
 
