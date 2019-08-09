@@ -30,7 +30,6 @@ class CreateCov(ConfigBasedExecutable):
         output_dir: top level output directory
         ini_dir : The directory the .ini files for cosmomc will be output to
         covopts : a dictionary mapping a covopt label to a number
-        path_to_base : full path to cosmomc template directory
 
     """
     def __init__(self, name, output_dir, options, dependencies=None):
@@ -59,7 +58,6 @@ class CreateCov(ConfigBasedExecutable):
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
         self.output["covopts"] = covopts_map
-        self.output["path_to_base"] = self.template_dir
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=00:10:00

@@ -119,4 +119,4 @@ CREATE_COV:
 COSMOMC:
   ALL:
     INI: ocmb_omw
-    COVOPTS: [ALL, NOSYS]
+    COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
