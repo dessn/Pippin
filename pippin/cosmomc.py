@@ -2,7 +2,7 @@ import shutil
 import subprocess
 import os
 
-from pippin.config import mkdirs, get_config
+from pippin.config import mkdirs, get_config, get_output_loc
 from pippin.create_cov import CreateCov
 from pippin.task import Task
 
@@ -42,7 +42,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.job_name = f"cosmomc_{name}"
         self.logfile = os.path.join(self.output_dir, "output.log")
 
-        self.path_to_cosmomc = self.global_config["CosmoMC"]["location"]
+        self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
         self.create_cov_dep = self.get_dep(CreateCov)
         avail_cov_opts = self.create_cov_dep.output["covopts"]
