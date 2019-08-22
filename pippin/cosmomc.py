@@ -45,7 +45,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.path_to_cosmomc = self.global_config["CosmoMC"]["location"]
 
         self.create_cov_dep = self.get_dep(CreateCov)
-        avail_cov_opts = self.create_cov_dep.outout["covopts"]
+        avail_cov_opts = self.create_cov_dep.output["covopts"]
 
         self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
         self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
