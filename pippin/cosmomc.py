@@ -92,12 +92,12 @@ INI_FILES=({ini_files})
 DONE_FILES=({done_files})
 
 cd {output_dir}
-mpirun {path_to_cosmomc}/cosmomc ${INI_FILES[$PARAMS]}
+mpirun {path_to_cosmomc}/cosmomc ${{INI_FILES[$PARAMS]}}
 
 if [ $? -eq 0 ]; then
-    echo "SUCCESS" > ${DONE_FILES[$PARAMS]}
+    echo "SUCCESS" > ${{DONE_FILES[$PARAMS]}}
 else
-    echo "FAILURE" > ${DONE_FILES[$PARAMS]}
+    echo "FAILURE" > ${{DONE_FILES[$PARAMS]}}
 fi
 """
 
