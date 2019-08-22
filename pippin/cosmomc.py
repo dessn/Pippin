@@ -8,7 +8,7 @@ from pippin.task import Task
 
 
 class CosmoMC(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """ Smack the data into something that looks like the simulated data
+    """ Run cosmomc given an ini file
 
     CONFIGURATION
     =============
@@ -16,7 +16,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
     COSMOMC:
         label:
             MASK_CREATE_COV: mask  # partial match
-            MASK_BIASCOR: mask  # partial match
             OPTS:  # Options
                 INI: sn_cmb_omw  # should match the filename of at a file in the pippin/data_files/cosmomc_templates directory
                 COVOPTS: [ALL, NOSYS]  # Optional, covopts from CREATE_COV step to run against. If you leave this blank, you get them all. Exact matching.

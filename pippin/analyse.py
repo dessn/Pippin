@@ -4,7 +4,6 @@ import subprocess
 import os
 
 from pippin.config import mkdirs, get_config
-from pippin.create_cov import CreateCov
 from pippin.task import Task
 
 

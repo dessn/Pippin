@@ -10,6 +10,7 @@ from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
 from pippin.config import get_logger, get_config, ensure_list
+from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
 from pippin.merge import Merger
@@ -27,7 +28,9 @@ class Manager:
         "AGGREGATE": 4,
         "MERGE": 5,
         "BIASCOR": 6,
-        "CREATE_COV": 7
+        "CREATE_COV": 7,
+        "COSMOMC": 8,
+        "ANALYSE": 9
     }
 
     def __init__(self, filename, config_path, config, message_store):
@@ -84,9 +87,12 @@ class Manager:
         merger_tasks = self.get_merge_tasks(config, aggregator_tasks, lcfit_tasks)
         biascor_tasks = self.get_biascor_tasks(config, merger_tasks, classification_tasks)
         createcov_tasks = self.get_createcov_tasks(config, biascor_tasks)
+        cosmomc_tasks = self.get_cosmomc_tasks(config, createcov_tasks)
+        analyse_tasks = self.get_analyse_tasks(config, createcov_tasks)
 
-        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks \
-                      + aggregator_tasks + merger_tasks + biascor_tasks + createcov_tasks
+        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + \
+                      aggregator_tasks + merger_tasks + biascor_tasks + \
+                      createcov_tasks + cosmomc_tasks + analyse_tasks
 
         self.logger.info("")
         self.logger.notice("Listing tasks:")
@@ -405,7 +411,59 @@ class Manager:
                 tasks.append(a)
 
             if len(biascor_tasks) == 0:
-                self._fail_config("Create cov task {cname} has no biascor task to run on!")
+                self._fail_config(f"Create cov task {cname} has no biascor task to run on!")
+
+        return tasks
+
+    def get_cosmomc_tasks(self, c, create_cov_tasks):
+        tasks = []
+        key = "COSMOMC"
+        stage = Manager.stages[key]
+
+        if self.finish is not None and self.finish < stage:
+            return tasks
+        for cname in c.get(key, []):
+            config = c[key].get(cname, {})
+            options = config.get("OPTS", {})
+
+            mask = config.get("MASK_CREATE_COV", "")
+            for ctask in create_cov_tasks:
+                if mask not in ctask.name:
+                    continue
+                name = f"{cname}_{ctask.name}"
+                a = CosmoMC(name, self._get_cosmomc_dir(name), options, [ctask])
+                a.set_stage(stage)
+                self.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(create_cov_tasks) == 0:
+                self._fail_config(f"CosmoMC task {cname} has no create_cov task to run on!")
+
+        return tasks
+
+    def get_analyse_tasks(self, c, cosmomc_tasks):
+        tasks = []
+        key = "ANALYSE"
+        stage = Manager.stages[key]
+
+        if self.finish is not None and self.finish < stage:
+            return tasks
+        for cname in c.get(key, []):
+            config = c[key].get(cname, {})
+            options = config.get("OPTS", {})
+
+            mask = config.get("MASK_COSMOMC", "")
+            for ctask in cosmomc_tasks:
+                if mask not in ctask.name:
+                    continue
+                name = f"{cname}_{ctask.name}"
+                a = CosmoMC(name, self._get_cosmomc_dir(name), options, [ctask])
+                a.set_stage(stage)
+                self.logger.info(f"Creating Analyse task {name} for {ctask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(cosmomc_tasks) == 0:
+                self._fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
 
         return tasks
 
@@ -593,6 +651,12 @@ class Manager:
 
     def _get_createcov_dir(self, name):
         return f"{self.output_dir}/{Manager.stages['CREATE_COV']}_CREATE_COV/{name}"
+
+    def _get_cosmomc_dir(self, name):
+        return f"{self.output_dir}/{Manager.stages['COSMOMC']}_COSMOMC/{name}"
+
+    def _get_analyse_dir(self, name):
+        return f"{self.output_dir}/{Manager.stages['ANALYSE']}_ANALYSE/{name}"
 
 
 if __name__ == "__main__":
