@@ -45,7 +45,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.path_to_cosmomc = self.global_config["CosmoMC"]["location"]
 
         self.create_cov_dep = self.get_dep(CreateCov)
-        print("AAAAAAAAAAAAAAAAA ", self.options)
         avail_cov_opts = self.create_cov_dep.output["covopts"]
 
         self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
@@ -80,7 +79,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
-#SBATCH --array=1-{num_jobs}
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
@@ -170,7 +168,6 @@ fi
             "output_dir": self.output_dir,
             "ini_files": " ".join(self.ini_files),
             "num_walkers": self.num_walkers
-
         }
         final_slurm = self.slurm.format(**format_dict)
 
