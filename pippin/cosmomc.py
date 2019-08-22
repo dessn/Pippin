@@ -115,7 +115,7 @@ fi
         else:
             all_files = True
             for d in self.done_files:
-                if os.path.exists(d):
+                if os.path.exists(os.path.join(self.output_dir, d)):
                     with open(d) as f:
                         if "FAILURE" in f.read():
                             self.logger.error(f"Done file {d} reported failure. Check output log {self.logfile}")

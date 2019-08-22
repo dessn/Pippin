@@ -105,7 +105,7 @@ def dataset(output_dir, base_output, strex1, strex2, sys=1):
     g.write('has_mag_stretch_covmat = F\n')
     g.write('has_mag_colour_covmat = F\n')
     g.write('has_stretch_colour_covmat = F\n')
-    g.close();
+    g.close()
     return 2
 
 
@@ -700,6 +700,11 @@ if __name__ == "__main__":
                 else:
                     covwrite = FileInfo.COVOPT[d - 1][0].replace('[', '').replace("'", '').replace(']', '')
                 f.write('%d\t%s\n' % (d, covwrite))
+
+        print("Copying base.ini file over")
+        original_base = os.path.join(FileInfo.COSMOMC_TEMPLATES, "base.ini")
+        new_base = os.path.join(FileInfo.OUTPUTDIR, "base.ini")
+        shutil.copy(original_base, new_base)
 
         write_done(done_file, success=True)
     except:
