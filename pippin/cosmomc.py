@@ -79,6 +79,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 #SBATCH --time=12:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
+#SBATCH --array=1-{num_jobs}
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
@@ -88,6 +89,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 PARAMS=`expr ${{SLURM_ARRAY_TASK_ID}} - 1`
+
 INI_FILES=({ini_files})
 DONE_FILES=({done_files})
 
@@ -167,6 +169,7 @@ fi
             "path_to_cosmomc": self.path_to_cosmomc,
             "output_dir": self.output_dir,
             "ini_files": " ".join(self.ini_files),
+            "num_jobs": len(self.ini_files),
             "num_walkers": self.num_walkers
         }
         final_slurm = self.slurm.format(**format_dict)
