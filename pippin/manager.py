@@ -6,6 +6,7 @@ import subprocess
 import time
 
 from pippin.aggregator import Aggregator
+from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
@@ -88,7 +89,7 @@ class Manager:
         biascor_tasks = self.get_biascor_tasks(config, merger_tasks, classification_tasks)
         createcov_tasks = self.get_createcov_tasks(config, biascor_tasks)
         cosmomc_tasks = self.get_cosmomc_tasks(config, createcov_tasks)
-        analyse_tasks = self.get_analyse_tasks(config, createcov_tasks)
+        analyse_tasks = self.get_analyse_tasks(config, cosmomc_tasks)
 
         total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + \
                       aggregator_tasks + merger_tasks + biascor_tasks + \
@@ -428,6 +429,7 @@ class Manager:
 
             mask = config.get("MASK_CREATE_COV", "")
             for ctask in create_cov_tasks:
+                print("BBBBBBBBB ", ctask)
                 if mask not in ctask.name:
                     continue
                 name = f"{cname}_{ctask.name}"
@@ -457,7 +459,7 @@ class Manager:
                 if mask not in ctask.name:
                     continue
                 name = f"{cname}_{ctask.name}"
-                a = CosmoMC(name, self._get_cosmomc_dir(name), options, [ctask])
+                a = AnalyseChains(name, self._get_cosmomc_dir(name), options, [ctask])
                 a.set_stage(stage)
                 self.logger.info(f"Creating Analyse task {name} for {ctask.name} with {a.num_jobs} jobs")
                 tasks.append(a)
