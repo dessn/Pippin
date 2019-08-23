@@ -196,6 +196,11 @@ fi
             new_data_dir = os.path.join(self.output_dir, "data")
             os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
+            self.logger.debug("Creating symlink to paramnames dir")
+            original_data_dir = os.path.join(self.path_to_cosmomc, "paramnames")
+            new_data_dir = os.path.join(self.output_dir, "paramnames")
+            os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
+
             self.logger.info(f"Submitting batch job for data prep")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
