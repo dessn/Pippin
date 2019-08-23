@@ -191,15 +191,12 @@ fi
                 with open(filepath, "w") as f:
                     f.write(content)
 
-            self.logger.debug("Creating symlink to data dir")
-            original_data_dir = os.path.join(self.path_to_cosmomc, "data")
-            new_data_dir = os.path.join(self.output_dir, "data")
-            os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
-
-            self.logger.debug("Creating symlink to paramnames dir")
-            original_data_dir = os.path.join(self.path_to_cosmomc, "paramnames")
-            new_data_dir = os.path.join(self.output_dir, "paramnames")
-            os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
+            needed_dirs = ["data", "paramnames", "camb"]
+            for d in needed_dirs:
+                self.logger.debug("Creating symlink to {d} dir")
+                original_data_dir = os.path.join(self.path_to_cosmomc, d)
+                new_data_dir = os.path.join(self.output_dir, d)
+                os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
             self.logger.info(f"Submitting batch job for data prep")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
