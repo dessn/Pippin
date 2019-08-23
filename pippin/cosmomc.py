@@ -76,7 +76,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
-#SBATCH --time=12:00:00
+#SBATCH --time=20:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
 #SBATCH --array=1-{num_jobs}
@@ -204,8 +204,6 @@ fi
                 os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
             self.logger.info(f"Submitting batch job for data prep")
-
-            self.logger.info("Note you will need these modules: ")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
