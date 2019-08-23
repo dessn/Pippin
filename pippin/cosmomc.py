@@ -88,6 +88,11 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
+module unload openmpi
+module load intelmpi/5.1+intel-16.0
+module load cfitsio/3
+module load mkl
+
 PARAMS=`expr ${{SLURM_ARRAY_TASK_ID}} - 1`
 
 INI_FILES=({ini_files})
@@ -199,6 +204,8 @@ fi
                 os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
             self.logger.info(f"Submitting batch job for data prep")
+
+            self.logger.info("Note you will need these modules: ")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
