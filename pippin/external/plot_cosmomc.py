@@ -29,12 +29,19 @@ def load_chains(files, all_cols, use_cols=None):
     return weights, likelihood, chain
 
 
+def fail(msg, condition=True):
+    if condition:
+        logging.error(msg)
+        raise ValueError(msg)
+
+
 def get_chain_files(basename):
     folder = os.path.dirname(basename)
     logging.info(f"Looking for chains in folder {folder}")
     base = os.path.basename(basename)
     files = [os.path.join(folder, f) for f in sorted(os.listdir(folder)) if base in f and f.endswith(".txt")]
-    assert len(files) > 0, f"No chain files found for {os.path.join(folder, basename)}"
+    fail(f"No chain files found for {os.path.join(folder, basename)}", condition=len(files) == 0)
+    logging.info(f"{len(files)} chains found for basename {basename}")
     return files
 
 
@@ -84,6 +91,7 @@ if __name__ == "__main__":
     args = get_arguments()
     try:
         setup_logging()
+        logging.info("Creating chain consumer object")
         c = ChainConsumer()
         for basename in args.basename:
             weights, likelihood, labels, chain = get_output(basename, args)

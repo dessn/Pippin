@@ -63,7 +63,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["chain_dir"] = self.chain_dir
         self.output["param_dict"] = self.param_dict
         self.output["chain_dict"] = self.chain_dict
-        self.output["base_dict"] = self.chain_dict
+        self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
         final = self.ini_prefix.split("_")[-1]
         ps = {
