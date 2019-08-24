@@ -50,6 +50,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
                     self.files.append(c.output["base_dict"][covopt])
                     self.params += c.output["cosmology_params"]
         self.params = list(set(self.params))
+        self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}

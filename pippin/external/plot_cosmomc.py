@@ -20,6 +20,11 @@ def load_params(file):
 def load_chains(files, all_cols, use_cols=None):
     header = ["weights", "likelihood"] + all_cols
     data = [pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files]
+
+    # Remove burn in by cutting off first 30%
+    steps = data.shape[0]
+    data = [d.iloc[int(steps*0.3):, :] for d in data]
+
     combined = pd.concat(data)
     if use_cols is None:
         use_cols = all_cols
@@ -81,7 +86,7 @@ def get_output(basename, args):
     weights, likelihood, chain = load_chains(chain_files, names, args.params)
     if args.blind:
         blind(chain, args.params or names, args.blind)
-    labels = [f"${l}" + (r"\ {\mathrm Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
+    labels = [f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
     logging.info(f"Chain for {basename} has shape {chain.shape}")
     logging.info(f"Labels for {basename} are {labels}")
     return weights, likelihood, labels, chain
