@@ -47,7 +47,7 @@ class CreateCov(ConfigBasedExecutable):
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.sys_file_in = os.path.join(self.data_dir, "sys_scale.LIST")
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
-        self.chain_dir = os.path.join(self.output_dir, "chains")
+        self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
