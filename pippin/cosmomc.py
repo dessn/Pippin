@@ -53,7 +53,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.ini_prefix = options.get("INI")
         self.num_walkers = options.get("NUM_WALKERS", 4)
         self.chain_dir = os.path.join(self.output_dir, "chains/")
-        mkdirs(self.chain_dir)
 
         self.labels = [self.name + "_" + c for c in self.covopts]
         self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
@@ -196,6 +195,7 @@ fi
                 filepath = os.path.join(self.output_dir, file)
                 with open(filepath, "w") as f:
                     f.write(content)
+            mkdirs(self.chain_dir)
 
             needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
             for d in needed_dirs:
