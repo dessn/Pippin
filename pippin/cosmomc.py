@@ -19,7 +19,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             OPTS:  # Options
                 INI: sn_cmb_omw  # should match the filename of at a file in the pippin/data_files/cosmomc_templates directory
                 COVOPTS: [ALL, NOSYS]  # Optional, covopts from CREATE_COV step to run against. If you leave this blank, you get them all. Exact matching.
-                NUM_WALKERS: 4  # Optional, defaults to four.
+                NUM_WALKERS: 8  # Optional, defaults to eight.
 
     OUTPUTS
     =======
@@ -51,7 +51,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
         self.num_jobs = len(self.covopts)
         self.ini_prefix = options.get("INI")
-        self.num_walkers = options.get("NUM_WALKERS", 4)
+        self.num_walkers = options.get("NUM_WALKERS", 8)
         self.chain_dir = os.path.join(self.output_dir, "chains/")
 
         self.labels = [self.name + "_" + c for c in self.covopts]
@@ -76,7 +76,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
-#SBATCH --time=20:00:00
+#SBATCH --time=34:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
 #SBATCH --array=1-{num_jobs}
