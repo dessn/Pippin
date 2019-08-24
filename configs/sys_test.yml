@@ -119,7 +119,7 @@ CREATE_COV:
 COSMOMC:
   SN_CMB_OMW:
     OPTS:
-      INI: sn_cmb_omw
+      INI: sn_omw
       COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
 
 ANALYSE:
