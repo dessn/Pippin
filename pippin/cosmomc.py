@@ -58,7 +58,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
         self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
-        self.chain_dict = {l: os.path.join(self.chain_dir, "chains" + i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
+        self.chain_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
         self.base_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", "")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
         self.output["chain_dir"] = self.chain_dir
         self.output["param_dict"] = self.param_dict
