@@ -46,7 +46,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         # Assuming all deps are cosmomc tasks
         for c in self.dependencies:
             for covopt in c.output["covopts"]:
-                if covopt in self.covopts or self.covopts is None:
+                if self.covopts is None or covopt in self.covopts:
                     self.files.append(c.output["base_dict"][covopt])
                     self.params += c.output["cosmology_params"]
         self.params = list(set(self.params))

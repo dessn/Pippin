@@ -38,7 +38,6 @@ class BiasCor(ConfigBasedExecutable):
         self.output["fit_output_dir"] = self.fit_output_dir
 
         # calculate genversion the hard way
-        print(self.merged_data[0].output)
         a_genversion = self.merged_data[0].output["genversion"]
         for n in self.sim_names:
             a_genversion = a_genversion.replace(n, "")

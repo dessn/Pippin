@@ -429,7 +429,6 @@ class Manager:
 
             mask = config.get("MASK_CREATE_COV", "")
             for ctask in create_cov_tasks:
-                print("BBBBBBBBB ", ctask)
                 if mask not in ctask.name:
                     continue
                 name = f"{cname}_{ctask.name}"

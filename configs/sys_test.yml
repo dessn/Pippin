@@ -127,4 +127,4 @@ ANALYSE:
     MASK_COSMOMC: OMW
     OPTS:
       BLIND: w
-      COVOPTS: ALL
+      # COVOPTS: ALL
