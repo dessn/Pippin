@@ -459,7 +459,7 @@ class Manager:
                 if mask not in ctask.name:
                     continue
                 name = f"{cname}_{ctask.name}"
-                a = AnalyseChains(name, self._get_cosmomc_dir(name), options, [ctask])
+                a = AnalyseChains(name, self._get_analyse_dir(name), options, [ctask])
                 a.set_stage(stage)
                 self.logger.info(f"Creating Analyse task {name} for {ctask.name} with {a.num_jobs} jobs")
                 tasks.append(a)
