@@ -22,8 +22,7 @@ def load_chains(files, all_cols, use_cols=None):
     data = [pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files]
 
     # Remove burn in by cutting off first 30%
-    steps = data.shape[0]
-    data = [d.iloc[int(steps*0.3):, :] for d in data]
+    data = [d.iloc[int(d.shape[0]*0.3):, :] for d in data]
 
     combined = pd.concat(data)
     if use_cols is None:
