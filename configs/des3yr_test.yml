@@ -23,8 +23,8 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
-      RANSEED_REPEAT: 20 12345
+      NGEN_UNIT: 5
+      RANSEED_REPEAT: 40 12345
 
   DESBIASCOR:
     IA_G10_DES3YR:
@@ -36,16 +36,28 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
-      RANSEED_REPEAT: 20 12345
+      NGEN_UNIT: 5
+      RANSEED_REPEAT: 40 12345
 
 LCFIT:
+  LOWZFITSYS:
+    BASE: lowz.nml
+    FITOPTS: lowz.fitopts
+    MASK: LOWZSIM
+
+  DESFITSYS:
+    BASE: des.nml
+    FITOPTS: des.fitopts
+    MASK: DESSIM
+
   LOWZFIT:
     BASE: lowz.nml
-    MASK: LOWZ
+    MASK: LOWZBIAS
+
   DESFIT:
     BASE: des.nml
-    MASK: DES
+    MASK: DESBIAS
+
 
 # Note the stuff below does effectively nothing, but allows
 # us to treat spec and photometric samples identically
@@ -73,3 +85,28 @@ BIASCOR:
       - LOWZBIASCOR
     CLASSIFIER: UNITY
 
+CREATE_COV:
+  ALL:
+    OPTS:
+      COVOPTS:  # note you'll get an 'ALL' covopt no matter what
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 8
+
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 8
+
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW
+    OPTS:
+      BLIND: w
+      # COVOPTS: ALL
