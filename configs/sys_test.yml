@@ -117,7 +117,7 @@ CREATE_COV:
         - "[SCATTER] [=DEFAULT,=C11]"
 
 COSMOMC:
-  SN_CMB_OMW:
+  SN_OMW:
     OPTS:
       INI: sn_omw
       COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
