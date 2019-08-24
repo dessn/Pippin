@@ -81,7 +81,7 @@ def get_output(basename, args):
     weights, likelihood, chain = load_chains(chain_files, names, args.params)
     if args.blind:
         blind(chain, args.params or names, args.blind)
-    labels = [f"${l}$" + (" Blinded" if u in args.blind else "") for u in args.params for l, n in zip(labels, names) if n == u]
+    labels = [f"${l}" + (r"\ {\mathrm Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
     logging.info(f"Chain for {basename} has shape {chain.shape}")
     logging.info(f"Labels for {basename} are {labels}")
     return weights, likelihood, labels, chain
