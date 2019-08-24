@@ -196,7 +196,7 @@ fi
                 with open(filepath, "w") as f:
                     f.write(content)
 
-            needed_dirs = ["data", "paramnames", "camb"]
+            needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
             for d in needed_dirs:
                 self.logger.debug(f"Creating symlink to {d} dir")
                 original_data_dir = os.path.join(self.path_to_cosmomc, d)
