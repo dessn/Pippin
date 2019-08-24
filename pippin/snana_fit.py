@@ -46,7 +46,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["sim_name"] = sim_task.output["name"]
         self.output["lc_output_dir"] = self.lc_output_dir
 
-        self.options = self.config.get("OPTS")
+        self.options = self.config.get("OPTS", {})
 
     def get_sim_dependency(self):
         for t in self.dependencies:
