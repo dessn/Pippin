@@ -1,4 +1,4 @@
-INPUT_FILE_INCLUDE:  des_5yr_phot_include.input
+INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
 GENTYPE:  91
 GENMODEL: $PLASTICC_MODELS/SIMSED.SNIa-91bg

@@ -1,0 +1,66 @@
+BATCH_INFO: sbatch $DJBPATH/batchtemplates/SBATCH_Midway2.TEMPLATE 96
+
+OUTDIR:  outFit
+# og cutwin_redshift  =  0.01, 0.7
+# FITWIN_SHAPE     = -3.00, +3.0
+# FITWIN_TREST     = -15.0, 45.0
+# FITWIN_PROB      =  0.01,  1.01
+#original fit options above. go in FITINP
+
+
+VERSION:  SDSS_allCandidates+BOSS_P19
+
+GZIP_FLAG: 4
+
+APPEND_FITRES:  FITRES  delmu  MNSTAT_COV MWEBV RA DEC HOST_OBJID HOST_DDLR HOST_LOGMASS HOST_MAG_r 
+
+SALT2mu_INFILE:  SALT2mu_DES.input
+
+  &SNLCINP
+  PRIVATE_DATA_PATH = '$SNDATA_ROOT/lcmerge'
+  VERSION_PHOTOMETRY = 'SDSS_allCandidates+BOSS_P19'
+  HFILE_OUT      = 'snfit_LSST.his'
+  KCOR_FILE      = 'LSST/2017-04_approx/kcor_LSST.fits'
+  SNTABLE_LIST = 'FITRES(text:key)'
+  TEXTFILE_PREFIX = 'LSST'
+  ABORT_ON_NOEPOCHS = F
+  PHOTFLAG_MSKREJ   = 1024
+
+  USE_MINOS      = F
+  NFIT_ITERATION = 3
+  INTERP_OPT     = 1
+  H0_REF         = 70.0
+
+  cutwin_cid   =  1, 9999000
+  SNTYPE_LIST  =  0
+  SNCID_IGNORE =  189, 0, 4524, 8151, 7017, 17176, 20208
+
+  CUTWIN_REDSHIFT_ERR = 0.0, 0.011
+  cutwin_redshift  =  0.01, 0.85
+  cutwin_Trestmin  = -99.0, 10.0
+  cutwin_Trestmax  =   0.0, 9999.
+  cutwin_Trest     = -20.0, 60.0
+
+  CUTWIN_SNRMAX       = 5.0, 1.0E9
+  CUTWIN_NFILT_SNRMAX = 2, 99
+
+  cutwin_peakmjd      = 0.0,  9999999.0
+  cutwin_Nepoch       = 5
+  cutwin_Nband_thresh = 1
+	       
+  &END
+ 
+
+ &FITINP
+     FILTLIST_FIT = 'griz'
+     FITMODEL_NAME  = 'SALT2.WFIRST-H17'
+
+     PRIOR_SHAPE_RANGE = -5.0, +4.0
+     PRIOR_MJDSIG      = 10.
+
+     FITWIN_SHAPE     = -3.00, +3.0
+     FITWIN_TREST     = -15.0, 45.0
+     FITWIN_PROB      =  0.01,  1.01
+          
+  &END
+

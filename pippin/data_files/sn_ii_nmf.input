@@ -2,7 +2,7 @@
 # 2018-04-11: update SIMSED params
 # 2018-08-12: new model from Santiago to fix artifacts
 # 2018-08-23: new model from Santiago to fix triangle artifact
-INPUT_FILE_INCLUDE:  des_5yr_phot_include.input
+INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
 
 GENTYPE:   21
