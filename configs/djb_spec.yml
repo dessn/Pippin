@@ -53,7 +53,6 @@ SIM:
 LCFIT:
   FIT:
     BASE: djbrout_spec_test/lsst.nml
-    MASK: TRAIN
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
