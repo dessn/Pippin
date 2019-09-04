@@ -5,5 +5,4 @@ scipy
 matplotlib
 astropy
 coloredlogs
-re
 chainconsumer
