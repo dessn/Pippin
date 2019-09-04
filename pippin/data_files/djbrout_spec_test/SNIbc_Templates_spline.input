@@ -9,7 +9,7 @@ DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
 DNDZ_ALLSCALE:   0.15        # 30% of CC are type Ib/c, half for hybrid
 GENRANGE_TREST:	 -50 300
 
-INPUT_FILE_INCLUDE:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_simgen/SIMGEN_TEMPLATE_LSST.INPUT
+INPUT_FILE_INCLUDE:  djbrout_spec_test/SIMGEN_TEMPLATE_LSST.input
 
 
 # Some of the models plateau at	end of epoch range,
