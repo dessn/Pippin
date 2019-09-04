@@ -59,8 +59,8 @@ class SNANASimulation(ConfigBasedExecutable):
             elif key == "RANSEED_REPEAT":
                 self.delete_property("RANSEED_CHANGE")
 
-        self.set_property("SIMGEN_INFILE_Ia", " ".join(self.base_ia) if self.base_ia else None)
-        self.set_property("SIMGEN_INFILE_NONIa", " ".join(self.base_cc) if self.base_cc else None)
+        self.set_property("SIMGEN_INFILE_Ia", " ".join([os.path.basename(f) for f in self.base_ia]) if self.base_ia else None)
+        self.set_property("SIMGEN_INFILE_NONIa", " ".join([os.path.basename(f) for f in self.base_cc]) if self.base_cc else None)
         self.set_property("GENPREFIX", self.genversion)
 
         # Put config in a temp directory
