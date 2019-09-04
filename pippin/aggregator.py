@@ -16,7 +16,7 @@ class Aggregator(Task):
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
-        self.output_df_key = os.path.join(self.output_dir, "merged.key.gz")
+        self.output_df_key = os.path.join(self.output_dir, "merged.key")
         self.id = "SNID"
         self.type_name = "SNTYPE"
         self.options = options

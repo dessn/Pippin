@@ -58,7 +58,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
-            data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES.gz"), delim_whitespace=True, comment="#", compression="infer")
+            data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES"), delim_whitespace=True, comment="#", compression="infer")
             d = data.groupby("TYPE").agg({"CID": {"num": "count"}})
             d.columns = d.columns.droplevel(0)
             self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
@@ -160,17 +160,17 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.logger.info("Light curve done file found")
             logging_file2 = self.logging_file.replace("_log", "_log2")
             if not os.path.exists(logging_file2):
-                self.logger.info("Tarball found, fitting complete, cleaning up the directory")
-                try:
-                    with open(logging_file2, "w") as f:
-                        subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
-                        time.sleep(2)
-                except subprocess.CalledProcessError as e:
-                    self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
+                self.logger.info("Tarball found, fitting complete, NOT cleaning up the directory")
+                # try:
+                #     with open(logging_file2, "w") as f:
+                #         subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+                #         time.sleep(2)
+                # except subprocess.CalledProcessError as e:
+                #     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 chown_dir(self.output_dir)
                 self.print_stats()
 
-            self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES.gz"))  # TODO: Ask rick if there
+            self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES"))
             return Task.FINISHED_SUCCESS
         return 0
 

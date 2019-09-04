@@ -15,8 +15,8 @@ class Merger(Task):
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.cmd_prefix = ["combine_fitres.exe"]
-        self.cmd_suffix = ["--outfile_text", "FITOPT000.FITRES.gz"]
-        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
+        self.cmd_suffix = ["--outfile_text", "FITOPT000.FITRES"]
+        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
@@ -26,7 +26,7 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.fitres_outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
-        self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES.gz")
+        self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES")
         self.output["fitres_file"] = self.new_output
         self.output["fitres_dir"] = self.fitres_outdir
 
