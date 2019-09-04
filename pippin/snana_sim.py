@@ -85,7 +85,10 @@ class SNANASimulation(ConfigBasedExecutable):
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
                             self.logger.debug(f"Copying included file {include_file}")
-                            shutil.copy(self.data_dir + include_file, temp_dir)
+                            if include_file.startswith("/"):
+                                shutil.copy(include_file, temp_dir)
+                            else:
+                                shutil.copy(self.data_dir + include_file, temp_dir)
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
