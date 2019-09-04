@@ -92,12 +92,12 @@ class SNANASimulation(ConfigBasedExecutable):
                                 # Dont copy it over, we need to sed it to update the INPUT_FILE_INCLUDE to be relative
                                 # Ah crap, this will only work for a single include.
                                 base = os.path.basename(include_file)
-                                output = os.path.join(temp_dir, base)
-                                input = os.path.join(self.data_dir, include_file)
-                                cmds = ["sed", f"'s|{include_file}|{base}|g'", f"<{input}", f">{output}"]
-                                self.logger.info(f"Running sed command: {''.join(cmds)}")
-                                subprocess.run(cmds)
-                                # shutil.copy(self.data_dir + include_file, temp_dir)
+                                input_file = os.path.join(temp_dir, os.path.basename(ff))
+                                sed_command = f"sed -i -e 's|{include_file}|{base}|g' {input_file}"
+                                self.logger.info(f"Running sed command: {sed_command}")
+                                subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+
+                                shutil.copy(self.data_dir + include_file, temp_dir)
 
                             fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
 
