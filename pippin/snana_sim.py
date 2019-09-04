@@ -79,7 +79,8 @@ class SNANASimulation(ConfigBasedExecutable):
         for ff in fs:
             if ff not in input_copied:
                 input_copied.append(ff)
-                with open(self.data_dir + ff, "r") as f:
+                path = ff if ff.startswith("/") else os.path.join(self.data_dir, ff)
+                with open(path, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
@@ -89,7 +90,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                 shutil.copy(include_file, temp_dir)
                             else:
                                 shutil.copy(self.data_dir + include_file, temp_dir)
-                            fs.append(os.path.join(temp_dir, include_file))
+                            fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
