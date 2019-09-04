@@ -66,7 +66,7 @@ CLASSIFICATION:
   SNNVANILLATEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
+    MASK_SIM: TEST
     OPTS:
       MODEL: SNNVANILLATRAIN
 
@@ -80,7 +80,7 @@ CLASSIFICATION:
   SNNVARIATIONALTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
+    MASK_SIM: TEST
     OPTS:
       MODEL: SNNVARIATIONALTRAIN
       VARIANT: variational
@@ -95,7 +95,7 @@ CLASSIFICATION:
   SNNBAYESIANTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
+    MASK_SIM: TEST
     OPTS:
       MODEL: SNNBAYESIANTRAIN
       VARIANT: bayesian
@@ -103,7 +103,7 @@ CLASSIFICATION:
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
     MODE: predict
-    MASK: TEST
+    MASK_SIM: TEST
 
   NNTRAIN:
     CLASSIFIER: NearestNeighborClassifier
@@ -131,7 +131,7 @@ CLASSIFICATION:
 
 AGGREGATION:
   AGG:
-    MASK: TEST
+    MASK_SIM: TEST
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
@@ -139,4 +139,3 @@ AGGREGATION:
 MERGE:
   MERGE:
     MASK_SIM: TEST
-    MASK_FIT: TEST
