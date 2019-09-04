@@ -17,7 +17,7 @@ SIM:
 
   TRAIN_FIDUCIARY_SPLINE:
     IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10.input
+      BASE: djbrout_spec_test/SNIa-SALT2.input
     II:
       BASE: djbrout_spec_test/SNII_Templates_spline.input
     Ibc:

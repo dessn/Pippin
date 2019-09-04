@@ -9,7 +9,7 @@ GENMAG_SMEAR_MODELNAME: G10
 DNDZ: POWERLAW2 2.5E-5  1.5 0.0 1.0    # from Didlay 2008
 DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 3.0    # high-z extenstion from Lou
 
-GENRANGE_REDSHIFT:  0.011  1.55
+GENRANGE_REDSHIFT:  0.011  1.50
 GENRANGE_TREST:     -100   300
 
 # --------------------------------------------------
