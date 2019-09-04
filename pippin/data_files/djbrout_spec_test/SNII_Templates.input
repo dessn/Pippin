@@ -2,7 +2,7 @@
 # MAGOFF = 2.100 -> 1.500 (0.6 mag brighter)
 #
 GENMODEL:  NON1ASED
-PATH_NON1ASED:  /project/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_models/NON1ASED.SNII-Templates
+PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_models/NON1ASED.SNII-Templates
 GENRANGE_REDSHIFT: 0.011  1.50
 DNDZ:  CC_S15                   # Strolger 2015 (1509.06574)
 
@@ -10,7 +10,7 @@ DNDZ:  CC_S15                   # Strolger 2015 (1509.06574)
 DNDZ_ALLSCALE:    0.35          # share with II-pca model
 GENRANGE_TREST:  -50 300
 
-INPUT_FILE_INCLUDE:  /project/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_simgen/SIMGEN_TEMPLATE_LSST.INPUT
+INPUT_FILE_INCLUDE:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_simgen/SIMGEN_TEMPLATE_LSST.INPUT
 
 
 # Some of the models plateau at	end of epoch range,

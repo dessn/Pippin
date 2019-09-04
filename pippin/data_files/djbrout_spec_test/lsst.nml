@@ -1,4 +1,4 @@
-BATCH_INFO: sbatch $DJBPATH/batchtemplates/SBATCH_Midway2.TEMPLATE 96
+BATCH_INFO: sbatch /project2/rkessler/SURVEYS/DES/USERS/djbrout/batchtemplates/SBATCH_Midway2.TEMPLATE 96
 
 OUTDIR:  outFit
 # og cutwin_redshift  =  0.01, 0.7
