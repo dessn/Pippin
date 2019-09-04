@@ -8,12 +8,13 @@ SIM:
       BASE: djbrout_spec_test/SNIbc_Templates.input
       UVLAM_EXTRAPFLUX: 500
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.02
       RESET_CIDOFF: 2  # This might have something to do with the different genversions to make them reset for matching
       RANSEED_REPEAT: 1 12345
       SIMLIB_FILE: $PLASTICC_MODELS/LSST_OBSERVATIONS_DDF.SIMLIB
       SOLID_ANGLE: 5.468
       SEARCHEFF_zHOST_FILE: $PLASTICC_MODELS/LSST+4MOST_zHOST_DDF.TEXT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   TRAIN_FIDUCIARY_SPLINE:
     IA_G10_DES3YR:
@@ -24,14 +25,18 @@ SIM:
       BASE: djbrout_spec_test/SNIbc_Templates_spline.input
       UVLAM_EXTRAPFLUX: 500
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.02
       RESET_CIDOFF: 2
       RANSEED_REPEAT: 1 12345
       SIMLIB_FILE: $PLASTICC_MODELS/LSST_OBSERVATIONS_DDF.SIMLIB
       SOLID_ANGLE: 5.468 # This duplicates a lot of stuff, do I not have multiple genversions implemented?
       SEARCHEFF_zHOST_FILE: $PLASTICC_MODELS/LSST+4MOST_zHOST_DDF.TEXT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
 LCFIT:
   FIT:
     BASE: djbrout_spec_test/lsst.nml
     MASK: TRAIN
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+
