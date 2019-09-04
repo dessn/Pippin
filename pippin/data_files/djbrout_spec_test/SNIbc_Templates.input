@@ -3,8 +3,8 @@
 #                 (artifact warning from Justin)
 #
 GENMODEL:  NON1ASED
-PATH_NON1ASED:   /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_models/NON1ASED.SNIbc-Templates
-GENRANGE_REDSHIFT: 0.011  1.50
+PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_models/NON1ASED.SNIbc-Templates
+GENRANGE_REDSHIFT: 0.033  1.50
 DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
 DNDZ_ALLSCALE:   0.15        # 30% of CC are type Ib/c, half for hybrid
 GENRANGE_TREST:	 -50 300
