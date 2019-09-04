@@ -94,7 +94,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                 base = os.path.basename(include_file)
                                 output = os.path.join(temp_dir, base)
                                 input = os.path.join(self.data_dir, include_file)
-                                subprocess.run(["sed", f"s/{include_file}/{base}/g", f"<{input}", f">{output}"])
+                                subprocess.run(["sed", f"'s|{include_file}|{base}|g'", f"<{input}", f">{output}"])
                                 # shutil.copy(self.data_dir + include_file, temp_dir)
 
                             fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
