@@ -89,6 +89,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                 shutil.copy(include_file, temp_dir)
                             else:
                                 shutil.copy(self.data_dir + include_file, temp_dir)
+                            fs.append(os.path.join(temp_dir, include_file))
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
