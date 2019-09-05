@@ -225,3 +225,6 @@ class NearestNeighborClassifier(Classifier):
         else:
             self.logger.debug("Not regenerating")
         return True
+
+    def get_prob_column_name(self):
+        return super().get_prob_column_name() + "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]

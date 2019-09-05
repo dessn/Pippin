@@ -10,7 +10,7 @@ from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
-from pippin.config import get_logger, get_config, ensure_list
+from pippin.config import get_logger, get_config, ensure_list, get_output_dir
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -46,7 +46,7 @@ class Manager:
         self.max_jobs = int(self.global_config["GLOBAL"]["max_jobs"])
         self.max_jobs_in_queue = int(self.global_config["GLOBAL"]["max_jobs_in_queue"])
 
-        self.output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + self.global_config['OUTPUT']['output_dir'] + "/" + self.filename)
+        self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
 
         self.start = None
@@ -658,17 +658,3 @@ class Manager:
 
     def _get_analyse_dir(self, name):
         return f"{self.output_dir}/{Manager.stages['ANALYSE']}_ANALYSE/{name}"
-
-
-if __name__ == "__main__":
-    import logging
-    import yaml
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="[%(levelname)8s |%(filename)20s:%(lineno)3d |%(funcName)25s]   %(message)s")
-
-    with open("../configs/test.yml", "r") as f:
-        cc = yaml.safe_load(f)
-
-    manager = Manager("test", cc)
-    manager.execute()

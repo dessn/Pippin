@@ -27,9 +27,11 @@ def get_config():
 
 def get_output_dir():
     output_dir = get_config()['OUTPUT']['output_dir']
-    if output_dir.startswith("$"):
+    if "$" in output_dir:
         output_dir = os.path.expandvars(output_dir)
-    elif not output_dir.startswith("/"):
+        if "$" in output_dir:
+            raise ValueError(f"Could not resolve variable in path: {output_dir}")
+    if not output_dir.startswith("/"):
         output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + output_dir)
     return output_dir
 
@@ -106,6 +108,7 @@ def ensure_list(a):
     if isinstance(a, list):
         return a
     return [a]
+
 
 if __name__ == "__main__":
     c = get_config()

@@ -213,3 +213,11 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
     @staticmethod
     def get_requirements(options):
         return True, not options.get("USE_PHOTOMETRY", False)
+
+    def get_prob_column_name(self):
+        name = super().get_prob_column_name()
+        use_sim, use_fit = self.get_requirements(self.options)
+        if use_fit:
+            name += "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]
+        else:
+            name += "_" + self.get_simulation_dependency()["name"]
