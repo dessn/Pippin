@@ -202,6 +202,14 @@ class Manager:
                             self.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                             num_gen += 1
                             tasks.append(cc)
+                else:
+                    clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
+                    cc = cls(clas_name, clas_output_dir, deps, mode, options)
+                    cc.set_stage(stage)
+                    self.logger.info(
+                        f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                    num_gen += 1
+                    tasks.append(cc)
             if num_gen == 0:
                 self.logger.error(f"Classifier {name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
                 return None  # This should cause pippin to crash, which is probably what we want
