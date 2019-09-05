@@ -10,7 +10,7 @@ from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
-from pippin.config import get_logger, get_config, ensure_list, get_output_dir
+from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -517,6 +517,7 @@ class Manager:
     def execute(self):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
+        mkdirs(self.output_dir)
         c = self.run_config
 
         self.tasks = self.get_tasks(c)
