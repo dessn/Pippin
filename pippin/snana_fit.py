@@ -60,7 +60,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             path = os.path.join(self.lc_output_dir, f)
             data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES"), delim_whitespace=True, comment="#", compression="infer")
             d = data.groupby("TYPE").agg(num=("CID", "count"))
-            d.columns = d.columns.droplevel(0)
             self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
             d.to_csv(os.path.join(path, "stats.txt"))
 
