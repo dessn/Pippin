@@ -122,7 +122,7 @@ CLASSIFICATION:
     MODE: train
     MASK_SIM: TRAIN
 
-  SNIRF-TEST:
+  SNIRFTEST:
     CLASSIFIER: SnirfClassifier
     MODE: predict
     MASK_SIM: TEST
@@ -135,7 +135,7 @@ AGGREGATION:
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
-
-MERGE:
-  MERGE:
-    MASK_SIM: TEST
+#
+#MERGE:
+#  MERGE:
+#    MASK_SIM: TEST

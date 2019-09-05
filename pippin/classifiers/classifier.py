@@ -70,15 +70,18 @@ class Classifier(Task):
         elif self.mode == Classifier.PREDICT:
             return self.predict(force_refresh)
 
+    def get_unique_name(self):
+        name = self.name
+        use_sim, use_fit = self.get_requirements(self.options)
+        if use_fit:
+            name += "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]
+        else:
+            name += "_" + self.get_simulation_dependency()["name"]
+        return name
+
     def get_prob_column_name(self):
         m = self.get_model_classifier()
         if m is None:
-            name = f"PROB_{self.name}"
-            use_sim, use_fit = self.get_requirements(self.options)
-            if use_fit:
-                name += "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]
-            else:
-                name += "_" + self.get_simulation_dependency()["name"]
-            return name
+            return f"PROB_{self.get_unique_name()}"
         else:
             return m.output["prob_column_name"]

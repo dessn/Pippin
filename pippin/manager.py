@@ -195,8 +195,8 @@ class Manager:
                     for t in tasks:
                         if model == t.name:
                             # deps.append(t)
-
-                            clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
+                            extra = model.get_unique_name()
+                            clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name, extra=extra)
                             cc = cls(clas_name, clas_output_dir, deps + [t], mode, options)
                             cc.set_stage(stage)
                             self.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
@@ -645,10 +645,11 @@ class Manager:
     def _get_lc_output_dir(self, sim_name, fit_name):
         return f"{self.output_dir}/{Manager.stages['LCFIT']}_LCFIT/{fit_name}_{sim_name}"
 
-    def _get_clas_output_dir(self, sim_name, fit_name, clas_name):
+    def _get_clas_output_dir(self, sim_name, fit_name, clas_name, extra=None):
         fit_name = "" if fit_name is None else "_" + fit_name
         sim_name = "" if sim_name is None else "_" + sim_name
-        return f"{self.output_dir}/{Manager.stages['CLASSIFY']}_CLAS/{clas_name}{sim_name}{fit_name}"
+        extra_name = "" if extra is None else "_" + extra
+        return f"{self.output_dir}/{Manager.stages['CLASSIFY']}_CLAS/{clas_name}{sim_name}{fit_name}{extra_name}"
 
     def _get_aggregator_dir(self, agg_name):
         return f"{self.output_dir}/{Manager.stages['AGGREGATE']}_AGG/{agg_name}"
