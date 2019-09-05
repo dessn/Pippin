@@ -33,9 +33,10 @@ SIM:
       SEARCHEFF_zHOST_FILE: $PLASTICC_MODELS/LSST+4MOST_zHOST_DDF.TEXT
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
-  TEST_SIM:  # For Dillon to flesh out I think. Using SDSS data was it? Just copying the TRAIN_SPEC sim for now
-    IA_G10_DES3YR:
+  TESTSIM:  # For Dillon to flesh out I think. Using SDSS data was it? Just copying the TRAIN_SPEC sim for now
+    IA_C11_DES3YR:
       BASE: djbrout_spec_test/SNIa-SALT2.input
+      GENMAG_SMEAR_MODELNAME: C11
     II:
       BASE: djbrout_spec_test/SNII_Templates.input
     Ibc:
@@ -44,7 +45,7 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 1
       RESET_CIDOFF: 2
-      RANSEED_REPEAT: 10 12345
+      RANSEED_REPEAT: 10 3333
       SIMLIB_FILE: $PLASTICC_MODELS/LSST_OBSERVATIONS_DDF.SIMLIB
       SOLID_ANGLE: 5.468
       SEARCHEFF_zHOST_FILE: $PLASTICC_MODELS/LSST+4MOST_zHOST_DDF.TEXT
