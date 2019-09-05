@@ -22,7 +22,7 @@ class Aggregator(Task):
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = bool(options.get("PLOT", False))
-        self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b']
+        self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b', '#903de3', '#31b58b', '#99825a']
         self.output["classifiers"] = self.classifiers
 
     def _check_completion(self, squeue):
@@ -153,10 +153,10 @@ class Aggregator(Task):
         columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         fig, ax = plt.subplots(figsize=(8, 6))
-        for c in columns:
+        for c, col in zip(columns, self.colours):
             data, truth = self._get_data_and_truth(df[c], df["IA"])
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
-            ax.plot(bin_center, actual_prob, label=c)
+            ax.plot(bin_center, actual_prob, label=c, c=col)
         ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
         ax.legend(loc=4, frameon=False, markerfirst=False)
         ax.set_xlabel("Reported confidence")
