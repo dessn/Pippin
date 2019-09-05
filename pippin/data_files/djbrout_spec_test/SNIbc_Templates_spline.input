@@ -8,6 +8,7 @@ GENRANGE_REDSHIFT: 0.033  1.50
 DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
 DNDZ_ALLSCALE:   0.15        # 30% of CC are type Ib/c, half for hybrid
 GENRANGE_TREST:	 -50 300
+GENTYPE:   30
 
 INPUT_FILE_INCLUDE:  djbrout_spec_test/SIMGEN_TEMPLATE_LSST.input
 

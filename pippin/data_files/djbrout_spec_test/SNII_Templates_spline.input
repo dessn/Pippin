@@ -5,6 +5,7 @@ GENMODEL:  NON1ASED
 PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/NONIA_spline_withz_PLASTICC_models/NON1ASED.SNII-Templates
 GENRANGE_REDSHIFT: 0.033  1.50
 DNDZ:  CC_S15                   # Strolger 2015 (1509.06574)
+GENTYPE:   20
 
 # 70% of CC are type II ...
 DNDZ_ALLSCALE:    0.35          # share with II-pca model
