@@ -527,7 +527,7 @@ class Manager:
         squeue = None
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
-        self.logger.info(f"Copying config file to {config_file_output}")
+        self.logger.info(f"Copying config file from {self.filename_path} to {config_file_output}")
         shutil.copy(self.filename_path, config_file_output)
 
         # Welcome to the primary loop
