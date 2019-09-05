@@ -195,7 +195,7 @@ class Manager:
                     for t in tasks:
                         if model == t.name:
                             # deps.append(t)
-                            extra = model.get_unique_name()
+                            extra = t.get_unique_name()
                             clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name, extra=extra)
                             cc = cls(clas_name, clas_output_dir, deps + [t], mode, options)
                             cc.set_stage(stage)
