@@ -70,64 +70,64 @@ CLASSIFICATION:
     OPTS:
       MODEL: SNNVANILLATRAIN
 
-  SNNVARIATIONALTRAIN:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: train
-    MASK_SIM: TRAIN
-    OPTS:
-      VARIANT: variational
-
-  SNNVARIATIONALTEST:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: predict
-    MASK_SIM: TEST
-    OPTS:
-      MODEL: SNNVARIATIONALTRAIN
-      VARIANT: variational
-
-  SNNBAYESIANTRAIN:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: train
-    MASK_SIM: TRAIN
-    OPTS:
-      VARIANT: bayesian
-
-  SNNBAYESIANTEST:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: predict
-    MASK_SIM: TEST
-    OPTS:
-      MODEL: SNNBAYESIANTRAIN
-      VARIANT: bayesian
-
-  FITPROBTEST:
-    CLASSIFIER: FitProbClassifier
-    MODE: predict
-    MASK_SIM: TEST
-
-  NNTRAIN:
-    CLASSIFIER: NearestNeighborClassifier
-    MODE: train
-    MASK_SIM: TRAIN
-
-  NNTEST:
-    CLASSIFIER: NearestNeighborClassifier
-    MODE: predict
-    MASK_SIM: TEST
-    OPTS:
-        MODEL: NNTRAIN
-
-  SNIRF-TRAIN:
-    CLASSIFIER: SnirfClassifier
-    MODE: train
-    MASK_SIM: TRAIN
-
-  SNIRF-TEST:
-    CLASSIFIER: SnirfClassifier
-    MODE: predict
-    MASK_SIM: TEST
-    OPTS:
-      MODEL: SNIRF-TRAIN
+#  SNNVARIATIONALTRAIN:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: train
+#    MASK_SIM: TRAIN
+#    OPTS:
+#      VARIANT: variational
+#
+#  SNNVARIATIONALTEST:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: predict
+#    MASK_SIM: TEST
+#    OPTS:
+#      MODEL: SNNVARIATIONALTRAIN
+#      VARIANT: variational
+#
+#  SNNBAYESIANTRAIN:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: train
+#    MASK_SIM: TRAIN
+#    OPTS:
+#      VARIANT: bayesian
+#
+#  SNNBAYESIANTEST:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: predict
+#    MASK_SIM: TEST
+#    OPTS:
+#      MODEL: SNNBAYESIANTRAIN
+#      VARIANT: bayesian
+#
+#  FITPROBTEST:
+#    CLASSIFIER: FitProbClassifier
+#    MODE: predict
+#    MASK_SIM: TEST
+#
+#  NNTRAIN:
+#    CLASSIFIER: NearestNeighborClassifier
+#    MODE: train
+#    MASK_SIM: TRAIN
+#
+#  NNTEST:
+#    CLASSIFIER: NearestNeighborClassifier
+#    MODE: predict
+#    MASK_SIM: TEST
+#    OPTS:
+#        MODEL: NNTRAIN
+#
+#  SNIRF-TRAIN:
+#    CLASSIFIER: SnirfClassifier
+#    MODE: train
+#    MASK_SIM: TRAIN
+#
+#  SNIRF-TEST:
+#    CLASSIFIER: SnirfClassifier
+#    MODE: predict
+#    MASK_SIM: TEST
+#    OPTS:
+#      MODEL: SNIRF-TRAIN
 
 AGGREGATION:
   AGG:
