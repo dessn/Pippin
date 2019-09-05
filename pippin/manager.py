@@ -203,7 +203,7 @@ class Manager:
                             num_gen += 1
                             tasks.append(cc)
             if num_gen == 0:
-                self.logger.error(f"Classifier {name} with mask {mask} matched no combination of sims and fits")
+                self.logger.error(f"Classifier {name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
                 return None  # This should cause pippin to crash, which is probably what we want
         return tasks
 
