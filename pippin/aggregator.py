@@ -210,7 +210,7 @@ class Aggregator(Task):
                         res[key] = []
                     res[key].append(metrics[key])
             for key, l in zip(keys, ls):
-                ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c.split('_')[1]} {key}")
+                ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c[5:]} {key}")
 
         ax.set_xlabel("Classification probability threshold")
         ax.legend(loc=3, frameon=False, ncol=2)
@@ -237,7 +237,7 @@ class Aggregator(Task):
                 metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 purity.append(metrics["purity"])
-            ax.plot(purity, efficiency, color=col,  label=f"{c.split('_')[1]}")
+            ax.plot(purity, efficiency, color=col,  label=f"{c[5:]}")
 
         ax.set_xlabel("Precision (aka purity)")
         ax.set_xlim(0.97, 1.0)
@@ -267,7 +267,7 @@ class Aggregator(Task):
                 metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 specificity.append(metrics["specificity"])
-            ax.plot(specificity, efficiency, color=col,  label=f"{c.split('_')[1]}")
+            ax.plot(specificity, efficiency, color=col,  label=f"{c[5:]}")
 
         ax.set_xlabel("False Positive Rate")
         ax.set_ylabel("True Positive Rate")
