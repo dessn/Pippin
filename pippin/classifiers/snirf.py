@@ -142,6 +142,3 @@ python SNIRF.py {command_opts}
     @staticmethod
     def get_requirements(options):
         return False, True
-
-    def get_prob_column_name(self):
-        return super().get_prob_column_name() + "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]

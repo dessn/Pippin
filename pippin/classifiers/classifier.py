@@ -58,6 +58,12 @@ class Classifier(Task):
                 return t
         return None
 
+    def get_model_classifier(self):
+        for t in self.dependencies:
+            if isinstance(t, Classifier):
+                return t
+        return None
+
     def _run(self, force_refresh):
         if self.mode == Classifier.TRAIN:
             return self.train(force_refresh)
@@ -65,4 +71,14 @@ class Classifier(Task):
             return self.predict(force_refresh)
 
     def get_prob_column_name(self):
-        return f"PROB_{self.name}"
+        m = self.get_model_classifier()
+        if m is None:
+            name = f"PROB_{self.name}"
+            use_sim, use_fit = self.get_requirements(self.options)
+            if use_fit:
+                name += "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]
+            else:
+                name += "_" + self.get_simulation_dependency()["name"]
+            return name
+        else:
+            return m.output["prob_column_name"]
