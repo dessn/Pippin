@@ -79,7 +79,7 @@ if __name__ == "__main__":
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
     # Load YAML config file
-    config_path = os.path.dirname(inspect.stack()[0][1]) + args.config
+    config_path = os.path.abspath(os.path.expandvars(args.config))
     assert os.path.exists(config_path), f"File {config_path} cannot be found."
     with open(config_path, "r") as f:
         config = yaml.safe_load(f)
