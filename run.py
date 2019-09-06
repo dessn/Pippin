@@ -5,7 +5,7 @@ import yaml
 import logging
 import coloredlogs
 
-from pippin.config import get_config, mkdirs, get_logger
+from pippin.config import get_config, mkdirs, get_logger, get_output_dir
 from pippin.manager import Manager
 
 
@@ -43,7 +43,8 @@ if __name__ == "__main__":
 
     # Get base filename
     config_filename = os.path.basename(args.config).split(".")[0].upper()
-    logging_folder = os.path.abspath(f"{get_config()['OUTPUT']['output_dir']}/{config_filename}")
+    output_dir = get_output_dir()
+    logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
     mkdirs(logging_folder)
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
