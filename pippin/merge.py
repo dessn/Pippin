@@ -114,4 +114,3 @@ class Merger(Task):
         else:
             self.logger.debug("Not regnerating")
         return True
-

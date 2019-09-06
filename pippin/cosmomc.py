@@ -1,7 +1,6 @@
 import shutil
 import subprocess
 import os
-
 from pippin.config import mkdirs, get_config, get_output_loc
 from pippin.create_cov import CreateCov
 from pippin.task import Task
@@ -34,6 +33,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
     cosmology_params : a list of cosmology parameter names output by cosmomc that we really care about
 
     """
+
     def __init__(self, name, output_dir, options, dependencies=None):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
@@ -58,7 +58,9 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
         self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
-        self.chain_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
+        self.chain_dict = {
+            l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)
+        }
         self.base_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", "")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
         self.output["chain_dir"] = self.chain_dir
         self.output["param_dict"] = self.param_dict
@@ -66,12 +68,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
         final = self.ini_prefix.split("_")[-1]
-        ps = {
-            "omw": ["omegam", "w"],
-            "omol": ["omegam", "omegal"],
-            "wnu": ["w", "nu"],
-            "wwa": ["w", "wa"],
-        }
+        ps = {"omw": ["omegam", "w"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
         self.output["cosmology_params"] = ps[final]
 
         self.slurm = """#!/bin/bash
@@ -154,11 +151,9 @@ fi
                 self.logger.error(f"Cannot find the file {path}, make sure you specified a correct INI string matching an existing template")
                 return None
             with open(path) as f:
-                input_files.append(f.read().format(**{
-                    "path_to_cosmomc": self.path_to_cosmomc,
-                    "ini_dir": self.create_cov_dep.output["ini_dir"],
-                    "root_dir": self.chain_dir
-                }))
+                input_files.append(
+                    f.read().format(**{"path_to_cosmomc": self.path_to_cosmomc, "ini_dir": self.create_cov_dep.output["ini_dir"], "root_dir": self.chain_dir})
+                )
 
         return input_files
 
@@ -176,7 +171,7 @@ fi
             "output_dir": self.output_dir,
             "ini_files": " ".join(self.ini_files),
             "num_jobs": len(self.ini_files),
-            "num_walkers": self.num_walkers
+            "num_walkers": self.num_walkers,
         }
         final_slurm = self.slurm.format(**format_dict)
 

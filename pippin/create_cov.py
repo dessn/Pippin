@@ -2,7 +2,6 @@ import inspect
 import shutil
 import subprocess
 import os
-
 from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config
@@ -32,6 +31,7 @@ class CreateCov(ConfigBasedExecutable):
         covopts : a dictionary mapping a covopt label to a number
 
     """
+
     def __init__(self, name, output_dir, options, dependencies=None):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/create_cov"
         self.template_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/cosmomc_templates"
@@ -132,7 +132,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
             "log_file": self.logfile,
             "done_file": self.done_file,
             "path_to_code": self.path_to_code,
-            "input_file": self.input_file
+            "input_file": self.input_file,
         }
         final_slurm = self.slurm.format(**format_dict)
 

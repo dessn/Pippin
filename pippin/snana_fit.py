@@ -100,8 +100,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_fitinp(key, value)
         if self.options.get("BATCH_INFO"):
             self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
-        self.set_property("VERSION", self.sim_version + "*", assignment=": ", section_end="&SNLCINP") # TODO FIX THIS, DOUBLE VERSION KEY
-        self.set_property("OUTDIR",  self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
+        self.set_property("VERSION", self.sim_version + "*", assignment=": ", section_end="&SNLCINP")  # TODO FIX THIS, DOUBLE VERSION KEY
+        self.set_property("OUTDIR", self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
         if isinstance(self.sim_task, DataPrep):
             self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
@@ -120,7 +120,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             mkdirs(self.output_dir)
             # Write main file
             with open(self.config_path, "w") as f:
-                f.writelines(map(lambda s: s + '\n', string_to_hash))
+                f.writelines(map(lambda s: s + "\n", string_to_hash))
             self.logger.info(f"NML file written to {self.config_path}")
             self.save_new_hash(new_hash)
             chown_dir(self.output_dir)
@@ -176,7 +176,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
-    config = {"BASE": "des.nml", }
+    config = {"BASE": "des.nml"}
     s = SNANALightCurveFit("../output/test", "testv", config, {})
 
     s.set_snlcinp("CUTWIN_NBAND_THRESH", 1000)

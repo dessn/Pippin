@@ -2,7 +2,6 @@ import inspect
 import shutil
 import subprocess
 import os
-
 from pippin.config import mkdirs, get_config
 from pippin.task import Task
 
@@ -26,6 +25,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
 
     """
+
     def __init__(self, name, output_dir, options, dependencies=None):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
@@ -89,7 +89,7 @@ python {path_to_code} {files} {name} {blind} {done_file} {params}
             "files": " ".join(self.files),
             "name": "-n " + self.name,
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
-            "params": "-p " + " ".join(self.params)
+            "params": "-p " + " ".join(self.params),
         }
         final_slurm = self.slurm.format(**format_dict)
 

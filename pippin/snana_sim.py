@@ -53,7 +53,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
-            self.set_property(key, self.config['GLOBAL'][key])
+            self.set_property(key, self.config["GLOBAL"][key])
             if key == "RANSEED_CHANGE":
                 self.delete_property("RANSEED_REPEAT")
             elif key == "RANSEED_REPEAT":
@@ -104,7 +104,7 @@ class SNANASimulation(ConfigBasedExecutable):
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
         with open(main_input_file, "w") as f:
-            f.writelines(map(lambda s: s + '\n', self.base))
+            f.writelines(map(lambda s: s + "\n", self.base))
         self.logger.info(f"Input file written to {main_input_file}")
 
         # Remove any duplicates and order the output files
@@ -206,10 +206,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output = {
-                "photometry_dir": sim_folder_endpoint,
-                "types": self.get_types(),
-            }
+            self.output = {"photometry_dir": sim_folder_endpoint, "types": self.get_types()}
             return Task.FINISHED_SUCCESS
         return 0  # TODO: Update to num jobs
 
@@ -236,4 +233,3 @@ if __name__ == "__main__":
     s.set_property("TESTPROP", "HELLO")
     s.delete_property("GOODBYE")
     s.write_input()
-

@@ -15,7 +15,9 @@ def singleton(fn):
         if instance is None:
             instance = fn(*args, **kwargs)
         return instance
+
     return get
+
 
 @singleton
 def get_config():
@@ -26,7 +28,7 @@ def get_config():
 
 
 def get_output_dir():
-    output_dir = get_config()['OUTPUT']['output_dir']
+    output_dir = get_config()["OUTPUT"]["output_dir"]
     if "$" in output_dir:
         output_dir = os.path.expandvars(output_dir)
         if "$" in output_dir:
@@ -46,7 +48,8 @@ def get_output_loc(path):
 
 
 def get_hash(input_string):
-    return hashlib.sha256(input_string.encode('utf-8')).hexdigest()
+    return hashlib.sha256(input_string.encode("utf-8")).hexdigest()
+
 
 @singleton
 def get_logger():
@@ -76,7 +79,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
                     mode = stat.S_IMODE(st.st_mode)
                     os.lchmod(d, mode)
                 except:
-                    pass # lchmod not available
+                    pass  # lchmod not available
         elif os.path.isdir(s):
             copytree(s, d, symlinks, ignore)
         else:

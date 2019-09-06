@@ -22,7 +22,7 @@ class Aggregator(Task):
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = bool(options.get("PLOT", False))
-        self.colours = ['#f95b4a', '#3d9fe2', '#ffa847', '#c4ef7a', '#e195e2', '#ced9ed', '#fff29b', '#903de3', '#31b58b', '#99825a']
+        self.colours = ["#f95b4a", "#3d9fe2", "#ffa847", "#c4ef7a", "#e195e2", "#ced9ed", "#fff29b", "#903de3", "#31b58b", "#99825a"]
         self.output["classifiers"] = self.classifiers
 
     def _check_completion(self, squeue):
@@ -126,7 +126,7 @@ class Aggregator(Task):
         if "IA" in df.columns:
             df = df.drop(columns=[self.type_name, "IA"])
         df2 = df.fillna(0.0)
-        df2.insert(0, "VARNAMES:", ["SN:"]*df2.shape[0])
+        df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
     def _plot_corr(self, df):
@@ -180,7 +180,7 @@ class Aggregator(Task):
             "purity": tp / (tp + fp),  # also known as precision
             "efficiency": tp / (tp + fn),  # also known as recall
             "accuracy": (tp + tn) / (tp + tn + fp + fn),
-            "specificity": fp / (fp + tn)
+            "specificity": fp / (fp + tn),
         }
 
     def _get_data_and_truth(self, data, truth, name=None):
@@ -237,7 +237,7 @@ class Aggregator(Task):
                 metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 purity.append(metrics["purity"])
-            ax.plot(purity, efficiency, color=col,  label=f"{c[5:]}")
+            ax.plot(purity, efficiency, color=col, label=f"{c[5:]}")
 
         ax.set_xlabel("Precision (aka purity)")
         ax.set_xlim(0.97, 1.0)
@@ -267,7 +267,7 @@ class Aggregator(Task):
                 metrics = self._get_metrics(passed, truth)
                 efficiency.append(metrics["efficiency"])
                 specificity.append(metrics["specificity"])
-            ax.plot(specificity, efficiency, color=col,  label=f"{c[5:]}")
+            ax.plot(specificity, efficiency, color=col, label=f"{c[5:]}")
 
         ax.set_xlabel("False Positive Rate")
         ax.set_ylabel("True Positive Rate")

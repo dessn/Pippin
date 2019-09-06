@@ -2,7 +2,6 @@ import inspect
 import shutil
 import subprocess
 import os
-
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, mkdirs, get_config
 from pippin.task import Task
@@ -44,7 +43,7 @@ class BiasCor(ConfigBasedExecutable):
         while a_genversion.endswith("_"):
             a_genversion = a_genversion[:-1]
         self.output["subdir"] = a_genversion
-        self.output["muopts"] = (self.config.get("MUOPTS", {}).keys())
+        self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):

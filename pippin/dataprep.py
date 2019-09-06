@@ -9,8 +9,8 @@ from pippin.task import Task
 class DataPrep(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
     """ Smack the data into something that looks like the simulated data
 
-
     """
+
     def __init__(self, name, output_dir, options, dependencies=None):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
@@ -71,6 +71,7 @@ fi
 
   &END
 """
+
     def _get_types(self):
         self.logger.warning("Data does not report types, let's hope the defaults are up to date!")
         return None
@@ -91,12 +92,7 @@ fi
 
         command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path)
 
-        format_dict = {
-            "job_name": self.job_name,
-            "log_file": self.logfile,
-            "path_to_task": self.path_to_task,
-            "done_file": self.done_file
-        }
+        format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(command_string + final_slurm)

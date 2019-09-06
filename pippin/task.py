@@ -17,10 +17,7 @@ class Task(ABC):
             dependencies = []
         self.dependencies = dependencies
         self.hash = None
-        self.output = {
-            "name": name,
-            "output_dir": output_dir
-        }
+        self.output = {"name": name, "output_dir": output_dir}
         self.hash_file = os.path.join(self.output_dir, "hash.txt")
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.start_time = None

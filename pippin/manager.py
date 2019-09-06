@@ -21,18 +21,7 @@ from pippin.task import Task
 
 
 class Manager:
-    stages = {
-        "DATAPREP": 0,
-        "SIM": 1,
-        "LCFIT": 2,
-        "CLASSIFY": 3,
-        "AGGREGATE": 4,
-        "MERGE": 5,
-        "BIASCOR": 6,
-        "CREATE_COV": 7,
-        "COSMOMC": 8,
-        "ANALYSE": 9
-    }
+    stages = {"DATAPREP": 0, "SIM": 1, "LCFIT": 2, "CLASSIFY": 3, "AGGREGATE": 4, "MERGE": 5, "BIASCOR": 6, "CREATE_COV": 7, "COSMOMC": 8, "ANALYSE": 9}
 
     def __init__(self, filename, config_path, config, message_store):
         self.logger = get_logger()
@@ -91,9 +80,18 @@ class Manager:
         cosmomc_tasks = self.get_cosmomc_tasks(config, createcov_tasks)
         analyse_tasks = self.get_analyse_tasks(config, cosmomc_tasks)
 
-        total_tasks = data_tasks + sim_tasks + lcfit_tasks + classification_tasks + \
-                      aggregator_tasks + merger_tasks + biascor_tasks + \
-                      createcov_tasks + cosmomc_tasks + analyse_tasks
+        total_tasks = (
+            data_tasks
+            + sim_tasks
+            + lcfit_tasks
+            + classification_tasks
+            + aggregator_tasks
+            + merger_tasks
+            + biascor_tasks
+            + createcov_tasks
+            + cosmomc_tasks
+            + analyse_tasks
+        )
 
         self.logger.info("")
         self.logger.notice("Listing tasks:")
@@ -206,8 +204,7 @@ class Manager:
                     clas_output_dir = self._get_clas_output_dir(sim_name, fit_name, clas_name)
                     cc = cls(clas_name, clas_output_dir, deps, mode, options)
                     cc.set_stage(stage)
-                    self.logger.info(
-                        f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                    self.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
                     num_gen += 1
                     tasks.append(cc)
             if num_gen == 0:
@@ -232,7 +229,11 @@ class Manager:
                 if mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
                 agg_name2 = f"{agg_name}_{sim_task.name}"
-                deps = [c for c in classifier_tasks if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task]
+                deps = [
+                    c
+                    for c in classifier_tasks
+                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
+                ]
                 if len(deps) == 0:
                     self.logger.error(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
                 else:

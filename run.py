@@ -1,11 +1,9 @@
 import argparse
-import inspect
 import os
 import yaml
 import logging
 import coloredlogs
-
-from pippin.config import get_config, mkdirs, get_logger, get_output_dir
+from pippin.config import mkdirs, get_logger, get_output_dir
 from pippin.manager import Manager
 
 
@@ -55,26 +53,17 @@ if __name__ == "__main__":
     def notice(self, message, *args, **kws):
         if self.isEnabledFor(NOTICE_LEVELV_NUM):
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
+
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
-    logging.basicConfig(
-        level=level,
-        format=fmt,
-        handlers=[
-            logging.FileHandler(logging_filename),
-            logging.StreamHandler(),
-            message_store,
-        ]
-    )
+    logging.basicConfig(level=level, format=fmt, handlers=[logging.FileHandler(logging_filename), logging.StreamHandler(), message_store])
     coloredlogs.install(
         level=level,
         fmt=fmt,
         reconfigure=True,
-        level_styles=coloredlogs.parse_encoded_styles(
-            'debug=8;notice=green;warning=yellow;error=red,bold;critical=red,inverse')
-
+        level_styles=coloredlogs.parse_encoded_styles("debug=8;notice=green;warning=yellow;error=red,bold;critical=red,inverse"),
     )
-    logging.getLogger('matplotlib').setLevel(logging.ERROR)
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
@@ -92,4 +81,3 @@ if __name__ == "__main__":
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.execute()
-
