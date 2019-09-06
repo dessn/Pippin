@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-python run.py "$@"
+DIR="$(cd "$(dirname "$0")" && pwd)"
+python $DIR/run.py "$@"
