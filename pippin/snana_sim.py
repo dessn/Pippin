@@ -34,6 +34,13 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
 
+        # Try to determine how many jobs will be put in the queue
+        try:
+            property = self.config.get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")
+            self.num_jobs = int(property.split()[-1])
+        except Exception:
+            self.num_jobs = 10
+
         self.output["genversion"] = self.genversion
 
     def write_input(self, force_refresh):

@@ -13,6 +13,27 @@ class ConfigBasedExecutable(Task):
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
 
+    def get_property(self, name, assignment=None):
+        """ Get a property from the base file
+
+        Parameters
+        ----------
+        name : str
+        assignment : str, optional
+
+        Returns
+        -------
+        property : str
+
+        """
+        if assignment is None:
+            assignment = self.default_assignment
+
+        for line in self.base:
+            if line.startswith(name):
+                return line.split(assignment)[1]
+        return None
+
     def set_property(self, name, value, section_start=None, section_end=None, assignment=None, only_add=False):
         """ Ensures the property name value pair is set in the base file.
         

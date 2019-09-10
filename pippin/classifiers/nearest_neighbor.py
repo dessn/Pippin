@@ -10,20 +10,19 @@ from pippin.task import Task
 
 
 class NearestNeighborClassifier(Classifier):
-
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.passed = False
         self.num_jobs = 40
-        self.outfile_train = f'{output_dir}/NN_trainResult.out'
-        self.outfile_predict = f'{output_dir}/predictions.out'
+        self.outfile_train = f"{output_dir}/NN_trainResult.out"
+        self.outfile_predict = f"{output_dir}/predictions.out"
         self.logging_file = os.path.join(output_dir, "output.log")
-        self.splitfit_output_dir = f'{self.output_dir}/output'
+        self.splitfit_output_dir = f"{self.output_dir}/output"
 
         self.num_check = 0
         self.max_check = 5
         self.options = options
-        self.nn_options = 'z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04'
+        self.nn_options = "z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04"
         self.train_info_local = {}
 
     def train(self, force_refresh):
@@ -45,6 +44,7 @@ class NearestNeighborClassifier(Classifier):
     def prepare_train_job(self, force_refresh):
         self.logger.debug("Preparing NML file for Nearest Neighbour training")
         fit_output = self.get_fit_dependency()
+        self.num_jobs = self.get_fit_dependency(output=False).num_jobs
 
         genversion = fit_output["genversion"]
         fitres_dir = fit_output["fitres_dir"]
@@ -55,14 +55,11 @@ class NearestNeighborClassifier(Classifier):
         temp_dir_obj = tempfile.TemporaryDirectory()
         temp_dir = temp_dir_obj.name
 
-        outfile_train = f'{self.name}_train.out'
-        nml_file_train1 = f'{temp_dir}/{genversion}-2.nml'
-        nml_file_train2 = f'{self.output_dir}/{genversion}-2.nml'
+        outfile_train = f"{self.name}_train.out"
+        nml_file_train1 = f"{temp_dir}/{genversion}-2.nml"
+        nml_file_train2 = f"{self.output_dir}/{genversion}-2.nml"
 
-        train_info_local = {
-            "outfile_NNtrain": outfile_train,
-            "nml_file_NNtrain": nml_file_train2,
-        }
+        train_info_local = {"outfile_NNtrain": outfile_train, "nml_file_NNtrain": nml_file_train2}
 
         # construct sed to copy original NMLFILE and to
         #   + replace OUTDIR:
@@ -72,17 +69,17 @@ class NearestNeighborClassifier(Classifier):
         #     copy NN_trainPar up to where pippin can find it
         #
         # TODO: Check with Rick if the FITOPT000.ROOT is needed / should be hardcoded
-        afterBurn = f'nearnbr_maxFoM.exe FITOPT000.ROOT -truetype 1 -outfile {outfile_train} ; cp {outfile_train} {self.outfile_train}'
+        afterBurn = f"nearnbr_maxFoM.exe FITOPT000.ROOT -truetype 1 -outfile {outfile_train} ; cp {outfile_train} {self.outfile_train}"
 
-        sedstr = 'sed'
-        sedstr += (r" -e '/OUTDIR:/a\OUTDIR: %s' " % self.splitfit_output_dir)
+        sedstr = "sed"
+        sedstr += r" -e '/OUTDIR:/a\OUTDIR: %s' " % self.splitfit_output_dir
         sedstr += r" -e '/OUTDIR:/d'"
         sedstr += r" -e '/DONE_STAMP:/d'"
         sedstr += r" -e '/SNTABLE_LIST/a\    ROOTFILE_OUT = \"bla.root\"'"
         sedstr += r" -e '/_OUT/d '"
-        sedstr += (r" -e '/VERSION:/a\VERSION_AFTERBURNER: %s'" % afterBurn)
-        sedstr += (r" -e '/VERSION:/a\DONE_STAMP: %s'" % self.done_file)
-        sed_command = ("%s %s > %s" % (sedstr, nml_file_orig, nml_file_train1))
+        sedstr += r" -e '/VERSION:/a\VERSION_AFTERBURNER: %s'" % afterBurn
+        sedstr += r" -e '/VERSION:/a\DONE_STAMP: %s'" % self.done_file
+        sed_command = "%s %s > %s" % (sedstr, nml_file_orig, nml_file_train1)
 
         # use system call to apply sed command
         # self.logger.debug(f"Running sed command {sed_command}")
@@ -95,11 +92,11 @@ class NearestNeighborClassifier(Classifier):
 
         # check that expected FITRES ref file is really there.
         if not os.path.exists(fitres_file):
-            self.logger.error('Cannot find expected FITRES file at {fitres_path}')
+            self.logger.error("Cannot find expected FITRES file at {fitres_path}")
             return None
 
         # open NML file in append mode and tack on NNINP namelist
-        with open(nml_file_train1, 'a') as f:
+        with open(nml_file_train1, "a") as f:
             f.write("\n# NNINP below added by prepare_NNtrainJob\n")
             f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
@@ -127,7 +124,7 @@ class NearestNeighborClassifier(Classifier):
 
     def run_train_job(self):
         cmd = ["split_and_fit.pl", self.train_info_local["nml_file_NNtrain"], "NOPROMPT"]
-        self.logger.debug(f'Launching training via {cmd}')
+        self.logger.debug(f"Launching training via {cmd}")
         with open(self.logging_file, "w") as f:
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
@@ -142,7 +139,7 @@ class NearestNeighborClassifier(Classifier):
                     self.logger.error("Done file has FAILURE stamp!")
                     return Task.FINISHED_FAILURE
             if self.mode == Classifier.TRAIN:
-                tarball = os.path.join(outdir, 'SPLIT_JOBS_LCFIT.tar.gz')
+                tarball = os.path.join(outdir, "SPLIT_JOBS_LCFIT.tar.gz")
                 if os.path.exists(tarball):
                     return Task.FINISHED_SUCCESS
                 else:
@@ -210,10 +207,10 @@ class NearestNeighborClassifier(Classifier):
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
 
-            job_name = 'nearnbr_apply.exe'
+            job_name = "nearnbr_apply.exe"
             inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'
-            outArgs = f'-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}'
-            cmd_job = ('%s %s %s' % (job_name, inArgs, outArgs))
+            outArgs = f"-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}"
+            cmd_job = "%s %s %s" % (job_name, inArgs, outArgs)
             self.logger.debug(f"Executing command {cmd_job}")
             with open(self.logging_file, "w") as f:
                 val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)

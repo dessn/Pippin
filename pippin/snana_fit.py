@@ -47,6 +47,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["lc_output_dir"] = self.lc_output_dir
 
         self.options = self.config.get("OPTS", {})
+        # Try to determine how many jobs will be put in the queue
+        try:
+            property = self.options.get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")
+            self.num_jobs = int(property.split()[-1])
+        except Exception:
+            self.num_jobs = 10
 
     def get_sim_dependency(self):
         for t in self.dependencies:

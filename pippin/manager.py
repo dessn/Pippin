@@ -37,6 +37,7 @@ class Manager:
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
+        self.num_jobs_queue = 0
 
         self.start = None
         self.finish = None
@@ -530,6 +531,7 @@ class Manager:
         c = self.run_config
 
         self.tasks = self.get_tasks(c)
+        self.num_jobs_queue = 0
         running_tasks = []
         done_tasks = []
         failed_tasks = []
@@ -550,8 +552,7 @@ class Manager:
                 small_wait = small_wait or completed
 
             # Submit new jobs if needed
-            num_running = self.get_num_running_jobs()
-            while num_running < self.max_jobs:
+            while self.num_jobs_queue < self.max_jobs:
                 t = self.get_task_to_run(self.tasks, done_tasks)
                 if t is not None:
                     self.logger.info("")
@@ -559,7 +560,7 @@ class Manager:
                     self.logger.notice(f"LAUNCHING: {t}")
                     started = t.run(self.get_force_refresh(t))
                     if started:
-                        num_running += t.num_jobs
+                        self.num_jobs_queue += t.num_jobs
                         self.logger.notice(f"LAUNCHED: {t}")
                         running_tasks.append(t)
                         completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
@@ -593,6 +594,7 @@ class Manager:
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
             chown_dir(t.output_dir)
+            self.num_jobs_queue -= t.num_jobs
             return True
         return False
 
