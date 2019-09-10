@@ -102,7 +102,7 @@ class Aggregator(Task):
                                 type_df = dataframe
                             else:
                                 type_df = pd.concat([type_df, dataframe])
-                        type_df.drop_duplicates(subset=[self.id], inplace=True)
+                        type_df.drop_duplicates(subset=self.id, inplace=True)
                         self.logger.debug(f"Type dataframe has shape {type_df.shape}")
                 df = pd.merge(df, type_df, on=self.id)
                 self.logger.debug(f"Combined dataframe has shape {df.shape}")
