@@ -1,0 +1,49 @@
+# To match Li 2011 Table 6 after removing some templates.
+# MAGOFF = 2.100 -> 1.500 (0.6 mag brighter)
+#
+GENMODEL:  NON1ASED
+PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/NONIA_spline_withz_PLASTICC_models/NON1ASED.SNII-Templates
+DNDZ:  CC_S15                   # Strolger 2015 (1509.06574)
+GENTYPE:   20
+
+# 70% of CC are type II ...
+DNDZ_ALLSCALE:    0.35          # share with II-pca model
+GENRANGE_TREST:  -50 300
+
+INPUT_FILE_INCLUDE:  djbrout_sdss/SIMGEN_TEMPLATE_SDSS.input
+
+
+# Some of the models plateau at	end of epoch range,
+# so force min mag/day slope for late-time extrapolation.
+MINSLOPE_EXTRAPMAG_LATE: 0.01
+
+# -----------------------------------------
+# 
+# User-generated comments: 
+#   MAGOFF and MAGSMEAR adjusted to match m_R peak and sigma 
+#   in Table 6 of Li et al, 2010 (arXiv:1006.4612) 
+#    
+#
+
+NON1A_KEYS: 5 
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE 
+NON1A:    201   0.0246   1.500     1.050     2    # IIP  (SDSS-000018)
+NON1A:    204   0.0246   1.500     1.050     2    # IIP  (SDSS-003818)
+NON1A:    208   0.0246   1.500     1.050     2    # IIP  (SDSS-013376)
+NON1A:    210   0.0246   1.500     1.050     2    # IIP  (SDSS-014450)
+NON1A:    213   0.0246   1.500     1.050     2    # IIP  (SDSS-014599)
+NON1A:    214   0.0246   1.500     1.050     2    # IIP  (SDSS-015031)
+NON1A:    215   0.0246   1.500     1.050     2    # IIP  (SDSS-015320)
+NON1A:    216   0.0246   1.500     1.050     2    # IIP  (SDSS-015339)
+NON1A:    220   0.0246   1.500     1.050     2    # IIP  (SDSS-017862)
+NON1A:    221   0.0246   1.500     1.050     2    # IIP  (SDSS-018109)
+NON1A:    222   0.0246   1.500     1.050     2    # IIP  (SDSS-018297)
+NON1A:    223   0.0246   1.500     1.050     2    # IIP  (SDSS-018408)
+NON1A:    224   0.0246   1.500     1.050     2    # IIP  (SDSS-018441)
+NON1A:    225   0.0246   1.500     1.050     2    # IIP  (SDSS-018457)
+NON1A:    226   0.0246   1.500     1.050     2    # IIP  (SDSS-018590)
+NON1A:    227   0.0246   1.500     1.050     2    # IIP  (SDSS-018596)
+NON1A:    228   0.0246   1.500     1.050     2    # IIP  (SDSS-018700)
+NON1A:    229   0.0246   1.500     1.050     2    # IIP  (SDSS-018713)
+NON1A:    230   0.0246   1.500     1.050     2    # IIP  (SDSS-018734)
+NON1A:    235   0.0246   1.500     1.050     2    # IIP  (SDSS-020038)

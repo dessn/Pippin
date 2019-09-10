@@ -1,0 +1,71 @@
+# ========================================
+# DES sim file SALT2-SNIa: for BCD paper
+#
+#
+# ===========================================
+
+
+SIMLIB_FILE:   /project2/rkessler/SURVEYS/DES/USERS/djbrout/Pippin/pippin/data_files/djbrout_sdss/SDSS_3year.SIMLIB 
+
+# ----------------- host info ---------------
+HOSTLIB_FILE:   /project2/rkessler/SURVEYS/SDSS/USERS/BAP37/BBC_paper/NNinp_CCx1_Dan/BRODIE_WRONGHOST_1.HOSTLIB
+HOSTLIB_GENRANGE_NSIGZ: -3. +3.  # not yet implemented
+HOSTLIB_MSKOPT:     8     
+HOSTLIB_STOREPAR: r_obs
+
+
+SOLID_ANGLE:  0.08     # 200ish sq deg
+
+EXPOSURE_TIME: 1
+
+NGENTOT_LC:  1000
+GENVERSION:  RKDES_SALT2_CHANGEME
+GENSOURCE:   RANDOM   
+
+GENFILTERS:  ugriz
+KCOR_FILE:   SDSS/SDSS_Doi2010/kcor_SDSS_Bessell90_BD17.fits
+
+# selection criteria for generation
+GENRANGE_PEAKMJD: 53600.0   54450.0  # Y1 only
+GENSIGMA_SEARCH_PEAKMJD:  1.0     # sigma-smearing for  SEARCH_PEAKMJD (days)
+
+GENRANGE_TREST:  -20  60
+
+GENRANGE_REDSHIFT: 0.032 .598
+GENSIGMA_REDSHIFT:  0.0005 
+
+RANSEED: 12945       # random number seed
+
+# smear flags: 0=off, 1=on
+SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  1  # smear zero-point with zptsig
+
+
+APPLY_SEARCHEFF_OPT: 5
+NEWMJD_DIF: 0.4
+
+SEARCHEFF_SPEC_FILE:   SEARCHEFF_SPEC_ZERO.DAT 
+SEARCHEFF_zHOST_FILE:  /project2/rkessler/SURVEYS/SDSS/USERS/BAP37/SEARCHEFF_zHOST_SDSS_PerfEff.DAT 
+#SEARCHEFF_zHOST_FILE: SEARCHEFF_ZHOST_MAG.DAT
+
+APPLY_CUTWIN_OPT: 1
+CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
+CUTWIN_SNRMAX:   5 griz 2 -20. 60.  # 3 filters with SNRAMX>3
+
+# cosmological params for lightcurve generation and redshift distribution
+OMEGA_MATTER:  0.3
+OMEGA_LAMBDA:  0.7
+W0_LAMBDA:    -1.00
+H0:           70.0   
+
+
+FORMAT_MASK:  32  # 2=terse  8=BLIND  16=CIDRAN; 32=FITS
+
+EXPOSURE_TIME:  1
+
+GENRANGE_RA:      -180.   360.0   deg
+GENRANGE_DECL:    -90.   90 deg 
+
+# negative MWEBV-option ==> correct FLUXCAL with map and central filter wave
+OPT_MWEBV: -3         # SFD98 + Schalfly2011
+OPT_MWCOLORLAW: 99   # Fitzpatrick

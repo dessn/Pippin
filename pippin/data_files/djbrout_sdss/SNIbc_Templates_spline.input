@@ -1,0 +1,42 @@
+# July 19 2018: remove 270 due to strange LC artifacts
+# Aug 12 2018: remove SDSS-013195, SDSS-014475, SNLS-04D1la
+#                 (artifact warning from Justin)
+#
+GENMODEL:  NON1ASED
+PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/NONIA_spline_withz_PLASTICC_models/NON1ASED.SNIbc-Templates
+DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
+DNDZ_ALLSCALE:   0.15        # 30% of CC are type Ib/c, half for hybrid
+GENRANGE_TREST:	 -50 300
+GENTYPE:   30
+
+INPUT_FILE_INCLUDE:  djbrout_sdss/SIMGEN_TEMPLATE_SDSS.input
+
+
+# Some of the models plateau at	end of epoch range,
+# so force min mag/day slope for late-time extrapolation.
+MINSLOPE_EXTRAPMAG_LATE: 0.01
+
+# -----------------------------------------
+# User-generated comments: 
+#   MAGOFF and MAGSMEAR adjusted to match m_R peak and sigma 
+#   in Table 6 of Li et al, 2010 (arXiv:1006.4612) 
+#    
+
+NON1A_KEYS: 5 
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE 
+NON1A:    103   0.0191   0.770     0.410     3    # Ib   (CSP-2004gv)
+NON1A:    104   0.0191   2.670     0.410     3    # Ib   (CSP-2006ep)
+NON1A:    105   0.0191  -0.628     0.410     3    # Ib   (CSP-2007Y)
+NON1A:    202   0.0191   0.346     0.410     3    # Ib   (SDSS-000020)
+NON1A:    203   0.0191  -0.099     0.410     3    # Ib   (SDSS-002744)
+NON1A:    212   0.0191   0.950     0.410     3    # Ib   (SDSS-014492)
+NON1A:    234   0.0191   0.281     0.410     3    # Ib   (SDSS-019323)
+
+
+NON1A:    022   0.0167   1.480     1.100     3    # Ic   (SNLS-04D4jv)
+NON1A:    101   0.0167   1.480     1.100     3    # Ic   (CSP-2004fe)
+NON1A:    102   0.0167   1.480     1.100     3    # Ic   (CSP-2004gq)
+NON1A:    205   0.0167   1.480     1.100     3    # Ic   (SDSS-004012)
+NON1A:    217   0.0167   1.480     1.100     3    # Ic   (SDSS-015475)
+NON1A:    218   0.0167   1.480     1.100     3    # Ic   (SDSS-017548)
+

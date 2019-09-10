@@ -10,7 +10,7 @@ from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
-from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs
+from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs, chown_dir
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -592,6 +592,7 @@ class Manager:
                 done_tasks.append(t)
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+            chown_dir(t.output_dir)
             return True
         return False
 
