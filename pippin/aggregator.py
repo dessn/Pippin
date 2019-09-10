@@ -83,7 +83,7 @@ class Aggregator(Task):
                 else:
                     self.logger.debug(f"Merging on column {self.id} for file {f}")
                     df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
-
+                print("AAA ", f, df.shape)
             if self.include_type:
                 self.logger.info("Finding original types")
                 s = self.get_underlying_sim_task()
