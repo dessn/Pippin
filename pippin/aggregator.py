@@ -279,6 +279,57 @@ class Aggregator(Task):
             fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
             self.logger.info(f"Prob threshold plot saved to {filename}")
 
+    def _plot_comparison(self, df):
+        self.logger.debug("Making comparison plot")
+        import matplotlib.pyplot as plt
+
+        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+
+        n = len(columns)
+        scale = 1.0
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
+        lim = (0, 1)
+        bins = np.linspace(lim[0], lim[1], 51)
+
+        for i, label1 in enumerate(columns):
+            for j, label2 in enumerate(columns):
+                ax = axes[i, j]
+                if i < j:
+                    ax.axis("off")
+                    continue
+                elif i == j:
+                    h, _, _ = ax.hist(df[label1], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=self.colours[i])
+                    ax.hist(df[label1], bins=bins, histtype="step", linewidth=1.5, color=self.colours[i])
+                    ax.set_yticklabels([])
+                    ax.tick_params(axis="y", left=False)
+                    ax.set_xlim(*lim)
+                    ax.spines["right"].set_visible(False)
+                    ax.spines["top"].set_visible(False)
+                    if j == 0:
+                        ax.spines["left"].set_visible(False)
+                    if j == n - 1:
+                        ax.set_xlabel(label1, fontsize=12)
+                    else:
+                        a1 = np.array(df[label2])
+                        a2 = np.array(df[label1])
+                        ax.scatter(a1, a2, s=2, c=df["SNTYPE"])
+                        ax.set_xlim(*lim)
+                        ax.set_ylim(*lim)
+                        ax.plot(list(lim), list(lim), c="k", lw=1, alpha=0.8, ls=":")
+
+                        if j != 0:
+                            ax.set_yticklabels([])
+                            ax.tick_params(axis="y", left=False)
+                        else:
+                            ax.set_ylabel(label1, fontsize=12)
+                        if i == n - 1:
+                            ax.set_xlabel(label2, fontsize=12)
+        plt.subplots_adjust(hspace=0.0, wspace=0)
+        if self.output_dir:
+            filename = os.path.join(self.output_dir, "plt_scatter.png")
+            fig.savefig(filename, bbox_inches="tight", dpi=300, transparent=True)
+            self.logger.info(f"Prob scatter plot saved to {filename}")
+
     def _plot(self, df):
         if self.type_name not in df.columns:
             self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
@@ -291,6 +342,7 @@ class Aggregator(Task):
             self._plot_thresholds(df)
             self._plot_roc(df)
             self._plot_pr(df)
+            self._plot_comparison(df)
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
