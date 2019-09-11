@@ -32,8 +32,7 @@ class SuperNNovaClassifier(Classifier):
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
-        assert self.variant in ["vanilla", "variational", "bayesian"], \
-            f"Variant {self.variant} is not vanilla, variational or bayesian"
+        assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
 
 #SBATCH --job-name={job_name}
@@ -85,7 +84,6 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         return t["types"]
 
     def classify(self, training, force_refresh):
-        use_photometry = self.options.get("USE_PHOTOMETRY", False)
         model = self.options.get("MODEL")
         model_path = ""
         if not training:
@@ -101,7 +99,28 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
 
         types = self.get_types()
         if types is None:
-            types = OrderedDict({"1": "Ia", "0": "unknown", "2": "SNIax", "3": "SNIa-pec", "20": "SNIIP", "21": "SNIIL", "22": "SNIIn", "29": "SNII", "32": "SNIb", "33": "SNIc", "39": "SNIbc", "41": "SLSN-I", "42": "SLSN-II", "43": "SLSN-R", "80": "AGN", "81": "galaxy", "98": "None", "99": "pending"})
+            types = OrderedDict(
+                {
+                    "1": "Ia",
+                    "0": "unknown",
+                    "2": "SNIax",
+                    "3": "SNIa-pec",
+                    "20": "SNIIP",
+                    "21": "SNIIL",
+                    "22": "SNIIn",
+                    "29": "SNII",
+                    "32": "SNIb",
+                    "33": "SNIc",
+                    "39": "SNIbc",
+                    "41": "SLSN-I",
+                    "42": "SLSN-II",
+                    "43": "SLSN-R",
+                    "80": "AGN",
+                    "81": "galaxy",
+                    "98": "None",
+                    "99": "pending",
+                }
+            )
         str_types = json.dumps(types)
 
         sim_dep = self.get_simulation_dependency()
@@ -129,10 +148,10 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
             "variant": variant,
             "cyclic": cyclic,
             "model": "" if training else f"--model_files {model_path}",
-            "phot": "" if not use_photometry else "--source_data photometry",
+            "phot": "",
             "test_or_train": "" if training else "--data_testing",
             "done_file": self.done_file,
-            "clump": clump_txt
+            "clump": clump_txt,
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
@@ -182,23 +201,17 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
                         dataframe = pickle.load(f)
                         if self.variant in ["variational", "bayesian"]:
                             final_dataframe = dataframe[["SNID", "all_class0_median", "all_class0_std"]]
-                            final_dataframe = final_dataframe.rename(columns={
-                                "all_class0_median": self.get_prob_column_name(),
-                                "all_class0_std": self.get_prob_column_name() + "_ERR",
-                            })
+                            final_dataframe = final_dataframe.rename(
+                                columns={"all_class0_median": self.get_prob_column_name(), "all_class0_std": self.get_prob_column_name() + "_ERR"}
+                            )
                         else:
                             final_dataframe = dataframe[["SNID", "all_class0"]]
-                            final_dataframe = final_dataframe.rename(columns={
-                                "all_class0": self.get_prob_column_name()
-                            })
+                            final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
                         final_dataframe.to_csv(new_pred_file, index=False, float_format="%0.4f")
                         self.logger.info(f"Predictions file can be found at {new_pred_file}")
                 chown_dir(self.output_dir)
 
-            self.output.update({
-                "model_filename": new_model_file,
-                "predictions_filename": new_pred_file
-            })
+            self.output.update({"model_filename": new_model_file, "predictions_filename": new_pred_file})
             return Task.FINISHED_SUCCESS
         else:
             num_jobs = self.num_jobs if squeue is None else len([i for i in squeue if self.job_base_name in i])
@@ -212,4 +225,4 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
 
     @staticmethod
     def get_requirements(options):
-        return True, not options.get("USE_PHOTOMETRY", False)
+        return True, False

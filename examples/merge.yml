@@ -1,0 +1,6 @@
+MERGE:
+  MERGE:
+
+# So this one doesn't really have any options yet. Its separate from the aggregation because some classifiers
+# like SNN only need the sim and not lcfits.
+# All it does is add the probability columns from aggregation into the fitres files from light curve fitting.

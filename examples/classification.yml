@@ -1,0 +1,90 @@
+CLASSIFICATION:
+  SNNVANILLATRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train  # Mode is either train or predict.
+    MASK_SIM: TRAINING  # You can use MASK_SIM to mask on sim name, MASK_FIT to mask on lcfit name, and MASK to mask on both
+
+  SNNVANILLATEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      MODEL: SNNVANILLATRAIN  # This model should match a name of a *previously declared* classifier. Order is important in this one.
+
+  SNNVARIATIONALTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      VARIANT: variational # Variants are vanilla, variational and bayesian
+
+  SNNVARIATIONALTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      MODEL: SNNVARIATIONALTRAIN
+      VARIANT: variational
+
+  SNNBAYESIANTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      VARIANT: bayesian
+
+  SNNBAYESIANTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      MODEL: SNNBAYESIANTRAIN
+      VARIANT: bayesian
+
+  FITPROBTEST:  # This classifier just uses the fitprob column. Useful as a baseline... everything should be better than this.
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+    MASK: TEST
+
+  NNTRAIN:  # Rick's Nearest Neighbour Classifier. Currently not really configurable.
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  NNTEST:
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+        MODEL: NNTRAIN
+
+  SNIRFTRAIN:  # The classifier from Eve, Steve and the Argonne team. Random forest
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+      MODEL: SNIRFTRAIN
+
+  SNIRFFEATURETRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAIN
+    OPTS:
+      FEATURES: x1 c zHD FITPROB  # You can specify columns from the FITRES file to use as features. By default uses x1 c zHD x1ERR cERR PKMJDERR"
+
+  SNIRFFEATURETEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+      MODEL: SNIRFFEATURETRAIN
+      FEATURES: x1 c zHD FITPROB
+
+  UNITY:
+    CLASSIFIER: UnityClassifier  # The unity classifier is used for spec samples - just returns 1.0 for everything.
+    MODE: predict

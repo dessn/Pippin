@@ -1,0 +1,6 @@
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW  # Partial match to cosmomc name. Used in this case to plot contours for everything fitting OMW cosmology
+    OPTS:
+      BLIND: w  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
+      COVOPTS: ALL  # Optional. Covopts to match. Single or list. Exact match. Dont set to get everything

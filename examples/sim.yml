@@ -1,0 +1,70 @@
+SIM:
+  LOWZSIM:
+    IA_G10_LOWZ:  # Must have a sim type that starts with IA_ or is called exactly IA. Its how it gets divided into Ia or contaminant.
+      BASE: sn_ia_salt2_g10_lowz.input
+
+  DESSIM:
+    IA_G10_DES3YR:
+      BASE: sn_ia_salt2_g10_des3yr.input
+
+  CONTAMINATED:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+    IAX:
+      BASE: sn_iax.input
+      DNDZ_ALLSCALE: 3.0  # You can overwrite keys in the .input file like so
+    IA91BG:
+      BASE: sn_ia91bg.input
+      DNDZ_ALLSCALE: 3.0
+    IBC_MOSFIT:
+      BASE: sn_ibc_mosfit.input
+      DNDZ_ALLSCALE: 0.25
+    IBC_TEMPLATES:
+      BASE: sn_ibc_templates.input
+      DNDZ_ALLSCALE: 17.0
+    II_NMF:
+      BASE: sn_ii_nmf.input
+      DNDZ_ALLSCALE: 5.0
+
+  LOWZBIASCOR:
+    IA_G10_LOWZ:
+      BASE: sn_ia_salt2_g10_lowz.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:  # You can add global modifiers like so
+      NGEN_UNIT: 5
+      RANSEED_REPEAT: 40 12345
+
+  DESBIASCOR:
+    IA_G10_DES3YR:
+      BASE: sn_ia_salt2_g10_des3yr.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 5
+      RANSEED_REPEAT: 40 12345
+
+  BATCH_INFO_EXAMPLE:
+    IA_G10_DES3YR:
+      BASE: djbrout_spec_test/SNIa-SALT2.input
+    II:
+      BASE: djbrout_spec_test/SNII_Templates.input
+    Ibc:
+      BASE: djbrout_spec_test/SNIbc_Templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+      SIMLIB_FILE: $PLASTICC_MODELS/LSST_OBSERVATIONS_DDF.SIMLIB
+      SOLID_ANGLE: 5.468
+      SEARCHEFF_zHOST_FILE: $PLASTICC_MODELS/LSST+4MOST_zHOST_DDF.TEXT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10  # To get around queues, if you have small sims you can change the batch_info to submit it to a smaller/faster queue

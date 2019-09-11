@@ -1,0 +1,12 @@
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw  # Check this matches the name of a file in the pippin/data_files/cosmomc_templates directory
+      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching on the covopts from CREATE_COV
+      NUM_WALKERS: 8  # How many walkers to use. optional.
+
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 8

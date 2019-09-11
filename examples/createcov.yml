@@ -1,0 +1,16 @@
+CREATE_COV:
+  ALL:  # Will match to all bias cor tasks
+    OPTS:
+      COVOPTS:  # note you'll get an 'ALL' covopt no matter what
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"  # This refers to the default biascor sims
+
+  SYSTEMATICS:
+    OPTS:
+      FITOPT_SCALES:  # Optional
+        cal: 2.0  # checks if its in the label, not an exact match. So this would scale all *cal* fitopts by a factor of two
+      MUOPT_SCALES: # Optional - used to construct SYSFILE input
+        C11: 0.5 # This should exact match a MUOPT label in the biascor step. In this case, scales the C11 MUOPT by a half
+      COVOPTS:  # note you'll get an 'ALL' covopt no matter what
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[CALIBRATION] [+cal,=DEFAULT]"  # This gets passed directly in, not 100% sure how the syntax actually works...
+        - "[SCATTER] [=DEFAULT,=C11]"  # The left hand side are FITOPT, right hand side is MUOPT

@@ -1,0 +1,6 @@
+AGGREGATION:
+  AGG:
+    MASK: TEST  # MASK applies on both the sim/data and classifier name. MASK_CLAS and MASK_SIM are available to split it out
+    OPTS:
+      INCLUDE_TYPE: True  # Includes the types (from photometry headers) in the output data file.
+      PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc.

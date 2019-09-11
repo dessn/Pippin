@@ -1,0 +1,12 @@
+DATAPREP:
+  DES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits # Point this to the dir with all the photometry in it
+
+  DESFAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
+  SDSS:
+    OPTS:
+      RAW_DIR: $SNDATA_ROOT/lcmerge/SDSS_allCandidates+BOSS
