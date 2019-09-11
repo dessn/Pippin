@@ -19,7 +19,11 @@ class SnirfClassifier(Classifier):
         self.job_base_name = os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
         self.model_pk_file = "modelpkl.pkl"
-        self.output_pk_file = os.path.join(self.output_dir,  self.model_pk_file)
+        self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
+        self.fitopt = options.get("FITOPT", "DEFAULT")
+        lcfit = self.get_fit_dependency()
+        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
+        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dir"], self.fitres_filename))
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -38,18 +42,8 @@ cd {path_to_classifier}
 python SNIRF.py {command_opts}
 """
 
-    def get_fits_file(self):
-        input = self.get_fit_dependency()
-        fitres_file = input["fitres_file"]
-        return fitres_file
-
     def classify(self, force_refresh, command):
-        format_dict = {
-            "job_name": self.job_base_name,
-            "conda_env": self.conda_env,
-            "path_to_classifier": self.path_to_classifier,
-            "command_opts": command
-        }
+        format_dict = {"job_name": self.job_base_name, "conda_env": self.conda_env, "path_to_classifier": self.path_to_classifier, "command_opts": command}
         slurm_script = self.slurm.format(**format_dict)
 
         old_hash = self.get_old_hash()
@@ -89,7 +83,7 @@ python SNIRF.py {command_opts}
             f"--restore "
             f"--pklfile {model} "
             f"--pklformat FITRES "
-            f"--test {self.get_fits_file()} "
+            f"--test {self.fitres_file} "
             f"--filedir {self.output_dir} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
@@ -106,7 +100,7 @@ python SNIRF.py {command_opts}
             f"--pklfile {self.output_pk_file} "
             f"--pklformat FITRES "
             f"--filedir {self.output_dir} "
-            f"--train {self.get_fits_file()} "
+            f"--train {self.fitres_file} "
             f"--done_file {self.done_file} "
             f"--use_filenames "
         )
@@ -135,7 +129,9 @@ python SNIRF.py {command_opts}
                             df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
                         self.output["predictions_filename"] = predictions_filename
                     else:
-                        self.output["model_filename"] = [os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)][0]
+                        self.output["model_filename"] = [
+                            os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)
+                        ][0]
                     return Task.FINISHED_SUCCESS
         return self.num_jobs
 

@@ -14,6 +14,22 @@ from pippin.task import Task
 
 
 class SNANALightCurveFit(ConfigBasedExecutable):
+    """
+
+    OUTPUTS:
+    ========
+        name: name given in the yml
+        output_dir: top level output directory
+        fitres_dir: dir containing the output fitres files.
+        nml_file: location to copied nml file
+        genversion: simulation genversion run against
+        sim_name: name of the underlying sim task
+        lc_output_dir: directory which contains fitres_dir and the simlogs dir
+        fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
+        fitres_file: path to the default FITOPT000.FITRES file
+
+    """
+
     def __init__(self, name, output_dir, sim_task, config, global_config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
 
@@ -45,6 +61,19 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["genversion"] = self.sim_version
         self.output["sim_name"] = sim_task.output["name"]
         self.output["lc_output_dir"] = self.lc_output_dir
+
+        # Loading fitopts
+        self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
+        with open(self.fitopts_file, "r") as f:
+            self.fitopts = list(f.read().splitlines())
+            self.logger.info(f"Loaded {len(self.fitopts)} fitopts file from {self.fitopts_file}")
+
+        # Map the fitopt outputs
+        mapped = {"DEFAULT": "FITOPT000.FITRES"}
+        for i, line in enumerate(self.fitopts):
+            label = line.split("[")[1].split("]")[0]
+            mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
+        self.output["fitopt_map"] = mapped
 
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
@@ -94,10 +123,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property(name, value, section_start="&FITINP", section_end="&END")
 
     def write_nml(self, force_refresh):
-        self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
-        with open(self.fitopts_file, "r") as f:
-            self.fitopts = list(f.read().splitlines())
-            self.logger.info(f"Loaded {len(self.fitopts)} fitopts file from {self.fitopts_file}")
 
         # Parse config, first SNLCINP and then FITINP
         for key, value in self.config.get("SNLCINP", {}).items():

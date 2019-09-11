@@ -85,6 +85,21 @@ CLASSIFICATION:
       MODEL: SNIRFFEATURETRAIN
       FEATURES: x1 c zHD FITPROB
 
+  SNIRFFITOPTTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAIN
+    OPTS:
+      FITOPT: SALT20_cal  # Can also use a FITRES file which isnt FITOPT000.FITRES. Just make sure the FITOPT option matches (exactly) a fitopt label.
+
+  SNIRFFITOPTTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+      MODEL: SNIRFFITOPTTRAIN
+      FITOPT: SALT20_cal
+
   UNITY:
     CLASSIFIER: UnityClassifier  # The unity classifier is used for spec samples - just returns 1.0 for everything.
     MODE: predict
