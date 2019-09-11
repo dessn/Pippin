@@ -204,3 +204,30 @@ fi
         else:
             self.logger.info("Hash check passed, not rerunning")
         return True
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
+
+        def _get_cosmomc_dir(base_output_dir, stage_number, name):
+            return f"{base_output_dir}/{stage_number}_COSMOMC/{name}"
+
+        tasks = []
+        key = "COSMOMC"
+        for cname in c.get(key, []):
+            config = c[key].get(cname, {})
+            options = config.get("OPTS", {})
+
+            mask = config.get("MASK_CREATE_COV", "")
+            for ctask in create_cov_tasks:
+                if mask not in ctask.name:
+                    continue
+                name = f"{cname}_{ctask.name}"
+                a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), options, [ctask])
+                Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(create_cov_tasks) == 0:
+                Task.fail_config(f"CosmoMC task {cname} has no create_cov task to run on!")
+
+        return tasks

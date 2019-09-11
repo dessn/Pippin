@@ -85,3 +85,79 @@ class Classifier(Task):
             return f"PROB_{self.get_unique_name()}"
         else:
             return m.output["prob_column_name"]
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        from pippin.classifiers.factory import ClassifierFactory
+
+        def _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, extra=None):
+            fit_name = "" if fit_name is None else "_" + fit_name
+            sim_name = "" if sim_name is None else "_" + sim_name
+            extra_name = "" if extra is None else "_" + extra
+            return f"{base_output_dir}/{stage_number}_CLAS/{clas_name}{sim_name}{fit_name}{extra_name}"
+
+        tasks = []
+        lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
+        sim_tasks = Task.get_task_of_type(prior_tasks, DataPrep, SNANASimulation)
+        for clas_name in c.get("CLASSIFICATION", []):
+            config = c["CLASSIFICATION"][clas_name]
+            name = config["CLASSIFIER"]
+            cls = ClassifierFactory.get(name)
+            options = config.get("OPTS", {})
+            mode = config["MODE"].lower()
+            assert mode in ["train", "predict"], "MODE should be either train or predict"
+            if mode == "train":
+                mode = Classifier.TRAIN
+            else:
+                mode = Classifier.PREDICT
+
+            needs_sim, needs_lc = cls.get_requirements(options)
+
+            runs = []
+            if needs_sim and needs_lc:
+                runs = [(l.dependencies[0], l) for l in lcfit_tasks]
+            elif needs_sim:
+                runs = [(s, None) for s in sim_tasks]
+            elif needs_lc:
+                runs = [(l.dependencies[0], l) for l in lcfit_tasks]
+            else:
+                Task.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
+
+            num_gen = 0
+            mask = config.get("MASK", "")
+            mask_sim = config.get("MASK_SIM", "")
+            mask_fit = config.get("MASK_FIT", "")
+            for s, l in runs:
+                sim_name = s.name if s is not None else None
+                fit_name = l.name if l is not None else None
+                if sim_name is not None and (mask not in sim_name or mask_sim not in sim_name):
+                    continue
+                if fit_name is not None and (mask not in fit_name or mask_fit not in fit_name):
+                    continue
+                deps = []
+                if s is not None:
+                    deps.append(s)
+                if l is not None:
+                    deps.append(l)
+
+                model = options.get("MODEL")
+                if model is not None:
+                    for t in tasks:
+                        if model == t.name:
+                            # deps.append(t)
+                            extra = t.get_unique_name()
+                            clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, extra=extra)
+                            cc = cls(clas_name, clas_output_dir, deps + [t], mode, options)
+                            Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                            num_gen += 1
+                            tasks.append(cc)
+                else:
+                    clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name)
+                    cc = cls(clas_name, clas_output_dir, deps, mode, options)
+                    Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                    num_gen += 1
+                    tasks.append(cc)
+            if num_gen == 0:
+                Task.logger.error(f"Classifier {name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
+                return None  # This should cause pippin to crash, which is probably what we want
+        return tasks

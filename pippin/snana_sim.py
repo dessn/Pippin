@@ -232,6 +232,16 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
         return sorted_types
 
+    @staticmethod
+    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        tasks = []
+        for sim_name in config.get("SIM", []):
+            sim_output_dir = f"{base_output_dir}/{stage_number}_SIM/{sim_name}"
+            s = SNANASimulation(sim_name, sim_output_dir, f"{prefix}_{sim_name}", config["SIM"][sim_name], global_config)
+            Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
+            tasks.append(s)
+        return tasks
+
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")

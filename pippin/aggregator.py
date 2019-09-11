@@ -292,6 +292,41 @@ class Aggregator(Task):
             self._plot_roc(df)
             self._plot_pr(df)
 
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        sim_tasks = Task.get_task_of_type(prior_tasks, SNANASimulation, DataPrep)
+        classifier_tasks = Task.get_task_of_type(prior_tasks, Classifier)
+
+        def _get_aggregator_dir(base_output_dir, stage_number, agg_name):
+            return f"{base_output_dir}/{stage_number}_AGG/{agg_name}"
+
+        tasks = []
+
+        for agg_name in c.get("AGGREGATION", []):
+            config = c["AGGREGATION"][agg_name]
+            if config is None:
+                config = {}
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", "")
+            mask_sim = config.get("MASK_SIM", "")
+            mask_clas = config.get("MASK_CLAS", "")
+            for sim_task in sim_tasks:
+                if mask_sim not in sim_task.name or mask not in sim_task.name:
+                    continue
+                agg_name2 = f"{agg_name}_{sim_task.name}"
+                deps = [
+                    c
+                    for c in classifier_tasks
+                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
+                ]
+                if len(deps) == 0:
+                    Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
+                else:
+                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
+                    Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
+                    tasks.append(a)
+        return tasks
+
 
 if __name__ == "__main__":
     df = pd.read_csv("debug/merged.csv")

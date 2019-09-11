@@ -3,6 +3,7 @@ import shutil
 import subprocess
 import os
 from pippin.config import mkdirs, get_config
+from pippin.cosmomc import CosmoMC
 from pippin.task import Task
 
 
@@ -109,3 +110,30 @@ python {path_to_code} {files} {name} {blind} {done_file} {params}
         else:
             self.logger.info("Hash check passed, not rerunning")
         return True
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        cosmomc_tasks = Task.get_task_of_type(prior_tasks, CosmoMC)
+
+        def _get_analyse_dir(base_output_dir, stage_number, name):
+            return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
+
+        tasks = []
+        key = "ANALYSE"
+        for cname in c.get(key, []):
+            config = c[key].get(cname, {})
+            options = config.get("OPTS", {})
+
+            mask = config.get("MASK_COSMOMC", "")
+            for ctask in cosmomc_tasks:
+                if mask not in ctask.name:
+                    continue
+                name = f"{cname}_{ctask.name}"
+                a = AnalyseChains(name, _get_analyse_dir(base_output_dir, stage_number, name), options, [ctask])
+                Task.logger.info(f"Creating Analyse task {name} for {ctask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(cosmomc_tasks) == 0:
+                Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
+
+        return tasks

@@ -115,3 +115,13 @@ fi
         else:
             self.logger.info("Hash check passed, not rerunning")
         return True
+
+    @staticmethod
+    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        tasks = []
+        for name in config.get("DATAPREP", []):
+            output_dir = f"{base_output_dir}/{stage_number}_DATAPREP/{name}"
+            s = DataPrep(name, output_dir, config["DATAPREP"][name]["OPTS"])
+            Task.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
+            tasks.append(s)
+        return tasks

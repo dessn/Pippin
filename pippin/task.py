@@ -7,9 +7,9 @@ import datetime
 class Task(ABC):
     FINISHED_SUCCESS = -1
     FINISHED_FAILURE = -9
+    logger = get_logger()
 
     def __init__(self, name, output_dir, dependencies=None):
-        self.logger = get_logger()
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
@@ -77,6 +77,20 @@ class Task(ABC):
         :return: true or false if the job launched successfully
         """
         pass
+
+    @staticmethod
+    def get_task_of_type(tasks, *cls):
+        return [t for t in tasks if isinstance(t, tuple(cls))]
+
+    @staticmethod
+    def fail_config(message):
+        Task.logger.error(message)
+        raise ValueError(message)
+
+    @staticmethod
+    @abstractmethod
+    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        raise NotImplementedError()
 
     def get_wall_time_str(self):
         if self.end_time is not None and self.start_time is not None:

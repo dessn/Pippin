@@ -160,3 +160,33 @@ python create_covariance_staticbins.py {input_file} {done_file}
         else:
             self.logger.info("Hash check passed, not rerunning")
         return True
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+
+        biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
+
+        def _get_createcov_dir(base_output_dir, stage_number, name):
+            return f"{base_output_dir}/{stage_number}_CREATE_COV/{name}"
+
+        tasks = []
+        for cname in c.get("CREATE_COV", []):
+            config = c["CREATE_COV"][cname]
+            if config is None:
+                config = {}
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", "")
+
+            for btask in biascor_tasks:
+                if mask not in btask.name:
+                    continue
+
+                name = f"{cname}_{btask.name}"
+                a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, [btask])
+                Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
+                tasks.append(a)
+
+            if len(biascor_tasks) == 0:
+                Task.fail_config(f"Create cov task {cname} has no biascor task to run on!")
+
+        return tasks

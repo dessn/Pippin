@@ -22,7 +22,3 @@ ClassifierFactory.add_factory(SuperNNovaClassifier)
 ClassifierFactory.add_factory(SnirfClassifier)
 ClassifierFactory.add_factory(NearestNeighborClassifier)
 ClassifierFactory.add_factory(UnityClassifier)
-
-if __name__ == "__main__":
-    c = ClassifierFactory.get("ToyClassifier")
-    print(c)

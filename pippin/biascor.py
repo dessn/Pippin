@@ -1,9 +1,12 @@
+import copy
 import inspect
 import shutil
 import subprocess
 import os
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, mkdirs, get_config
+from pippin.classifiers.classifier import Classifier
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list
+from pippin.merge import Merger
 from pippin.task import Task
 
 
@@ -136,3 +139,106 @@ class BiasCor(ConfigBasedExecutable):
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             chown_dir(self.output_dir)
         return True
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        merge_tasks = Task.get_task_of_type(prior_tasks, Merger)
+        classifier_tasks = Task.get_task_of_type(prior_tasks, Classifier)
+        tasks = []
+
+        def _get_biascor_output_dir(base_output_dir, stage_number, biascor_name):
+            return f"{base_output_dir}/{stage_number}_BIASCOR/{biascor_name}"
+
+        for name in c.get("BIASCOR", []):
+            config = c["BIASCOR"][name]
+            options = config.get("OPT", {})
+            deps = []
+
+            # Create dict but swap out the names for tasks
+            # do this for key 0 and for muopts
+            # modify config directly
+            # create copy to start with to keep labels if needed
+            config_copy = copy.deepcopy(config)
+
+            def resolve_classifier(name):
+                task = [c for c in classifier_tasks if c.name == name]
+                if len(task) == 0:
+                    message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks}"
+                    Task.fail_config(message)
+                return task[0]  # We only care about the prob column name
+
+            def resolve_merged_fitres_files(name, classifier_name):
+                task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["sim_name"] == name]
+                if len(task) == 0:
+                    message = f"Unable to resolve merge merge {name} from list of merge_tasks {merge_tasks}"
+                    Task.fail_config(message)
+                elif len(task) > 1:
+                    message = f"Resolved multiple merge tasks {task} for name {name}"
+                    Task.fail_config(message)
+                else:
+                    return task[0]
+
+            def resolve_conf(subdict, default=None):
+                """ Resolve the sub-dictionary and keep track of all the dependencies """
+                deps = []
+
+                # If this is a muopt, allow access to the base config's resolution
+                if default is None:
+                    default = {}
+
+                # Get the specific classifier
+                classifier_name = subdict.get("CLASSIFIER")  # Specific classifier name
+                if classifier_name is None and default is None:
+                    Task.fail_config(f"You need to specify the name of a classifier under the CLASSIFIER key")
+                classifier_task = None
+                if classifier_name is not None:
+                    classifier_task = resolve_classifier(classifier_name)
+                classifier_dep = classifier_task or default.get("CLASSIFIER")  # For resolving merge tasks
+                classifier_dep = classifier_dep.name
+                if "CLASSIFIER" in subdict:
+                    subdict["CLASSIFIER"] = classifier_task
+                    deps.append(classifier_task)
+
+                # Get the Ia sims
+                simfile_ia = subdict.get("SIMFILE_BIASCOR")
+                if default is None and simfile_ia is None:
+                    Task.fail_config(f"You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output")
+                if simfile_ia is not None:
+                    simfile_ia = ensure_list(simfile_ia)
+                    simfile_ia_tasks = [resolve_merged_fitres_files(s, classifier_dep) for s in simfile_ia]
+                    deps += simfile_ia_tasks
+                    subdict["SIMFILE_BIASCOR"] = simfile_ia_tasks
+
+                # Resolve the cc sims
+                simfile_cc = subdict.get("SIMFILE_CCPRIOR")
+                if default is None and simfile_ia is None:
+                    message = f"No SIMFILE_CCPRIOR specified. Hope you're doing a Ia only analysis"
+                    Task.logger.warning(message)
+                if simfile_cc is not None:
+                    simfile_cc = ensure_list(simfile_cc)
+                    simfile_cc_tasks = [resolve_merged_fitres_files(s, classifier_dep) for s in simfile_cc]
+                    deps += simfile_cc_tasks
+                    subdict["SIMFILE_CCPRIOR"] = simfile_cc_tasks
+
+                return deps  # Changes to dict are by ref, will modify original
+
+            deps += resolve_conf(config)
+            # Resolve the data section
+            data_names = config.get("DATA")
+            if data_names is None:
+                Task.fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
+            data_names = ensure_list(data_names)
+            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"].name) for s in data_names]
+            deps += data_tasks
+            config["DATA"] = data_tasks
+
+            # Resolve every MUOPT
+            muopts = config.get("MUOPTS", {})
+            for label, mu_conf in muopts.items():
+                deps += resolve_conf(mu_conf, default=config)
+
+            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), deps, options, config)
+            Task.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
+            tasks.append(task)
+
+        return tasks

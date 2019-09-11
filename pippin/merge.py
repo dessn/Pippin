@@ -3,7 +3,9 @@ import subprocess
 
 from pippin.aggregator import Aggregator
 from pippin.config import chown_dir, mkdirs
+from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
+from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 import os
 
@@ -114,3 +116,53 @@ class Merger(Task):
         else:
             self.logger.debug("Not regnerating")
         return True
+
+    @staticmethod
+    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+        agg_tasks = Task.get_task_of_type(prior_tasks, Aggregator)
+        lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
+        tasks = []
+
+        def _get_merge_output_dir(base_output_dir, stage_number, merge_name, lcfit_name, agg_name):
+            return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}_{agg_name}"
+
+        for name in c.get("MERGE", []):
+            num_gen = 0
+            config = c["MERGE"].get(name, {})
+            if config is None:
+                config = {}
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", "")
+            mask_sim = config.get("MASK_SIM", "")
+            mask_lc = config.get("MASK_FIT", "")
+            mask_agg = config.get("MASK_AGG", "")
+
+            for lcfit in lcfit_tasks:
+                if mask and mask not in lcfit.name:
+                    continue
+                if mask_lc and mask_lc not in lcfit.name:
+                    continue
+                sim = lcfit.get_dep(SNANASimulation, DataPrep)
+                if mask and mask not in sim.name:
+                    continue
+                if mask_sim and mask_sim not in sim.name:
+                    continue
+
+                for agg in agg_tasks:
+                    if mask_agg and mask_agg not in agg.name:
+                        continue
+                    if mask and mask not in agg.name:
+                        continue
+
+                    # Check if the sim is the same for both
+                    if sim != agg.get_underlying_sim_task():
+                        continue
+                    num_gen += 1
+                    merge_name2 = f"{name}_{sim.name}_{lcfit.name}"
+
+                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
+                    Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
+                    tasks.append(task)
+            if num_gen == 0:
+                Task.fail_config(f"Merger {merge_name2} with mask {mask} matched no combination of aggregators and fits")
+        return tasks
