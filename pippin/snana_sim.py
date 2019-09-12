@@ -230,6 +230,13 @@ class SNANASimulation(ConfigBasedExecutable):
                         break
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
+        types_dict = {"IA": [], "NONIA": []}
+        for key, value in sorted_types.items():
+            if value.upper() == "IA":
+                types_dict["IA"].append(key)
+            else:
+                types_dict["NONIA"].append(key)
+        self.output["types_dict"] = types_dict
         return sorted_types
 
     @staticmethod

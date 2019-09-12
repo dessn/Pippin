@@ -335,8 +335,9 @@ class Aggregator(Task):
             self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
         else:
 
-            types = self.get_underlying_sim_task().output["types"]
-            ia = (df["SNTYPE"] == 101) | (df["SNTYPE"] == 1)
+            types = self.get_underlying_sim_task().output["types_dict"]
+
+            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
             df = df.drop(["SNID", "SNTYPE"], axis=1)
             self._plot_corr(df)
