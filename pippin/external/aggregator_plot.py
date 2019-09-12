@@ -81,7 +81,7 @@ def plot_thresholds(df, output_dir):
     ls = ["-", "--", ":", ":-", "-", "--", ":"]
     keys = ["purity", "efficiency"]
     for c, col in zip(columns, colours):
-        data, truth = _get_data_and_truth(df[c], df["IA"], name=c)
+        data, truth = _get_data_and_truth(df[c], df["IA"])
         res = {}
         for t in thresholds:
             passed = data >= t
