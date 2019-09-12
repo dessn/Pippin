@@ -308,8 +308,7 @@ class Aggregator(Task):
                     if j == 0:
                         ax.spines["left"].set_visible(False)
                     if j == n - 1:
-                        ax.set_xlabel(label1, fontsize=6)
-                        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
+                        ax.set_xlabel(label1, fontsize=6, rotation=30)
                     else:
                         ax.set_xticklabels([])
                 else:
@@ -324,10 +323,9 @@ class Aggregator(Task):
                         ax.set_yticklabels([])
                         ax.tick_params(axis="y", left=False)
                     else:
-                        ax.set_ylabel(label1, fontsize=6)
+                        ax.set_ylabel(label1, fontsize=6, rotation=80)
                     if i == n - 1:
-                        ax.set_xlabel(label2, fontsize=6)
-                        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
+                        ax.set_xlabel(label2, fontsize=6, rotation=30)
                     else:
                         ax.set_xticklabels([])
         plt.subplots_adjust(hspace=0.0, wspace=0)
