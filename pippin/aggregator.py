@@ -168,6 +168,7 @@ class Aggregator(Task):
             self.logger.info(f"Prob accuracy plot saved to {filename}")
 
     def _get_matrix(self, classified, truth):
+        print("DDDDD ", truth, classified)
         true_positives = classified & truth
         false_positive = classified & ~truth
         true_negative = ~classified & ~truth
@@ -340,6 +341,7 @@ class Aggregator(Task):
 
             ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
+            print("BBBBBB ", df["IA"])
             df = df.drop(["SNID", "SNTYPE"], axis=1)
             self._plot_corr(df)
             self._plot_prob_acc(df)
