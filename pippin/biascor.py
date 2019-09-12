@@ -105,7 +105,8 @@ class BiasCor(ConfigBasedExecutable):
             if value.get("FITOPT") is not None:
                 mu_str += f"FITOPT={value.get('FITOPT')} "
             mu_str += "\n"
-        self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
+        if mu_str:
+            self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
 
         final_output = "\n".join(self.base)
 
