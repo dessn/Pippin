@@ -89,7 +89,7 @@ COSMOMC:
     OPTS:
       INI: sn_omw
       COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
-      NUM_WALKERS: 8
+      NUM_WALKERS: 20
 
 ANALYSE:
   ALL_OMW:
