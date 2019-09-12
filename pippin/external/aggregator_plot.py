@@ -169,6 +169,8 @@ def plot_comparison(df, output_dir):
     n = len(columns)
     scale = 1.5
     fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
+    if n == 1:
+        axes = np.atleast_2d(axes)
     lim = (0, 1)
     bins = np.linspace(lim[0], lim[1], 51)
 
