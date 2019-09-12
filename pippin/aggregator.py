@@ -288,7 +288,7 @@ class Aggregator(Task):
         columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
         n = len(columns)
-        scale = 1.0
+        scale = 1.5
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
         lim = (0, 1)
         bins = np.linspace(lim[0], lim[1], 51)
@@ -310,22 +310,22 @@ class Aggregator(Task):
                     if j == 0:
                         ax.spines["left"].set_visible(False)
                     if j == n - 1:
-                        ax.set_xlabel(label1, fontsize=12)
-                    else:
-                        a1 = np.array(df[label2])
-                        a2 = np.array(df[label1])
-                        ax.scatter(a1, a2, s=2, c=df["SNTYPE"])
-                        ax.set_xlim(*lim)
-                        ax.set_ylim(*lim)
-                        ax.plot(list(lim), list(lim), c="k", lw=1, alpha=0.8, ls=":")
+                        ax.set_xlabel(label1, fontsize=8)
+                else:
+                    a1 = np.array(df[label2])
+                    a2 = np.array(df[label1])
+                    ax.scatter(a1, a2, s=2, c=df["SNTYPE"], cmap="Accent")
+                    ax.set_xlim(*lim)
+                    ax.set_ylim(*lim)
+                    ax.plot(list(lim), list(lim), c="k", lw=1, alpha=0.8, ls=":")
 
-                        if j != 0:
-                            ax.set_yticklabels([])
-                            ax.tick_params(axis="y", left=False)
-                        else:
-                            ax.set_ylabel(label1, fontsize=12)
-                        if i == n - 1:
-                            ax.set_xlabel(label2, fontsize=12)
+                    if j != 0:
+                        ax.set_yticklabels([])
+                        ax.tick_params(axis="y", left=False)
+                    else:
+                        ax.set_ylabel(label1, fontsize=8)
+                    if i == n - 1:
+                        ax.set_xlabel(label2, fontsize=8)
         plt.subplots_adjust(hspace=0.0, wspace=0)
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_scatter.png")
