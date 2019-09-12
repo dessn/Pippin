@@ -222,7 +222,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             for sim in sim_tasks:
                 if fit_config.get("MASK") is None or fit_config.get("MASK") in sim.name:
                     fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
-                    f = SNANALightCurveFit(fit_name, fit_output_dir, sim, fit_config, global_config)
+                    f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)
                     Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
         return tasks
