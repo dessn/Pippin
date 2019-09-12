@@ -150,6 +150,7 @@ fi
             if not os.path.exists(path):
                 self.logger.error(f"Cannot find the file {path}, make sure you specified a correct INI string matching an existing template")
                 return None
+            self.logger.debug(f"Reading in {path} to format")
             with open(path) as f:
                 input_files.append(
                     f.read().format(**{"path_to_cosmomc": self.path_to_cosmomc, "ini_dir": self.create_cov_dep.output["ini_dir"], "root_dir": self.chain_dir})
