@@ -98,8 +98,7 @@ fi
 """
 
     def _get_types(self):
-        self.logger.warning("Data does not report types, let's hope the defaults are up to date!")
-        return None
+        return self.types
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):

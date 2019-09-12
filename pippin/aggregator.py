@@ -187,6 +187,7 @@ class Aggregator(Task):
         mask = ~data.isna()
         data = data[mask]
         truth = truth[mask]
+        print("AAAAAAAA ", truth, data)
         return data, truth
 
     def _plot_thresholds(self, df):
