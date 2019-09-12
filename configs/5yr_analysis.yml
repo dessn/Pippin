@@ -18,6 +18,7 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
     GLOBAL:
       NGEN_UNIT: 0.2
       RANSEED_REPEAT: 5 12345
