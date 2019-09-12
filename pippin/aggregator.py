@@ -168,7 +168,6 @@ class Aggregator(Task):
             self.logger.info(f"Prob accuracy plot saved to {filename}")
 
     def _get_matrix(self, classified, truth):
-        print("DDDDD ", truth, classified)
         true_positives = classified & truth
         false_positive = classified & ~truth
         true_negative = ~classified & ~truth
@@ -188,7 +187,6 @@ class Aggregator(Task):
         mask = ~(data.isna() | truth.isna())
         data = data[mask]
         truth = truth[mask].astype(np.bool)
-        print("AAAAAAAA ", truth, data)
         return data, truth
 
     def _plot_thresholds(self, df):
