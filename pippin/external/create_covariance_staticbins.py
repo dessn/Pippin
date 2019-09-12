@@ -360,6 +360,8 @@ def sysmat(
         os.mkdir(output_dir)
     print(len(covlines))
     # stop
+    if isinstance(covlines, str):
+        covlines = [covlines]
     if len(covlines) > 1:
         sysnum = len(covlines)
     if covlines == "NONE":
