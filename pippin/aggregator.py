@@ -173,8 +173,9 @@ class Aggregator(Task):
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
     def _plot(self):
-        self.logger.debug(f"Invoking file {self.python_file}")
-        subprocess.run(["python", self.python_file, self.output_dir], stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        cmd = ["python", self.python_file, self.output_df, self.output_dir]
+        self.logger.debug(f"Invoking command  {' '.join(cmd)}")
+        subprocess.run(cmd, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir)
         self.logger.info(f"Finished invoking {self.python_file}")
 
     @staticmethod
