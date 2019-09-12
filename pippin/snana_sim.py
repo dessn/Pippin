@@ -38,6 +38,7 @@ class SNANASimulation(ConfigBasedExecutable):
         photometry_dir: location of fits files with photometry
 
     """
+
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
         super().__init__(name, output_dir, self.data_dir + combine, ": ")
@@ -238,7 +239,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
                 os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output = {"photometry_dir": sim_folder_endpoint, "types": self.get_types()}
+            self.output.update({"photometry_dir": sim_folder_endpoint, "types": self.get_types()})
             return Task.FINISHED_SUCCESS
         return 0  # TODO: Update to num jobs
 
