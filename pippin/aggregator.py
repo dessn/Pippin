@@ -341,8 +341,7 @@ class Aggregator(Task):
 
             ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
-            print("BBBBBB ", df["IA"])
-            df = df.drop(["SNID", "SNTYPE"], axis=1)
+            df = df.drop(["SNID"], axis=1)
             self._plot_corr(df)
             self._plot_prob_acc(df)
             self._plot_thresholds(df)
