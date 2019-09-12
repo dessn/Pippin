@@ -81,7 +81,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=10GB
+#SBATCH --mem=20GB
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
