@@ -174,7 +174,7 @@ class Aggregator(Task):
 
     def _plot(self):
         self.logger.debug(f"Invoking file {self.python_file}")
-        os.subprocess.run(["python", self.python_file, self.output_dir], stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        subprocess.run(["python", self.python_file, self.output_dir], stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir)
         self.logger.info(f"Finished invoking {self.python_file}")
 
     @staticmethod
