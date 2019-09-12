@@ -1,5 +1,8 @@
+import inspect
+import subprocess
+
 from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs
+from pippin.config import mkdirs, get_output_loc
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -21,8 +24,8 @@ class Aggregator(Task):
         MASK_SIM: TEST  # partial match on sim name
         MASK_CLAS: TEST  # partial match on classifier name
         OPTS:
-          INCLUDE_TYPE: True  # Includes the types (from photometry headers) in the output data file.
-          PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc.
+          PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc. Can specify a PYTHON FILE WHICH GETS INVOKED
+          # PLOT: True will default to external/aggregator_plot.py, copy that for customisation
 
     OUTPUTS:
     ========
@@ -36,6 +39,7 @@ class Aggregator(Task):
         sn_type_name: name of type column, only exists if INCLUDE_TYPE was set
 
     """
+
     def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
@@ -46,9 +50,17 @@ class Aggregator(Task):
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
-        self.plot = bool(options.get("PLOT", False))
-        self.colours = ["#f95b4a", "#3d9fe2", "#ffa847", "#c4ef7a", "#e195e2", "#ced9ed", "#fff29b", "#903de3", "#31b58b", "#99825a"]
+        self.plot = options.get("PLOT", False)
         self.output["classifiers"] = self.classifiers
+
+        if isinstance(self.plot, bool):
+            self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
+        else:
+            self.python_file = self.plot
+        self.python_file = get_output_loc(self.python_file)
+
+        if not os.path.exists(self.python_file):
+            Task.fail_config(f"Attempting to find python file {self.python_file} but it's not there!")
 
     def _check_completion(self, squeue):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
@@ -107,30 +119,34 @@ class Aggregator(Task):
                     df = dataframe
                 else:
                     df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
-            if self.include_type:
-                self.logger.info("Finding original types")
-                s = self.get_underlying_sim_task()
-                type_df = None
-                phot_dir = s.output["photometry_dir"]
-                headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
-                if not headers:
-                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
-                else:
-                    for h in headers:
-                        with fits.open(h) as hdul:
-                            data = hdul[1].data
-                            snid = np.array(data.field("SNID")).astype(np.int64)
-                            sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                            dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                            if type_df is None:
-                                type_df = dataframe
-                            else:
-                                type_df = pd.concat([type_df, dataframe])
-                        type_df.drop_duplicates(subset=self.id, inplace=True)
-                df = pd.merge(df, type_df, on=self.id)
+
+            self.logger.info("Finding original types")
+            s = self.get_underlying_sim_task()
+            type_df = None
+            phot_dir = s.output["photometry_dir"]
+            headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+            if not headers:
+                self.logger.error(f"No HEAD fits files found in {phot_dir}!")
+            else:
+                for h in headers:
+                    with fits.open(h) as hdul:
+                        data = hdul[1].data
+                        snid = np.array(data.field("SNID")).astype(np.int64)
+                        sntype = np.array(data.field("SNTYPE")).astype(np.int64)
+                        dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                        if type_df is None:
+                            type_df = dataframe
+                        else:
+                            type_df = pd.concat([type_df, dataframe])
+                    type_df.drop_duplicates(subset=self.id, inplace=True)
+            df = pd.merge(df, type_df, on=self.id, how="left")
+
+            types = self.get_underlying_sim_task().output["types_dict"]
+            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
+            df["IA"] = ia
 
             if self.plot:
-                self._plot(df)
+                self._plot()
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
@@ -154,227 +170,10 @@ class Aggregator(Task):
         df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
-    def _plot_corr(self, df):
-        self.logger.debug("Making prob correlation plot")
-        import matplotlib.pyplot as plt
-        import seaborn as sb
-
-        fig, ax = plt.subplots(figsize=(8, 6))
-        df = df.dropna()
-        sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
-        plt.show()
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_corr.png")
-            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-            self.logger.info(f"Prob corr plot saved to {filename}")
-
-    def _plot_prob_acc(self, df):
-        self.logger.debug("Making prob accuracy plot")
-        import matplotlib.pyplot as plt
-        from scipy.stats import binned_statistic
-
-        prob_bins = np.linspace(0, 1, 21)
-        bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
-        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
-
-        fig, ax = plt.subplots(figsize=(8, 6))
-        for c, col in zip(columns, self.colours):
-            data, truth = self._get_data_and_truth(df[c], df["IA"])
-            actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
-            ax.plot(bin_center, actual_prob, label=c, c=col)
-        ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
-        ax.legend(loc=4, frameon=False, markerfirst=False)
-        ax.set_xlabel("Reported confidence")
-        ax.set_ylabel("Actual chance of being Ia")
-        plt.show()
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_prob_acc.png")
-            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-            self.logger.info(f"Prob accuracy plot saved to {filename}")
-
-    def _get_matrix(self, classified, truth):
-        true_positives = classified & truth
-        false_positive = classified & ~truth
-        true_negative = ~classified & ~truth
-        false_negative = ~classified & truth
-        return true_positives.sum(), false_positive.sum(), true_negative.sum(), false_negative.sum()
-
-    def _get_metrics(self, classified, truth):
-        tp, fp, tn, fn = self._get_matrix(classified, truth)
-        return {
-            "purity": tp / (tp + fp),  # also known as precision
-            "efficiency": tp / (tp + fn),  # also known as recall
-            "accuracy": (tp + tn) / (tp + tn + fp + fn),
-            "specificity": fp / (fp + tn),
-        }
-
-    def _get_data_and_truth(self, data, truth, name=None):
-        mask = ~(data.isna() | truth.isna())
-        data = data[mask]
-        truth = truth[mask].astype(np.bool)
-        return data, truth
-
-    def _plot_thresholds(self, df):
-        self.logger.debug("Making threshold plot")
-        import matplotlib.pyplot as plt
-
-        thresholds = np.linspace(0.5, 0.999, 100)
-        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
-
-        fig, ax = plt.subplots(figsize=(7, 5))
-        ls = ["-", "--", ":", ":-", "-", "--", ":"]
-        keys = ["purity", "efficiency"]
-        for c, col in zip(columns, self.colours):
-            data, truth = self._get_data_and_truth(df[c], df["IA"], name=c)
-            res = {}
-            for t in thresholds:
-                passed = data >= t
-                metrics = self._get_metrics(passed, truth)
-                for key in keys:
-                    if res.get(key) is None:
-                        res[key] = []
-                    res[key].append(metrics[key])
-            for key, l in zip(keys, ls):
-                ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c[5:]} {key}")
-
-        ax.set_xlabel("Classification probability threshold")
-        ax.legend(loc=3, frameon=False, ncol=2)
-        plt.show()
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_thresholds.png")
-            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-            self.logger.info(f"Prob threshold plot saved to {filename}")
-
-    def _plot_pr(self, df):
-        self.logger.debug("Making roc plot")
-        import matplotlib.pyplot as plt
-
-        thresholds = np.linspace(0.01, 1, 100)
-        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
-
-        fig, ax = plt.subplots(figsize=(7, 5))
-
-        for c, col in zip(columns, self.colours):
-            efficiency, purity = [], []
-            data, truth = self._get_data_and_truth(df[c], df["IA"])
-            for t in thresholds:
-                passed = data >= t
-                metrics = self._get_metrics(passed, truth)
-                efficiency.append(metrics["efficiency"])
-                purity.append(metrics["purity"])
-            ax.plot(purity, efficiency, color=col, label=f"{c[5:]}")
-
-        ax.set_xlabel("Precision (aka purity)")
-        ax.set_xlim(0.97, 1.0)
-        ax.set_ylabel("Recall (aka efficiency)")
-        ax.set_title("PR Curve")
-        ax.legend(frameon=False, loc=3)
-        plt.show()
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_pr.png")
-            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-            self.logger.info(f"Prob threshold plot saved to {filename}")
-
-    def _plot_roc(self, df):
-        self.logger.debug("Making pr plot")
-        import matplotlib.pyplot as plt
-
-        thresholds = np.linspace(0.01, 0.999, 100)
-        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
-
-        fig, ax = plt.subplots(figsize=(7, 5))
-
-        for c, col in zip(columns, self.colours):
-            efficiency, specificity = [], []
-            data, truth = self._get_data_and_truth(df[c], df["IA"])
-            for t in thresholds:
-                passed = data >= t
-                metrics = self._get_metrics(passed, truth)
-                efficiency.append(metrics["efficiency"])
-                specificity.append(metrics["specificity"])
-            ax.plot(specificity, efficiency, color=col, label=f"{c[5:]}")
-
-        ax.set_xlabel("False Positive Rate")
-        ax.set_ylabel("True Positive Rate")
-        ax.set_title("ROC Curve")
-        ax.legend(frameon=False, loc=4)
-        plt.show()
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_roc.png")
-            fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-            self.logger.info(f"Prob threshold plot saved to {filename}")
-
-    def _plot_comparison(self, df):
-        self.logger.debug("Making comparison plot")
-        import matplotlib.pyplot as plt
-
-        columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
-
-        n = len(columns)
-        scale = 1.5
-        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
-        lim = (0, 1)
-        bins = np.linspace(lim[0], lim[1], 51)
-
-        for i, label1 in enumerate(columns):
-            for j, label2 in enumerate(columns):
-                ax = axes[i, j]
-                if i < j:
-                    ax.axis("off")
-                    continue
-                elif i == j:
-                    h, _, _ = ax.hist(df[label1], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=self.colours[i])
-                    ax.hist(df[label1], bins=bins, histtype="step", linewidth=1.5, color=self.colours[i])
-                    ax.set_yticklabels([])
-                    ax.tick_params(axis="y", left=False)
-                    ax.set_xlim(*lim)
-                    ax.spines["right"].set_visible(False)
-                    ax.spines["top"].set_visible(False)
-                    if j == 0:
-                        ax.spines["left"].set_visible(False)
-                    if j == n - 1:
-                        ax.set_xlabel(label1, fontsize=6, rotation=5)
-                    else:
-                        ax.set_xticklabels([])
-                else:
-                    a1 = np.array(df[label2])
-                    a2 = np.array(df[label1])
-                    ax.scatter(a1, a2, s=0.5, c=df["SNTYPE"], cmap="Accent")
-                    ax.set_xlim(*lim)
-                    ax.set_ylim(*lim)
-                    ax.plot(list(lim), list(lim), c="k", lw=1, alpha=0.8, ls=":")
-
-                    if j != 0:
-                        ax.set_yticklabels([])
-                        ax.tick_params(axis="y", left=False)
-                    else:
-                        ax.set_ylabel(label1, fontsize=6, rotation=85)
-                    if i == n - 1:
-                        ax.set_xlabel(label2, fontsize=6, rotation=5)
-                    else:
-                        ax.set_xticklabels([])
-        plt.subplots_adjust(hspace=0.0, wspace=0)
-        if self.output_dir:
-            filename = os.path.join(self.output_dir, "plt_scatter.png")
-            fig.savefig(filename, bbox_inches="tight", dpi=300, transparent=True)
-            self.logger.info(f"Prob scatter plot saved to {filename}")
-
-    def _plot(self, df):
-        if self.type_name not in df.columns:
-            self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
-        else:
-
-            types = self.get_underlying_sim_task().output["types_dict"]
-
-            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
-            df["IA"] = ia
-            df = df.drop(["SNID"], axis=1)
-            self._plot_corr(df)
-            self._plot_prob_acc(df)
-            self._plot_thresholds(df)
-            self._plot_roc(df)
-            self._plot_pr(df)
-            self._plot_comparison(df)
+    def _plot(self):
+        self.logger.debug(f"Invoking file {self.python_file}")
+        os.subprocess.run(["python", self.python_file, self.output_dir], stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        self.logger.info(f"Finished invoking {self.python_file}")
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
