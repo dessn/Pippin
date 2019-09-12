@@ -132,20 +132,20 @@ def plot_pr(df, output_dir):
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_roc(self, df):
-    self.logger.debug("Making pr plot")
+def plot_roc(df, output_dir):
+    logging.debug("Making pr plot")
 
     thresholds = np.linspace(0.01, 0.999, 100)
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
 
     fig, ax = plt.subplots(figsize=(7, 5))
 
-    for c, col in zip(columns, self.colours):
+    for c, col in zip(columns, colours):
         efficiency, specificity = [], []
-        data, truth = self._get_data_and_truth(df[c], df["IA"])
+        data, truth = _get_data_and_truth(df[c], df["IA"])
         for t in thresholds:
             passed = data >= t
-            metrics = self._get_metrics(passed, truth)
+            metrics = _get_metrics(passed, truth)
             efficiency.append(metrics["efficiency"])
             specificity.append(metrics["specificity"])
         ax.plot(specificity, efficiency, color=col, label=f"{c[5:]}")
@@ -155,10 +155,10 @@ def plot_roc(self, df):
     ax.set_title("ROC Curve")
     ax.legend(frameon=False, loc=4)
     plt.show()
-    if self.output_dir:
-        filename = os.path.join(self.output_dir, "plt_roc.png")
+    if output_dir:
+        filename = os.path.join(output_dir, "plt_roc.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
-        self.logger.info(f"Prob threshold plot saved to {filename}")
+        logging.info(f"Prob threshold plot saved to {filename}")
 
 
 def plot_comparison(df, output_dir):
