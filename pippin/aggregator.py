@@ -315,7 +315,7 @@ class Aggregator(Task):
                 else:
                     a1 = np.array(df[label2])
                     a2 = np.array(df[label1])
-                    ax.scatter(a1, a2, s=2, c=df["SNTYPE"], cmap="Accent")
+                    ax.scatter(a1, a2, s=1, c=df["SNTYPE"], cmap="Accent")
                     ax.set_xlim(*lim)
                     ax.set_ylim(*lim)
                     ax.plot(list(lim), list(lim), c="k", lw=1, alpha=0.8, ls=":")
