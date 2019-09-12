@@ -169,7 +169,7 @@ class Manager:
                     started = t.run(self.get_force_refresh(t))
                     if started:
                         self.num_jobs_queue += t.num_jobs
-                        self.logger.notice(f"LAUNCHED: {t}")
+                        self.logger.notice(f"LAUNCHED: {t} with total {self.num_jobs_queue} jobs")
                         running_tasks.append(t)
                         completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
                         small_wait = small_wait or completed
