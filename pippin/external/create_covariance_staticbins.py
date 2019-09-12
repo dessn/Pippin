@@ -54,7 +54,7 @@ def linef(file1, line1):
     print("Didnt find line in file, going to crash")
 
 
-def parseLines(lines, key, narg, vbose):
+def parseLines(lines, key, narg, vbose, force_multi=False):
     # Lines is input array of lines in file
     # key is key to search
     # narg is number of args to return after key
@@ -63,12 +63,12 @@ def parseLines(lines, key, narg, vbose):
     rowList = lines[np.char.startswith(lines, key)]
     nrow = len(rowList)
     print("parse", key, narg)
-    if (nrow == 1) & (narg != 99):
+    if not force_multi and (nrow == 1) and (narg != 99):
         if narg == 1:
             arg = rowList[0].split()[1]
         else:
             arg = rowList[0].split()[1 : narg + 1]
-    elif (nrow > 1) | (narg == 99):
+    elif force_multi or (nrow > 1) or (narg == 99):
         for row in rowList:
             if narg != 99:
                 narg2 = len(row.split())
@@ -360,9 +360,8 @@ def sysmat(
         os.mkdir(output_dir)
     print(len(covlines))
     # stop
-    if isinstance(covlines, str):
-        covlines = [covlines]
-    sysnum = len(covlines)
+    if len(covlines) > 1:
+        sysnum = len(covlines)
     if covlines == "NONE":
         sysnum = 0
     co = 0
@@ -648,7 +647,7 @@ class FILE_INFO:
         self.SYSDEFAULT = parseLines(Lines, "SYSDEFAULT:", 1, 1)
         self.OUTPUTDIR = parseLines(Lines, "OUTPUTDIR:", 1, 1)
         self.TOPFILE = parseLines(Lines, "TOPFILE:", 1, 1)
-        self.COVOPT = parseLines(Lines, "COVOPT:", 1, 1)
+        self.COVOPT = parseLines(Lines, "COVOPT:", 1, 1, force_multi=True)
         self.ERRSCALE = parseLines(Lines, "ERRSCALE:", 99, 1)
         self.SUBDIR = parseLines(Lines, "SUBDIR:", 1, 1)
 
