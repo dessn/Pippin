@@ -147,6 +147,8 @@ class Aggregator(Task):
 
             if self.plot:
                 self._plot()
+            else:
+                self.logger.debug("Plot not set, skipping plotting section")
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
