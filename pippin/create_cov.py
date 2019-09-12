@@ -109,7 +109,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
             sys_scale = f.read().splitlines()
 
             # Overwrite the fitopt scales
-            fitopt_scale_overwrites = self.options.get("FITOPT_SCALES")
+            fitopt_scale_overwrites = self.options.get("FITOPT_SCALES", {})
             for label, overwrite in fitopt_scale_overwrites.items():
                 for i, line in enumerate(sys_scale):
                     comps = line.split()
@@ -117,7 +117,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                         sys_scale[i] = " ".join(comps[:-1] + [f"{overwrite}"])
 
             # Set the muopts scales
-            muopt_scales = self.options.get("MUOPT_SCALES")
+            muopt_scales = self.options.get("MUOPT_SCALES", {})
             muopts = self.biascor_dep.output["muopts"]
             for muopt in muopts:
                 scale = muopt_scales.get(muopt, 1.0)
