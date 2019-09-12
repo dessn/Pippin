@@ -2,7 +2,6 @@ import subprocess
 import os
 import shutil
 import tempfile
-import time
 import glob
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs, get_output_loc, copytree
@@ -10,6 +9,23 @@ from pippin.task import Task
 
 
 class NearestNeighborClassifier(Classifier):
+    """
+    CONFIGURATION
+    =============
+
+    CLASSIFICATION:
+        label:
+            MASK_SIM: mask  # partial match
+            MASK_FIT: mask  # partial match
+            MASK: mask  # partial match
+            OPTS:  # Options
+                FITOPT: fitoptLabel  # Exact match
+
+    OUTPUTS
+    =======
+    See Classifier output
+
+    """
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.passed = False
@@ -24,6 +40,11 @@ class NearestNeighborClassifier(Classifier):
         self.options = options
         self.nn_options = "z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04"
         self.train_info_local = {}
+
+        lcfit = self.get_fit_dependency()
+        self.fitopt = options.get("FITOPT", "DEFAULT")
+        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
+        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dir"], self.fitres_filename))
 
     def train(self, force_refresh):
         # Created April 2019 by R.Kessler
@@ -48,7 +69,7 @@ class NearestNeighborClassifier(Classifier):
 
         genversion = fit_output["genversion"]
         fitres_dir = fit_output["fitres_dir"]
-        fitres_file = fit_output["fitres_file"]
+        fitres_file = self.fitres_path
         nml_file_orig = fit_output["nml_file"]
 
         # Put config in a temp directory

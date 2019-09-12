@@ -58,6 +58,21 @@ CLASSIFICATION:
     OPTS:
         MODEL: NNTRAIN
 
+  NNFITOPTTRAIN:  # Rick's Nearest Neighbour Classifier. Currently not really configurable.
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      FITOPT: SALT20_cal  # Can also use a FITRES file which isnt FITOPT000.FITRES. Just make sure the FITOPT option matches (exactly) a fitopt label.
+
+  NNFITOPTTEST:
+    CLASSIFIER: NearestNeighborClassifier
+    MODE: predict
+    MASK_SIM: TEST
+    OPTS:
+      MODEL: NNTRAIN
+      FITOPT: SALT20_cal
+
   SNIRFTRAIN:  # The classifier from Eve, Steve and the Argonne team. Random forest
     CLASSIFIER: SnirfClassifier
     MODE: train
