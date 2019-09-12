@@ -233,7 +233,7 @@ if __name__ == "__main__":
     parser.add_argument("output_dir", help="Location of output_dir")
     args = parser.parse_args()
 
-    fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
+    fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     logging.basicConfig(level=logging.DEBUG, format=fmt)
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
