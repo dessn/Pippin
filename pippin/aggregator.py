@@ -185,9 +185,9 @@ class Aggregator(Task):
         }
 
     def _get_data_and_truth(self, data, truth, name=None):
-        mask = ~data.isna()
+        mask = ~(data.isna() | truth.isna())
         data = data[mask]
-        truth = truth[mask]
+        truth = truth[mask].astype(np.bool)
         print("AAAAAAAA ", truth, data)
         return data, truth
 
