@@ -22,7 +22,7 @@ DONE_STAMP: FINISHED.DONE
     OMAT_REF =  0.30
     W0_REF   = -1.00
 
-    SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
+    ;SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
 
     CUTWIN_MJD   = 56500, 57500
     OPT_SETPKMJD = 5
