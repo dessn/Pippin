@@ -173,10 +173,10 @@ class Aggregator(Task):
         df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
 
     def _plot(self):
-        cmd = " ".join(["python", self.python_file, self.output_df, self.output_dir])
-        self.logger.debug(f"Invoking command {cmd}")
-        subprocess.run(cmd, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
-        self.logger.info(f"Finished invoking {cmd}")
+        cmd = ["python", self.python_file, self.output_df, self.output_dir]
+        self.logger.debug(f"Invoking command  {' '.join(cmd)}")
+        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        self.logger.info(f"Finished invoking {self.python_file}")
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
