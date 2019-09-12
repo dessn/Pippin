@@ -195,14 +195,14 @@ class Manager:
         result = t.check_completion(squeue)
         # If its finished, good or bad, juggle tasks
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+            self.num_jobs_queue -= t.num_jobs
             if result == Task.FINISHED_SUCCESS:
                 running_tasks.remove(t)
-                self.logger.notice(f"FINISHED: {t}")
+                self.logger.notice(f"FINISHED: {t}, total jobs now {self.num_jobs_queue}")
                 done_tasks.append(t)
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
             chown_dir(t.output_dir)
-            self.num_jobs_queue -= t.num_jobs
             return True
         return False
 

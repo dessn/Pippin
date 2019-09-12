@@ -226,17 +226,3 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
         return tasks
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
-    config = {"BASE": "des.nml"}
-    s = SNANALightCurveFit("../output/test", "testv", config, {})
-
-    s.set_snlcinp("CUTWIN_NBAND_THRESH", 1000)
-    s.set_snlcinp("HELLO", "'human'")
-    s.set_fitinp("FITWIN_PROB", "0.05, 1.01")
-    s.set_fitinp("GOODBYE", -1)
-    s.set_property("BATCH_INFO", "sbatch  $SBATCH_TEMPLATES/SBATCH_sandyb.TEMPLATE  96", assignment=": ")
-    s.delete_property("GOODBYE")
-    s.write_nml()
