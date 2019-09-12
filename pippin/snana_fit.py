@@ -93,10 +93,15 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
-            data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES"), delim_whitespace=True, comment="#", compression="infer")
-            d = data.groupby("TYPE").agg(num=("CID", "count"))
-            self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
-            d.to_csv(os.path.join(path, "stats.txt"))
+            try:
+                data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES"), delim_whitespace=True, comment="#", compression="infer")
+                d = data.groupby("TYPE").agg(num=("CID", "count"))
+                self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
+                d.to_csv(os.path.join(path, "stats.txt"))
+            except Exception:
+                self.logger.error(f"Cannot load {os.path.join(path, 'FITOPT000.FITRES')}")
+                return False
+        return True
 
     def set_snlcinp(self, name, value):
         """ Ensures the property name value pair is set in the SNLCINP section.
@@ -200,8 +205,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 # except subprocess.CalledProcessError as e:
                 #     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
                 chown_dir(self.output_dir)
-                self.print_stats()
-
+                success = self.print_stats()
+                if not success:
+                    return Task.FINISHED_FAILURE
             self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES"))
             return Task.FINISHED_SUCCESS
         return 0
