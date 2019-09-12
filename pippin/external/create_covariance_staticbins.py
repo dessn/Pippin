@@ -362,8 +362,7 @@ def sysmat(
     # stop
     if isinstance(covlines, str):
         covlines = [covlines]
-    if len(covlines) > 1:
-        sysnum = len(covlines)
+    sysnum = len(covlines)
     if covlines == "NONE":
         sysnum = 0
     co = 0
