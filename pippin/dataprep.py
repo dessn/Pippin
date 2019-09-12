@@ -53,7 +53,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.types = OrderedDict()
         for n in self.types_dict["IA"]:
             self.types.update({n: "Ia"})
-        for n in self.types_dict["II"]:
+        for n in self.types_dict["NONIA"]:
             self.types.update({n: "II"})
         self.output["types"] = self.types
 
