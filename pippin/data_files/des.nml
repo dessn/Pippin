@@ -22,9 +22,7 @@ DONE_STAMP: FINISHED.DONE
     OMAT_REF =  0.30
     W0_REF   = -1.00
 
-    ;SNCID_LIST_FILE = '$DES3YR/config/spec_snid.list'
-
-    CUTWIN_MJD   = 56500, 57500
+    CUTWIN_MJD   = 56500, 58500
     OPT_SETPKMJD = 5
     OPT_MWEBV    = 3
     OPT_MWCOLORLAW  = 99
@@ -53,7 +51,6 @@ DONE_STAMP: FINISHED.DONE
     FUDGE_MAG_ERROR = ''
     VPEC_FILE = ''
 
-    SNCID_IGNORE_FILE = '$DES3YR/config/35sigignore.list'
 &END
 
 
