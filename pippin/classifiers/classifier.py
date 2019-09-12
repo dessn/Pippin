@@ -7,6 +7,27 @@ from pippin.snana_fit import SNANALightCurveFit
 
 
 class Classifier(Task):
+    """ Classification task
+
+    CONFIGURATION:
+    ==============
+    CLASSIFICATION:
+      label:
+        MASK: TEST  # partial match on sim and classifier
+        MASK_SIM: TEST  # partial match on sim name
+        MASK_FIT: TEST  # partial match on lcfit name
+        MODE: train/predict # Some classifiers dont need training and so you can set to predict straight away
+        OPTS:
+          CHANGES_FOR_INDIVIDUAL_CLASSIFIERS
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
+
+    """
     TRAIN = 0
     PREDICT = 1
 

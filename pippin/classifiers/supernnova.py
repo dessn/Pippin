@@ -4,7 +4,6 @@ import json
 import shutil
 import pickle
 from collections import OrderedDict
-
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
 from pippin.task import Task
@@ -13,14 +12,27 @@ from pippin.task import Task
 class SuperNNovaClassifier(Classifier):
     """ Classification task for the SuperNNova classifier.
 
-    Current valid options are specific to SuperNNova are:
+    CONFIGURATION
+    =============
 
-        USE_PHOTOMETRY - Use only photometry and no fitres summaries
-        VARIANT - a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
+    CLASSIFICATION:
+        label:
+            MASK_SIM: mask  # partial match
+            MASK_FIT: mask  # partial match
+            MASK: mask  # partial match
+            MODE: train/predict
+            OPTS:  # Options
+                VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
+                MODEL: someName # exact name of training classification task
 
-    Global classification options:
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
 
-        MODEL - a task name or file location with a trained model to use when predicting.
+
     """
 
     def __init__(self, name, output_dir, dependencies, mode, options):

@@ -11,6 +11,31 @@ import numpy as np
 
 
 class Aggregator(Task):
+    """ Merge fitres files and aggregator output
+
+    CONFIGURATION:
+    ==============
+    AGGREGATION:
+      AGG:
+        MASK: TEST  # partial match on sim and classifier
+        MASK_SIM: TEST  # partial match on sim name
+        MASK_CLAS: TEST  # partial match on classifier name
+        OPTS:
+          INCLUDE_TYPE: True  # Includes the types (from photometry headers) in the output data file.
+          PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc.
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        classifiers: classifier tasks
+        classifier_names: aggregators classifier names
+        merge_predictions_filename: location of the merged csv file
+        merge_key_filename: location of the merged fitres file
+        sn_column_name: name of the SNID column
+        sn_type_name: name of type column, only exists if INCLUDE_TYPE was set
+
+    """
     def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False

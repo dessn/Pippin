@@ -6,7 +6,25 @@ from pippin.task import Task
 
 
 class FitProbClassifier(Classifier):
+    """ FitProb classifier
 
+    CONFIGURATION:
+    ==============
+    CLASSIFICATION:
+      label:
+        MASK: TEST  # partial match on sim and classifier
+        MASK_SIM: TEST  # partial match on sim name
+        MASK_FIT: TEST  # partial match on lcfit name
+        MODE: predict
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
+
+    """
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies,  mode, options)
         self.output_file = None

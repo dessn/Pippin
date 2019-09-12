@@ -6,7 +6,27 @@ from pippin.task import Task
 
 
 class UnityClassifier(Classifier):
+    """ Classification task for the SuperNNova classifier.
 
+    CONFIGURATION
+    =============
+
+    CLASSIFICATION:
+        label:
+            MASK_SIM: mask  # partial match
+            MASK_FIT: mask  # partial match
+            MASK: mask  # partial match
+            MODE: predict
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
+
+
+    """
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies,  mode, options)
         self.output_file = None

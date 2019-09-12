@@ -13,6 +13,31 @@ from pippin.task import Task
 
 
 class SNANASimulation(ConfigBasedExecutable):
+    """ Merge fitres files and aggregator output
+
+    CONFIGURATION:
+    ==============
+    SIM:
+      label:
+        IA_name:  # Must have a sim type that starts with IA_ or is called exactly IA. Its how it gets divided into Ia or contaminant.
+          BASE: sn_ia_salt2_g10_des3yr.input # Location of an input file. Either in the data_files dir or full path
+          DNDZ_ALLSCALE: 3.0  # Override input file content here
+        II_JONES:
+          BASE: sn_collection_jones.input
+        GLOBAL:
+            NGEN_UNIT: 1  # Set properties for all input file shere
+
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        genversion: genverison of sim
+        types_dict: dict map from IA or NONIA to numeric gentypes
+        types: dict map from numeric gentype to string (Ia, II, etc)
+        photometry_dir: location of fits files with photometry
+
+    """
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
         super().__init__(name, output_dir, self.data_dir + combine, ": ")

@@ -9,6 +9,29 @@ from pippin.task import Task
 
 
 class SnirfClassifier(Classifier):
+    """ SNIRF classifier
+
+    CONFIGURATION:
+    ==============
+    CLASSIFICATION:
+      label:
+        MASK: TEST  # partial match on sim and classifier
+        MASK_SIM: TEST  # partial match on sim name
+        MASK_FIT: TEST  # partial match on lcfit name
+        MODE: train/predict
+        OPTS:
+          FITOPT: someLabel # Exact match to fitopt in a fitopt file
+          FEATURES: x1 c zHD  # Columns out of fitres file to use as features
+          MODEL: someName # exact name of training classification task
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
+
+    """
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.global_config = get_config()

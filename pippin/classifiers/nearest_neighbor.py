@@ -9,7 +9,8 @@ from pippin.task import Task
 
 
 class NearestNeighborClassifier(Classifier):
-    """
+    """ Nearest Neighbour classifier
+
     CONFIGURATION
     =============
 
@@ -18,12 +19,17 @@ class NearestNeighborClassifier(Classifier):
             MASK_SIM: mask  # partial match
             MASK_FIT: mask  # partial match
             MASK: mask  # partial match
+            MODE: train/predict
             OPTS:  # Options
                 FITOPT: fitoptLabel  # Exact match
+                MODEL: someName # exact name of training classification task
 
-    OUTPUTS
-    =======
-    See Classifier output
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        prob_column_name: name of the column to get probabilities out of
+        predictions_filename: location of csv filename with id/probs
 
     """
     def __init__(self, name, output_dir, dependencies, mode, options):

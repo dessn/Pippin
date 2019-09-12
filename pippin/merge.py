@@ -11,6 +11,29 @@ import os
 
 
 class Merger(Task):
+    """ Merge fitres files and aggregator output
+
+    CONFIGURATION:
+    ==============
+    MERGE:
+        label:
+            MASK: partial match on all sim, fit and agg
+            MASK_SIM: partial match on sim
+            MASK_FIT: partial match on lcfit
+            MASK_AGG: partial match on aggregation task
+
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        classifiers: aggregators classifier tasks
+        classifier_names: aggregators classifier names
+        sim_name: sim name being aggregated
+        genversion: genverison of sim
+        fitres_file: the location of the new FITOPT000.FITRES
+        fitres_dir: the location of the directory in which the FITRES file lives
+
+    """
     def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
