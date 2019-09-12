@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import os
+from collections import OrderedDict
 
 from pippin.config import mkdirs, get_output_loc, get_config
 from pippin.task import Task
@@ -9,6 +10,17 @@ from pippin.task import Task
 class DataPrep(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
     """ Smack the data into something that looks like the simulated data
 
+    OUTPUTS:
+    ========
+        name : name given in the yml
+        output_dir: top level output directory
+        genversion : Genversion
+        data_path : dir with all data in it (dir above raw_dir)
+        photometry_dir : dir with fits file photometry in it
+        raw_dir: input directory
+        clump_file: clumping file with estimate of t0 for each event
+        types_dict: dict mapping IA and NONIA to types
+        types: dict mapping numbers to types, used by Supernnova
     """
 
     def __init__(self, name, output_dir, options, dependencies=None):
@@ -31,6 +43,19 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.output["raw_dir"] = self.raw_dir
         self.clump_file = os.path.join(self.output_dir, self.genversion + ".SNANA.TEXT")
         self.output["clump_file"] = self.clump_file
+
+        self.types_dict = options.get("TYPES")
+        if self.types_dict is None:
+            self.types_dict = {"IA": [1], "NONIA": [2, 20, 21, 22, 29, 30, 31, 32, 33, 39, 40, 41, 42, 42, 43, 80, 81]}
+        self.logger.debug(f"\tIA types are {self.types_dict['IA']}")
+        self.logger.debug(f"\tNONIA types are {self.types_dict['NONIA']}")
+        self.output["types_dict"] = self.types_dict
+        self.types = OrderedDict()
+        for n in self.types_dict["IA"]:
+            self.types.update({n: "Ia"})
+        for n in self.types_dict["II"]:
+            self.types.update({n: "II"})
+        self.output["types"] = self.types
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}

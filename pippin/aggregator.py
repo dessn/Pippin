@@ -334,6 +334,8 @@ class Aggregator(Task):
         if self.type_name not in df.columns:
             self.logger.error("Cannot plot without loading in actual type. Set INCLUDE_TYPE: True in your aggregator options")
         else:
+
+            types = self.get_underlying_sim_task().output["types"]
             ia = (df["SNTYPE"] == 101) | (df["SNTYPE"] == 1)
             df["IA"] = ia
             df = df.drop(["SNID", "SNTYPE"], axis=1)
