@@ -308,7 +308,10 @@ class Aggregator(Task):
                     if j == 0:
                         ax.spines["left"].set_visible(False)
                     if j == n - 1:
-                        ax.set_xlabel(label1, fontsize=8)
+                        ax.set_xlabel(label1, fontsize=6)
+                        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
+                    else:
+                        ax.set_xticklabels([])
                 else:
                     a1 = np.array(df[label2])
                     a2 = np.array(df[label1])
@@ -321,9 +324,12 @@ class Aggregator(Task):
                         ax.set_yticklabels([])
                         ax.tick_params(axis="y", left=False)
                     else:
-                        ax.set_ylabel(label1, fontsize=8)
+                        ax.set_ylabel(label1, fontsize=6)
                     if i == n - 1:
-                        ax.set_xlabel(label2, fontsize=8)
+                        ax.set_xlabel(label2, fontsize=6)
+                        plt.setp(ax.get_xticklabels(), rotation=30, horizontalalignment='right')
+                    else:
+                        ax.set_xticklabels([])
         plt.subplots_adjust(hspace=0.0, wspace=0)
         if self.output_dir:
             filename = os.path.join(self.output_dir, "plt_scatter.png")
