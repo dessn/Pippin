@@ -243,6 +243,14 @@ class SNANASimulation(ConfigBasedExecutable):
             return Task.FINISHED_SUCCESS
         return 0  # TODO: Update to num jobs
 
+    def resolve_name_to_type(self, name):
+        """ I know this is wrong, but its just for Supernnova to split Ia and everything else """
+        name = name.upper()
+        if "SNIA_" in name or "SALT2" in name or "SN_IA_" in name:
+            return "Ia"
+        else:
+            return "II"
+
     def get_types(self):
         types = {}
         for f in [f for f in os.listdir(self.output_dir) if f.endswith(".input")]:
@@ -251,8 +259,11 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(path, "r") as file:
                 for line in file.readlines():
                     if line.startswith("GENTYPE"):
-                        number = "1" + "%02d" % int(line.split(":")[1].strip())
-                        types[number] = name
+                        num = int(line.split(":")[1].strip())
+                        number = "1" + "%02d" % num
+                        n = self.resolve_name_to_type(name)
+                        types[number] = n
+                        types[num] = n
                         break
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
