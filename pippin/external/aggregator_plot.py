@@ -243,5 +243,9 @@ if __name__ == "__main__":
     logging.info(f"Input csv is {args.mergedcsv}")
     logging.info(f"Output folder {args.output_dir}")
 
-    df = pd.read_csv(args.mergedcsv)
-    plot(df, args.output_dir)
+    try:
+        df = pd.read_csv(args.mergedcsv)
+        plot(df, args.output_dir)
+    except Exception as e:
+        logging.error(str(e))
+        raise e
