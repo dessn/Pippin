@@ -28,6 +28,7 @@ class Classifier(Task):
         predictions_filename: location of csv filename with id/probs
 
     """
+
     TRAIN = 0
     PREDICT = 1
 
@@ -97,7 +98,7 @@ class Classifier(Task):
         if use_fit:
             name += "_" + self.get_fit_dependency()["name"] + "_" + self.get_fit_dependency()["sim_name"]
         else:
-            name += "_" + self.get_simulation_dependency()["name"]
+            name += "_" + self.get_simulation_dependency().output["name"]
         return name
 
     def get_prob_column_name(self):
