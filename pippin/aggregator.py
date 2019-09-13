@@ -145,16 +145,18 @@ class Aggregator(Task):
             ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
 
-            if self.plot:
-                self._plot()
-            else:
-                self.logger.debug("Plot not set, skipping plotting section")
-
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
             self.save_key_format(df)
             self.logger.debug(f"Saving merged dataframe to {self.output_df}")
             self.save_new_hash(new_hash)
+
+            if self.plot:
+                return_good = self._plot()
+                if not return_good:
+                    self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
+            else:
+                self.logger.debug("Plot not set, skipping plotting section")
 
         self.output["merge_predictions_filename"] = self.output_df
         self.output["merge_key_filename"] = self.output_df_key
@@ -175,8 +177,12 @@ class Aggregator(Task):
     def _plot(self):
         cmd = ["python", self.python_file, self.output_df, self.output_dir]
         self.logger.debug(f"Invoking command  {' '.join(cmd)}")
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir)
-        self.logger.info(f"Finished invoking {self.python_file}")
+        try:
+            subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
+            self.logger.info(f"Finished invoking {self.python_file}")
+        except subprocess.CalledProcessError as e:
+            return False
+        return True
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
