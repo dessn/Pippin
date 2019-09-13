@@ -29,6 +29,7 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = None
         self.data = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
+        self.genversions = [m.output["genversion"] for m in self.merged_data]
         self.genversion = "_".join(self.sim_names) + "_" + self.classifier.name
 
         self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
@@ -78,7 +79,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
-        self.set_property("STRINGMATCH_IGNORE", " ".join(self.sim_names), assignment=": ")
+        self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
         if self.options.get("BATCH_INFO"):
             self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
 
