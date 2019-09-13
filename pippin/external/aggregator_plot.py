@@ -236,7 +236,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
-    logging.basicConfig(level=logging.DEBUG, format=fmt)
+    logging_filename = os.path.join(args.output_dir, "output_plots.log")
+    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[logging.FileHandler(logging_filename), logging.StreamHandler()])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
     logging.info(f"Input csv is {args.mergedcsv}")
