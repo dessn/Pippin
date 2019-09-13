@@ -34,6 +34,7 @@ class Merger(Task):
         fitres_dir: the location of the directory in which the FITRES file lives
 
     """
+
     def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
@@ -181,7 +182,7 @@ class Merger(Task):
                     if sim != agg.get_underlying_sim_task():
                         continue
                     num_gen += 1
-                    merge_name2 = f"{name}_{sim.name}_{lcfit.name}"
+                    merge_name2 = f"{name}_{lcfit.name}"
 
                     task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
                     Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
