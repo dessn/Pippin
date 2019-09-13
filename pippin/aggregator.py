@@ -131,7 +131,7 @@ class Aggregator(Task):
                 for h in headers:
                     with fits.open(h) as hdul:
                         data = hdul[1].data
-                        snid = np.array(data.field("SNID"))
+                        snid = np.array(data.field("SNID")).astype(df[self.id].dtype)
                         sntype = np.array(data.field("SNTYPE")).astype(np.int64)
                         dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
                         if type_df is None:
