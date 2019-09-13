@@ -61,7 +61,7 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.logging_file) as f:
                 output_error = False
                 for line in f.read().splitlines():
-                    if "ABORT ON FATAL ERROR" in line:
+                    if "ABORT ON FATAL ERROR" in line or "** ABORT **" in line:
                         self.logger.error(f"Output log showing abort: {self.logging_file}")
                         output_error = True
                     if output_error:
