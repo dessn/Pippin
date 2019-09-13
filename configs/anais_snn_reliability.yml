@@ -1,0 +1,57 @@
+SIM:
+  TRAINSPECFULL:
+    IA_SDSS:
+      BASE: djbrout_sdss/SIMGEN_SDSS_SALT2.input
+    II:
+      BASE: djbrout_sdss/SNII_Templates.input
+    Ibc:
+      BASE: djbrout_sdss/SNIbc_Templates.input
+      UVLAM_EXTRAPFLUX: 500
+    GLOBAL:
+      NGEN_UNIT: 10
+      RESET_CIDOFF: 2
+      RANSEED_REPEAT: 15 12345
+      SIMLIB_FILE: djbrout_sdss/SDSS_3year.SIMLIB
+      SOLID_ANGLE: 0.08
+      SEARCHEFF_zHOST_FILE: /project2/rkessler/SURVEYS/SDSS/USERS/BAP37/SEARCHEFF_zHOST_SDSS_PerfEff.DAT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 15
+
+  TESTSPECFULL:
+    IA_SDSS:
+      BASE: djbrout_sdss/SIMGEN_SDSS_SALT2.input
+    II:
+      BASE: djbrout_sdss/SNII_Templates.input
+    Ibc:
+      BASE: djbrout_sdss/SNIbc_Templates.input
+      UVLAM_EXTRAPFLUX: 500
+    GLOBAL:
+      NGEN_UNIT: 2
+      RESET_CIDOFF: 2
+      RANSEED_REPEAT: 15 12345
+      SIMLIB_FILE: djbrout_sdss/SDSS_3year.SIMLIB
+      SOLID_ANGLE: 0.08
+      SEARCHEFF_zHOST_FILE: /project2/rkessler/SURVEYS/SDSS/USERS/BAP37/SEARCHEFF_zHOST_SDSS_PerfEff.DAT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 15
+
+LCFIT:
+  FIT:
+    BASE: djbrout_sdss/sdss.nml
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+
+CLASSIFICATION:
+  SNNVANILLATRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNNVANILLATEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNNVANILLATRAIN
+
+AGGREGATION:
+  AGG:
+    OPTS:
+      PLOT: True
