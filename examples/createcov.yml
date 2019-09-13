@@ -1,5 +1,6 @@
 CREATE_COV:
   ALL:  # Will match to all bias cor tasks
+    MASK: something # masks on partial match to biascor name
     OPTS:
       COVOPTS:  # note you'll get an 'ALL' covopt no matter what
         - "[NOSYS] [=DEFAULT,=DEFAULT]"  # This refers to the default biascor sims
