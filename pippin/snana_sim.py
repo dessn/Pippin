@@ -263,7 +263,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         number = "1" + "%02d" % num
                         n = self.resolve_name_to_type(name)
                         types[number] = n
-                        types[num] = n
+                        types[str(num)] = n
                         break
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
