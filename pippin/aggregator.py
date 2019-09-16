@@ -145,6 +145,7 @@ class Aggregator(Task):
             self.logger.debug(f"Types are {types}")
             ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
+            print(df.head())
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
@@ -219,8 +220,3 @@ class Aggregator(Task):
                     Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                     tasks.append(a)
         return tasks
-
-
-if __name__ == "__main__":
-    df = pd.read_csv("debug/merged.csv")
-    Aggregator("AGG", "debug", [], {})._plot(df)
