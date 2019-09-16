@@ -66,7 +66,7 @@ python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {phot
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 fi
-python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
+python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 50 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file2}
 else
