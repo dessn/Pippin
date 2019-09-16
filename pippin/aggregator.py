@@ -145,7 +145,6 @@ class Aggregator(Task):
             self.logger.debug(f"Types are {types}")
             ia = df["SNTYPE"].apply(lambda y: True if str(y) in types["IA"] else (False if str(y) in types["NONIA"] else np.nan))
             df["IA"] = ia
-            print(df.head())
 
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
