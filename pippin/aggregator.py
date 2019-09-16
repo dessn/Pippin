@@ -143,7 +143,7 @@ class Aggregator(Task):
 
             types = self.get_underlying_sim_task().output["types_dict"]
             self.logger.debug(f"Types are {types}")
-            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
+            ia = df["SNTYPE"].apply(lambda y: True if str(y) in types["IA"] else (False if str(y) in types["NONIA"] else np.nan))
             df["IA"] = ia
             print(df.head())
 
