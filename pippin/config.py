@@ -57,7 +57,10 @@ def get_logger():
 
 
 def mkdirs(path):
+    # Do this layer by layer so we can chown correctly
     if not os.path.exists(path):
+        parent = os.path.dirname(path)
+        mkdirs(parent)
         os.makedirs(path, exist_ok=True, mode=0o775)
         chown_dir(path)
 

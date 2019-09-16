@@ -91,7 +91,7 @@ class Merger(Task):
             # Dick around with folders and names to make it resemble split_and_fit output for salt2mu
 
             if not os.path.exists(self.fitres_outdir):
-                os.makedirs(self.fitres_outdir, exist_ok=True)
+                mkdirs(self.fitres_outdir)
 
                 shutil.move(self.original_output, self.new_output)
 

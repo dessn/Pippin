@@ -32,6 +32,7 @@ class SnirfClassifier(Classifier):
         predictions_filename: location of csv filename with id/probs
 
     """
+
     def __init__(self, name, output_dir, dependencies, mode, options):
         super().__init__(name, output_dir, dependencies, mode, options)
         self.global_config = get_config()

@@ -25,8 +25,9 @@ class FitProbClassifier(Classifier):
         predictions_filename: location of csv filename with id/probs
 
     """
+
     def __init__(self, name, output_dir, dependencies, mode, options):
-        super().__init__(name, output_dir, dependencies,  mode, options)
+        super().__init__(name, output_dir, dependencies, mode, options)
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
@@ -59,7 +60,7 @@ class FitProbClassifier(Classifier):
                 self.passed = False
                 return False
 
-            df = pd.read_csv(fitres_file, sep='\s+', comment="#", compression="infer")
+            df = pd.read_csv(fitres_file, sep="\s+", comment="#", compression="infer")
             df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
 
             self.logger.info(f"Saving probabilities to {self.output_file}")
@@ -73,9 +74,7 @@ class FitProbClassifier(Classifier):
         return True
 
     def _check_completion(self, squeue):
-        self.output.update({
-            "predictions_filename": self.output_file
-        })
+        self.output.update({"predictions_filename": self.output_file})
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self, force_refresh):
