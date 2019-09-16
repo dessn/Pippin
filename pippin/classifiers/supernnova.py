@@ -43,6 +43,7 @@ class SuperNNovaClassifier(Classifier):
 
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
+        self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
@@ -63,6 +64,11 @@ echo `which python`
 cd {path_to_classifier}
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train}
 python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file2}
+else
+    echo FAILURE > {done_file2}
+fi
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
@@ -164,6 +170,7 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
             "test_or_train": "" if training else "--data_testing",
             "done_file": self.done_file,
             "clump": clump_txt,
+            "done_file2": self.done_file2,
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
@@ -190,8 +197,16 @@ python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} 
         return True
 
     def _check_completion(self, squeue):
-        if os.path.exists(self.done_file):
+        if os.path.exists(self.done_file) or os.path.exists(self.done_file2):
             self.logger.info("Job complete")
+            if os.path.exists(self.done_file):
+                with open(self.done_file) as f:
+                    if "FAILURE" in f.read():
+                        return Task.FINISHED_FAILURE
+            if os.path.exists(self.done_file2):
+                with open(self.done_file2) as f:
+                    if "FAILURE" in f.read():
+                        return Task.FINISHED_FAILURE
 
             new_pred_file = self.output_dir + "/predictions.csv"
             new_model_file = self.output_dir + "/model.pt"
