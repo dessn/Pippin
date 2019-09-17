@@ -74,7 +74,7 @@ class Manager:
 
         total_tasks = []
         for i, task in enumerate(Manager.task_order):
-            if self.finish is None or self.finish <= i:
+            if self.finish is None or i <= self.finish:
                 new_tasks = task.get_tasks(config, total_tasks, self.output_dir, i, self.prefix, self.global_config)
                 if new_tasks is not None:
                     total_tasks += new_tasks
