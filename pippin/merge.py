@@ -102,9 +102,14 @@ class Merger(Task):
         command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file)]
         try:
             self.logger.debug(f"Executing command {command}")
-
             with open(self.logfile, "w+") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdir, check=True)
+            # Run sed command
+            sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
+            self.logger.debug(f"Executing command {sed_command}")
+            with open(self.logfile, "w+") as f:
+                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdir, check=True)
+
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Error invoking command {command}")
             raise e

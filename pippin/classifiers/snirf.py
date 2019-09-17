@@ -20,7 +20,7 @@ class SnirfClassifier(Classifier):
         MASK_FIT: TEST  # partial match on lcfit name
         MODE: train/predict
         OPTS:
-          FITOPT: someLabel # Exact match to fitopt in a fitopt file
+          FITOPT: someLabel # Exact match to fitopt in a fitopt file. USED FOR TRAINING ONLY
           FEATURES: x1 c zHD  # Columns out of fitres file to use as features
           MODEL: someName # exact name of training classification task
 
