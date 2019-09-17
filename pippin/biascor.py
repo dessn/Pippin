@@ -35,7 +35,7 @@ class BiasCor(ConfigBasedExecutable):
         self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
-        self.done_file = os.path.join(self.fit_output_dir, f"FITJOBS/ALL.DONE")
+        self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
         self.probability_column_name = self.classifier.output["prob_column_name"]
 
         self.output["fit_output_dir"] = self.fit_output_dir
