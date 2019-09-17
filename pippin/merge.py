@@ -40,8 +40,6 @@ class Merger(Task):
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.cmd_prefix = ["combine_fitres.exe"]
-        self.cmd_suffix = ["--outfile_text", "FITOPT000.FITRES"]
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
@@ -51,10 +49,13 @@ class Merger(Task):
         self.output["sim_name"] = self.lc_fit["sim_name"]
         self.output["genversion"] = self.lc_fit["genversion"]
 
-        self.fitres_outdir = os.path.join(self.output_dir, self.lc_fit["genversion"])
+        self.suboutput_dir = os.path.join(self.output_dir, "output")
+        self.fitres_outdir = os.path.join(self.suboutput_dir, self.lc_fit["genversion"])
         self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES")
         self.output["fitres_file"] = self.new_output
         self.output["fitres_dir"] = self.fitres_outdir
+        self.output["genversion"] = self.lc_fit["genversion"]
+        self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
@@ -76,35 +77,6 @@ class Merger(Task):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Merger finished, see combined fitres at {self.fitres_outdir}")
             return Task.FINISHED_SUCCESS
-        elif os.path.exists(self.original_output):
-            self.logger.debug(f"Merger finished for the first time, see combined fitres at {self.fitres_outdir}")
-
-            # Copy MERGE.LOG and FITOPT.README if they aren't there
-            filenames = ["MERGE.LOG", "FITOPT.README"]
-            for f in filenames:
-                original = os.path.join(self.lc_fit["lc_output_dir"], f)
-                moved = os.path.join(self.output_dir, f)
-                if not os.path.exists(moved):
-                    self.logger.debug(f"Copying file {f} into output directory")
-                    shutil.copy(original, moved)
-
-            # Dick around with folders and names to make it resemble split_and_fit output for salt2mu
-
-            if not os.path.exists(self.fitres_outdir):
-                mkdirs(self.fitres_outdir)
-
-                shutil.move(self.original_output, self.new_output)
-
-                # Create symlinks for all systematics
-                original_dir = self.lc_fit["fitres_dir"]
-                sys_files = [a for a in os.listdir(original_dir) if "FITOPT000" not in a and ".FITRES" in a]
-                for s in sys_files:
-                    os.symlink(os.path.join(original_dir, s), os.path.join(self.fitres_outdir, s))
-
-                # Recreate done file -_-
-                with open(self.done_file, "w") as f:
-                    f.write("SUCCESS")
-            return Task.FINISHED_SUCCESS
         else:
             output_error = False
             if os.path.exists(self.logfile):
@@ -119,24 +91,58 @@ class Merger(Task):
                     self.logger.debug("Removing hash on failure")
                     os.remove(self.hash_file)
                     chown_dir(self.output_dir)
-                    return Task.FINISHED_FAILURE
             else:
                 self.logger.error("Combine task failed with no output log. Please debug")
-                return Task.FINISHED_FAILURE
+            return Task.FINISHED_FAILURE
+
+    def add_to_fitres(self, fitres_file):
+        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file)]
+        try:
+            self.logger.debug(f"Executing command {command}")
+
+            with open(self.logfile, "w+") as f:
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdir, check=True)
+        except subprocess.CalledProcessError as e:
+            self.logger.error(f"Error invoking command {command}")
+            raise e
 
     def _run(self, force_refresh):
-        command = self.cmd_prefix + [self.lc_fit["fitres_file"], self.agg["merge_key_filename"]] + self.cmd_suffix
-        self.logger.debug("Computed command: " + " ".join(command))
+
+        fitres_dir = self.lc_fit["fitres_dir"]
+        files = os.listdir(fitres_dir)
+        fitres_files = [f for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+        symlink_files = [f for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
+
         old_hash = self.get_old_hash()
-        new_hash = self.get_hash_from_string(" ".join(command))
+        new_hash = self.get_hash_from_string(" ".join(fitres_files + symlink_files))
 
         if force_refresh or new_hash != old_hash:
             shutil.rmtree(self.output_dir, ignore_errors=True)
-            mkdirs(self.output_dir)
             self.logger.debug("Regenerating, running combine_fitres")
-            self.save_new_hash(new_hash)
-            with open(self.logfile, "w") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            mkdirs(self.fitres_outdir)
+            try:
+                for f in fitres_files:
+                    self.add_to_fitres(os.path.join(fitres_dir, f))
+                for s in symlink_files:
+                    self.logger.debug(f"Creating symlink for {os.path.join(self.fitres_outdir, s)}")
+                    os.symlink(os.path.join(self.fitres_outdir, s), os.path.join(self.fitres_outdir, "FITOPT000.FITRES"))
+
+                self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
+                filenames = ["MERGE.LOG", "FITOPT.README"]
+                for f in filenames:
+                    original = os.path.join(self.lc_fit["lc_output_dir"], f)
+                    moved = os.path.join(self.suboutput_dir, f)
+                    if not os.path.exists(moved):
+                        self.logger.debug(f"Copying file {f} into output directory")
+                        shutil.copy(original, moved)
+
+                self.save_new_hash(new_hash)
+                with open(self.done_file, "w") as f:
+                    f.write("SUCCESS")
+            except Exception as e:
+                self.logger.error("Error running merger!")
+                self.logger.error(f"Check log at {self.logfile}")
+                return False
         else:
             self.logger.debug("Not regnerating")
         return True
