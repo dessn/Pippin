@@ -194,5 +194,5 @@ class Merger(Task):
                     Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
                     tasks.append(task)
             if num_gen == 0:
-                Task.fail_config(f"Merger {merge_name2} with mask {mask} matched no combination of aggregators and fits")
+                Task.fail_config(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
         return tasks
