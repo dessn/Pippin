@@ -130,9 +130,8 @@ python {path_to_code} {files} {name} {blind} {done_file} {params}
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
 
-            name = f"{cname}"
-            a = AnalyseChains(name, _get_analyse_dir(base_output_dir, stage_number, name), options, deps)
-            Task.logger.info(f"Creating Analyse task {name} for {[c.name for c in deps]} with {a.num_jobs} jobs")
+            a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), options, deps)
+            Task.logger.info(f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs")
             tasks.append(a)
 
         return tasks
