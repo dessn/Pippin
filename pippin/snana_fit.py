@@ -44,7 +44,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]
-        self.config_path = self.output_dir + "/" + self.sim_version + ".nml"
+        self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
         self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
         self.set_num_jobs(int(config.get("NUM_JOBS", 100)))

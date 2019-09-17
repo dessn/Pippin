@@ -89,7 +89,15 @@ class BiasCor(ConfigBasedExecutable):
         if self.options.get("BATCH_INFO"):
             self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
 
-        # self.set_property("INPDIR", ",".join(self.data))
+        for key in self.options.keys():
+            if key in ["BATCH_INFO"]:
+                continue
+            if key == "PROB_IA":
+                label = self.probability_column_name
+            else:
+                label = key
+            self.set_property(label, self.options.get(key), assignment="=")
+
         bullshit_hack = ""
         for i, d in enumerate(self.data):
             if i > 0:

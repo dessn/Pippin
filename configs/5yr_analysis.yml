@@ -16,7 +16,7 @@ SIM:
     II_JONES:
       BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 2.0
+      NGEN_UNIT: 5.0
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -135,6 +135,8 @@ BIASCOR:
     CLASSIFIER: SNIRFTEST
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      PROB_IA: 0.9 1.0
 
   3YR:
     BASE: bbc_spec.input
@@ -143,6 +145,8 @@ BIASCOR:
     CLASSIFIER: UNITY
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      PROB_IA: 0.9 1.0
 
 
 CREATE_COV:
