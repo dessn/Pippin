@@ -27,7 +27,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         lc_output_dir: directory which contains fitres_dir and the simlogs dir
         fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
         fitres_file: path to the default FITOPT000.FITRES file
-
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):

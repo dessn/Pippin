@@ -32,6 +32,8 @@ class Merger(Task):
         genversion: genverison of sim
         fitres_file: the location of the new FITOPT000.FITRES
         fitres_dir: the location of the directory in which the FITRES file lives
+        fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
+        lc_output_dir: path to the "output" folder created by split and fit
 
     """
 
@@ -52,6 +54,7 @@ class Merger(Task):
         self.suboutput_dir = os.path.join(self.output_dir, "output")
         self.fitres_outdir = os.path.join(self.suboutput_dir, self.lc_fit["genversion"])
         self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES")
+        self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_file"] = self.new_output
         self.output["fitres_dir"] = self.fitres_outdir
         self.output["genversion"] = self.lc_fit["genversion"]
