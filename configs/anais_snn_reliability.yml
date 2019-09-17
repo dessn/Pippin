@@ -8,9 +8,9 @@ SIM:
     Ibc:
       BASE: djbrout_sdss/SNIbc_Templates.input
       UVLAM_EXTRAPFLUX: 500
-      DNDZ_ALLSCALE: 0.6
+      DNDZ_ALLSCALE: 0.9
     GLOBAL:
-      NGEN_UNIT: 15
+      NGEN_UNIT: 7
       RESET_CIDOFF: 2
       RANSEED_REPEAT: 30 12345
       SIMLIB_FILE: djbrout_sdss/SDSS_3year.SIMLIB
