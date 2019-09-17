@@ -13,7 +13,12 @@ from pippin.task import Task
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, dependencies, options, config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        super().__init__(name, output_dir, os.path.join(self.data_dir, "bbc.input"), "=", dependencies=dependencies)
+        base = config.get("BASE", "bbc.input")
+        if "$" in base or base.startswith("/"):
+            base = os.path.expandvars(base)
+        else:
+            base = os.path.join(self.data_dir, base)
+        super().__init__(name, output_dir, base, "=", dependencies=dependencies)
 
         self.options = options
         self.config = config
