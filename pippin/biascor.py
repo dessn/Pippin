@@ -188,8 +188,11 @@ class BiasCor(ConfigBasedExecutable):
                     if len(task) > 1:
                         Task.fail_config(f"Got {len(task)} prob column names? How is this even possible?")
                 elif len(task) > 1:
-                    choices = [c.get_prob_column_name() for c in task]
-                    Task.logger.warning(f"Found multiple classifiers. Please instead specify a column name. Your choices: {choices}")
+                    choices = list(set([c.get_prob_column_name() for c in task]))
+                    if len(choices) == 1:
+                        task = [task[0]]
+                    else:
+                        Task.fail_config(f"Found multiple classifiers. Please instead specify a column name. Your choices: {choices}")
                 return task[0]  # We only care about the prob column name
 
             def resolve_merged_fitres_files(name, classifier_name):
