@@ -179,8 +179,17 @@ class BiasCor(ConfigBasedExecutable):
             def resolve_classifier(name):
                 task = [c for c in classifier_tasks if c.name == name]
                 if len(task) == 0:
-                    message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks}"
-                    Task.fail_config(message)
+                    Task.logger.info("CLASSIFIER {name} matched no classifiers. Checking prob column names instead.")
+                    task = [c for c in classifier_tasks if c.get_prob_column_name() == name]
+                    if len(task) == 0:
+                        choices = [c.get_prob_column_name() for c in task]
+                        message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks} using either name or prob columns {choices}"
+                        Task.fail_config(message)
+                    if len(task) > 1:
+                        Task.fail_config(f"Got {len(task)} prob column names? How is this even possible?")
+                elif len(task) > 1:
+                    choices = [c.get_prob_column_name() for c in task]
+                    Task.logger.warning(f"Found multiple classifiers. Please instead specify a column name. Your choices: {choices}")
                 return task[0]  # We only care about the prob column name
 
             def resolve_merged_fitres_files(name, classifier_name):
