@@ -49,6 +49,10 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.types_dict = options.get("TYPES")
         if self.types_dict is None:
             self.types_dict = {"IA": [1], "NONIA": [2, 20, 21, 22, 29, 30, 31, 32, 33, 39, 40, 41, 42, 42, 43, 80, 81]}
+        else:
+            for key in self.types_dict.keys():
+                self.types_dict[key] = [str(c) for c in self.types_dict[key]]
+
         self.logger.debug(f"\tIA types are {self.types_dict['IA']}")
         self.logger.debug(f"\tNONIA types are {self.types_dict['NONIA']}")
         self.output["types_dict"] = self.types_dict
