@@ -146,6 +146,7 @@ class Aggregator(Task):
             ia = df["SNTYPE"].apply(lambda y: True if str(y) in types["IA"] else (False if str(y) in types["NONIA"] else np.nan))
             df["IA"] = ia
 
+            df = df.reindex(sorted(df.columns), axis=1)
             self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
             df.to_csv(self.output_df, index=False, float_format="%0.4f")
             self.save_key_format(df)
