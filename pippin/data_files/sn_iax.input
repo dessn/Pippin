@@ -1,7 +1,7 @@
 # SN~Iax from Saurabh
 INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
-GENTYPE:  111
+GENTYPE:  11
 
 GENMODEL: $PLASTICC_MODELS/SIMSED.SNIax
 

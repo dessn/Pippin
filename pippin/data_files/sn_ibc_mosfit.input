@@ -1,7 +1,7 @@
 # Ibc model (from MOSFIT group)
 INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
-GENTYPE:   131
+GENTYPE:   31
 GENMODEL: $PLASTICC_MODELS/SIMSED.SNIbc-MOSFIT
 GENAV_WV07:   1       # WV07, Eq. 2
 GENRANGE_AV:  0  3    # CCM89 AV-extinctionrange

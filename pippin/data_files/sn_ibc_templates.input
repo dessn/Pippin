@@ -4,7 +4,7 @@
 #
 INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
-GENTYPE:   130
+GENTYPE:   30
 GENMODEL:  $PLASTICC_MODELS/NON1ASED.SNIbc-Templates
 
 DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
