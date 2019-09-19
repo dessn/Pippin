@@ -35,6 +35,7 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
     parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
     parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
+    parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
 
     args = parser.parse_args()
     level = logging.DEBUG if args.verbose else logging.INFO
@@ -80,4 +81,4 @@ if __name__ == "__main__":
     manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
-    manager.execute()
+    manager.execute(args.config)

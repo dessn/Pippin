@@ -132,13 +132,21 @@ class Manager:
             self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
         self.logger.debug("")
 
-    def execute(self):
+    def execute(self, check_config):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
+        if check_config:
+            self.logger.info("Only verifying config, not launching anything")
+
         mkdirs(self.output_dir)
         c = self.run_config
 
         self.tasks = self.get_tasks(c)
+
+        if check_config:
+            self.logger.notice("Config verified, exiting")
+            return
+
         self.num_jobs_queue = 0
         running_tasks = []
         done_tasks = []
