@@ -152,9 +152,17 @@ class Classifier(Task):
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
-                if sim_name is not None and not (mask in sim_name or mask_sim in sim_name):
-                    continue
-                if fit_name is not None and not (mask in fit_name or mask_fit in fit_name):
+                matched_sim = sim_name is None
+                matched_fit = fit_name is None
+                if mask:
+                    matched_sim = matched_sim or mask in sim_name
+                if mask_sim:
+                    matched_sim = matched_sim or mask_sim in sim_name
+                if mask:
+                    matched_fit = matched_fit or mask in sim_name
+                if mask_fit:
+                    matched_fit = matched_fit or mask_sim in sim_name
+                if not matched_fit or not matched_sim:
                     continue
                 deps = []
                 if s is not None:
