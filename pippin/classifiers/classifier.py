@@ -152,15 +152,8 @@ class Classifier(Task):
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
-                Task.logger.debug(
-                    sim_name,
-                    mask,
-                    mask_sim,
-                    sim_name is not None and (mask not in sim_name or mask_sim not in sim_name),
-                    (mask not in sim_name or mask_sim not in sim_name),
-                    mask not in sim_name,
-                    mask_sim not in sim_name,
-                )
+                Task.logger.debug(sim_name, mask, mask_sim)
+                Task.logger.debug(str(mask not in sim_name or mask_sim not in sim_name), str(mask not in sim_name), str(mask_sim not in sim_name))
                 if sim_name is not None and (mask not in sim_name or mask_sim not in sim_name):
                     continue
                 if fit_name is not None and (mask not in fit_name or mask_fit not in fit_name):
