@@ -92,11 +92,14 @@ class BiasCor(ConfigBasedExecutable):
         for key in self.options.keys():
             if key in ["BATCH_INFO"]:
                 continue
+            assignment = "="
             if key == "PROB_IA":
-                label = self.probability_column_name
+                label = "CUTWIN " + self.probability_column_name
+                assignment = " "
             else:
                 label = key
-            self.set_property(label, self.options.get(key), assignment="=")
+                assignment = " " if label.upper().startswith("CUTWIN") else "="
+            self.set_property(label, self.options.get(key), assignment=assignment)
 
         bullshit_hack = ""
         for i, d in enumerate(self.data):
