@@ -32,7 +32,7 @@
 
 INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
-GENTYPE:  20
+GENTYPE:  120
 GENSOURCE:   RANDOM
 GENMODEL:    NON1ASED
 
