@@ -166,23 +166,23 @@ BIASCOR:
 
 CREATE_COV:
   ALL:
-    OPTS:
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+#    OPTS:
+#      COVOPTS:
+#        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
 
 COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_omw
-      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
+#      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
       NUM_WALKERS: 20
 
-  SN_CMB_OMW:
-    OPTS:
-      INI: sn_cmb_omw
-      COVOPTS: [ALL]
-      NUM_WALKERS: 20
+#  SN_CMB_OMW:
+#    OPTS:
+#      INI: sn_cmb_omw
+#      COVOPTS: [ALL]
+#      NUM_WALKERS: 20
 
 ANALYSE:
   ALL_OMW:
