@@ -152,16 +152,16 @@ class Classifier(Task):
             for s, l in runs:
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
-                matched_sim = sim_name is None
-                matched_fit = fit_name is None
+                matched_sim = True
+                matched_fit = True
                 if mask:
-                    matched_sim = matched_sim or mask in sim_name
+                    matched_sim = matched_sim and mask in sim_name
                 if mask_sim:
-                    matched_sim = matched_sim or mask_sim in sim_name
+                    matched_sim = matched_sim and mask_sim in sim_name
                 if mask:
-                    matched_fit = matched_fit or mask in sim_name
+                    matched_fit = matched_fit and mask in sim_name
                 if mask_fit:
-                    matched_fit = matched_fit or mask_sim in sim_name
+                    matched_fit = matched_fit and mask_sim in sim_name
                 if not matched_fit or not matched_sim:
                     continue
                 deps = []
@@ -188,6 +188,6 @@ class Classifier(Task):
                     num_gen += 1
                     tasks.append(cc)
             if num_gen == 0:
-                Task.logger.error(f"Classifier {name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
+                Task.logger.error(f"Classifier {clas_name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
                 return None  # This should cause pippin to crash, which is probably what we want
         return tasks

@@ -19,7 +19,7 @@ DATAPREP:
         NONIA: [120, 130, 20, 30]
 
 SIM:
-  TRAIN:
+  TRAINDESSIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
@@ -29,7 +29,7 @@ SIM:
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
-  TEST:
+  TESTDESSIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
@@ -129,7 +129,7 @@ CLASSIFICATION:
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
     MODE: train
-    MASK_SIM: TRAIN
+    MASK_SIM: TRAINDESSIM
 
   SNIRFTEST:
     CLASSIFIER: SnirfClassifier
