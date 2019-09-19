@@ -19,7 +19,7 @@ DATAPREP:
         NONIA: [120, 130, 20, 30]
 
 SIM:
-  TRAININGDESSIM:
+  TRAIN:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
@@ -29,7 +29,7 @@ SIM:
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
-  TESDESSIM:
+  TEST:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
@@ -93,27 +93,35 @@ SIM:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
 LCFIT:
-  LOWZFITSYS:
+  LS:
     BASE: lowz.nml
     MASK: DATALOWZ
+    SNLCINP:
+      USE_MINOS: F
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
-  DESFITSYS:
+  DS:
     BASE: des.nml
     MASK: DATADES
+    SNLCINP:
+      USE_MINOS: F
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
-  LOWZFIT:
+  L:
     BASE: lowz.nml
     MASK: LOWZSIM
+    SNLCINP:
+      USE_MINOS: F
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
-  DESFIT:
+  D:
     BASE: des.nml
     MASK: DESSIM
+    SNLCINP:
+      USE_MINOS: F
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
@@ -121,7 +129,7 @@ CLASSIFICATION:
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
     MODE: train
-    MASK_SIM: TRAINING
+    MASK_SIM: TRAIN
 
   SNIRFTEST:
     CLASSIFIER: SnirfClassifier
@@ -151,7 +159,6 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      PROB_IA: 0.9 1.0
 
   3YR:
     BASE: bbc_spec.input
@@ -161,7 +168,6 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      PROB_IA: 0.9 1.0
 
 
 CREATE_COV:
