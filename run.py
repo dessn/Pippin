@@ -81,4 +81,4 @@ if __name__ == "__main__":
     manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
-    manager.execute(args.config)
+    manager.execute(args.check)
