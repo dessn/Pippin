@@ -35,6 +35,9 @@ class UnityClassifier(Classifier):
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
 
+    def get_unique_name(self):
+        return "UNITY"
+
     def check_regenerate(self, force_refresh):
 
         new_hash = self.get_hash_from_string(self.name)

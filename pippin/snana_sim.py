@@ -270,9 +270,9 @@ class SNANASimulation(ConfigBasedExecutable):
         types_dict = {"IA": [], "NONIA": []}
         for key, value in sorted_types.items():
             if value.upper() == "IA":
-                types_dict["IA"].append(key)
+                types_dict["IA"].append(str(key))
             else:
-                types_dict["NONIA"].append(key)
+                types_dict["NONIA"].append(str(key))
         self.output["types_dict"] = types_dict
         return sorted_types
 

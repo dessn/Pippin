@@ -125,15 +125,13 @@ python {path_to_code} {files} {name} {blind} {done_file} {params}
             options = config.get("OPTS", {})
 
             mask = config.get("MASK_COSMOMC", "")
-            for ctask in cosmomc_tasks:
-                if mask not in ctask.name:
-                    continue
-                name = f"{cname}_{ctask.name}"
-                a = AnalyseChains(name, _get_analyse_dir(base_output_dir, stage_number, name), options, [ctask])
-                Task.logger.info(f"Creating Analyse task {name} for {ctask.name} with {a.num_jobs} jobs")
-                tasks.append(a)
 
-            if len(cosmomc_tasks) == 0:
+            deps = [c for c in cosmomc_tasks if mask in c.name]
+            if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
+
+            a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), options, deps)
+            Task.logger.info(f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs")
+            tasks.append(a)
 
         return tasks

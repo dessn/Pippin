@@ -2,12 +2,21 @@ DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
   DATALOWZ:  # lowz combined sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
   DATADES3YR:  # 3yr spec sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
 
 SIM:
   TRAININGDESSIM:
@@ -16,7 +25,7 @@ SIM:
     II_JONES:
       BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 1.0
+      NGEN_UNIT: 5.0
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -27,9 +36,9 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 0.2
+      NGEN_UNIT: 1
       RANSEED_REPEAT: 5 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   LOWZSIMBIAS:
     IA_G10_LOWZ:
@@ -41,7 +50,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 5
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -55,7 +64,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -69,7 +78,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 3
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -79,7 +88,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 3
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -87,18 +96,26 @@ LCFIT:
   LOWZFITSYS:
     BASE: lowz.nml
     MASK: DATALOWZ
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
   DESFITSYS:
     BASE: des.nml
     MASK: DATADES
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
   LOWZFIT:
     BASE: lowz.nml
     MASK: LOWZSIM
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
   DESFIT:
     BASE: des.nml
     MASK: DESSIM
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CLASSIFICATION:
   SNIRFTRAIN:
@@ -111,6 +128,11 @@ CLASSIFICATION:
     MODE: predict
     OPTS:
       MODEL: SNIRFTRAIN
+
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
 
 AGGREGATION:
   AGG:
@@ -128,13 +150,18 @@ BIASCOR:
     CLASSIFIER: SNIRFTEST
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      PROB_IA: 0.9 1.0
 
   3YR:
+    BASE: bbc_spec.input
     DATA: [DATADES3YR, DATALOWZ]
     SIMFILE_BIASCOR: [DESSIMBIAS3YRIA, LOWZSIMBIAS]
-    CLASSIFIER: SNIRFTEST
+    CLASSIFIER: UNITY
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      PROB_IA: 0.9 1.0
 
 
 CREATE_COV:
@@ -149,6 +176,12 @@ COSMOMC:
     OPTS:
       INI: sn_omw
       COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 20
+
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]
       NUM_WALKERS: 20
 
 ANALYSE:

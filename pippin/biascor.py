@@ -13,7 +13,12 @@ from pippin.task import Task
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, dependencies, options, config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        super().__init__(name, output_dir, os.path.join(self.data_dir, "bbc.input"), "=", dependencies=dependencies)
+        base = config.get("BASE", "bbc.input")
+        if "$" in base or base.startswith("/"):
+            base = os.path.expandvars(base)
+        else:
+            base = os.path.join(self.data_dir, base)
+        super().__init__(name, output_dir, base, "=", dependencies=dependencies)
 
         self.options = options
         self.config = config
@@ -84,7 +89,15 @@ class BiasCor(ConfigBasedExecutable):
         if self.options.get("BATCH_INFO"):
             self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
 
-        # self.set_property("INPDIR", ",".join(self.data))
+        for key in self.options.keys():
+            if key in ["BATCH_INFO"]:
+                continue
+            if key == "PROB_IA":
+                label = self.probability_column_name
+            else:
+                label = key
+            self.set_property(label, self.options.get(key), assignment="=")
+
         bullshit_hack = ""
         for i, d in enumerate(self.data):
             if i > 0:
@@ -166,8 +179,20 @@ class BiasCor(ConfigBasedExecutable):
             def resolve_classifier(name):
                 task = [c for c in classifier_tasks if c.name == name]
                 if len(task) == 0:
-                    message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks}"
-                    Task.fail_config(message)
+                    Task.logger.info("CLASSIFIER {name} matched no classifiers. Checking prob column names instead.")
+                    task = [c for c in classifier_tasks if c.get_prob_column_name() == name]
+                    if len(task) == 0:
+                        choices = [c.get_prob_column_name() for c in task]
+                        message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks} using either name or prob columns {choices}"
+                        Task.fail_config(message)
+                    if len(task) > 1:
+                        Task.fail_config(f"Got {len(task)} prob column names? How is this even possible?")
+                elif len(task) > 1:
+                    choices = list(set([c.get_prob_column_name() for c in task]))
+                    if len(choices) == 1:
+                        task = [task[0]]
+                    else:
+                        Task.fail_config(f"Found multiple classifiers. Please instead specify a column name. Your choices: {choices}")
                 return task[0]  # We only care about the prob column name
 
             def resolve_merged_fitres_files(name, classifier_name):
