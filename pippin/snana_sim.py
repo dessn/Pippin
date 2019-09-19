@@ -63,6 +63,7 @@ class SNANASimulation(ConfigBasedExecutable):
         # Try to determine how many jobs will be put in the queue
         try:
             property = self.config.get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")
+            self.logger.debug(f"BATCH INFO property detected as {property}")
             self.num_jobs = int(property.split()[-1])
         except Exception:
             self.num_jobs = 10
