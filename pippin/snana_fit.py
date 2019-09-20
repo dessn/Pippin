@@ -135,6 +135,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_fitinp(key, value)
         if self.options.get("BATCH_INFO"):
             self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
+        if self.options.get("BATCH_MEM"):
+            self.set_property("BATCH_MEM", self.options.get("BATCH_MEM"), assignment=": ")
         self.set_property("VERSION", self.sim_version + "*", assignment=": ", section_end="&SNLCINP")  # TODO FIX THIS, DOUBLE VERSION KEY
         self.set_property("OUTDIR", self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
         self.set_property("DONE_STAMP", "FINISHED.DONE", assignment=": ", section_end="&SNLCINP")
