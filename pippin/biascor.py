@@ -98,20 +98,21 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
-        if self.options.get("BATCH_INFO"):
-            self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
 
-        for key in self.options.keys():
-            if key in ["BATCH_INFO"]:
-                continue
+        for key, value in self.options.items():
             assignment = "="
-            if key == "PROB_IA":
-                label = "CUTWIN " + self.probability_column_name
+            if key.upper().startswith("BATCH"):
+                assignment = ":"
+            if key.upper().startswith("CUTWIN"):
                 assignment = " "
-            else:
-                label = key
-                assignment = " " if label.upper().startswith("CUTWIN") else "="
-            self.set_property(label, self.options.get(key), assignment=assignment)
+                split = key.split("_", 1)
+                key = split[0]
+                col = split[1]
+                if col.upper() == "PROB_IA":
+                    col = self.probability_column_name
+                value = f"{col} {value}"
+
+            self.set_property(key, value, assignment=assignment)
 
         bullshit_hack = ""
         for i, d in enumerate(self.data):
