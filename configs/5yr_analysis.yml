@@ -24,8 +24,9 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 1.0
+      NGEN_UNIT: 2.0
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -36,8 +37,8 @@ SIM:
       BASE: sn_collection_jones.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 1 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   LOWZSIMBIAS:
@@ -50,7 +51,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -64,7 +65,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -78,7 +79,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -88,7 +89,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -159,6 +160,7 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
+      PROB_IA: 0.8 1.0
 
   3YR:
     BASE: bbc_spec.input
@@ -168,6 +170,7 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
+      PROB_IA: 0.8 1.0
 
 
 CREATE_COV:
