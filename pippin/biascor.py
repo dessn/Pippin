@@ -53,16 +53,28 @@ class BiasCor(ConfigBasedExecutable):
         # while a_genversion.endswith("_"):
         #     a_genversion = a_genversion[:-1]
         self.output["subdir"] = "SALT2mu_FITJOBS"
+        self.output["m0dif_dir"] = os.path.join(self.fit_output_dir, self.output["subdir"])
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
             with open(self.done_file) as f:
+                failed = False
                 if "FAIL" in f.read():
-                    self.logger.error("Done file reporting failure!")
+                    failed = True
+                    self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
+                wfiles = [f for f in os.listdir(self.output["m0dif_dir"]) if f.startswith("wfit_")]
+                for wfile in wfiles:
+                    path = os.path.join(self.output["m0dif_dir"], wfile)
+                    with open(path) as f2:
+                        if "ERROR:" in f2.read():
+                            self.logger.error(f"Error found in wfit file: {path}")
+                            failed = True
+                if failed:
                     return Task.FINISHED_FAILURE
-            return Task.FINISHED_SUCCESS
+                else:
+                    return Task.FINISHED_SUCCESS
         if os.path.exists(self.logging_file):
             with open(self.logging_file) as f:
                 output_error = False
