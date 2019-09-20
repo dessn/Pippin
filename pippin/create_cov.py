@@ -78,7 +78,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
             self.logger.debug(f"Done file found at f{self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
-                    self.logger.info(f"Done file reported failure. Check output log {self.logfile}")
+                    self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS

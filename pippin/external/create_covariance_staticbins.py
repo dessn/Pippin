@@ -752,6 +752,7 @@ if __name__ == "__main__":
                 if d == 0:
                     covwrite = "ALLSYS"
                 else:
+                    print(FileInfo.COVOPT[d])
                     covwrite = FileInfo.COVOPT[d - 1][0].replace("[", "").replace("'", "").replace("]", "")
                 f.write("%d\t%s\n" % (d, covwrite))
 
