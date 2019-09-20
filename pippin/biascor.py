@@ -100,7 +100,6 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
 
         for key, value in self.options.items():
-            print(f"Found option {key}, {value}")
             assignment = "="
             if key.upper().startswith("BATCH"):
                 assignment = ":"
@@ -184,7 +183,7 @@ class BiasCor(ConfigBasedExecutable):
 
         for name in c.get("BIASCOR", []):
             config = c["BIASCOR"][name]
-            options = config.get("OPT", {})
+            options = config.get("OPTS", {})
             deps = []
 
             # Create dict but swap out the names for tasks
