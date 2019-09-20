@@ -138,11 +138,6 @@ CLASSIFICATION:
     OPTS:
       MODEL: SNIRFTRAIN
 
-  UNITY:
-    CLASSIFIER: UnityClassifier
-    MODE: predict
-
-
 AGGREGATION:
   AGG:
     OPTS:

@@ -99,7 +99,7 @@ class Merger(Task):
             return Task.FINISHED_FAILURE
 
     def add_to_fitres(self, fitres_file):
-        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file)]
+        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file), "T"]
         try:
             self.logger.debug(f"Executing command {command}")
             with open(self.logfile, "w+") as f:
