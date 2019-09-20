@@ -102,7 +102,7 @@ class BiasCor(ConfigBasedExecutable):
         for key, value in self.options.items():
             assignment = "="
             if key.upper().startswith("BATCH"):
-                assignment = ":"
+                assignment = ": "
             if key.upper().startswith("CUTWIN"):
                 assignment = " "
                 split = key.split("_", 1)
