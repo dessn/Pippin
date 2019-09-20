@@ -65,12 +65,15 @@ class BiasCor(ConfigBasedExecutable):
                     failed = True
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
                 wfiles = [f for f in os.listdir(self.output["m0dif_dir"]) if f.startswith("wfit_")]
+                self.logger.debug(f"Found wfiles to check: {wfiles}")
                 for wfile in wfiles:
                     path = os.path.join(self.output["m0dif_dir"], wfile)
                     with open(path) as f2:
                         if "ERROR:" in f2.read():
                             self.logger.error(f"Error found in wfit file: {path}")
                             failed = True
+                        else:
+                            self.logger.debug(f"No error in {path}")
                 if failed:
                     return Task.FINISHED_FAILURE
                 else:
