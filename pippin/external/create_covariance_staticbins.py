@@ -361,7 +361,7 @@ def sysmat(
     print(len(covlines))
     # stop
     sysnum = len(covlines)
-    if covlines == "NONE":
+    if covlines == "NONE" or covlines == [[]]:
         sysnum = 0
     co = 0
     sys_ratio = 1
