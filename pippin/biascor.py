@@ -100,6 +100,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
 
         for key, value in self.options.items():
+            print(f"Found option {key}, {value}")
             assignment = "="
             if key.upper().startswith("BATCH"):
                 assignment = ":"

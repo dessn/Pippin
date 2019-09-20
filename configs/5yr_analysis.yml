@@ -160,7 +160,7 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      PROB_IA: 0.8 1.0
+      CUTWIN_PROB_IA: 0.8 1.0
 
   3YR:
     BASE: bbc_spec.input
@@ -170,7 +170,6 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      PROB_IA: 0.8 1.0
 
 
 CREATE_COV:
