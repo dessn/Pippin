@@ -51,7 +51,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
                 if self.covopts is None or covopt in self.covopts:
                     self.files.append(c.output["base_dict"][covopt])
                     self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
-                    self.params += c.output["cosmology_params"]
+                    for p in c.output["cosmology_params"]:
+                        if p not in self.params:
+                            self.params.append(p)
         self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
 
         self.slurm = """#!/bin/bash

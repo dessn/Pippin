@@ -79,6 +79,7 @@ def get_arguments():
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     args = parser.parse_args()
 
+    logging.info(str(args))
     if args.names is not None:
         assert len(args.names) == len(args.basename), (
             "You should specify one name per base file you pass in." + f" Have {len(args.basename)} base names and {len(args.names)} names"
