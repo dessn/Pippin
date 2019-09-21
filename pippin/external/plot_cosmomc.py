@@ -110,7 +110,7 @@ if __name__ == "__main__":
             if args.names:
                 name = args.names[index].replace("_", " ")
             else:
-                name = os.path.dirname(basename).replace("_", " ")
+                name = os.path.basename(basename).replace("_", " ")
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
         # Write all our glorious output
