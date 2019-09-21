@@ -10,7 +10,7 @@ from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.classifiers.factory import ClassifierFactory
-from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs, chown_dir
+from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs, chown_dir, chown_file
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -157,6 +157,7 @@ class Manager:
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         self.logger.info(f"Copying config file from {self.filename_path} to {config_file_output}")
         shutil.copy(self.filename_path, config_file_output)
+        chown_file(config_file_output)
 
         # Welcome to the primary loop
         while self.tasks or running_tasks:

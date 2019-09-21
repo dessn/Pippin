@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 import coloredlogs
-from pippin.config import mkdirs, get_logger, get_output_dir
+from pippin.config import mkdirs, get_logger, get_output_dir, chown_file
 from pippin.manager import Manager
 
 
@@ -82,3 +82,4 @@ if __name__ == "__main__":
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.execute(args.check)
+    chown_file(logging_filename)

@@ -89,6 +89,15 @@ def copytree(src, dst, symlinks=False, ignore=None):
             shutil.copy2(s, d)
 
 
+def chown_file(path):
+    global_config = get_config()
+    logger = get_logger()
+    try:
+        shutil.chown(path, group=global_config["SNANA"]["group"])
+    except Exception:
+        logger.debug(f"Chown error: {path}")
+
+
 def chown_dir(directory):
     global_config = get_config()
     logger = get_logger()
