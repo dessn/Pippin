@@ -22,7 +22,7 @@ def load_chains(files, all_cols, use_cols=None):
     data = [pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files]
 
     # Remove burn in by cutting off first 30%
-    data = [d.iloc[int(d.shape[0]*0.3):, :] for d in data]
+    data = [d.iloc[int(d.shape[0] * 0.3) :, :] for d in data]
 
     combined = pd.concat(data)
     if use_cols is None:
@@ -54,14 +54,15 @@ def setup_logging():
     logging.basicConfig(level=logging.INFO, format=fmt)
 
 
-def blind(chain, names, columns_to_blind):
+def blind(chain, names, columns_to_blind, index=0):
     np.random.seed(123)
     for i, c in enumerate(columns_to_blind):
         logging.info(f"Blinding column {c}")
         try:
             index = names.index(c)
             scale = np.random.normal(loc=1, scale=0.1, size=1000)[321 + i]
-            chain[:, index] *= scale
+            offset = np.random.normal(loc=0, scale=0.2, size=1000)[543 + i + index]
+            chain[:, index] = chain[:, index] * scale + np.std(chain[:, index]) * offset
         except ValueError as e:
             logging.error(f"Cannot find blinding column {c} in list of names {names}")
             raise e
@@ -72,19 +73,20 @@ def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="+", type=str)
     parser.add_argument("-p", "--params", help="Param names to plot", nargs="*", type=str, default=["omegam", "w"])
-    parser.add_argument("-n", "--name", help="Name of plot: eg name_without_extension", type=str, default="output")
+    parser.add_argument("-o", "--output", help="Name of plot: eg name_without_extension", type=str, default="output")
+    parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     return parser.parse_args()
 
 
-def get_output(basename, args):
+def get_output(basename, args, index):
     param_file = os.path.join(basename) + ".paramnames"
     chain_files = get_chain_files(basename)
     names, labels = load_params(param_file)
     weights, likelihood, chain = load_chains(chain_files, names, args.params)
     if args.blind:
-        blind(chain, args.params or names, args.blind)
+        blind(chain, args.params or names, args.blind, index=index)
     labels = [f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
     logging.info(f"Chain for {basename} has shape {chain.shape}")
     logging.info(f"Labels for {basename} are {labels}")
@@ -97,9 +99,9 @@ if __name__ == "__main__":
         setup_logging()
         logging.info("Creating chain consumer object")
         c = ChainConsumer()
-        for basename in args.basename:
-            weights, likelihood, labels, chain = get_output(basename, args)
-            name = os.path.basename(basename).replace("_", " ")
+        for index, basename in enumerate(args.basename):
+            weights, likelihood, labels, chain = get_output(basename, args, index)
+            name = os.path.dirname(basename).replace("_", " ")
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
         # Write all our glorious output

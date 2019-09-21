@@ -41,6 +41,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             self.covopts = [self.covopts]
 
         self.files = []
+        self.names = []
         self.params = []
         self.blind_params = options.get("BLIND")
 
@@ -49,8 +50,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
                     self.files.append(c.output["base_dict"][covopt])
+                    self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
                     self.params += c.output["cosmology_params"]
-        self.params = list(set(self.params))
         self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
 
         self.slurm = """#!/bin/bash
@@ -65,7 +66,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=10GB
 
 cd {output_dir}
-python {path_to_code} {files} {name} {blind} {done_file} {params}
+python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
 """
 
     def _check_completion(self, squeue):
@@ -88,7 +89,8 @@ python {path_to_code} {files} {name} {blind} {done_file} {params}
             "path_to_code": self.path_to_code,
             "output_dir": self.output_dir,
             "files": " ".join(self.files),
-            "name": "-n " + self.name,
+            "output": "-o " + self.name,
+            "names": "-n " + " ".join('"' + self.names + '"'),
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
             "params": "-p " + " ".join(self.params),
         }
