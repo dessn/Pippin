@@ -77,7 +77,13 @@ def get_arguments():
     parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.names is not None:
+        assert len(args.names) == len(args.basename), (
+            "You should specify one name per base file you pass in." + f" Have {len(args.basename)} base names and {len(args.names)} names"
+        )
+    return args
 
 
 def get_output(basename, args, index):
@@ -101,7 +107,10 @@ if __name__ == "__main__":
         c = ChainConsumer()
         for index, basename in enumerate(args.basename):
             weights, likelihood, labels, chain = get_output(basename, args, index)
-            name = os.path.dirname(basename).replace("_", " ")
+            if args.names:
+                name = args.names[index].replace("_", " ")
+            else:
+                name = os.path.dirname(basename).replace("_", " ")
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
         # Write all our glorious output
