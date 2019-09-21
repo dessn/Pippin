@@ -140,10 +140,11 @@ fi
                     f.write("SUCCESS")
                 return Task.FINISHED_SUCCESS
             else:
-                with open(self.logfile) as f:
-                    if "CANCELLED AT" in f.read():
-                        self.logger.debug(f"The job was cancelled! Check {self.logfile} for details")
-                        return Task.FINISHED_FAILURE
+                if os.path.exists(self.logfile):
+                    with open(self.logfile) as f:
+                        if "CANCELLED AT" in f.read():
+                            self.logger.debug(f"The job was cancelled! Check {self.logfile} for details")
+                            return Task.FINISHED_FAILURE
         return 4 * self.num_jobs
 
     def get_ini_file(self):
