@@ -90,7 +90,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
             "output_dir": self.output_dir,
             "files": " ".join(self.files),
             "output": "-o " + self.name,
-            "names": "-n " + " ".join('"' + self.names + '"'),
+            "names": "-n " + " ".join(['"' + n + '"' for n in self.names]),
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
             "params": "-p " + " ".join(self.params),
         }
