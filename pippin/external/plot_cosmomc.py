@@ -115,10 +115,10 @@ if __name__ == "__main__":
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
         # Write all our glorious output
-        c.analysis.get_latex_table(filename=args.name + "_params.txt")
-        c.plotter.plot(filename=args.name + ".png", figsize=1.5)
-        c.plotter.plot_summary(filename=args.name + "_summary.png", errorbar=True)
-        c.plotter.plot_walks(filename=args.name + "_walks.png")
+        c.analysis.get_latex_table(filename=args.output + "_params.txt")
+        c.plotter.plot(filename=args.output + ".png", figsize=1.5)
+        c.plotter.plot_summary(filename=args.output + "_summary.png", errorbar=True)
+        c.plotter.plot_walks(filename=args.output + "_walks.png")
 
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")
