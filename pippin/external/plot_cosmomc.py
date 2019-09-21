@@ -122,6 +122,6 @@ if __name__ == "__main__":
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")
     except Exception as e:
-        logging.error(str(e))
+        logging.exception(str(e))
         with open(args.donefile, "w") as f:
             f.write("FAILURE")
