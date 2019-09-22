@@ -199,3 +199,7 @@ ANALYSE:
     MASK_COSMOMC: OMW
     OPTS:
       BLIND: w
+  SNONLY:
+    MASK_COSMOMC: SN_OMW
+    OPTS:
+      BLIND: w
