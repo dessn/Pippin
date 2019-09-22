@@ -33,7 +33,7 @@ DONE_STAMP: FINISHED.DONE
     ABORT_ON_DUPLCID  = F
 
     CUTWIN_NEPOCH    =  5
-    cutwin_redshift  =  0.05, 1.3
+    cutwin_redshift  =  0.05, 1.2
     cutwin_redshift_err   =  0.0, 0.01
     cutwin_Trest     = -20.0,   60.0
     cutwin_Trestmin  = -20.0,   0.0

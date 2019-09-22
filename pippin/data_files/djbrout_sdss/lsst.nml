@@ -23,7 +23,7 @@ APPEND_FITRES:  FITRES  delmu  MNSTAT_COV MWEBV RA DEC HOST_OBJID HOST_DDLR HOST
   SNCID_IGNORE =  189, 0, 4524, 8151, 7017, 17176, 20208
 
   CUTWIN_REDSHIFT_ERR = 0.0, 0.011
-  cutwin_redshift  =  0.01, 0.85
+  cutwin_redshift  =  0.01, 1.4
   cutwin_Trestmin  = -99.0, 10.0
   cutwin_Trestmax  =   0.0, 9999.
   cutwin_Trest     = -20.0, 60.0
@@ -44,6 +44,7 @@ APPEND_FITRES:  FITRES  delmu  MNSTAT_COV MWEBV RA DEC HOST_OBJID HOST_DDLR HOST
 
      PRIOR_SHAPE_RANGE = -5.0, +4.0
      PRIOR_MJDSIG      = 10.
+     RESTLAMBDA_FITRANGE = 3000, 13000
 
      FITWIN_SHAPE     = -3.00, +3.0
      FITWIN_TREST     = -15.0, 45.0
