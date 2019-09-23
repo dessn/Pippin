@@ -105,12 +105,10 @@ def get_output(basename, args, index, name):
         weights, likelihood, chain = load_chains(chain_files, names, args.params)
         if args.blind:
             blind(chain, args.params or names, args.blind, index=index)
-        labels = ["_weight", "_likelihood"] + [
-            f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u
-        ]
+        labels = [f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
         # Turn into new df
-        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=labels)
-        output_df.to_csv(output_path, float_format="%0.5f")
+        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=["_weight", "_likelihood"] + labels)
+        output_df.to_csv(output_path, float_format="%0.5f", index=False)
     else:
         full = False
         weights, likelihood, chain, labels = res
