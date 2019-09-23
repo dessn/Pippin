@@ -59,9 +59,8 @@ def blind(chain, names, columns_to_blind, index=0):
     for i, c in enumerate(columns_to_blind):
         logging.info(f"Blinding column {c}")
         try:
-            index = names.index(c)
             scale = np.random.normal(loc=1, scale=0.1, size=1000)[321 + i]
-            offset = np.random.normal(loc=0, scale=0.2, size=1000)[543 + i + index]
+            offset = np.random.normal(loc=0, scale=0.2, size=1000)[343 + i + (index + 10)]
             chain[:, index] = chain[:, index] * scale + np.std(chain[:, index]) * offset
         except ValueError as e:
             logging.error(f"Cannot find blinding column {c} in list of names {names}")
@@ -87,17 +86,46 @@ def get_arguments():
     return args
 
 
-def get_output(basename, args, index):
-    param_file = os.path.join(basename) + ".paramnames"
-    chain_files = get_chain_files(basename)
-    names, labels = load_params(param_file)
-    weights, likelihood, chain = load_chains(chain_files, names, args.params)
-    if args.blind:
-        blind(chain, args.params or names, args.blind, index=index)
-    labels = [f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u]
+def get_output_name(args, name):
+    path = args.output + "___" + name + ".csv.gz"
+    basename = os.path.basename(path)
+    return path, basename
+
+
+def get_output(basename, args, index, name):
+    output_path, b = get_output_name(args, name)
+
+    res = load_output(b)
+    if res is None:
+        full = True
+        logging.info("Loading in data from original CosmoMC files")
+        param_file = os.path.join(basename) + ".paramnames"
+        chain_files = get_chain_files(basename)
+        names, labels = load_params(param_file)
+        weights, likelihood, chain = load_chains(chain_files, names, args.params)
+        if args.blind:
+            blind(chain, args.params or names, args.blind, index=index)
+        labels = ["_weight", "_likelihood"] + [
+            f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u
+        ]
+        # Turn into new df
+        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain)), columns=labels)
+        output_df.to_csv(output_path, float_format="%0.5f")
+    else:
+        full = False
+        weights, likelihood, chain, labels = res
     logging.info(f"Chain for {basename} has shape {chain.shape}")
     logging.info(f"Labels for {basename} are {labels}")
-    return weights, likelihood, labels, chain
+    return weights, likelihood, labels, chain, full
+
+
+def load_output(basename):
+    if os.path.exists(basename):
+        logging.warning("Loading in pre-saved CSV file. Be warned.")
+        df = pd.read_csv(basename)
+        return df["_weight"].values, df["_likelihood"].values, df.loc[df.columns[2:]].values, list(df.columns[2:])
+    else:
+        return None
 
 
 if __name__ == "__main__":
@@ -106,19 +134,23 @@ if __name__ == "__main__":
         setup_logging()
         logging.info("Creating chain consumer object")
         c = ChainConsumer()
+        do_full = False
         for index, basename in enumerate(args.basename):
-            weights, likelihood, labels, chain = get_output(basename, args, index)
             if args.names:
                 name = args.names[index].replace("_", " ")
             else:
                 name = os.path.basename(basename).replace("_", " ")
+
+            weights, likelihood, labels, chain, f = get_output(basename, args, index, name)
+            do_full = do_full or f
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
         # Write all our glorious output
         c.analysis.get_latex_table(filename=args.output + "_params.txt")
         c.plotter.plot(filename=args.output + ".png", figsize=1.5)
         c.plotter.plot_summary(filename=args.output + "_summary.png", errorbar=True)
-        c.plotter.plot_walks(filename=args.output + "_walks.png")
+        if do_full:
+            c.plotter.plot_walks(filename=args.output + "_walks.png")
 
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")

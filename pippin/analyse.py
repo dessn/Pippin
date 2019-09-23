@@ -88,7 +88,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
             "job_name": self.job_name,
             "log_file": self.logfile,
             "done_file": "-d " + self.done_file,
-            "path_to_code": self.path_to_code,
+            "path_to_code": os.path.basename(self.path_to_code),
             "output_dir": self.output_dir,
             "files": " ".join(self.files),
             "output": "-o " + self.name,
@@ -106,6 +106,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
+            shutil.copy(self.path_to_code, self.output_dir)
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)
