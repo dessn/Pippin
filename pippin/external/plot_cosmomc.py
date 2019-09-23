@@ -95,7 +95,6 @@ def get_output_name(args, name):
 
 def get_output(basename, args, index, name):
     output_path, b = get_output_name(args, name)
-
     res = load_output(b)
     if res is None:
         full = True
