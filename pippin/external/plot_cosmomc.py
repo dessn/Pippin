@@ -109,8 +109,7 @@ def get_output(basename, args, index, name):
             f"${l}" + (r"\ \mathrm{Blinded}" if u in args.blind else "") + "$" for u in args.params for l, n in zip(labels, names) if n == u
         ]
         # Turn into new df
-        print(weights.shape, likelihood.shape, chain.shape)
-        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain)), columns=labels)
+        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=labels)
         output_df.to_csv(output_path, float_format="%0.5f")
     else:
         full = False
