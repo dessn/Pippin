@@ -67,7 +67,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["chain_dict"] = self.chain_dict
         self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
-        self.output["label"] = self.options.get("LABEL", f"({' + '.join(self.ini_prefix.split('_')[:-1])})") + " " + self.create_cov_dep.output["name"]
+        self.output["label"] = self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})") + " " + self.create_cov_dep.output["name"]
         final = self.ini_prefix.split("_")[-1]
         ps = {"omw": ["omegam", "w"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
         self.output["cosmology_params"] = ps[final]
