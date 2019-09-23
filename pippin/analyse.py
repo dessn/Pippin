@@ -87,7 +87,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
         format_dict = {
             "job_name": self.job_name,
             "log_file": self.logfile,
-            "done_file": "-d " + self.done_file,
+            "done_file": "-d " + os.path.basename(self.done_file),
             "path_to_code": os.path.basename(self.path_to_code),
             "output_dir": self.output_dir,
             "files": " ".join(self.files),
