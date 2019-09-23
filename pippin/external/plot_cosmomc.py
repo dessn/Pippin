@@ -133,13 +133,24 @@ if __name__ == "__main__":
         logging.info("Creating chain consumer object")
         c = ChainConsumer()
         do_full = False
+        biases = {}
+        b = 1
         for index, basename in enumerate(args.basename):
             if args.names:
                 name = args.names[index].replace("_", " ")
             else:
                 name = os.path.basename(basename).replace("_", " ")
+            # Do smarter biascor
+            if ")" in name:
+                key = name.split(")", 1)[1]
+            else:
+                key = name
+            if key not in biases:
+                biases[key] = b
+                b += 1
+            bias_index = biases[key]
 
-            weights, likelihood, labels, chain, f = get_output(basename, args, index, name)
+            weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
             do_full = do_full or f
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
 
