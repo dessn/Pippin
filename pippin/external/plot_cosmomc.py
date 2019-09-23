@@ -121,7 +121,7 @@ def load_output(basename):
     if os.path.exists(basename):
         logging.warning("Loading in pre-saved CSV file. Be warned.")
         df = pd.read_csv(basename)
-        return df["_weight"].values, df["_likelihood"].values, df.loc[df.columns[2:]].values, list(df.columns[2:])
+        return df["_weight"].values, df["_likelihood"].values, df.iloc[:, 2:].values, list(df.columns[2:])
     else:
         return None
 
