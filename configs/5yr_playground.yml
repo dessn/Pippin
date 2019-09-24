@@ -1,0 +1,179 @@
+DATAPREP:
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+  DATALOWZ:  # lowz combined sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+SIM:
+  TRAINDESSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
+    GLOBAL:
+      NGEN_UNIT: 2.0
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+  TESTDESSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
+  LOWZSIMBIAS:
+    IA_G10_LOWZ:
+      BASE: sn_ia_salt2_g10_lowz.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+  DESSIMBIAS5YRIA:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+  DESSIMBIAS5YRCC:
+    IBC_TEMPLATES:
+      BASE: sn_ibc_templates.input
+    II_TEMPLATES:
+      BASE: sn_ii_templates.input
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+LCFIT:
+  LS:
+    BASE: lowz.nml
+    MASK: DATALOWZ
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  DS:
+    BASE: des.nml
+    MASK: DATADES
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  L:
+    BASE: lowz.nml
+    MASK: LOWZSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  D:
+    BASE: des.nml
+    MASK: DESSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+CLASSIFICATION:
+  SNIRFTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINDESSIM
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNIRFTRAIN
+
+AGGREGATION:
+  AGG:
+    OPTS:
+      PLOT: True
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  BASE:
+    DATA: [DATADES5YR, DATALOWZ]
+    SIMFILE_BIASCOR: [DESSIMBIAS5YRIA, LOWZSIMBIAS]
+    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
+    CLASSIFIER: SNIRFTEST
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      CUTWIN_PROB_IA: 0.5 1.0
+
+  TIGHTPROB:
+    DATA: [DATADES5YR, DATALOWZ]
+    SIMFILE_BIASCOR: [DESSIMBIAS5YRIA, LOWZSIMBIAS]
+    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
+    CLASSIFIER: SNIRFTEST
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      CUTWIN_PROB_IA: 0.9 1.0
+
+
+CREATE_COV:
+  ALL:
+#    OPTS:
+#      COVOPTS:
+#        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+#      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 20
+
+#  SN_CMB_OMW:
+#    OPTS:
+#      INI: sn_cmb_omw
+##      COVOPTS: [ALL]
+#      NUM_WALKERS: 20
+
+ANALYSE:
+#  ALL_OMW:
+#    MASK_COSMOMC: OMW
+#    OPTS:
+#      BLIND: w
+  SNONLY:
+    MASK_COSMOMC: SN_OMW
+    OPTS:
+      BLIND: w
