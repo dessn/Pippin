@@ -190,13 +190,27 @@ class BiasCor(ConfigBasedExecutable):
 
                 ol = 0.7
                 w = -1
+                alpha = 0
+                beta = 0
+                sigint = 0
+                num_sn = f"$N_{{SN}} = {df.shape[0]}$"
+                num_cc = f"$N_{{CC}} \\approx {int((1 - df[self.probability_column_name]).sum())}$"
                 with open(m0dif_file) as f:
                     for line in f.read().splitlines():
                         if "Omega_DE(ref)" in line:
                             ol = float(line.strip().split()[-1])
                         if "w_DE(ref)" in line:
                             w = float(line.strip().split()[-1])
+                with open(fitres_file) as f:
+                    for line in f.read().splitlines():
+                        if "alpha0" in line and "=" in line and "+-" in line:
+                            alpha = r"$\alpha = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
+                        if "beta0" in line and "=" in line and "+-" in line:
+                            beta = r"$\beta = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
+                        if "sigint" in line and "iteration" in line:
+                            sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
 
+                label = "\n".join([alpha, beta, sigint, num_sn, num_cc])
                 zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
                 distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
@@ -219,6 +233,8 @@ class BiasCor(ConfigBasedExecutable):
                             sub2 = -dfm["MUREF"]
                             sub3 = 0
                             ax.set_ylabel(r"$\mu$")
+                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom")
+
                         ax.set_xlabel("$z$")
 
                         ax.errorbar(df["zHD"], df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
