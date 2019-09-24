@@ -249,7 +249,7 @@ class BiasCor(ConfigBasedExecutable):
                     if log:
                         fp = self.output_plot.replace(".png", "_log.png")
                     else:
-                        fp = self.output_plot.replace(".png", "_log.png")
+                        fp = self.output_plot
                     fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
             except Exception as e:
                 self.logger.exception(e)
