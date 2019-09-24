@@ -228,7 +228,7 @@ class BiasCor(ConfigBasedExecutable):
 
                     cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
                     cbar.set_label("Prob Ia")
-                    fig.savefig(f"hubble{'_log' if log else ''}.png", dpi=600)
+                    fig.savefig(os.path.join(self.output["m0dif_dir"], f"hubble{'_log' if log else ''}.png"), dpi=600, transparent=True, bbox_inches="tight")
             except Exception as e:
                 self.logger.exception(e)
                 return False
