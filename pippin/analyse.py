@@ -58,7 +58,6 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.cosmomc_deps = self.get_deps(CosmoMC)
         self.hubble_plots = [c.output.get("hubble_plot") for c in self.cosmomc_deps]
-        self.logger.warning(self.hubble_plots)
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=1:00:00
