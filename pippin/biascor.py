@@ -3,6 +3,7 @@ import inspect
 import shutil
 import subprocess
 import os
+import pandas as pd
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, ensure_list
@@ -74,7 +75,13 @@ class BiasCor(ConfigBasedExecutable):
                 if failed:
                     return Task.FINISHED_FAILURE
                 else:
-                    return Task.FINISHED_SUCCESS
+                    plots_completed = self.make_hubble_plot()
+                    if plots_completed:
+                        return Task.FINISHED_SUCCESS
+                    else:
+                        self.logger.error("Hubble diagram failed to run")
+                        return Task.FINISHED_FAILURE
+
         if os.path.exists(self.logging_file):
             with open(self.logging_file) as f:
                 output_error = False
@@ -159,6 +166,73 @@ class BiasCor(ConfigBasedExecutable):
         else:
             self.logger.debug("Hash check passed, not rerunning")
             return False
+
+    def make_hubble_plot(self):
+        output_plot = os.path.join(self.output["m0dif_dir"], "hubble.png")
+        if os.path.exists(output_plot):
+            self.logger.debug("Output plot exists")
+        else:
+            try:
+                self.logger.info("Making output Hubble diagram")
+
+                fitres_file = os.path.join(self.output["m0dif_dir"], "SALT2mu_FITOPT000_MUOPT000.FITRES")
+                m0dif_file = os.path.join(self.output["m0dif_dir"], "SALT2mu_FITOPT000_MUOPT000.M0DIF")
+
+                from astropy.cosmology import FlatwCDM
+                import numpy as np
+                import matplotlib.pyplot as plt
+
+                df = pd.read_csv(fitres_file, comment="#", sep=r"\s+", skiprows=5)
+                dfm = pd.read_csv(m0dif_file, comment="#", sep=r"\s+", skiprows=10)
+                df.sort_values(by="zHD", inplace=True)
+                dfm.sort_values(by="z", inplace=True)
+                dfm = dfm[dfm["MUDIFERR"] < 10]
+
+                ol = 0.7
+                w = -1
+                with open(m0dif_file) as f:
+                    for line in f.read().splitlines():
+                        if "Omega_DE(ref)" in line:
+                            ol = float(line.strip().split()[-1])
+                        if "w_DE(ref)" in line:
+                            w = float(line.strip().split()[-1])
+
+                zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
+                distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
+
+                for log in [True, False]:
+
+                    fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [2, 1], "hspace": 0})
+
+                    for resid, ax in enumerate(axes):
+
+                        if log:
+                            ax.set_xscale("log")
+
+                        if resid:
+                            sub = df["MUMODEL"]
+                            sub2 = 0
+                            sub3 = distmod
+                            ax.set_ylabel(r"$\Delta \mu$")
+                        else:
+                            sub = 0
+                            sub2 = -dfm["MUREF"]
+                            sub3 = 0
+                            ax.set_ylabel(r"$\mu$")
+                        ax.set_xlabel("$z$")
+
+                        ax.errorbar(df["zHD"], df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
+                        h = ax.scatter(df["zHD"], df["MU"] - sub, c=df[self.probability_column_name], s=1, zorder=2, alpha=1, vmax=1.05, cmap="inferno")
+                        ax.plot(zs, distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
+                        ax.errorbar(dfm["z"], dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", elinewidth=1.0, c="k", ms=3)
+
+                    cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
+                    cbar.set_label("Prob Ia")
+                    fig.savefig(f"hubble{'_log' if log else ''}.png", dpi=600)
+            except Exception as e:
+                self.logger.exception(e)
+                return False
+        return True
 
     def _run(self, force_refresh):
         regenerating = self.write_input(force_refresh)
