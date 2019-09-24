@@ -56,6 +56,8 @@ class BiasCor(ConfigBasedExecutable):
         self.output["subdir"] = "SALT2mu_FITJOBS"
         self.output["m0dif_dir"] = os.path.join(self.fit_output_dir, self.output["subdir"])
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
+        self.output_plot = os.path.join(self.output["m0dif_dir"], f"{self.name}_hubble.png")
+        self.output["hubble_plot"] = self.output_plot
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
@@ -168,8 +170,8 @@ class BiasCor(ConfigBasedExecutable):
             return False
 
     def make_hubble_plot(self):
-        output_plot = os.path.join(self.output["m0dif_dir"], "hubble.png")
-        if os.path.exists(output_plot):
+
+        if os.path.exists(self.output_plot):
             self.logger.debug("Output plot exists")
         else:
             try:
@@ -244,7 +246,11 @@ class BiasCor(ConfigBasedExecutable):
 
                     cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
                     cbar.set_label("Prob Ia")
-                    fig.savefig(os.path.join(self.output["m0dif_dir"], f"hubble{'_log' if log else ''}.png"), dpi=600, transparent=True, bbox_inches="tight")
+                    if log:
+                        fp = self.output_plot.replace(".png", "_log.png")
+                    else:
+                        fp = self.output_plot.replace(".png", "_log.png")
+                    fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
             except Exception as e:
                 self.logger.exception(e)
                 return False

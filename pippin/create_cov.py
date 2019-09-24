@@ -52,6 +52,7 @@ class CreateCov(ConfigBasedExecutable):
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdir"] + ".input")
+        self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
         self.output["ini_dir"] = self.config_dir
         covopts_map = {"ALL": 0}
