@@ -56,7 +56,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
                             self.params.append(p)
         self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
 
-        self.cosmomc_deps = self.get_dep(CosmoMC)
+        self.cosmomc_deps = self.get_deps(CosmoMC)
         self.hubble_plots = [c.output.get("hubble_plot") for c in self.cosmomc_deps]
 
         self.slurm = """#!/bin/bash

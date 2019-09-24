@@ -148,3 +148,6 @@ class Task(ABC):
         if fail:
             raise ValueError(f"No deps have class of type {clss}")
         return None
+
+    def get_deps(self, *clss):
+        return [d for d in self.dependencies if isinstance(d, tuple(clss))]
