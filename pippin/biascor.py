@@ -195,6 +195,7 @@ class BiasCor(ConfigBasedExecutable):
                 alpha = 0
                 beta = 0
                 sigint = 0
+                gamma = r"$\gamma$ not fit"
                 num_sn = f"$N_{{SN}} = {df.shape[0]}$"
                 num_cc = f"$N_{{CC}} \\approx {int((1 - df[self.probability_column_name]).sum())}$"
                 with open(m0dif_file) as f:
@@ -211,8 +212,10 @@ class BiasCor(ConfigBasedExecutable):
                             beta = r"$\beta = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
                         if "sigint" in line and "iteration" in line:
                             sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
+                        if "gamma" in line and "=" in line and "+-" in line:
+                            gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
 
-                label = "\n".join([alpha, beta, sigint, num_sn, num_cc])
+                label = "\n".join([alpha, beta, sigint, gamma, num_sn, num_cc])
                 zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
                 distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
