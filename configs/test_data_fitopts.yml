@@ -22,7 +22,7 @@ LCFIT:
   LS:
     BASE: lowz.nml
     MASK: DATALOWZ
-    FITOPTS: des.fitopts
+    FITOPTS: lowz.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -31,7 +31,7 @@ LCFIT:
   DS:
     BASE: des.nml
     MASK: DATADES
-    FITOPTS: lowz.fitopts
+    FITOPTS: des.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:
