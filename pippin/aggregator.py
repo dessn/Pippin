@@ -114,7 +114,7 @@ class Aggregator(Task):
             for f in prediction_files:
                 dataframe = self.load_prediction_file(f)
                 dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
-                dataframe[self.id].apply(str)
+                dataframe[self.id] = dataframe[self.id].apply(str)
                 dataframe[self.id] = dataframe[self.id].str.strip()
                 self.logger.debug(f"Merging on column {self.id} for file {f}")
                 if df is None:
@@ -137,7 +137,7 @@ class Aggregator(Task):
                         sntype = np.array(data.field("SNTYPE")).astype(np.int64)
                         # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
                         dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                        dataframe[self.id].apply(str)
+                        dataframe[self.id] = dataframe[self.id].apply(str)
                         dataframe[self.id] = dataframe[self.id].str.strip()
                         if type_df is None:
                             type_df = dataframe
