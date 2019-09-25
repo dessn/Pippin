@@ -4,7 +4,7 @@ import subprocess
 import os
 from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config
+from pippin.config import mkdirs, get_config, get_data_loc
 from pippin.task import Task
 
 
@@ -16,7 +16,8 @@ class CreateCov(ConfigBasedExecutable):
     CREATE_COV:
         label:
             OPTS:
-                FITOPT_SCALES:  # Optional dict to scale fitopts
+              SYS_SCALE: location of sys_scale.LIST file (relative to create_cov dir by default)
+              FITOPT_SCALES:  # Optional dict to scale fitopts
                     fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
               MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom, scale defaults to one
                 exact_muopt_name: float
@@ -45,7 +46,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = os.path.join(self.data_dir, "sys_scale.LIST")
+        self.sys_file_in = get_data_loc(self.data_dir, options.get("SYS_SCALE", "sys_scale.LIST"))
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
