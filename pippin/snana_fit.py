@@ -80,7 +80,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     f = "FITOPT: " + f
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.fitopts.append(f)
-        print(self.fitopts)
         # Map the fitopt outputs
         mapped = {"DEFAULT": "FITOPT000.FITRES"}
         for i, line in enumerate(self.fitopts):
