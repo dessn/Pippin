@@ -133,7 +133,7 @@ class Merger(Task):
                     self.add_to_fitres(os.path.join(fitres_dir, f))
                 for s in sorted(symlink_files):
                     self.logger.debug(f"Creating symlink for {os.path.join(self.fitres_outdir, s)} to {os.path.join(self.fitres_outdir, 'FITOPT000.FITRES')}")
-                    os.symlink(os.path.join(self.fitres_outdir, s), os.path.join(self.fitres_outdir, "FITOPT000.FITRES"))
+                    os.symlink(os.path.join(self.fitres_outdir, "FITOPT000.FITRES"), os.path.join(self.fitres_outdir, s))
 
                 self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
                 filenames = ["MERGE.LOG", "FITOPT.README"]
