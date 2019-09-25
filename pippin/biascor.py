@@ -203,7 +203,7 @@ class BiasCor(ConfigBasedExecutable):
                         if "Omega_DE(ref)" in line:
                             ol = float(line.strip().split()[-1])
                         if "w_DE(ref)" in line:
-                            w = floaat(line.strip().split()[-1])
+                            w = float(line.strip().split()[-1])
                 with open(fitres_file) as f:
                     for line in f.read().splitlines():
                         if "alpha0" in line and "=" in line and "+-" in line:
