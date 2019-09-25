@@ -1,0 +1,17 @@
+SIM:
+  TRAININGSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
+      DNDZ_ALLSCALE: 1.0
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
+
+LCFIT:
+  TESTFIT:
+    BASE: des.nml
+    FITOPTS:
+      - salt2_calibration.fitopts
+      - "[zshift]  REDSHIFT_FINAL_SHIFT 0.0001"
