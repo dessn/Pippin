@@ -133,7 +133,7 @@ class Aggregator(Task):
                         data = hdul[1].data
                         snid = np.array(data.field("SNID")).astype(df[self.id].dtype)
                         sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                        self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
+                        # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
                         dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
                         if type_df is None:
                             type_df = dataframe
@@ -141,7 +141,11 @@ class Aggregator(Task):
                             type_df = pd.concat([type_df, dataframe])
                     type_df.drop_duplicates(subset=self.id, inplace=True)
                 self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
+
+            print("AAAA ", df)
+            print("BBBB ", type_df)
             df = pd.merge(df, type_df, on=self.id, how="left")
+            print("CCCC ", df)
 
             types = self.get_underlying_sim_task().output["types_dict"]
             self.logger.debug(f"Input types are {types}")
