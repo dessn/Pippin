@@ -12,6 +12,12 @@ LCFIT:
           CUTWIN_SNRMAX:  3.0, 1.0E8
           CUTWIN_NFILT_SNRMAX:  3.0, 99.
 
+  MANUAL_FITOPTS:
+    BASE: des.nml
+      FITOPTS: # You can specify multiple files/strings here, mixing file input and manual input
+        - salt2_calibration.fitopts
+        - "[zshift] REDSHIFT_FINAL_SHIFT 0.0001"
+
   BATCH_EXAMPLE:
     BASE: djbrout_spec_test/lsst.nml
     OPTS:  # override the BATCH INFO using the the generic OPTS
