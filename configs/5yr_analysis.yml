@@ -97,6 +97,7 @@ LCFIT:
   LS:
     BASE: lowz.nml
     MASK: DATALOWZ
+    FITOPTS: des.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -105,6 +106,7 @@ LCFIT:
   DS:
     BASE: des.nml
     MASK: DATADES
+    FITOPTS: lowz.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -160,7 +162,7 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      CUTWIN_PROB_IA: 0.5 1.0
+      CUTWIN_PROB_IA: 0.9 1.0
 
   3YR:
     BASE: bbc_spec.input
