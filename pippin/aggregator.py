@@ -142,10 +142,10 @@ class Aggregator(Task):
                     type_df.drop_duplicates(subset=self.id, inplace=True)
                 self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
-            print("AAAA ", df)
-            print("BBBB ", type_df)
+            print("AAAA ", df, df.dtypes)
+            print("BBBB ", type_df, df.dtypes)
             df = pd.merge(df, type_df, on=self.id, how="left")
-            print("CCCC ", df)
+            print("CCCC ", df, df.dtypes)
 
             types = self.get_underlying_sim_task().output["types_dict"]
             self.logger.debug(f"Input types are {types}")
