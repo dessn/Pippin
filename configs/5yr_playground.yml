@@ -177,3 +177,4 @@ ANALYSE:
     MASK_COSMOMC: SN_OMW
     OPTS:
       BLIND: w
+      SHIFT: True

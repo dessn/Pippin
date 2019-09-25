@@ -7,7 +7,7 @@ import time
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, mkdirs
+from pippin.config import chown_dir, mkdirs, get_data_loc
 from pippin.dataprep import DataPrep
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
@@ -36,9 +36,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.global_config = global_config
 
         base = config["BASE"]
-        fitopts = config.get("FITOPTS", "empty.fitopts")
         self.base_file = self.data_dir + base
-        self.fitopts_file = self.data_dir + fitopts
 
         super().__init__(name, output_dir, self.base_file, "= ", dependencies=[sim_task])
 
@@ -62,11 +60,27 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["lc_output_dir"] = self.lc_output_dir
 
         # Loading fitopts
-        self.logger.debug(f"Loading fitopts file from {self.fitopts_file}")
-        with open(self.fitopts_file, "r") as f:
-            self.fitopts = list(f.read().splitlines())
-            self.logger.info(f"Loaded {len(self.fitopts)} fitopts file from {self.fitopts_file}")
+        fitopts = config.get("FITOPTS", ["empty.fitopts"])
+        if isinstance(fitopts, str):
+            fitopts = [fitopts]
 
+        self.logger.debug("Loading fitopts")
+        self.fitopts = []
+        for f in fitopts:
+            potential_path = get_data_loc(self.data_dir, f)
+            if os.path.exists(potential_path):
+                self.logger.debug(f"Loading in fitopts from {potential_path}")
+                with open(potential_path) as f:
+                    new_fitopts = list(f.read().splitlines())
+                    self.fitopts += new_fitopts
+                    self.logger.info(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
+            else:
+                assert "[" in f and "]" in f, f"Manual fitopt {f} should specify a label in square brackets"
+                if not f.startswith("FITOPT:"):
+                    f = "FITOPT: " + f
+                self.logger.debug(f"Adding manual fitopt {f}")
+                self.fitopts.append(f)
+        print(self.fitopts)
         # Map the fitopt outputs
         mapped = {"DEFAULT": "FITOPT000.FITRES"}
         for i, line in enumerate(self.fitopts):

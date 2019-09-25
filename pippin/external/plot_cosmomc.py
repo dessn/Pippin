@@ -60,7 +60,7 @@ def blind(chain, names, columns_to_blind, index=0):
         logging.info(f"Blinding column {c}")
         try:
             ii = names.index(c)
-            scale = np.random.normal(loc=1, scale=0.1, size=1000)[321 + i]
+            scale = np.random.normal(loc=1, scale=0.0, size=1000)[321 + i]
             offset = np.random.normal(loc=0, scale=0.2, size=1000)[343 + i + (index + 10)]
             chain[:, ii] = chain[:, ii] * scale + np.std(chain[:, ii]) * offset
         except ValueError as e:
@@ -76,6 +76,7 @@ def get_arguments():
     parser.add_argument("-o", "--output", help="Name of plot: eg name_without_extension", type=str, default="output")
     parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
+    parser.add_argument("-s", "--shift", help="Shift om, w, ol to truth values", action="store_true", default=False)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     args = parser.parse_args()
 
@@ -135,6 +136,9 @@ if __name__ == "__main__":
         do_full = False
         biases = {}
         b = 1
+        truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
+        shift_params = truth if args.shift else None
+
         for index, basename in enumerate(args.basename):
             if args.names:
                 name = args.names[index].replace("_", " ")
@@ -152,7 +156,7 @@ if __name__ == "__main__":
 
             weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
             do_full = do_full or f
-            c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood)
+            c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
 
         # Write all our glorious output
         c.analysis.get_latex_table(filename=args.output + "_params.txt")
