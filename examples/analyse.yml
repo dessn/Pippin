@@ -4,3 +4,4 @@ ANALYSE:
     OPTS:
       BLIND: w  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
       COVOPTS: ALL  # Optional. Covopts to match. Single or list. Exact match. Dont set to get everything
+      SHIFT: True  # Optional. Shifts om, w, ol contours to 0.3, 1.0 and 0.7 respectively.

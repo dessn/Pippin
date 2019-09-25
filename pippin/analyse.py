@@ -70,7 +70,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=10GB
 
 cd {output_dir}
-python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
+python {path_to_code} {files} {output} {blind} {names} {done_file} {params} {shift}
 """
 
     def _check_completion(self, squeue):
@@ -97,6 +97,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params}
             "names": "-n " + " ".join(['"' + n + '"' for n in self.names]),
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
             "params": "-p " + " ".join(self.params),
+            "shift": "-s" if self.options.get("SHIFT") else "",
         }
         final_slurm = self.slurm.format(**format_dict)
 
