@@ -98,7 +98,7 @@ python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {para
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
             "params": "-p " + " ".join(self.params),
             "shift": "-s" if self.options.get("SHIFT") else "",
-            "prior": f"-r {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
+            "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
         }
         final_slurm = self.slurm.format(**format_dict)
 
