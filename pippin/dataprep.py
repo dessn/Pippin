@@ -41,7 +41,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
         self.output["genversion"] = self.genversion
         self.output["data_path"] = self.data_path
-        self.output["photometry_dir"] = get_output_loc(self.raw_dir)
+        self.output["photometry_dirs"] = [get_output_loc(self.raw_dir)]
         self.output["raw_dir"] = self.raw_dir
         self.clump_file = os.path.join(self.output_dir, self.genversion + ".SNANA.TEXT")
         self.output["clump_file"] = self.clump_file

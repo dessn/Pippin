@@ -145,7 +145,7 @@ fi
         str_types = json.dumps(types)
 
         sim_dep = self.get_simulation_dependency()
-        light_curve_dir = sim_dep.output["photometry_dir"]
+        light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] else ""
