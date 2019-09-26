@@ -33,7 +33,7 @@ class CreateCov(ConfigBasedExecutable):
 
     """
 
-    def __init__(self, name, output_dir, options, dependencies=None):
+    def __init__(self, name, output_dir, options, dependencies=None, index=0):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/create_cov"
         self.template_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/cosmomc_templates"
         base_file = os.path.join(self.data_dir, "input_file.txt")
@@ -41,6 +41,7 @@ class CreateCov(ConfigBasedExecutable):
 
         self.options = options
         self.global_config = get_config()
+        self.index = index
 
         self.job_name = f"CREATE_COV_{name}"
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
@@ -52,7 +53,7 @@ class CreateCov(ConfigBasedExecutable):
         self.config_dir = os.path.join(self.output_dir, "output")
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
-        self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdir"] + ".input")
+        self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
         self.output["ini_dir"] = self.config_dir
@@ -60,6 +61,7 @@ class CreateCov(ConfigBasedExecutable):
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
         self.output["covopts"] = covopts_map
+        self.output["index"] = index
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=00:10:00
@@ -93,7 +95,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
         self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
         self.set_property("OUTPUTDIR", self.config_dir)
-        self.set_property("SUBDIR", self.biascor_dep.output["subdir"])
+        self.set_property("SUBDIR", self.biascor_dep.output["subdirs"][self.index])
         self.set_property("ROOTDIR", self.chain_dir)
         self.set_property("SYSDEFAULT", self.options.get("SYSDEFAULT", 0))
 
@@ -183,10 +185,14 @@ python create_covariance_staticbins.py {input_file} {done_file}
                 if mask not in btask.name:
                     continue
 
-                name = f"{cname}_{btask.name}"
-                a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, [btask])
-                Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
-                tasks.append(a)
+                num = len(btask.output["subdir"])
+                for i in range(num):
+                    ii = "" if num == 1 else f"_{i + 1}"
+
+                    name = f"{cname}_{btask.name}{ii}"
+                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, [btask], index=i)
+                    Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
+                    tasks.append(a)
 
             if len(biascor_tasks) == 0:
                 Task.fail_config(f"Create cov task {cname} has no biascor task to run on!")
