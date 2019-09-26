@@ -113,7 +113,7 @@ class Aggregator(Task):
     def _run(self, force_refresh):
         new_hash = self.check_regenerate(force_refresh)
         if new_hash:
-            shutil.rmtree(self.output_dir)
+            shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
 
             # Want to loop over each number and grab the relevant IDs and classifiers
