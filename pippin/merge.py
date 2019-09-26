@@ -37,11 +37,10 @@ class Merger(Task):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, options, index=0):
+    def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.passed = False
-        self.index = index
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
         self.done_file = os.path.join(self.output_dir, "done.txt")
@@ -53,14 +52,11 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")
-        self.fitres_outdir = os.path.join(self.suboutput_dir, os.path.basename(self.lc_fit["fitres_dirs"][self.index]))
-        self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES")
+        self.fitres_outdirs = [os.path.join(self.suboutput_dir, os.path.basename(f)) for f in self.lc_fit["fitres_dirs"]]
         self.output["lc_output_dir"] = self.suboutput_dir
-        self.output["fitres_file"] = self.new_output
-        self.output["fitres_dir"] = self.fitres_outdir
+        self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
-        self.output["index"] = index
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
@@ -80,7 +76,7 @@ class Merger(Task):
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug(f"Merger finished, see combined fitres at {self.fitres_outdir}")
+            self.logger.debug(f"Merger finished, see combined fitres at {self.suboutput_dir}")
             return Task.FINISHED_SUCCESS
         else:
             output_error = False
@@ -100,55 +96,59 @@ class Merger(Task):
                 self.logger.error("Combine task failed with no output log. Please debug")
             return Task.FINISHED_FAILURE
 
-    def add_to_fitres(self, fitres_file):
+    def add_to_fitres(self, fitres_file, index):
         command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file), "T"]
         try:
             self.logger.debug(f"Executing command {command}")
             with open(self.logfile, "w+") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdir, check=True)
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdirs[index], check=True)
             # Run sed command
             sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
             self.logger.debug(f"Executing command {sed_command}")
             with open(self.logfile, "w+") as f:
-                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdir, check=True)
+                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdirs[index], check=True)
 
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Error invoking command {command}")
             raise e
 
     def _run(self, force_refresh):
+        fitres_files, symlink_files = [], []
+        for fitres_dir in self.lc_fit["fitres_dirs"]:
+            files = os.listdir(fitres_dir)
+            fitres_files += [(fitres_dir, f) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+            symlink_files += [(fitres_dir, f) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
-        fitres_dir = self.lc_fit["fitres_dirs"][self.index]
-        files = os.listdir(fitres_dir)
-        fitres_files = [f for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
-        symlink_files = [f for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
-
+        new_hash = self.get_hash_from_string(" ".join([a + b for a, b in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
-        new_hash = self.get_hash_from_string(" ".join(fitres_files + symlink_files))
 
         if force_refresh or new_hash != old_hash:
             shutil.rmtree(self.output_dir, ignore_errors=True)
             self.logger.debug("Regenerating, running combine_fitres")
-            mkdirs(self.fitres_outdir)
             try:
-                for f in sorted(fitres_files):
-                    self.add_to_fitres(os.path.join(fitres_dir, f))
-                for s in sorted(symlink_files):
-                    self.logger.debug(f"Creating symlink for {os.path.join(self.fitres_outdir, s)} to {os.path.join(self.fitres_outdir, 'FITOPT000.FITRES')}")
-                    os.symlink(os.path.join(self.fitres_outdir, "FITOPT000.FITRES"), os.path.join(self.fitres_outdir, s))
+                for fitres_dir in self.fitres_outdirs:
+                    mkdirs(fitres_dir)
+                    for f in fitres_files:
+                        if f[0] == fitres_dir:
+                            self.add_to_fitres(os.path.join(fitres_dir, f[1]))
+                    for s in symlink_files:
+                        if s[0] == fitres_dir:
 
-                self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
-                filenames = ["MERGE.LOG", "FITOPT.README"]
-                for f in filenames:
-                    original = os.path.join(self.lc_fit["lc_output_dir"], f)
-                    moved = os.path.join(self.suboutput_dir, f)
-                    if not os.path.exists(moved):
-                        self.logger.debug(f"Copying file {f} into output directory")
-                        shutil.copy(original, moved)
+                            self.logger.debug(f"Creating symlink for {os.path.join(fitres_dir, s[1])} to {os.path.join(fitres_dir, 'FITOPT000.FITRES')}")
+                            os.symlink(os.path.join(fitres_dir, "FITOPT000.FITRES"), os.path.join(fitres_dir, s))
 
-                self.save_new_hash(new_hash)
-                with open(self.done_file, "w") as f:
-                    f.write("SUCCESS")
+                    self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
+                    filenames = ["MERGE.LOG", "FITOPT.README"]
+                    for f in filenames:
+                        original = os.path.join(self.lc_fit["lc_output_dir"], f)
+                        moved = os.path.join(self.suboutput_dir, f)
+                        if not os.path.exists(moved):
+                            self.logger.debug(f"Copying file {f} into output directory")
+                            shutil.copy(original, moved)
+
+                    self.save_new_hash(new_hash)
+                    with open(self.done_file, "w") as f:
+                        f.write("SUCCESS")
             except Exception as e:
                 self.logger.error("Error running merger!")
                 self.logger.error(f"Check log at {self.logfile}")
@@ -188,29 +188,21 @@ class Merger(Task):
                 if mask_sim and mask_sim not in sim.name:
                     continue
 
-                num_indices = len(lcfit.output["fitres_dirs"])
-                for i in range(num_indices):
-                    ii = "" if num_indices == 1 else f"_{i + 1}"
+                for agg in agg_tasks:
+                    if mask_agg and mask_agg not in agg.name:
+                        continue
+                    if mask and mask not in agg.name:
+                        continue
 
-                    for agg in agg_tasks:
-                        if mask_agg and mask_agg not in agg.name:
-                            continue
-                        if mask and mask not in agg.name:
-                            continue
-                        if agg.index != i:
-                            continue
+                    # Check if the sim is the same for both
+                    if sim != agg.get_underlying_sim_task():
+                        continue
+                    num_gen += 1
 
-                        # Check if the sim is the same for both
-                        if sim != agg.get_underlying_sim_task():
-                            continue
-                        num_gen += 1
-
-                        merge_name2 = f"{name}_{lcfit.name}{ii}"
-                        task = Merger(
-                            merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options, index=i
-                        )
-                        Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
-                        tasks.append(task)
+                    merge_name2 = f"{name}_{lcfit.name}"
+                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
+                    Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
+                    tasks.append(task)
             if num_gen == 0:
                 Task.fail_config(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
         return tasks
