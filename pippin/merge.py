@@ -119,7 +119,7 @@ class Merger(Task):
             fitres_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
             symlink_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
-        new_hash = self.get_hash_from_string(" ".join([a + b for a, b in (fitres_files + symlink_files)]))
+        new_hash = self.get_hash_from_string(" ".join([a + b + c for a, b, c in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
 
         if force_refresh or new_hash != old_hash:
