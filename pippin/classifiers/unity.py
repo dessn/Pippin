@@ -57,27 +57,33 @@ class UnityClassifier(Classifier):
         new_hash = self.check_regenerate(force_refresh)
         if new_hash:
             mkdirs(self.output_dir)
-            input = self.get_fit_dependency()
-            fitres_file = os.path.abspath(os.path.join(input["fitres_dirs"][self.index], input["fitopt_map"]["DEFAULT"]))
-            self.logger.debug(f"Looking for {fitres_file}")
-            if not os.path.exists(fitres_file):
-                self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
+            try:
+                input = self.get_fit_dependency()
+                fitres_file = os.path.abspath(os.path.join(input["fitres_dirs"][self.index], input["fitopt_map"]["DEFAULT"]))
+                self.logger.debug(f"Looking for {fitres_file}")
+                if not os.path.exists(fitres_file):
+                    self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
+                    self.passed = False
+                    return False
+
+                df = pd.read_csv(fitres_file, sep="\s+", comment="#", compression="infer")
+                name = self.get_prob_column_name()
+                df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": name})
+                df[name] = 1.0
+
+                self.logger.info(f"Saving probabilities to {self.output_file}")
+                df.to_csv(self.output_file, index=False, float_format="%0.4f")
+                chown_dir(self.output_dir)
+                with open(self.done_file, "w") as f:
+                    f.write("SUCCESS")
+                self.save_new_hash(new_hash)
+            except Exception as e:
+                self.logger.exception(e)
                 self.passed = False
+                with open(self.done_file, "w") as f:
+                    f.write("FAILED")
                 return False
-
-            df = pd.read_csv(fitres_file, sep="\s+", comment="#", compression="infer")
-            name = self.get_prob_column_name()
-            df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": name})
-            df[name] = 1.0
-
-            self.logger.info(f"Saving probabilities to {self.output_file}")
-            df.to_csv(self.output_file, index=False, float_format="%0.4f")
-            chown_dir(self.output_dir)
-            with open(self.done_file, "w") as f:
-                f.write("SUCCESS")
-            self.save_new_hash(new_hash)
         self.passed = True
-
         return True
 
     def _check_completion(self, squeue):
