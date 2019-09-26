@@ -228,5 +228,3 @@ ANALYSE:
   PRIOR:
     MASK_COSMOMC: SN_OMW
     MASK_BIASCOR: SIM  # Should we detect if its data automatically and ensure blinding
-    OPTS:
-      PRIOR: 0.01
