@@ -16,6 +16,8 @@ class FitProbClassifier(Classifier):
         MASK_SIM: TEST  # partial match on sim name
         MASK_FIT: TEST  # partial match on lcfit name
         MODE: predict
+        OPTS:
+            FITOPT: fitoptName # Defaults to DEFAULT, which is FITOPT000
 
     OUTPUTS:
     ========
@@ -32,6 +34,7 @@ class FitProbClassifier(Classifier):
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
+        self.fitopt = options.get("FITOPT", "DEFAULT")
 
     def check_regenerate(self, force_refresh):
 
@@ -53,7 +56,7 @@ class FitProbClassifier(Classifier):
         if new_hash:
             mkdirs(self.output_dir)
             input = self.get_fit_dependency()
-            fitres_file = input["fitres_file"][self.index]
+            fitres_file = os.path.join(input["fitres_file"][self.index], input["fitopt_map"][self.fitopt])
             self.logger.debug(f"Looking for {fitres_file}")
             if not os.path.exists(fitres_file):
                 self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")

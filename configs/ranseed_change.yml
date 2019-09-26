@@ -2,11 +2,17 @@ SIM:
   TRAIN:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 1 12345
+
   TEST:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_CHANGE: 2 12345
