@@ -1,0 +1,26 @@
+SIM:
+  TEST:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_CHANGE: 2 12345
+
+LCFIT:
+  TESTFIT:
+    BASE: des.nml
+    SNLCINP:
+      USE_MINOS: F
+
+
+AGGREGATION:
+  AGG:
+    MASK: TEST
+    OPTS:
+      INCLUDE_TYPE: True
+      PLOT: True
+
+MERGE:
+  MERGE:
+    MASK_SIM: TEST
+    MASK_FIT: TEST
