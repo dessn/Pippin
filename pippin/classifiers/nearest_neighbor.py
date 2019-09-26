@@ -236,7 +236,7 @@ class NearestNeighborClassifier(Classifier):
             self.save_new_hash(new_hash)
 
             job_name = "nearnbr_apply.exe"
-            inArgs = f'-inFile_data {train_info["fitres_file"]} -inFile_MLpar {model_path}'
+            inArgs = f"-inFile_data {self.fitres_path} -inFile_MLpar {model_path}"
             outArgs = f"-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}"
             cmd_job = "%s %s %s" % (job_name, inArgs, outArgs)
             self.logger.debug(f"Executing command {cmd_job}")

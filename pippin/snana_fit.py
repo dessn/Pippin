@@ -221,7 +221,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
-            self.output["fitres_file"] = os.path.abspath(os.path.join(self.fitres_dir, "FITOPT000.FITRES"))
             return Task.FINISHED_SUCCESS
         return 0
 
