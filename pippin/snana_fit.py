@@ -44,7 +44,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
-        self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["photometry_dirs"]]
+        self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
