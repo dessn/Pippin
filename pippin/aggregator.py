@@ -151,7 +151,7 @@ class Aggregator(Task):
 
             types = self.get_underlying_sim_task().output["types_dict"]
             self.logger.debug(f"Input types are {types}")
-            ia = df["SNTYPE"].apply(lambda y: True if str(y) in types["IA"] else (False if str(y) in types["NONIA"] else np.nan))
+            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
             df["IA"] = ia
 
             sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
