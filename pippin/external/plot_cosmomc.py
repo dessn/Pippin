@@ -77,7 +77,7 @@ def get_arguments():
     parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
     parser.add_argument("-s", "--shift", help="Shift om, w, ol to truth values", action="store_true", default=False)
-    parser.add_argument("-p", "--prior", help="Enforce prior on om", type=float, default=None)
+    parser.add_argument("-r", "--prior", help="Enforce prior on om", type=float, default=None)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     args = parser.parse_args()
 
