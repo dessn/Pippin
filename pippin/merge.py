@@ -96,8 +96,8 @@ class Merger(Task):
                 self.logger.error("Combine task failed with no output log. Please debug")
             return Task.FINISHED_FAILURE
 
-    def add_to_fitres(self, fitres_file, outdir):
-        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file), "T"]
+    def add_to_fitres(self, fitres_file, outdir, index=0):
+        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"][index], "--outfile_text", os.path.basename(fitres_file), "T"]
         try:
             self.logger.debug(f"Executing command {command}")
             with open(self.logfile, "w+") as f:
@@ -114,12 +114,12 @@ class Merger(Task):
 
     def _run(self, force_refresh):
         fitres_files, symlink_files = [], []
-        for fitres_dir, outdir in zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs):
+        for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            fitres_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
-            symlink_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
+            fitres_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+            symlink_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
-        new_hash = self.get_hash_from_string(" ".join([a + b + c for a, b, c in (fitres_files + symlink_files)]))
+        new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" for a, b, c, d in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
 
         if force_refresh or new_hash != old_hash:
@@ -130,7 +130,7 @@ class Merger(Task):
                     mkdirs(fitres_dir)
                     for f in fitres_files:
                         if f[1] == fitres_dir:
-                            self.add_to_fitres(os.path.join(f[0], f[2]), f[1])
+                            self.add_to_fitres(os.path.join(f[0], f[2]), f[1], index=f[3])
                     for s in symlink_files:
                         if s[1] == fitres_dir:
                             self.logger.debug(f"Creating symlink for {os.path.join(f[0], s[1])} to {os.path.join(f[0], 'FITOPT000.FITRES')}")
