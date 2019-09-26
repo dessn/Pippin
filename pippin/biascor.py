@@ -98,6 +98,13 @@ class BiasCor(ConfigBasedExecutable):
         return 1
 
     def write_input(self, force_refresh):
+        for m in self.merged_iasim:
+            if len(m.output["fitres_dirs"]) > 1:
+                self.logger.warning(f"Your IA sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
+        if self.merged_ccsim is not None:
+            for m in self.merged_ccsim:
+                if len(m.output["fitres_dirs"]) > 1:
+                    self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         self.bias_cor_fits = ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_iasim])
         self.cc_prior_fits = (
             None
