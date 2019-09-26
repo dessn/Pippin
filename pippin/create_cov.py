@@ -185,7 +185,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                 if mask not in btask.name:
                     continue
 
-                num = len(btask.output["subdir"])
+                num = len(btask.output["subdirs"])
                 for i in range(num):
                     ii = "" if num == 1 else f"_{i + 1}"
 
