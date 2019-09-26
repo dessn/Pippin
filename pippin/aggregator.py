@@ -238,6 +238,12 @@ class Aggregator(Task):
                         and c.get_simulation_dependency() == sim_task
                         and c.index == i
                     ]
+                    for c in classifier_tasks:
+                        print("AAA ", c.name)
+                        print("AAA ", c.mode)
+                        print("AAA ", c.get_simulation_dependency())
+                        print("AAA ", c.index)
+                        print("AAA -----------------")
                     if len(deps) == 0:
                         Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
                     else:
