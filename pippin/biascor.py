@@ -36,6 +36,7 @@ class BiasCor(ConfigBasedExecutable):
         self.data = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
         self.genversions = [m.output["genversion"] for m in self.merged_data]
+        self.num_verions = [len(m.output["fitres_dirs"]) for m in self.merged_data]
         self.genversion = "_".join(self.sim_names) + "_" + self.classifier.name
 
         self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
@@ -53,10 +54,18 @@ class BiasCor(ConfigBasedExecutable):
         #     a_genversion = a_genversion.replace(n, "")
         # while a_genversion.endswith("_"):
         #     a_genversion = a_genversion[:-1]
-        self.output["subdir"] = "SALT2mu_FITJOBS"
-        self.output["m0dif_dir"] = os.path.join(self.fit_output_dir, self.output["subdir"])
+
+        num_dirs = self.num_verions[0]
+        if num_dirs == 1:
+            self.output["subdirs"] = ["SALT2mu_FITJOBS"]
+        else:
+            self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
+
+        for s in self.output["subdirs"]:
+            self.output["m0dif_dirs"] = os.path.join(self.fit_output_dir, s)
+        self.output_plot = os.path.join(self.output["m0dif_dirs"][0], f"{self.name}_hubble.png")
+
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
-        self.output_plot = os.path.join(self.output["m0dif_dir"], f"{self.name}_hubble.png")
         self.output["hubble_plot"] = self.output_plot
 
     def _check_completion(self, squeue):
@@ -67,9 +76,8 @@ class BiasCor(ConfigBasedExecutable):
                 if "FAIL" in f.read():
                     failed = True
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
-                wfiles = [f for f in os.listdir(self.output["m0dif_dir"]) if f.startswith("wfit_") and f.endswith(".LOG")]
-                for wfile in wfiles:
-                    path = os.path.join(self.output["m0dif_dir"], wfile)
+                wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
+                for path in wfiles:
                     with open(path) as f2:
                         if "ERROR:" in f2.read():
                             self.logger.error(f"Error found in wfit file: {path}")
@@ -188,8 +196,8 @@ class BiasCor(ConfigBasedExecutable):
             try:
                 self.logger.info("Making output Hubble diagram")
 
-                fitres_file = os.path.join(self.output["m0dif_dir"], "SALT2mu_FITOPT000_MUOPT000.FITRES")
-                m0dif_file = os.path.join(self.output["m0dif_dir"], "SALT2mu_FITOPT000_MUOPT000.M0DIF")
+                fitres_file = os.path.join(self.output["m0dif_dirs"][0], "SALT2mu_FITOPT000_MUOPT000.FITRES")
+                m0dif_file = os.path.join(self.output["m0dif_dirs"][0], "SALT2mu_FITOPT000_MUOPT000.M0DIF")
 
                 from astropy.cosmology import FlatwCDM
                 import numpy as np
