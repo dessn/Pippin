@@ -1,4 +1,5 @@
 import inspect
+import shutil
 import subprocess
 
 from pippin.classifiers.classifier import Classifier
@@ -40,20 +41,24 @@ class Aggregator(Task):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, options, index=0):
+    def __init__(self, name, output_dir, dependencies, options):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
-        self.output_df = os.path.join(self.output_dir, "merged.csv")
-        self.output_df_key = os.path.join(self.output_dir, "merged.key")
-        self.index = index
+
+        self.sim_task = self.get_underlying_sim_task()
+        self.num_versions = len(self.sim_task.output["sim_folders"])
+
+        self.output_dfs = [os.path.join(self.output_dir, f"merged_{i}.csv") for i in range(self.num_versions)]
+        self.output_dfs_key = [os.path.join(self.output_dir, f"merged_{i}.key") for i in range(self.num_versions)]
+
         self.id = "CID"
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = options.get("PLOT", False)
         self.output["classifiers"] = self.classifiers
-        self.output["index"] = index
+
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
         else:
@@ -108,69 +113,75 @@ class Aggregator(Task):
     def _run(self, force_refresh):
         new_hash = self.check_regenerate(force_refresh)
         if new_hash:
+            shutil.rmtree(self.output_dir)
             mkdirs(self.output_dir)
-            prediction_files = [d.output["predictions_filename"] for d in self.classifiers]
-            df = None
 
-            for f in prediction_files:
-                dataframe = self.load_prediction_file(f)
-                dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
-                dataframe[self.id] = dataframe[self.id].apply(str)
-                dataframe[self.id] = dataframe[self.id].str.strip()
-                self.logger.debug(f"Merging on column {self.id} for file {f}")
-                if df is None:
-                    df = dataframe
+            # Want to loop over each number and grab the relevant IDs and classifiers
+            for index in range(self.num_versions):
+                relevant_classifiers = [c for c in self.classifiers if c.index == index]
+
+                prediction_files = [d.output["predictions_filename"] for d in relevant_classifiers]
+                df = None
+
+                for f in prediction_files:
+                    dataframe = self.load_prediction_file(f)
+                    dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
+                    dataframe[self.id] = dataframe[self.id].apply(str)
+                    dataframe[self.id] = dataframe[self.id].str.strip()
+                    self.logger.debug(f"Merging on column {self.id} for file {f}")
+                    if df is None:
+                        df = dataframe
+                    else:
+                        df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
+
+                self.logger.info("Finding original types")
+                s = self.get_underlying_sim_task()
+                type_df = None
+                phot_dir = s.output["photometry_dirs"][index]
+                headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                if not headers:
+                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
                 else:
-                    df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
+                    for h in headers:
+                        with fits.open(h) as hdul:
+                            data = hdul[1].data
+                            snid = np.array(data.field("SNID"))
+                            sntype = np.array(data.field("SNTYPE")).astype(np.int64)
+                            # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
+                            dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                            dataframe[self.id] = dataframe[self.id].apply(str)
+                            dataframe[self.id] = dataframe[self.id].str.strip()
+                            if type_df is None:
+                                type_df = dataframe
+                            else:
+                                type_df = pd.concat([type_df, dataframe])
+                        type_df.drop_duplicates(subset=self.id, inplace=True)
+                    self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
-            self.logger.info("Finding original types")
-            s = self.get_underlying_sim_task()
-            type_df = None
-            phot_dir = s.output["photometry_dirs"][self.index]
-            headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
-            if not headers:
-                self.logger.error(f"No HEAD fits files found in {phot_dir}!")
-            else:
-                for h in headers:
-                    with fits.open(h) as hdul:
-                        data = hdul[1].data
-                        snid = np.array(data.field("SNID"))
-                        sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                        # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
-                        dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                        dataframe[self.id] = dataframe[self.id].apply(str)
-                        dataframe[self.id] = dataframe[self.id].str.strip()
-                        if type_df is None:
-                            type_df = dataframe
-                        else:
-                            type_df = pd.concat([type_df, dataframe])
-                    type_df.drop_duplicates(subset=self.id, inplace=True)
-                self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
+                df = pd.merge(df, type_df, on=self.id, how="left")
 
-            df = pd.merge(df, type_df, on=self.id, how="left")
+                types = self.get_underlying_sim_task().output["types_dict"]
+                self.logger.debug(f"Input types are {types}")
+                ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
+                df["IA"] = ia
 
-            types = self.get_underlying_sim_task().output["types_dict"]
-            self.logger.debug(f"Input types are {types}")
-            ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
-            df["IA"] = ia
+                sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
+                df = df.reindex(sorted_columns, axis=1)
+                self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
+                df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
+                self.save_key_format(df, index)
+                self.logger.debug(f"Saving merged dataframe to {self.output_dfs[index]}")
+                self.save_new_hash(new_hash)
 
-            sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
-            df = df.reindex(sorted_columns, axis=1)
-            self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
-            df.to_csv(self.output_df, index=False, float_format="%0.4f")
-            self.save_key_format(df)
-            self.logger.debug(f"Saving merged dataframe to {self.output_df}")
-            self.save_new_hash(new_hash)
+                if self.plot:
+                    return_good = self._plot(index)
+                    if not return_good:
+                        self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
+                else:
+                    self.logger.debug("Plot not set, skipping plotting section")
 
-            if self.plot:
-                return_good = self._plot()
-                if not return_good:
-                    self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
-            else:
-                self.logger.debug("Plot not set, skipping plotting section")
-
-        self.output["merge_predictions_filename"] = self.output_df
-        self.output["merge_key_filename"] = self.output_df_key
+        self.output["merge_predictions_filename"] = self.output_dfs
+        self.output["merge_key_filename"] = self.output_dfs_key
         self.output["sn_column_name"] = self.id
         if self.include_type:
             self.output["sn_type_name"] = self.type_name
@@ -178,15 +189,15 @@ class Aggregator(Task):
         self.passed = True
         return True
 
-    def save_key_format(self, df):
+    def save_key_format(self, df, index):
         if "IA" in df.columns:
             df = df.drop(columns=[self.type_name, "IA"])
         df2 = df.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
-        df2.to_csv(self.output_df_key, index=False, float_format="%0.4f", sep=" ")
+        df2.to_csv(self.output_dfs_key[index], index=False, float_format="%0.4f", sep=" ")
 
-    def _plot(self):
-        cmd = ["python", self.python_file, self.output_df, self.output_dir]
+    def _plot(self, index):
+        cmd = ["python", self.python_file, self.output_dfs[index], self.output_dir, index]
         self.logger.debug(f"Invoking command  {' '.join(cmd)}")
         try:
             subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
@@ -224,24 +235,16 @@ class Aggregator(Task):
                 if mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
 
-                num_indices = len(sim_task.output["sim_folders"])
-
-                for i in range(num_indices):
-                    ii = "" if num_indices == 1 else f"_{i + 1}"
-                    agg_name2 = f"{agg_name}_{sim_task.name}{ii}"
-                    deps = [
-                        c
-                        for c in classifier_tasks
-                        if mask in c.name
-                        and mask_clas in c.name
-                        and c.mode == Classifier.PREDICT
-                        and c.get_simulation_dependency() == sim_task
-                        and c.index == i
-                    ]
-                    if len(deps) == 0:
-                        Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
-                    else:
-                        a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
-                        Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
-                        tasks.append(a)
+                agg_name2 = f"{agg_name}_{sim_task.name}"
+                deps = [
+                    c
+                    for c in classifier_tasks
+                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
+                ]
+                if len(deps) == 0:
+                    Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
+                else:
+                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
+                    Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
+                    tasks.append(a)
         return tasks

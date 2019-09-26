@@ -10,7 +10,7 @@ from scipy.stats import binned_statistic
 colours = ["#f95b4a", "#3d9fe2", "#ffa847", "#c4ef7a", "#e195e2", "#ced9ed", "#fff29b", "#903de3", "#31b58b", "#99825a"]
 
 
-def plot_corr(df, output_dir):
+def plot_corr(df, output_dir, index):
     logging.debug("Making prob correlation plot")
 
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -18,12 +18,12 @@ def plot_corr(df, output_dir):
     sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
     plt.show()
     if output_dir:
-        filename = os.path.join(output_dir, "plt_corr.png")
+        filename = os.path.join(output_dir, f"plt_corr_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
         logging.info(f"Prob corr plot saved to {filename}")
 
 
-def plot_prob_acc(df, output_dir):
+def plot_prob_acc(df, output_dir, index):
     logging.debug("Making prob accuracy plot")
 
     prob_bins = np.linspace(0, 1, 21)
@@ -41,7 +41,7 @@ def plot_prob_acc(df, output_dir):
     ax.set_ylabel("Actual chance of being Ia")
     plt.show()
     if output_dir:
-        filename = os.path.join(output_dir, "plt_prob_acc.png")
+        filename = os.path.join(output_dir, f"plt_prob_acc_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
         logging.info(f"Prob accuracy plot saved to {filename}")
 
@@ -71,7 +71,7 @@ def _get_data_and_truth(data, truth):
     return data, truth
 
 
-def plot_thresholds(df, output_dir):
+def plot_thresholds(df, output_dir, index):
     logging.debug("Making threshold plot")
 
     thresholds = np.linspace(0.5, 0.999, 100)
@@ -97,12 +97,12 @@ def plot_thresholds(df, output_dir):
     ax.legend(loc=3, frameon=False, ncol=2)
     plt.show()
     if output_dir:
-        filename = os.path.join(output_dir, "plt_thresholds.png")
+        filename = os.path.join(output_dir, f"plt_thresholds_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_pr(df, output_dir):
+def plot_pr(df, output_dir, index):
     logging.debug("Making roc plot")
 
     thresholds = np.linspace(0.01, 1, 100)
@@ -127,12 +127,12 @@ def plot_pr(df, output_dir):
     ax.legend(frameon=False, loc=3)
     plt.show()
     if output_dir:
-        filename = os.path.join(output_dir, "plt_pr.png")
+        filename = os.path.join(output_dir, f"plt_pr_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_roc(df, output_dir):
+def plot_roc(df, output_dir, index):
     logging.debug("Making pr plot")
 
     thresholds = np.linspace(0.01, 0.999, 100)
@@ -156,12 +156,12 @@ def plot_roc(df, output_dir):
     ax.legend(frameon=False, loc=4)
     plt.show()
     if output_dir:
-        filename = os.path.join(output_dir, "plt_roc.png")
+        filename = os.path.join(output_dir, f"plt_roc_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_comparison(df, output_dir):
+def plot_comparison(df, output_dir, index):
     logging.debug("Making comparison plot")
 
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
@@ -213,19 +213,19 @@ def plot_comparison(df, output_dir):
                     ax.set_xticklabels([])
     plt.subplots_adjust(hspace=0.0, wspace=0)
     if output_dir:
-        filename = os.path.join(output_dir, "plt_scatter.png")
+        filename = os.path.join(output_dir, f"plt_scatter_{index}.png")
         fig.savefig(filename, bbox_inches="tight", dpi=300, transparent=True)
         logging.info(f"Prob scatter plot saved to {filename}")
 
 
-def plot(df, output_dir):
+def plot(df, output_dir, index):
 
-    plot_corr(df, output_dir)
-    plot_prob_acc(df, output_dir)
-    plot_thresholds(df, output_dir)
-    plot_roc(df, output_dir)
-    plot_pr(df, output_dir)
-    plot_comparison(df, output_dir)
+    # plot_corr(df, output_dir, index)
+    plot_prob_acc(df, output_dir, index)
+    # plot_thresholds(df, output_dir, index)
+    plot_roc(df, output_dir, index)
+    plot_pr(df, output_dir, index)
+    plot_comparison(df, output_dir, index)
 
 
 if __name__ == "__main__":
@@ -233,6 +233,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("mergedcsv", help="Location of merged csv to load in and plot")
     parser.add_argument("output_dir", help="Location of output_dir")
+    parser.add_argument("index", help="index of the files")
     args = parser.parse_args()
 
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
@@ -245,7 +246,7 @@ if __name__ == "__main__":
 
     try:
         df = pd.read_csv(args.mergedcsv)
-        plot(df, args.output_dir)
+        plot(df, args.output_dir, args.index)
     except Exception as e:
         logging.error(str(e))
         raise e
