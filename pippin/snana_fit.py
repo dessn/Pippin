@@ -20,7 +20,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     ========
         name: name given in the yml
         output_dir: top level output directory
-        fitres_dir: dir containing the output fitres files.
+        fitres_dirs: dirs containing the output fitres files. Is a list
         nml_file: location to copied nml file
         genversion: simulation genversion run against
         sim_name: name of the underlying sim task
@@ -44,8 +44,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
         self.lc_output_dir = f"{self.output_dir}/output"
-        self.fitres_dir = f"{self.lc_output_dir}/{self.sim_version}"
-        self.set_num_jobs(int(config.get("NUM_JOBS", 100)))
+        self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["photometry_dirs"]]
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
@@ -53,7 +52,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.log_files = [self.logging_file, secondary_log]
 
-        self.output["fitres_dir"] = self.fitres_dir
+        self.output["fitres_dirs"] = self.fitres_dirs
         self.output["nml_file"] = self.config_path
         self.output["genversion"] = self.sim_version
         self.output["sim_name"] = sim_task.output["name"]

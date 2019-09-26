@@ -35,7 +35,7 @@ class SNANASimulation(ConfigBasedExecutable):
         genversion: genverison of sim
         types_dict: dict map from IA or NONIA to numeric gentypes
         types: dict map from numeric gentype to string (Ia, II, etc)
-        photometry_dir: location of fits files with photometry
+        photometry_dirs: location of fits files with photometry. is a list.
 
     """
 
@@ -69,6 +69,15 @@ class SNANASimulation(ConfigBasedExecutable):
             self.num_jobs = 10
 
         self.output["genversion"] = self.genversion
+
+        ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+        base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
+        if ranseed_change:
+            num_sims = int(ranseed_change.split()[0])
+            self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
+        else:
+            self.sim_folders = [base]
+        self.output["sim_folders"] = self.sim_folders
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
@@ -220,7 +229,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.logger.warning("Cannot find log file in process of reading it in (maybe it just got zipped up): {self.sim_log_dir + '/' + file}")
 
         # Check to see if the done file exists
-        sim_folder_endpoint = f"{self.output_dir}/{self.genversion}"
+
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
             if os.path.exists(self.total_summary):
@@ -234,13 +243,15 @@ class SNANASimulation(ConfigBasedExecutable):
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             else:
                 self.logger.debug(f"Cannot find {self.total_summary}")
-            if not os.path.exists(sim_folder_endpoint):
-                sim_folder = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-                self.logger.info("Done file found, creating symlinks")
-                self.logger.debug(f"Linking {sim_folder} -> {sim_folder_endpoint}")
-                os.symlink(sim_folder, sim_folder_endpoint, target_is_directory=True)
+
+            self.logger.info("Done file found, creating symlinks")
+            s_ends = [os.path.join(self.output_dir, os.path.basename(s)) for s in self.sim_folders]
+            for s, s_end in zip(self.sim_folders, s_ends):
+                if not os.path.exists(s_end):
+                    self.logger.debug(f"Linking {s} -> {s_end}")
+                    os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output.update({"photometry_dir": sim_folder_endpoint, "types": self.get_types()})
+            self.output.update({"photometry_dirs": s_ends, "types": self.get_types()})
             return Task.FINISHED_SUCCESS
         return 0  # TODO: Update to num jobs
 

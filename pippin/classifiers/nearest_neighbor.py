@@ -51,7 +51,7 @@ class NearestNeighborClassifier(Classifier):
         lcfit = self.get_fit_dependency()
         self.fitopt = options.get("FITOPT", "DEFAULT")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dir"], self.fitres_filename))
+        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dir"][self.index], self.fitres_filename))
 
     def train(self, force_refresh):
         # Created April 2019 by R.Kessler

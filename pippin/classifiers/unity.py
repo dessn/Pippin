@@ -58,7 +58,7 @@ class UnityClassifier(Classifier):
         if new_hash:
             mkdirs(self.output_dir)
             input = self.get_fit_dependency()
-            fitres_file = input["fitres_file"]
+            fitres_file = input["fitres_file"][self.index]
             self.logger.debug(f"Looking for {fitres_file}")
             if not os.path.exists(fitres_file):
                 self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")

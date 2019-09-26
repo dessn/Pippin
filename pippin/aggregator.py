@@ -40,19 +40,20 @@ class Aggregator(Task):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, options):
+    def __init__(self, name, output_dir, dependencies, options, index=0):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.output_df = os.path.join(self.output_dir, "merged.csv")
         self.output_df_key = os.path.join(self.output_dir, "merged.key")
+        self.index = index
         self.id = "CID"
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = options.get("PLOT", False)
         self.output["classifiers"] = self.classifiers
-
+        self.output["index"] = index
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
         else:
@@ -125,7 +126,7 @@ class Aggregator(Task):
             self.logger.info("Finding original types")
             s = self.get_underlying_sim_task()
             type_df = None
-            phot_dir = s.output["photometry_dir"]
+            phot_dir = s.output["photometry_dirs"][self.index]
             headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
             if not headers:
                 self.logger.error(f"No HEAD fits files found in {phot_dir}!")
@@ -202,6 +203,13 @@ class Aggregator(Task):
         def _get_aggregator_dir(base_output_dir, stage_number, agg_name):
             return f"{base_output_dir}/{stage_number}_AGG/{agg_name}"
 
+        def get_num_ranseed(sim_task, lcfit_task):
+            if sim_task is not None:
+                return len(sim_task.output["sim_folders"])
+            if lcfit_task is not None:
+                return len(sim_task.output["fitres_dirs"])
+            raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
+
         tasks = []
 
         for agg_name in c.get("AGGREGATION", []):
@@ -215,16 +223,25 @@ class Aggregator(Task):
             for sim_task in sim_tasks:
                 if mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
-                agg_name2 = f"{agg_name}_{sim_task.name}"
-                deps = [
-                    c
-                    for c in classifier_tasks
-                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
-                ]
-                if len(deps) == 0:
-                    Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
-                else:
-                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
-                    Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
-                    tasks.append(a)
+
+                num_indices = len(sim_task.output["sim_folders"])
+
+                for i in range(num_indices):
+                    ii = "" if num_indices == 1 else f"_{i + 1}"
+                    agg_name2 = f"{agg_name}_{sim_task.name}{ii}"
+                    deps = [
+                        c
+                        for c in classifier_tasks
+                        if mask in c.name
+                        and mask_clas in c.name
+                        and c.mode == Classifier.PREDICT
+                        and c.get_simulation_dependency() == sim_task
+                        and c.index == i
+                    ]
+                    if len(deps) == 0:
+                        Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
+                    else:
+                        a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2, index=i), deps, options)
+                        Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
+                        tasks.append(a)
         return tasks

@@ -32,11 +32,13 @@ class Classifier(Task):
     TRAIN = 0
     PREDICT = 1
 
-    def __init__(self, name, output_dir, dependencies, mode, options):
+    def __init__(self, name, output_dir, dependencies, mode, options, index=0):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
+        self.index = index
         self.mode = mode
         self.output["prob_column_name"] = self.get_prob_column_name()
+        self.output["index"] = index
 
     @abstractmethod
     def predict(self, force_refresh):
@@ -112,11 +114,19 @@ class Classifier(Task):
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         from pippin.classifiers.factory import ClassifierFactory
 
-        def _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, extra=None):
+        def _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=None, extra=None):
             fit_name = "" if fit_name is None else "_" + fit_name
             sim_name = "" if sim_name is None else "_" + sim_name
             extra_name = "" if extra is None else "_" + extra
-            return f"{base_output_dir}/{stage_number}_CLAS/{clas_name}{sim_name}{fit_name}{extra_name}"
+            index = "" if index is None else "_" + index
+            return f"{base_output_dir}/{stage_number}_CLAS/{clas_name}{index}{sim_name}{fit_name}{extra_name}"
+
+        def get_num_ranseed(sim_task, lcfit_task):
+            if sim_task is not None:
+                return len(sim_task.output["sim_folders"])
+            if lcfit_task is not None:
+                return len(sim_task.output["fitres_dirs"])
+            raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
 
         tasks = []
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
@@ -171,22 +181,43 @@ class Classifier(Task):
                     deps.append(l)
 
                 model = options.get("MODEL")
+
+                # Validate to make sure training samples only have one sim.
+                if mode == Classifier.TRAIN:
+                    if s is not None:
+                        folders = s.output["sim_folders"]
+                        assert (
+                            len(folders) == 1
+                        ), f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                    if l is not None:
+                        folders = l.output["fitres_dirs"]
+                        assert (
+                            len(folders) == 1
+                        ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+
                 if model is not None:
                     for t in tasks:
                         if model == t.name:
                             # deps.append(t)
                             extra = t.get_unique_name()
-                            clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, extra=extra)
-                            cc = cls(clas_name, clas_output_dir, deps + [t], mode, options)
-                            Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
-                            num_gen += 1
-                            tasks.append(cc)
+
+                            indexes = get_num_ranseed(s, l)
+                            for i in range(indexes):
+                                clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=i + 1, extra=extra)
+                                cc = cls(clas_name, clas_output_dir, deps + [t], mode, options, index=i)
+                                Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                                num_gen += 1
+                                tasks.append(cc)
                 else:
-                    clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name)
-                    cc = cls(clas_name, clas_output_dir, deps, mode, options)
-                    Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
-                    num_gen += 1
-                    tasks.append(cc)
+
+                    indexes = get_num_ranseed(s, l)
+                    for i in range(indexes):
+                        clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=i + 1)
+                        cc = cls(clas_name, clas_output_dir, deps, mode, options, index=i)
+                        Task.logger.info(f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name}")
+                        num_gen += 1
+                        tasks.append(cc)
+
             if num_gen == 0:
                 Task.logger.error(f"Classifier {clas_name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
                 return None  # This should cause pippin to crash, which is probably what we want

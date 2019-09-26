@@ -37,10 +37,11 @@ class Merger(Task):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, options):
+    def __init__(self, name, output_dir, dependencies, options, index=0):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.passed = False
+        self.index = index
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
         self.done_file = os.path.join(self.output_dir, "done.txt")
@@ -52,13 +53,14 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")
-        self.fitres_outdir = os.path.join(self.suboutput_dir, self.lc_fit["genversion"])
+        self.fitres_outdir = os.path.join(self.suboutput_dir, os.path.basename(self.lc_fit["fitres_dirs"][self.index]))
         self.new_output = os.path.join(self.fitres_outdir, "FITOPT000.FITRES")
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_file"] = self.new_output
         self.output["fitres_dir"] = self.fitres_outdir
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
+        self.output["index"] = index
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
@@ -196,11 +198,17 @@ class Merger(Task):
                     if sim != agg.get_underlying_sim_task():
                         continue
                     num_gen += 1
-                    merge_name2 = f"{name}_{lcfit.name}"
 
-                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
-                    Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
-                    tasks.append(task)
+                    num_indices = len(sim.output["sim_folders"])
+                    for i in range(num_indices):
+                        ii = "" if num_indices == 1 else f"_{i + 1}"
+
+                        merge_name2 = f"{name}_{lcfit.name}{ii}"
+                        task = Merger(
+                            merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options, index=i
+                        )
+                        Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
+                        tasks.append(task)
             if num_gen == 0:
                 Task.fail_config(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
         return tasks

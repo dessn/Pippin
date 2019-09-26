@@ -47,7 +47,7 @@ class SnirfClassifier(Classifier):
         self.fitopt = options.get("FITOPT", "DEFAULT")
         lcfit = self.get_fit_dependency()
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dir"], self.fitres_filename))
+        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dir"][self.index], self.fitres_filename))
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
