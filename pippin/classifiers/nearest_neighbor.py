@@ -33,8 +33,8 @@ class NearestNeighborClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, mode, options):
-        super().__init__(name, output_dir, dependencies, mode, options)
+    def __init__(self, name, output_dir, dependencies, mode, options, index=0):
+        super().__init__(name, output_dir, dependencies, mode, options, index=index)
         self.passed = False
         self.num_jobs = 40
         self.outfile_train = f"{output_dir}/NN_trainResult.out"
