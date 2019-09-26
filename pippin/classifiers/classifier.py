@@ -203,7 +203,8 @@ class Classifier(Task):
 
                             indexes = get_num_ranseed(s, l)
                             for i in range(indexes):
-                                clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=i + 1, extra=extra)
+                                num = i + 1 if indexes > 1 else None
+                                clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
                                 cc = cls(clas_name, clas_output_dir, deps + [t], mode, options, index=i)
                                 Task.logger.info(
                                     f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"
@@ -214,7 +215,8 @@ class Classifier(Task):
 
                     indexes = get_num_ranseed(s, l)
                     for i in range(indexes):
-                        clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=i + 1)
+                        num = i + 1 if indexes > 1 else None
+                        clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num)
                         cc = cls(clas_name, clas_output_dir, deps, mode, options, index=i)
                         Task.logger.info(
                             f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"

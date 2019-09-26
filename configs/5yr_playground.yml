@@ -29,7 +29,7 @@ SIM:
       BASE: sn_ia_salt2_g10_lowz.input
     GLOBAL:
       NGEN_UNIT: 1
-      RANSEED_REPEAT: 2 12345
+      RANSEED_CHANGE: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   DESSIM:
@@ -37,7 +37,7 @@ SIM:
       BASE: sn_ia_salt2_g10_des3yr.input
     GLOBAL:
       NGEN_UNIT: 1
-      RANSEED_REPEAT: 2 12345
+      RANSEED_CHANGE: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   TESTDESSIM:
