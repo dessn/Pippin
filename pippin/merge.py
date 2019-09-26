@@ -188,20 +188,22 @@ class Merger(Task):
                 if mask_sim and mask_sim not in sim.name:
                     continue
 
-                for agg in agg_tasks:
-                    if mask_agg and mask_agg not in agg.name:
-                        continue
-                    if mask and mask not in agg.name:
-                        continue
+                num_indices = len(lcfit.output["fitres_dirs"])
+                for i in range(num_indices):
+                    ii = "" if num_indices == 1 else f"_{i + 1}"
 
-                    # Check if the sim is the same for both
-                    if sim != agg.get_underlying_sim_task():
-                        continue
-                    num_gen += 1
+                    for agg in agg_tasks:
+                        if mask_agg and mask_agg not in agg.name:
+                            continue
+                        if mask and mask not in agg.name:
+                            continue
+                        if agg.index != i:
+                            continue
 
-                    num_indices = len(sim.output["sim_folders"])
-                    for i in range(num_indices):
-                        ii = "" if num_indices == 1 else f"_{i + 1}"
+                        # Check if the sim is the same for both
+                        if sim != agg.get_underlying_sim_task():
+                            continue
+                        num_gen += 1
 
                         merge_name2 = f"{name}_{lcfit.name}{ii}"
                         task = Merger(

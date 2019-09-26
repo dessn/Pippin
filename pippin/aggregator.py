@@ -238,16 +238,10 @@ class Aggregator(Task):
                         and c.get_simulation_dependency() == sim_task
                         and c.index == i
                     ]
-                    for c in classifier_tasks:
-                        print("AAA ", c.name)
-                        print("AAA ", c.mode)
-                        print("AAA ", c.get_simulation_dependency())
-                        print("AAA ", c.index)
-                        print("AAA -----------------")
                     if len(deps) == 0:
                         Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
                     else:
-                        a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2, index=i), deps, options)
+                        a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
                         Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                         tasks.append(a)
         return tasks
