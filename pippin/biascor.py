@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import os
 import pandas as pd
+import numpy as np
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, ensure_list
@@ -310,16 +311,19 @@ class BiasCor(ConfigBasedExecutable):
                         Task.fail_config(f"Found multiple classifiers. Please instead specify a column name. Your choices: {choices}")
                 return task[0]  # We only care about the prob column name
 
-            def resolve_merged_fitres_files(name, classifier_name):
+            def resolve_merged_fitres_files(name, classifier_name, only_one=True):
                 task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["sim_name"] == name]
                 if len(task) == 0:
                     message = f"Unable to resolve merge merge {name} from list of merge_tasks {merge_tasks}"
                     Task.fail_config(message)
-                elif len(task) > 1:
+                elif len(task) > 1 and only_one:
                     message = f"Resolved multiple merge tasks {task} for name {name}"
                     Task.fail_config(message)
                 else:
-                    return task[0]
+                    if only_one:
+                        return task[0]
+                    else:
+                        return task
 
             def resolve_conf(subdict, default=None):
                 """ Resolve the sub-dictionary and keep track of all the dependencies """
@@ -348,7 +352,8 @@ class BiasCor(ConfigBasedExecutable):
                     Task.fail_config(f"You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output")
                 if simfile_ia is not None:
                     simfile_ia = ensure_list(simfile_ia)
-                    simfile_ia_tasks = [resolve_merged_fitres_files(s, classifier_dep) for s in simfile_ia]
+
+                    simfile_ia_tasks = [resolve_merged_fitres_files(s, classifier_dep, only_one=True) for s in simfile_ia]
                     deps += simfile_ia_tasks
                     subdict["SIMFILE_BIASCOR"] = simfile_ia_tasks
 
@@ -359,7 +364,7 @@ class BiasCor(ConfigBasedExecutable):
                     Task.logger.warning(message)
                 if simfile_cc is not None:
                     simfile_cc = ensure_list(simfile_cc)
-                    simfile_cc_tasks = [resolve_merged_fitres_files(s, classifier_dep) for s in simfile_cc]
+                    simfile_cc_tasks = [resolve_merged_fitres_files(s, classifier_dep, only_one=True) for s in simfile_cc]
                     deps += simfile_cc_tasks
                     subdict["SIMFILE_CCPRIOR"] = simfile_cc_tasks
 
@@ -371,17 +376,41 @@ class BiasCor(ConfigBasedExecutable):
             if data_names is None:
                 Task.fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
             data_names = ensure_list(data_names)
-            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"].name) for s in data_names]
-            deps += data_tasks
-            config["DATA"] = data_tasks
+
+            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"].name, only_one=False) for s in data_names]
+
+            # Get max number of data products
+            lens = np.array([len(x) for x in data_tasks])
+            u = np.unique(lens)
+            dt = []
+            if u.size == 1:
+                Task.logger.debug("Same number of versions for each input found")
+                for i in range(u[0]):
+                    dt.append([d[i] for d in data_tasks])
+            elif u.size == 2:
+                if 1 not in u:
+                    Task.fail_config(
+                        f"Biascor data input has different number of versions: {u}. Make sure everything has the same number of versions, or only one."
+                    )
+                has_one = lens == 1
+                for i in range(max(u)):
+                    dt.append([d[i] if m else d[0] for m, d in zip(has_one, data_tasks)])
+            else:
+                Task.fail_config(
+                    f"Biascor data input has different number of versions: {u}. Make sure everything has the same number of versions, or only one."
+                )
 
             # Resolve every MUOPT
             muopts = config.get("MUOPTS", {})
             for label, mu_conf in muopts.items():
                 deps += resolve_conf(mu_conf, default=config)
 
-            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), deps, options, config)
-            Task.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
-            tasks.append(task)
+            for i, line in enumerate(dt):
+                extra_num = "" if len(dt) == 1 else f"_{i + 1}"
+                deps2 = deps + line
+                config["DATA"] = line
+                task = BiasCor(name + extra_num, _get_biascor_output_dir(base_output_dir, stage_number, name + extra_num), deps2, options, config)
+                Task.logger.info(f"Creating biascor task {name} with {task.num_jobs}")
+                tasks.append(task)
 
         return tasks
