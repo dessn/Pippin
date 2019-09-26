@@ -197,7 +197,7 @@ class Aggregator(Task):
         df2.to_csv(self.output_dfs_key[index], index=False, float_format="%0.4f", sep=" ")
 
     def _plot(self, index):
-        cmd = ["python", self.python_file, self.output_dfs[index], self.output_dir, index]
+        cmd = ["python", self.python_file, self.output_dfs[index], self.output_dir, f"{index}"]
         self.logger.debug(f"Invoking command  {' '.join(cmd)}")
         try:
             subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
