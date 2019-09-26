@@ -36,7 +36,7 @@ class SNANASimulation(ConfigBasedExecutable):
         types_dict: dict map from IA or NONIA to numeric gentypes
         types: dict map from numeric gentype to string (Ia, II, etc)
         photometry_dirs: location of fits files with photometry. is a list.
-
+        ranseed_change: true or false for if RANSEED_CHANGE was set
     """
 
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
@@ -77,6 +77,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
         else:
             self.sim_folders = [base]
+        self.output["ranseed_change"] = ranseed_change is not None
         self.output["sim_folders"] = self.sim_folders
 
     def write_input(self, force_refresh):
