@@ -68,6 +68,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
         self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
+        self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
 
         self.output["label"] = self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})") + " " + self.create_cov_dep.output["name"]
         final = self.ini_prefix.split("_")[-1]

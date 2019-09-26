@@ -62,6 +62,7 @@ class CreateCov(ConfigBasedExecutable):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
         self.output["covopts"] = covopts_map
         self.output["index"] = index
+        self.output["bcor_name"] = self.biascor_dep.name
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=00:10:00

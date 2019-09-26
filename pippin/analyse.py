@@ -70,7 +70,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=10GB
 
 cd {output_dir}
-python {path_to_code} {files} {output} {blind} {names} {done_file} {params} {shift}
+python {path_to_code} {files} {output} {blind} {names} {done_file} {params} {shift} {prior}
 """
 
     def _check_completion(self, squeue):
@@ -98,6 +98,7 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params} {shi
             "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
             "params": "-p " + " ".join(self.params),
             "shift": "-s" if self.options.get("SHIFT") else "",
+            "prior": "-p" if self.options.get("PRIOR") else "",
         }
         final_slurm = self.slurm.format(**format_dict)
 
@@ -136,9 +137,10 @@ python {path_to_code} {files} {output} {blind} {names} {done_file} {params} {shi
             config = c[key].get(cname, {})
             options = config.get("OPTS", {})
 
-            mask = config.get("MASK_COSMOMC", "")
+            mask_cosmomc = config.get("MASK_COSMOMC", "")
+            mask_biascor = config.get("MASK_BIASCOR", "")
 
-            deps = [c for c in cosmomc_tasks if mask in c.name]
+            deps = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
 

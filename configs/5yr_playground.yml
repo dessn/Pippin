@@ -183,7 +183,7 @@ BIASCOR:
 #      chi2max: 16
 #      CUTWIN_PROB_IA: 0.8 1.0
 
-  0p9:
+  SIM_0p9:
     DATA: [DESSIM, LOWZSIM]
     SIMFILE_BIASCOR: [DESSIMBIAS5YRIA, LOWZSIMBIAS]
     SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
@@ -224,3 +224,9 @@ ANALYSE:
     OPTS:
       BLIND: w
       SHIFT: True
+
+  PRIOR:
+    MASK_COSMOMC: SN_OMW
+    MASK_BIASCOR: SIM  # Should we detect if its data automatically and ensure blinding
+    OPTS:
+      PRIOR: 0.01

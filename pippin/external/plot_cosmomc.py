@@ -77,6 +77,7 @@ def get_arguments():
     parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
     parser.add_argument("-s", "--shift", help="Shift om, w, ol to truth values", action="store_true", default=False)
+    parser.add_argument("-p", "--prior", help="Enforce prior on om", type=float, default=None)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     args = parser.parse_args()
 
@@ -155,6 +156,15 @@ if __name__ == "__main__":
             bias_index = biases[key]
 
             weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
+
+            if args.prior:
+                logging.info(f"Applying prior width {args.prior} around 0.3")
+                om_index = labels.index("$\\Omega_m$")
+                from scipy.stats import norm
+
+                prior = norm.pdf(chain[:, om_index], loc=0.3, scale=args.prior)
+                weights *= prior
+
             do_full = do_full or f
             c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
 
