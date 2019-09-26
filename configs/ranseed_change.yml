@@ -7,20 +7,7 @@ SIM:
       RANSEED_CHANGE: 2 12345
 
 LCFIT:
-  TESTFIT:
+  F:
     BASE: des.nml
     SNLCINP:
       USE_MINOS: F
-
-
-AGGREGATION:
-  AGG:
-    MASK: TEST
-    OPTS:
-      INCLUDE_TYPE: True
-      PLOT: True
-
-MERGE:
-  MERGE:
-    MASK_SIM: TEST
-    MASK_FIT: TEST
