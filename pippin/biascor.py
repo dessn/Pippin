@@ -61,8 +61,7 @@ class BiasCor(ConfigBasedExecutable):
         else:
             self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
 
-        for s in self.output["subdirs"]:
-            self.output["m0dif_dirs"] = os.path.join(self.fit_output_dir, s)
+        self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
         self.output_plot = os.path.join(self.output["m0dif_dirs"][0], f"{self.name}_hubble.png")
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
