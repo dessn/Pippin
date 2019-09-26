@@ -51,7 +51,7 @@ class NearestNeighborClassifier(Classifier):
         lcfit = self.get_fit_dependency()
         self.fitopt = options.get("FITOPT", "DEFAULT")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dir"][self.index], self.fitres_filename))
+        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
     def train(self, force_refresh):
         # Created April 2019 by R.Kessler
@@ -75,7 +75,7 @@ class NearestNeighborClassifier(Classifier):
         self.num_jobs = self.get_fit_dependency(output=False).num_jobs
 
         genversion = fit_output["genversion"]
-        fitres_dir = fit_output["fitres_dir"]
+        fitres_dir = fit_output["fitres_dirs"][self.index]
         fitres_file = self.fitres_path
         nml_file_orig = fit_output["nml_file"]
 
