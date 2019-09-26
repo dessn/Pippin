@@ -176,9 +176,9 @@ BIASCOR:
 
 CREATE_COV:
   ALL:
-#    OPTS:
-#      COVOPTS:
-#        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+    OPTS:
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
 
 COSMOMC:
