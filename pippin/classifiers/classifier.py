@@ -118,7 +118,7 @@ class Classifier(Task):
             fit_name = "" if fit_name is None else "_" + fit_name
             sim_name = "" if sim_name is None else "_" + sim_name
             extra_name = "" if extra is None else "_" + extra
-            index = "" if index is None else "_" + index
+            index = "" if index is None else f"_{index}"
             return f"{base_output_dir}/{stage_number}_CLAS/{clas_name}{index}{sim_name}{fit_name}{extra_name}"
 
         def get_num_ranseed(sim_task, lcfit_task):
