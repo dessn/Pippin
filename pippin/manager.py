@@ -165,7 +165,12 @@ class Manager:
 
             # Check status of current jobs
             for t in running_tasks:
-                completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                try:
+                    completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                except Exception as e:
+                    self.logger.exception(e)
+                    self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+
                 small_wait = small_wait or completed
 
             # Submit new jobs if needed
@@ -175,7 +180,11 @@ class Manager:
                     self.logger.info("")
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
-                    started = t.run(self.get_force_refresh(t))
+                    try:
+                        started = t.run(self.get_force_refresh(t))
+                    except Exception as e:
+                        self.logger.exception(e)
+                        started = False
                     if started:
                         self.num_jobs_queue += t.num_jobs
                         self.logger.notice(f"LAUNCHED: {t} with total {self.num_jobs_queue} jobs")
