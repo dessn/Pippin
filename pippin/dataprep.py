@@ -46,6 +46,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.output["raw_dir"] = self.raw_dir
         self.clump_file = os.path.join(self.output_dir, self.genversion + ".SNANA.TEXT")
         self.output["clump_file"] = self.clump_file
+        self.output["ranseed_change"] = False
 
         self.types_dict = options.get("TYPES")
         if self.types_dict is None:
