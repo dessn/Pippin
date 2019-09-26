@@ -96,17 +96,17 @@ class Merger(Task):
                 self.logger.error("Combine task failed with no output log. Please debug")
             return Task.FINISHED_FAILURE
 
-    def add_to_fitres(self, fitres_file, index):
+    def add_to_fitres(self, fitres_file, outdir):
         command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"], "--outfile_text", os.path.basename(fitres_file), "T"]
         try:
             self.logger.debug(f"Executing command {command}")
             with open(self.logfile, "w+") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdirs[index], check=True)
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
             # Run sed command
             sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
             self.logger.debug(f"Executing command {sed_command}")
             with open(self.logfile, "w+") as f:
-                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=self.fitres_outdirs[index], check=True)
+                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
 
         except subprocess.CalledProcessError as e:
             self.logger.error(f"Error invoking command {command}")
@@ -114,10 +114,10 @@ class Merger(Task):
 
     def _run(self, force_refresh):
         fitres_files, symlink_files = [], []
-        for fitres_dir in self.lc_fit["fitres_dirs"]:
+        for fitres_dir, outdir in zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs):
             files = os.listdir(fitres_dir)
-            fitres_files += [(fitres_dir, f) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
-            symlink_files += [(fitres_dir, f) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
+            fitres_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+            symlink_files += [(fitres_dir, outdir, f) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
         new_hash = self.get_hash_from_string(" ".join([a + b for a, b in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
@@ -129,13 +129,12 @@ class Merger(Task):
                 for fitres_dir in self.fitres_outdirs:
                     mkdirs(fitres_dir)
                     for f in fitres_files:
-                        if f[0] == fitres_dir:
-                            self.add_to_fitres(os.path.join(fitres_dir, f[1]))
+                        if f[1] == fitres_dir:
+                            self.add_to_fitres(os.path.join(f[0], f[2]), f[1])
                     for s in symlink_files:
-                        if s[0] == fitres_dir:
-
-                            self.logger.debug(f"Creating symlink for {os.path.join(fitres_dir, s[1])} to {os.path.join(fitres_dir, 'FITOPT000.FITRES')}")
-                            os.symlink(os.path.join(fitres_dir, "FITOPT000.FITRES"), os.path.join(fitres_dir, s))
+                        if s[1] == fitres_dir:
+                            self.logger.debug(f"Creating symlink for {os.path.join(f[0], s[1])} to {os.path.join(f[0], 'FITOPT000.FITRES')}")
+                            os.symlink(os.path.join(f[1], "FITOPT000.FITRES"), os.path.join(f[1], s[2]))
 
                     self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
                     filenames = ["MERGE.LOG", "FITOPT.README"]
