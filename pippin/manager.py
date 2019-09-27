@@ -169,7 +169,7 @@ class Manager:
                     completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
                     small_wait = small_wait or completed
                 except Exception as e:
-                    self.logger.exception(e)
+                    self.logger.exception(e, exc_info=True)
                     self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
 
             # Submit new jobs if needed
@@ -182,7 +182,7 @@ class Manager:
                     try:
                         started = t.run(self.get_force_refresh(t))
                     except Exception as e:
-                        self.logger.exception(e)
+                        self.logger.exception(e, exc_info=True)
                         started = False
                     if started:
                         self.num_jobs_queue += t.num_jobs

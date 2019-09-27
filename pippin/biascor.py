@@ -89,7 +89,7 @@ class BiasCor(ConfigBasedExecutable):
             df.to_csv(self.w_summary, index=False, float_format="%0.4f")
             return True
         except Exception as e:
-            self.logger.exception(e)
+            self.logger.exception(e, exc_info=True)
             return False
 
     def _check_completion(self, squeue):
@@ -304,7 +304,7 @@ class BiasCor(ConfigBasedExecutable):
                         fp = self.output_plot
                     fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.exception(e, exc_info=True)
                 return False
         return True
 
