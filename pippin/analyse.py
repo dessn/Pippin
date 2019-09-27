@@ -77,8 +77,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=10GB
 
 cd {output_dir}
-{block_cosmomc}python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
-{block_biascor}python {path_to_code_biascor} {wfit_summary} {blind}
+python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
+python {path_to_code_biascor} {wfit_summary} {blind}
 """
 
     def _check_completion(self, squeue):
@@ -109,8 +109,6 @@ cd {output_dir}
             "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
             "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
             "wfit_summary": " ".join(self.wsummary_files),
-            "block_cosmomc": "" if self.cosmomc_deps else "#",
-            "block_biascor": "" if self.biascor_deps else "#",
         }
         final_slurm = self.slurm.format(**format_dict)
 

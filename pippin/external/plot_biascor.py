@@ -17,7 +17,7 @@ def setup_logging():
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="+", type=str)
+    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="*", type=str)
     parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=[])
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done2.txt")
     args = parser.parse_args()

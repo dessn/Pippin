@@ -74,7 +74,7 @@ def blind(chain, names, columns_to_blind, index=0):
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="+", type=str)
+    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="*", type=str)
     parser.add_argument("-p", "--params", help="Param names to plot", nargs="*", type=str, default=["omegam", "w"])
     parser.add_argument("-o", "--output", help="Name of plot: eg name_without_extension", type=str, default="output")
     parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
