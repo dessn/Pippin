@@ -78,7 +78,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=34:00:00
-#SBATCH --nodes=1
+###SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
 #SBATCH --array=1-{num_jobs}
 #SBATCH --cpus-per-task=1
