@@ -243,8 +243,7 @@ class BiasCor(ConfigBasedExecutable):
                 beta = 0
                 sigint = 0
                 gamma = r"$\gamma$ not fit"
-                num_sn = f"$N_{{SN}} = {df.shape[0]}$"
-                num_cc = f"$N_{{CC}} \\approx {int((1 - df[self.probability_column_name]).sum())}$"
+                num_sn_fit = df.shape[0]
                 with open(m0dif_file) as f:
                     for line in f.read().splitlines():
                         if "Omega_DE(ref)" in line:
@@ -253,6 +252,10 @@ class BiasCor(ConfigBasedExecutable):
                             w = float(line.strip().split()[-1])
                 with open(fitres_file) as f:
                     for line in f.read().splitlines():
+                        if "NSNFIT" in line:
+                            v = int(line.split("=", 1)[1].strip())
+                            num_sn_fit = v
+                            num_sn = f"$N_{{SN}} = {v}$"
                         if "alpha0" in line and "=" in line and "+-" in line:
                             alpha = r"$\alpha = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
                         if "beta0" in line and "=" in line and "+-" in line:
@@ -261,8 +264,19 @@ class BiasCor(ConfigBasedExecutable):
                             sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
                         if "gamma" in line and "=" in line and "+-" in line:
                             gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-
-                label = "\n".join([alpha, beta, sigint, gamma, num_sn, num_cc])
+                        if "CONTAM_TRUE" in line:
+                            v = float(line.split("=", 1)[1].split("#")[0].strip())
+                            n = v * num_sn_fit
+                            contam_true = f"$N_{{CC, true}} = {v} (\\approx {n} SN)"
+                        else:
+                            contam_true = ""
+                        if "CONTAM_DATA" in line:
+                            v = float(line.split("=", 1)[1].split("#")[0].strip())
+                            n = v * num_sn_fit
+                            contam_data = f"$N_{{CC, data}} = {v} (\\approx {n} SN)"
+                        else:
+                            contam_data = ""
+                label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data])
                 zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
                 distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
@@ -285,7 +299,7 @@ class BiasCor(ConfigBasedExecutable):
                             sub2 = -dfm["MUREF"]
                             sub3 = 0
                             ax.set_ylabel(r"$\mu$")
-                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom")
+                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=10)
 
                         ax.set_xlabel("$z$")
 
