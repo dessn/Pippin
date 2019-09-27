@@ -77,7 +77,7 @@ class Manager:
             key = stage.upper()
             assert key in Manager.stages, f"Stage {key} is not in recognised keys {Manager.stages}"
             num = Manager.stages.index(key)
-        assert num >= 0 and num < len(Manager.stages), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        assert 0 <= num < len(Manager.stages), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
         return num
 
     def get_tasks(self, config):
