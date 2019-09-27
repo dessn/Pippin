@@ -302,12 +302,23 @@ class BiasCor(ConfigBasedExecutable):
                         ax.set_xlabel("$z$")
 
                         ax.errorbar(df["zHD"], df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
-                        h = ax.scatter(df["zHD"], df["MU"] - sub, c=df[self.probability_column_name], s=1, zorder=2, alpha=1, vmax=1.05, cmap="inferno")
+                        if df[self.probability_column_name].min() >= 1.0:
+                            cc = df["IDSURVEY"]
+                            vmax = None
+                            color_prob = False
+                            cmap = "Pastel1"
+                        else:
+                            cc = df[self.probability_column_name]
+                            vmax = 1.05
+                            color_prob = True
+                            cmap = "inferno"
+                        h = ax.scatter(df["zHD"], df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
                         ax.plot(zs, distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
                         ax.errorbar(dfm["z"], dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", elinewidth=1.0, c="k", ms=3)
 
-                    cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
-                    cbar.set_label("Prob Ia")
+                    if color_prob:
+                        cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
+                        cbar.set_label("Prob Ia")
                     if log:
                         fp = self.output_plot.replace(".png", "_log.png")
                     else:
