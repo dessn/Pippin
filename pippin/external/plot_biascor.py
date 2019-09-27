@@ -56,16 +56,22 @@ def plot_all_files(source_files, inputs):
 
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
+    data = []
     for f, df in zip(source_files, inputs):
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         means = [df["OM"].mean(), df["w"].mean(), df["sigint"].mean()]
         if df.shape[0] < 2:
             name += " (showing mean error)"
             cov = np.diag([df["OM_sig"].mean() ** 2, df["wsig_marg"].mean() ** 2, 0.01 ** 2])
+
         else:
             name += " (showing scatter error)"
             cov = np.diag([df["OM"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2])
+
+        data.append([name, df["w"].mean(), df["w"].std(), df["wsig_marg"].mean()])
         c.add_covariance(means, cov, parameters=labels, name=name.replace("_", "\\_"))
+    wdf = pd.DataFrame(data, columns=["name", "mean_w", "scatter_mean_w", "mean_std_w"])
+    wdf.to_csv(output_file.replace(".png", ".csv"), index=False, float_format="%0.4f")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
 
 
