@@ -43,7 +43,7 @@ def plot_single_file(source_file, df):
     logging.info(f"Creating wfit plot output to {output_file}")
 
     c = ChainConsumer()
-    labels = [r"$\Oemga_m$", "$w$", r"$\sigma_{int}$"]
+    labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     for index, row in df.iterrows():
         means = [row["OM"], row["w"], row["sigint"]]
         cov = np.diag([row["OM_sig"] ** 2, row["wsig_marg"] ** 2, 0.01 ** 2])
@@ -55,7 +55,7 @@ def plot_all_files(source_files, inputs):
     output_file = "all_biascor.png"
 
     c = ChainConsumer()
-    labels = [r"$\Oemga_m$", "$w$", r"$\sigma_{int}$"]
+    labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     for f, df in zip(source_files, inputs):
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         means = [df["OM"].mean(), df["w"].mean(), df["sigint"].mean()]
