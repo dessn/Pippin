@@ -139,48 +139,49 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        logging.info("Creating chain consumer object")
-        c = ChainConsumer()
-        do_full = False
-        biases = {}
-        b = 1
-        truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
-        shift_params = truth if args.shift else None
+        if args.basename:
+            logging.info("Creating chain consumer object")
+            c = ChainConsumer()
+            do_full = False
+            biases = {}
+            b = 1
+            truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
+            shift_params = truth if args.shift else None
 
-        for index, basename in enumerate(args.basename):
-            if args.names:
-                name = args.names[index].replace("_", " ")
-            else:
-                name = os.path.basename(basename).replace("_", " ")
-            # Do smarter biascor
-            if ")" in name:
-                key = name.split(")", 1)[1]
-            else:
-                key = name
-            if key not in biases:
-                biases[key] = b
-                b += 1
-            bias_index = biases[key]
+            for index, basename in enumerate(args.basename):
+                if args.names:
+                    name = args.names[index].replace("_", " ")
+                else:
+                    name = os.path.basename(basename).replace("_", " ")
+                # Do smarter biascor
+                if ")" in name:
+                    key = name.split(")", 1)[1]
+                else:
+                    key = name
+                if key not in biases:
+                    biases[key] = b
+                    b += 1
+                bias_index = biases[key]
 
-            weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
+                weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
 
-            if args.prior:
-                logging.info(f"Applying prior width {args.prior} around 0.3")
-                om_index = labels.index("$\\Omega_m$")
-                from scipy.stats import norm
+                if args.prior:
+                    logging.info(f"Applying prior width {args.prior} around 0.3")
+                    om_index = labels.index("$\\Omega_m$")
+                    from scipy.stats import norm
 
-                prior = norm.pdf(chain[:, om_index], loc=0.3, scale=args.prior)
-                weights *= prior
+                    prior = norm.pdf(chain[:, om_index], loc=0.3, scale=args.prior)
+                    weights *= prior
 
-            do_full = do_full or f
-            c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
+                do_full = do_full or f
+                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
 
-        # Write all our glorious output
-        c.analysis.get_latex_table(filename=args.output + "_params.txt")
-        c.plotter.plot(filename=args.output + ".png", figsize=1.5)
-        c.plotter.plot_summary(filename=args.output + "_summary.png", errorbar=True)
-        if do_full:
-            c.plotter.plot_walks(filename=args.output + "_walks.png")
+            # Write all our glorious output
+            c.analysis.get_latex_table(filename=args.output + "_params.txt")
+            c.plotter.plot(filename=args.output + ".png", figsize=1.5)
+            c.plotter.plot_summary(filename=args.output + "_summary.png", errorbar=True)
+            if do_full:
+                c.plotter.plot_walks(filename=args.output + "_walks.png")
 
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")

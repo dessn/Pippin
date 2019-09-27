@@ -2,6 +2,8 @@ import inspect
 import shutil
 import subprocess
 import os
+
+from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config
 from pippin.cosmomc import CosmoMC
 from pippin.task import Task
@@ -35,6 +37,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.job_name = f"anaylyse_chains_{name}"
         self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
+        self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
 
         self.covopts = options.get("COVOPTS")
         if isinstance(self.covopts, str):
@@ -46,7 +49,10 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.blind_params = options.get("BLIND")
 
         # Assuming all deps are cosmomc tasks
-        for c in self.dependencies:
+        self.cosmomc_deps = self.get_deps(CosmoMC)
+        self.biascor_deps = self.get_deps(BiasCor)
+
+        for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
                     self.files.append(c.output["base_dict"][covopt])
@@ -56,7 +62,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
                             self.params.append(p)
         self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
 
-        self.cosmomc_deps = self.get_deps(CosmoMC)
+        self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
+
         self.hubble_plots = [c.output.get("hubble_plot") for c in self.cosmomc_deps]
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -71,6 +78,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
 cd {output_dir}
 python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
+python {path_to_code_biascor} {wfit_summary} {blind}
 """
 
     def _check_completion(self, squeue):
@@ -99,6 +107,8 @@ python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {para
             "params": "-p " + " ".join(self.params),
             "shift": "-s" if self.options.get("SHIFT") else "",
             "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
+            "path_to_code_biascor": self.path_to_code_biascor,
+            "wfit_summary": " ".join(self.wsummary_files),
         }
         final_slurm = self.slurm.format(**format_dict)
 
@@ -127,6 +137,7 @@ python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {para
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         cosmomc_tasks = Task.get_task_of_type(prior_tasks, CosmoMC)
+        biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
 
         def _get_analyse_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
@@ -140,7 +151,9 @@ python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {para
             mask_cosmomc = config.get("MASK_COSMOMC", "")
             mask_biascor = config.get("MASK_BIASCOR", "")
 
-            deps = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
+            deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
+            deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
+            deps = deps_cosmomc + deps_biascor
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
 
