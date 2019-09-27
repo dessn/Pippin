@@ -1,10 +1,4 @@
 DATAPREP:
-  DATADES5YR:  # 5 yr photometry sample
-    OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
-      TYPES:
-        IA: [1, 101]
-        NONIA: [120, 130, 20, 30]
   DATALOWZ:  # lowz combined sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
@@ -19,28 +13,6 @@ DATAPREP:
         NONIA: [120, 130, 20, 30]
 
 SIM:
-  TRAINDESSIM:
-    IA_G10:
-      BASE: sn_ia_salt2_g10.input
-    II_JONES:
-      BASE: sn_collection_jones.input
-      DNDZ_ALLSCALE: 1.0
-    GLOBAL:
-      NGEN_UNIT: 2.0
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  TESTDESSIM:
-    IA_G10:
-      BASE: sn_ia_salt2_g10.input
-    II_JONES:
-      BASE: sn_collection_jones.input
-      DNDZ_ALLSCALE: 1.0
-    GLOBAL:
-      NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 1 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-
   LOWZSIMBIAS:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
@@ -51,7 +23,7 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 10
+      NGEN_UNIT: 5
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -65,36 +37,12 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 10
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  DESSIMBIAS5YRIA:
-    IA_G10:
-      BASE: sn_ia_salt2_g10.input
-      GENSIGMA_SALT2ALPHA: 1E8  1E8
-      GENRANGE_SALT2ALPHA: 0.12 0.20
-      GENGRID_SALT2ALPHA: 2
-      GENSIGMA_SALT2BETA: 1E8  1E8
-      GENRANGE_SALT2BETA: 2.6  3.6
-      GENGRID_SALT2BETA: 2
-    GLOBAL:
-      NGEN_UNIT: 10
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  DESSIMBIAS5YRCC:
-    IBC_TEMPLATES:
-      BASE: sn_ibc_templates.input
-    II_TEMPLATES:
-      BASE: sn_ii_templates.input
-    GLOBAL:
-      NGEN_UNIT: 10
+      NGEN_UNIT: 5
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
 LCFIT:
-  L:
+  LOLD:
     BASE: lowz.nml
     MASK: LOWZ
     SNLCINP:
@@ -102,9 +50,28 @@ LCFIT:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
-  D:
+  LNEW:
+    BASE: lowz.nml
+    MASK: DATALOWZ  # Change this to just LOWZ if you want to also check effects of modifying biascor sample
+    FITINP:
+      FITMODEL_NAME: '$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  DOLD:
     BASE: des.nml
     MASK: DES
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+  DNEW:
+    BASE: des.nml
+    MASK: DATADES  # Change this to just DES if you want to also check effects of modifying biascor sample
+    FITINP:
+      FITMODEL_NAME: '$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -115,7 +82,6 @@ CLASSIFICATION:
     CLASSIFIER: UnityClassifier
     MODE: predict
 
-
 AGGREGATION:
   AGG:
 
@@ -123,28 +89,31 @@ MERGE:
   MERGE:
 
 BIASCOR:
-  3YR:
+  3YR_OLD:
     BASE: bbc_spec.input
-    DATA: [D_DATADES3YR, L_DATALOWZ]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA, L_LOWZSIMBIAS]
+    DATA: [DOLD_DATADES3YR, LOLD_DATALOWZ]
+    SIMFILE_BIASCOR: [DOLD_DESSIMBIAS3YRIA, LOLD_LOWZSIMBIAS]
     CLASSIFIER: UNITY
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
+
+  3YR_NEW:
+    BASE: bbc_spec.input
+    DATA: [DNEW_DATADES3YR, LNEW_DATALOWZ]
+    SIMFILE_BIASCOR: [DOLD_DESSIMBIAS3YRIA, LOLD_LOWZSIMBIAS]
+    CLASSIFIER: UNITY
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
 
 CREATE_COV:
   ALL:
-    OPTS:
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
 
 COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_omw
-#      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
       NUM_WALKERS: 20
 
 #  SN_CMB_OMW:
@@ -161,6 +130,5 @@ ANALYSE:
 
   SNONLY:
     MASK_COSMOMC: SN_OMW
-    OPTS:
-      BLIND: w
-      SHIFT: True
+
+# Results should be in $PIPPIN_OUTPUT/GEORGIE_SALT2_SURFACE/9_ANALYSE/SNONLY... or something like that.
