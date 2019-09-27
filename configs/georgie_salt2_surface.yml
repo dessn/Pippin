@@ -54,7 +54,7 @@ LCFIT:
     BASE: lowz.nml
     MASK: DATALOWZ  # Change this to just LOWZ if you want to also check effects of modifying biascor sample
     FITINP:
-      FITMODEL_NAME: '$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'
+      FITMODEL_NAME: "'$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'"
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -71,7 +71,7 @@ LCFIT:
     BASE: des.nml
     MASK: DATADES  # Change this to just DES if you want to also check effects of modifying biascor sample
     FITINP:
-      FITMODEL_NAME: '$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'
+      FITMODEL_NAME: "'$DES_USERS/gtaylor/SALT_SURFACES/SALT2.GT_03_MWEBV_ZP'"
     SNLCINP:
       USE_MINOS: F
     OPTS:
