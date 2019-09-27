@@ -11,6 +11,12 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
 
 SIM:
   TRAINDESSIM:
@@ -23,22 +29,6 @@ SIM:
       NGEN_UNIT: 2.0
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  LOWZSIM:
-    IA_G10_LOWZ:
-      BASE: sn_ia_salt2_g10_lowz.input
-    GLOBAL:
-      NGEN_UNIT: 2
-      RANSEED_CHANGE: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
-
-  DESSIM:
-    IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10_des3yr.input
-    GLOBAL:
-      NGEN_UNIT: 4
-      RANSEED_CHANGE: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   TESTDESSIM:
     IA_G10:
@@ -54,6 +44,20 @@ SIM:
   LOWZSIMBIAS:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+  DESSIMBIAS3YRIA:
+    IA_G10_DES3YR:
+      BASE: sn_ia_salt2_g10_des3yr.input
       GENSIGMA_SALT2ALPHA: 1E8  1E8
       GENRANGE_SALT2ALPHA: 0.12 0.20
       GENGRID_SALT2ALPHA: 2
@@ -90,25 +94,9 @@ SIM:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
 LCFIT:
-  LS:
-    BASE: lowz.nml
-    MASK: DATALOWZ
-    SNLCINP:
-      USE_MINOS: F
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
-
-  DS:
-    BASE: des.nml
-    MASK: DATADES
-    SNLCINP:
-      USE_MINOS: F
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
-
   L:
     BASE: lowz.nml
-    MASK: LOWZSIM
+    MASK: LOWZ
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -116,102 +104,53 @@ LCFIT:
 
   D:
     BASE: des.nml
-    MASK: DESSIM
+    MASK: DES
     SNLCINP:
       USE_MINOS: F
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CLASSIFICATION:
-  SNIRFTRAIN:
-    CLASSIFIER: SnirfClassifier
-    MODE: train
-    MASK_SIM: TRAINDESSIM
-
-  SNIRFTEST:
-    CLASSIFIER: SnirfClassifier
+  UNITY:
+    CLASSIFIER: UnityClassifier
     MODE: predict
-    OPTS:
-      MODEL: SNIRFTRAIN
+
 
 AGGREGATION:
   AGG:
-    OPTS:
-      PLOT: True
 
 MERGE:
   MERGE:
 
 BIASCOR:
-  SIM_0p5:
-    DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
-    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
+  3YR:
+    BASE: bbc_spec.input
+    DATA: [D_DATADES3YR, L_DATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA, L_LOWZSIMBIAS]
+    CLASSIFIER: UNITY
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
-      CUTWIN_PROB_IA: 0.5 1.0
 
-  SIM_0p6:
-    DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
-    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
+
+CREATE_COV:
+  ALL:
     OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
-      CUTWIN_PROB_IA: 0.6 1.0
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
-  SIM_0p7:
-    DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
-    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
+
+COSMOMC:
+  SN_OMW:
     OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
-      CUTWIN_PROB_IA: 0.7 1.0
-
-  SIM_0p8:
-    DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
-    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
-      CUTWIN_PROB_IA: 0.8 1.0
-
-  SIM_0p9:
-    DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
-    SIMFILE_CCPRIOR: DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
-      CUTWIN_PROB_IA: 0.9 1.0
-
-
-#CREATE_COV:
-#  ALL:
-#    OPTS:
-#      COVOPTS:
-#        - "[NOSYS] [=DEFAULT,=DEFAULT]"
-
-
-#COSMOMC:
-#  SN_OMW:
-#    OPTS:
-#      INI: sn_omw
+      INI: sn_omw
 #      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
-#      NUM_WALKERS: 20
+      NUM_WALKERS: 20
 
 #  SN_CMB_OMW:
 #    OPTS:
 #      INI: sn_cmb_omw
-##      COVOPTS: [ALL]
+#      COVOPTS: [ALL]
 #      NUM_WALKERS: 20
 
 ANALYSE:
@@ -219,11 +158,9 @@ ANALYSE:
 #    MASK_COSMOMC: OMW
 #    OPTS:
 #      BLIND: w
-#  SNONLY:
-#    MASK_COSMOMC: SN_OMW
-#    OPTS:
-#      BLIND: w
-#      SHIFT: True
 
-  BBC:
-    MASK_BIASCOR: SIM  # Should we detect if its data automatically and ensure blinding
+  SNONLY:
+    MASK_COSMOMC: SN_OMW
+    OPTS:
+      BLIND: w
+      SHIFT: True

@@ -34,7 +34,7 @@ class Merger(Task):
         fitres_dir: the location of the directory in which the FITRES file lives
         fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
         lc_output_dir: path to the "output" folder created by split and fit
-
+        lcfit_name: light curve fit name
     """
 
     def __init__(self, name, output_dir, dependencies, options):
@@ -49,6 +49,7 @@ class Merger(Task):
         self.output["classifiers"] = self.agg["classifiers"]
         self.output["classifier_names"] = [c.name for c in self.agg["classifiers"]]
         self.output["sim_name"] = self.lc_fit["sim_name"]
+        self.output["lcfit_name"] = self.lc_fit["name"]
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")

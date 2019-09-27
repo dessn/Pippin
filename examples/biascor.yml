@@ -1,12 +1,12 @@
 BIASCOR:
   BCOR:
     BASE: bbc.input  # Base file to use, bbc.input is the default
-    DATA: [DESSIM, LOWZSIM]  # The names of the data/simulations going in. List format please.
+    DATA: [DESFIT_DESSIM, LOWZFIT_LOWZSIM]  # The names of the lcfits_data/simulations going in. List format please.
     SIMFILE_BIASCOR: [DESBIASCOR, LOWZBIASCOR]  # The names of the biascor simulations. Will find the merged fitres output for it. Might have issues if more than one exists
     CLASSIFIER: UNITY  # The classifier to use. Should have a predict matching the data and biascor sims. Might have issues if more than one exists.
 
   MUOPTS:
-    DATA: [DESSIM, LOWZSIM]
+    DATA: [D_DESSIM, L_LOWZSIM]
     SIMFILE_BIASCOR: [DESBIASCOR, LOWZBIASCOR]
     CLASSIFIER: UNITY
     MUOPTS:  # A dict of muopt names and their biascor sims

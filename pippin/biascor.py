@@ -370,7 +370,7 @@ class BiasCor(ConfigBasedExecutable):
                 return task[0]  # We only care about the prob column name
 
             def resolve_merged_fitres_files(name, classifier_name):
-                task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["sim_name"] == name]
+                task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["lcfit_name"] == name]
                 if len(task) == 0:
                     message = f"Unable to resolve merge merge {name} from list of merge_tasks {merge_tasks}"
                     Task.fail_config(message)
