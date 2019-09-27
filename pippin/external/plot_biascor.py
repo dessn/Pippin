@@ -65,7 +65,7 @@ def plot_all_files(source_files, inputs):
         else:
             name += " (showing scatter error)"
             cov = np.diag([df["OM"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2])
-        c.add_covariance(means, cov, parameters=labels, name=name)
+        c.add_covariance(means, cov, parameters=labels, name=name.replace("_", "\\_"))
     c.plotter.plot_summary(errorbar=True, filename=output_file)
 
 
