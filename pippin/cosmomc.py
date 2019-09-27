@@ -51,7 +51,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
         self.ini_prefix = options.get("INI")
         self.num_walkers = options.get("NUM_WALKERS", 8)
-        self.num_jobs = len(self.covopts) * 4 * self.num_walkers
+        self.num_jobs = len(self.covopts) * self.num_walkers
         self.chain_dir = os.path.join(self.output_dir, "chains/")
 
         self.labels = [self.name + "_" + c for c in self.covopts]
