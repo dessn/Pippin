@@ -244,6 +244,7 @@ class BiasCor(ConfigBasedExecutable):
                 sigint = 0
                 gamma = r"$\gamma$ not fit"
                 num_sn_fit = df.shape[0]
+                contam_data, contam_true = "", ""
                 with open(m0dif_file) as f:
                     for line in f.read().splitlines():
                         if "Omega_DE(ref)" in line:
@@ -268,14 +269,11 @@ class BiasCor(ConfigBasedExecutable):
                             v = float(line.split("=", 1)[1].split("#")[0].strip())
                             n = v * num_sn_fit
                             contam_true = f"$N_{{CC, true}} = {v} (\\approx {n} SN)"
-                        else:
-                            contam_true = ""
                         if "CONTAM_DATA" in line:
                             v = float(line.split("=", 1)[1].split("#")[0].strip())
                             n = v * num_sn_fit
                             contam_data = f"$N_{{CC, data}} = {v} (\\approx {n} SN)"
-                        else:
-                            contam_data = ""
+
                 label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data])
                 zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
                 distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
