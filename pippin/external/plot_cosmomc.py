@@ -53,7 +53,8 @@ def get_chain_files(basename):
 def setup_logging():
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler])  # , logging.FileHandler("plot_logger.log")])
+    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_cosmomc.log")])
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
 def blind(chain, names, columns_to_blind, index=0):
