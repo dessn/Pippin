@@ -26,6 +26,7 @@ class Manager:
 
     def __init__(self, filename, config_path, config, message_store):
         self.logger = get_logger()
+        self.task_index = {t: i for i, t in enumerate(self.task_order)}
         self.message_store = message_store
         self.filename = filename
         self.filename_path = config_path
@@ -47,7 +48,14 @@ class Manager:
     def get_force_refresh(self, task):
         if self.start is None:
             return self.force_refresh
-        return task.stage >= self.start
+        index = None
+        for i, t in enumerate(self.task_order):
+            if isinstance(task, t):
+                index = i
+        if index is None:
+            self.logger.error("Task {task} did not match any class in the task order!")
+            index = 0
+        return index >= self.start
 
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
