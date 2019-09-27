@@ -70,7 +70,7 @@ def mkdirs(path):
     if not os.path.exists(path):
         parent = os.path.dirname(path)
         mkdirs(parent)
-        os.makedirs(path, exist_ok=True, mode=0o7751)
+        os.makedirs(path, exist_ok=True, mode=0o7771)
         chown_dir(path)
 
 
