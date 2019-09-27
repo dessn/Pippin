@@ -306,7 +306,7 @@ class BiasCor(ConfigBasedExecutable):
                             cc = df["IDSURVEY"]
                             vmax = None
                             color_prob = False
-                            cmap = "Pastel1"
+                            cmap = "rainbow"
                         else:
                             cc = df[self.probability_column_name]
                             vmax = 1.05

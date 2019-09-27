@@ -49,9 +49,9 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
         self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
-        self.num_jobs = len(self.covopts)
         self.ini_prefix = options.get("INI")
         self.num_walkers = options.get("NUM_WALKERS", 8)
+        self.num_jobs = len(self.covopts) * 4 * self.num_walkers
         self.chain_dir = os.path.join(self.output_dir, "chains/")
 
         self.labels = [self.name + "_" + c for c in self.covopts]
@@ -81,7 +81,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 ###SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
 #SBATCH --array=1-{num_jobs}
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=4
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
