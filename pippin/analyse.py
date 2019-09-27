@@ -107,7 +107,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
             "params": "-p " + " ".join(self.params),
             "shift": "-s" if self.options.get("SHIFT") else "",
             "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
-            "path_to_code_biascor": self.path_to_code_biascor,
+            "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
             "wfit_summary": " ".join(self.wsummary_files),
         }
         final_slurm = self.slurm.format(**format_dict)
@@ -121,6 +121,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
             shutil.copy(self.path_to_code, self.output_dir)
+            shutil.copy(self.path_to_code_biascor, self.output_dir)
             for f in self.hubble_plots:
                 if f is not None and os.path.exists(f):
                     self.logger.debug(f"Copying Hubble plot {f} to {self.output_dir}")
