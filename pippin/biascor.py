@@ -61,11 +61,36 @@ class BiasCor(ConfigBasedExecutable):
         else:
             self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
 
+        self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
+        self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
         self.output_plot = os.path.join(self.output["m0dif_dirs"][0], f"{self.name}_hubble.png")
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
         self.output["hubble_plot"] = self.output_plot
+
+    def generate_w_summary(self):
+        try:
+            header = None
+            rows = []
+            for d in self.output["m0dif_dirs"]:
+                wpath = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
+                if os.path.exists(wpath):
+                    with open(wpath) as f:
+                        lines = f.read().splitlines()
+                        header = ["VERSION"] + lines[0].split()[1]
+                        values = [os.path.basename(d)] + lines[1].split()
+                        rows.append(values)
+                else:
+                    self.logger.warning(f"Cannot find file {wpath} when generating wfit summary")
+
+            df = pd.DataFrame(rows, columns=header).apply(pd.to_numeric, errors="ignore")
+            self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
+            df.to_csv(self.w_summary, index=False, float_format="%0.4f")
+            return True
+        except Exception as e:
+            self.logger.exception(e)
+            return False
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
@@ -75,22 +100,28 @@ class BiasCor(ConfigBasedExecutable):
                 if "FAIL" in f.read():
                     failed = True
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
-                wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                for path in wfiles:
-                    with open(path) as f2:
-                        if "ERROR:" in f2.read():
-                            self.logger.error(f"Error found in wfit file: {path}")
-                            failed = True
-                if failed:
-                    return Task.FINISHED_FAILURE
-                else:
-                    plots_completed = self.make_hubble_plot()
-                    if plots_completed:
-                        return Task.FINISHED_SUCCESS
-                    else:
-                        self.logger.error("Hubble diagram failed to run")
-                        return Task.FINISHED_FAILURE
 
+                if not os.path.exists(self.w_summary):
+                    wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
+                    for path in wfiles:
+                        with open(path) as f2:
+                            if "ERROR:" in f2.read():
+                                self.logger.error(f"Error found in wfit file: {path}")
+                                failed = True
+                    if failed:
+                        return Task.FINISHED_FAILURE
+                    else:
+                        if not self.generate_w_summary():
+                            return Task.FINISHED_FAILURE
+
+                        plots_completed = self.make_hubble_plot()
+                        if plots_completed:
+                            return Task.FINISHED_SUCCESS
+                        else:
+                            self.logger.error("Hubble diagram failed to run")
+                            return Task.FINISHED_FAILURE
+                else:
+                    return Task.FINISHED_SUCCESS
         if os.path.exists(self.logging_file):
             with open(self.logging_file) as f:
                 output_error = False

@@ -167,11 +167,10 @@ class Manager:
             for t in running_tasks:
                 try:
                     completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                    small_wait = small_wait or completed
                 except Exception as e:
                     self.logger.exception(e)
                     self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
-
-                small_wait = small_wait or completed
 
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
