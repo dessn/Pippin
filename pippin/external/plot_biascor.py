@@ -44,7 +44,7 @@ def plot_single_file(source_file, df):
 
     c = ChainConsumer()
     labels = [r"$\Oemga_m$", "$w$", r"$\sigma_{int}$"]
-    for index, row in df.itertuples():
+    for index, row in df.iterrows():
         means = [row["OM"], row["w"], row["sigint"]]
         cov = np.diag([row["OM_sig"] ** 2, row["wsig_marg"] ** 2, 0.01 ** 2])
         c.add_covariance(means, cov, parameters=labels, name=f"Realisation {index}")
