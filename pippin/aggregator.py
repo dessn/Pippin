@@ -231,11 +231,10 @@ class Aggregator(Task):
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
             mask_clas = config.get("MASK_CLAS", "")
-            done_sim = []
             for sim_task in sim_tasks:
-                if sim_task in done_sim or mask_sim not in sim_task.name or mask not in sim_task.name:
+                if mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
-                done_sim.append(sim_task)
+
                 agg_name2 = f"{agg_name}_{sim_task.name}"
                 deps = [
                     c

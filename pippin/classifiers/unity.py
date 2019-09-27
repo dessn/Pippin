@@ -1,5 +1,9 @@
 import os
+import shutil
+
 import pandas as pd
+from astropy.io import fits
+import numpy as np
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs
 from pippin.task import Task
@@ -56,20 +60,30 @@ class UnityClassifier(Classifier):
     def classify(self, force_refresh):
         new_hash = self.check_regenerate(force_refresh)
         if new_hash:
+            shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             try:
-                input = self.get_fit_dependency()
-                fitres_file = os.path.abspath(os.path.join(input["fitres_dirs"][self.index], input["fitopt_map"]["DEFAULT"]))
-                self.logger.debug(f"Looking for {fitres_file}")
-                if not os.path.exists(fitres_file):
-                    self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
-                    self.passed = False
-                    return False
-
-                df = pd.read_csv(fitres_file, sep="\s+", comment="#", compression="infer")
                 name = self.get_prob_column_name()
-                df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": name})
-                df[name] = 1.0
+                cid = "CID"
+                s = self.get_simulation_dependency()
+                df = None
+                phot_dir = s.output["photometry_dirs"][self.index]
+                headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                if not headers:
+                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
+                else:
+                    for h in headers:
+                        with fits.open(h) as hdul:
+                            data = hdul[1].data
+                            snid = np.array(data.field("SNID"))
+                            dataframe = pd.DataFrame({cid: snid, name: np.ones(snid.shape)})
+                            dataframe[cid] = dataframe[cid].apply(str)
+                            dataframe[cid] = dataframe[cid].str.strip()
+                            if df is None:
+                                df = dataframe
+                            else:
+                                df = pd.concat([df, dataframe])
+                    df.drop_duplicates(subset=cid, inplace=True)
 
                 self.logger.info(f"Saving probabilities to {self.output_file}")
                 df.to_csv(self.output_file, index=False, float_format="%0.4f")
@@ -78,7 +92,7 @@ class UnityClassifier(Classifier):
                     f.write("SUCCESS")
                 self.save_new_hash(new_hash)
             except Exception as e:
-                self.logger.exception(e)
+                self.logger.exception(e, exc_info=True)
                 self.passed = False
                 with open(self.done_file, "w") as f:
                     f.write("FAILED")
@@ -98,5 +112,4 @@ class UnityClassifier(Classifier):
 
     @staticmethod
     def get_requirements(config):
-        # Does not need simulations, does light curve fits
-        return False, True
+        return True, False
