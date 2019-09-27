@@ -53,9 +53,11 @@ class Manager:
             if isinstance(task, t):
                 index = i
         if index is None:
-            self.logger.error("Task {task} did not match any class in the task order!")
+            self.logger.error(f"Task {task} did not match any class in the task order!")
             index = 0
-        return index >= self.start
+        force = index >= self.start
+        self.logger.debug(f"Start set! Task {task} has index {index}, start index set {self.start}, so returning {force}")
+        return force
 
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
