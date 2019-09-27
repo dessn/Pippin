@@ -78,7 +78,7 @@ class BiasCor(ConfigBasedExecutable):
                 if os.path.exists(wpath):
                     with open(wpath) as f:
                         lines = f.read().splitlines()
-                        header = ["VERSION"] + lines[0].split()[1]
+                        header = ["VERSION"] + lines[0].split()[1:]
                         values = [os.path.basename(d)] + lines[1].split()
                         rows.append(values)
                 else:
@@ -111,15 +111,13 @@ class BiasCor(ConfigBasedExecutable):
                     if failed:
                         return Task.FINISHED_FAILURE
                     else:
-                        if not self.generate_w_summary():
-                            return Task.FINISHED_FAILURE
-
+                        self.generate_w_summary()
                         plots_completed = self.make_hubble_plot()
                         if plots_completed:
                             return Task.FINISHED_SUCCESS
                         else:
                             self.logger.error("Hubble diagram failed to run")
-                            return Task.FINISHED_FAILURE
+                            return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
         if os.path.exists(self.logging_file):
