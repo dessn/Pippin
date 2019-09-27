@@ -79,6 +79,8 @@ if __name__ == "__main__":
             for file, df in zip(args.basename, inputs):
                 if df.shape[0] > 1:
                     plot_single_file(file, df)
+                else:
+                    logging.info(f"File {file} has df shape {str(df.shape)}")
             plot_all_files(args.basename, inputs)
 
         with open(args.donefile, "w") as f:
