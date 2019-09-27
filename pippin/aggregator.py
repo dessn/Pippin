@@ -231,10 +231,11 @@ class Aggregator(Task):
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
             mask_clas = config.get("MASK_CLAS", "")
+            done_sim = []
             for sim_task in sim_tasks:
-                if mask_sim not in sim_task.name or mask not in sim_task.name:
+                if sim_task in done_sim or mask_sim not in sim_task.name or mask not in sim_task.name:
                     continue
-
+                done_sim.append(sim_task)
                 agg_name2 = f"{agg_name}_{sim_task.name}"
                 deps = [
                     c
@@ -247,4 +248,5 @@ class Aggregator(Task):
                     a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
                     Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                     tasks.append(a)
+
         return tasks
