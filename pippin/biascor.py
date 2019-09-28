@@ -65,7 +65,8 @@ class BiasCor(ConfigBasedExecutable):
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
         self.output_plots = [
-            os.path.join(m, f"{self.name}_{(str(int(m)) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]
+            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
+            for m in self.output["m0dif_dirs"]
         ]
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
