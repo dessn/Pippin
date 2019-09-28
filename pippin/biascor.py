@@ -328,7 +328,7 @@ class BiasCor(ConfigBasedExecutable):
                         else:
                             fp = o
                         fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
-                        fig.close()
+                        plt.close(fig)
             except Exception as e:
                 self.logger.exception(e, exc_info=True)
                 return False
