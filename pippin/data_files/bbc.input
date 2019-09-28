@@ -34,7 +34,8 @@ x1min=-3.0
 x1max=+3.0
 cmax=+0.3
 cmin=-0.3
-#CUTWIN  x1ERR     0. 1.0
+CUTWIN x1ERR 0. 2.0
+CUTWIN cERR 0. 0.2
 #CUTWIN  PKMJDERR  0. 2.0
 #CUTWIN MWEBV 0 0.2
 #CUTWIN TrestMAX 5 10000
