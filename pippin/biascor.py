@@ -165,12 +165,11 @@ class BiasCor(ConfigBasedExecutable):
             if key.upper().startswith("CUTWIN"):
                 assignment = " "
                 split = key.split("_", 1)
-                key = split[0]
+                c = split[0]
                 col = split[1]
                 if col.upper() == "PROB_IA":
                     col = self.probability_column_name
-                value = f"{col} {value}"
-
+                key = f"{c} {col}"
             self.set_property(key, value, assignment=assignment)
 
         bullshit_hack = ""
