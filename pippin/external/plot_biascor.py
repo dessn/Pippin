@@ -57,7 +57,7 @@ def plot_all_files(source_files, inputs):
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     data = []
-    df_all = []
+    df_all = None
     for f, df in zip(source_files, inputs):
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         means = [df["OM"].mean(), df["w"].mean(), df["sigint"].mean()]
