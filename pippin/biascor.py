@@ -222,108 +222,109 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug("Output plot exists")
         else:
             try:
-                self.logger.info("Making output Hubble diagram")
+                self.logger.info("Making output Hubble diagrams")
+                for m in self.output["m0dif_dirs"]:
 
-                fitres_file = os.path.join(self.output["m0dif_dirs"][0], "SALT2mu_FITOPT000_MUOPT000.FITRES")
-                m0dif_file = os.path.join(self.output["m0dif_dirs"][0], "SALT2mu_FITOPT000_MUOPT000.M0DIF")
+                    fitres_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES")
+                    m0dif_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.M0DIF")
 
-                from astropy.cosmology import FlatwCDM
-                import numpy as np
-                import matplotlib.pyplot as plt
+                    from astropy.cosmology import FlatwCDM
+                    import numpy as np
+                    import matplotlib.pyplot as plt
 
-                df = pd.read_csv(fitres_file, comment="#", sep=r"\s+", skiprows=5)
-                dfm = pd.read_csv(m0dif_file, comment="#", sep=r"\s+", skiprows=10)
-                df.sort_values(by="zHD", inplace=True)
-                dfm.sort_values(by="z", inplace=True)
-                dfm = dfm[dfm["MUDIFERR"] < 10]
+                    df = pd.read_csv(fitres_file, comment="#", sep=r"\s+", skiprows=5)
+                    dfm = pd.read_csv(m0dif_file, comment="#", sep=r"\s+", skiprows=10)
+                    df.sort_values(by="zHD", inplace=True)
+                    dfm.sort_values(by="z", inplace=True)
+                    dfm = dfm[dfm["MUDIFERR"] < 10]
 
-                ol = 0.7
-                w = -1
-                alpha = 0
-                beta = 0
-                sigint = 0
-                gamma = r"$\gamma$ not fit"
-                num_sn_fit = df.shape[0]
-                contam_data, contam_true = "", ""
-                with open(m0dif_file) as f:
-                    for line in f.read().splitlines():
-                        if "Omega_DE(ref)" in line:
-                            ol = float(line.strip().split()[-1])
-                        if "w_DE(ref)" in line:
-                            w = float(line.strip().split()[-1])
-                with open(fitres_file) as f:
-                    for line in f.read().splitlines():
-                        if "NSNFIT" in line:
-                            v = int(line.split("=", 1)[1].strip())
-                            num_sn_fit = v
-                            num_sn = f"$N_{{SN}} = {v}$"
-                        if "alpha0" in line and "=" in line and "+-" in line:
-                            alpha = r"$\alpha = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                        if "beta0" in line and "=" in line and "+-" in line:
-                            beta = r"$\beta = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                        if "sigint" in line and "iteration" in line:
-                            sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
-                        if "gamma" in line and "=" in line and "+-" in line:
-                            gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                        if "CONTAM_TRUE" in line:
-                            v = float(line.split("=", 1)[1].split("#")[0].strip())
-                            n = v * num_sn_fit
-                            contam_true = f"$N_{{CC, true}} = {v} (\\approx {n} SN)"
-                        if "CONTAM_DATA" in line:
-                            v = float(line.split("=", 1)[1].split("#")[0].strip())
-                            n = v * num_sn_fit
-                            contam_data = f"$N_{{CC, data}} = {v} (\\approx {n} SN)"
+                    ol = 0.7
+                    w = -1
+                    alpha = 0
+                    beta = 0
+                    sigint = 0
+                    gamma = r"$\gamma$ not fit"
+                    num_sn_fit = df.shape[0]
+                    contam_data, contam_true = "", ""
+                    with open(m0dif_file) as f:
+                        for line in f.read().splitlines():
+                            if "Omega_DE(ref)" in line:
+                                ol = float(line.strip().split()[-1])
+                            if "w_DE(ref)" in line:
+                                w = float(line.strip().split()[-1])
+                    with open(fitres_file) as f:
+                        for line in f.read().splitlines():
+                            if "NSNFIT" in line:
+                                v = int(line.split("=", 1)[1].strip())
+                                num_sn_fit = v
+                                num_sn = f"$N_{{SN}} = {v}$"
+                            if "alpha0" in line and "=" in line and "+-" in line:
+                                alpha = r"$\alpha = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
+                            if "beta0" in line and "=" in line and "+-" in line:
+                                beta = r"$\beta = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
+                            if "sigint" in line and "iteration" in line:
+                                sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
+                            if "gamma" in line and "=" in line and "+-" in line:
+                                gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
+                            if "CONTAM_TRUE" in line:
+                                v = float(line.split("=", 1)[1].split("#")[0].strip())
+                                n = v * num_sn_fit
+                                contam_true = f"$N_{{CC, true}} = {v} (\\approx {n} SN)"
+                            if "CONTAM_DATA" in line:
+                                v = float(line.split("=", 1)[1].split("#")[0].strip())
+                                n = v * num_sn_fit
+                                contam_data = f"$N_{{CC, data}} = {v} (\\approx {n} SN)"
 
-                label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data])
-                zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
-                distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
+                    label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data])
+                    zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
+                    distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
-                for log in [True, False]:
+                    for log in [True, False]:
 
-                    fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [2, 1], "hspace": 0})
+                        fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [2, 1], "hspace": 0})
 
-                    for resid, ax in enumerate(axes):
+                        for resid, ax in enumerate(axes):
 
+                            if log:
+                                ax.set_xscale("log")
+
+                            if resid:
+                                sub = df["MUMODEL"]
+                                sub2 = 0
+                                sub3 = distmod
+                                ax.set_ylabel(r"$\Delta \mu$")
+                            else:
+                                sub = 0
+                                sub2 = -dfm["MUREF"]
+                                sub3 = 0
+                                ax.set_ylabel(r"$\mu$")
+                                ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=10)
+
+                            ax.set_xlabel("$z$")
+
+                            ax.errorbar(df["zHD"], df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
+                            if df[self.probability_column_name].min() >= 1.0:
+                                cc = df["IDSURVEY"]
+                                vmax = None
+                                color_prob = False
+                                cmap = "rainbow"
+                            else:
+                                cc = df[self.probability_column_name]
+                                vmax = 1.05
+                                color_prob = True
+                                cmap = "inferno"
+                            h = ax.scatter(df["zHD"], df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
+                            ax.plot(zs, distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
+                            ax.errorbar(dfm["z"], dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", elinewidth=1.0, c="k", ms=3)
+
+                        if color_prob:
+                            cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
+                            cbar.set_label("Prob Ia")
                         if log:
-                            ax.set_xscale("log")
-
-                        if resid:
-                            sub = df["MUMODEL"]
-                            sub2 = 0
-                            sub3 = distmod
-                            ax.set_ylabel(r"$\Delta \mu$")
+                            fp = self.output_plot.replace(".png", "_log.png")
                         else:
-                            sub = 0
-                            sub2 = -dfm["MUREF"]
-                            sub3 = 0
-                            ax.set_ylabel(r"$\mu$")
-                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=10)
-
-                        ax.set_xlabel("$z$")
-
-                        ax.errorbar(df["zHD"], df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
-                        if df[self.probability_column_name].min() >= 1.0:
-                            cc = df["IDSURVEY"]
-                            vmax = None
-                            color_prob = False
-                            cmap = "rainbow"
-                        else:
-                            cc = df[self.probability_column_name]
-                            vmax = 1.05
-                            color_prob = True
-                            cmap = "inferno"
-                        h = ax.scatter(df["zHD"], df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
-                        ax.plot(zs, distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
-                        ax.errorbar(dfm["z"], dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", elinewidth=1.0, c="k", ms=3)
-
-                    if color_prob:
-                        cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
-                        cbar.set_label("Prob Ia")
-                    if log:
-                        fp = self.output_plot.replace(".png", "_log.png")
-                    else:
-                        fp = self.output_plot
-                    fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
+                            fp = self.output_plot
+                        fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
             except Exception as e:
                 self.logger.exception(e, exc_info=True)
                 return False
