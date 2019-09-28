@@ -342,7 +342,7 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
-                subprocess.Popen(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             chown_dir(self.output_dir)
         return True
 
