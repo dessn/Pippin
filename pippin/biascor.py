@@ -64,10 +64,12 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plot = os.path.join(self.output["m0dif_dirs"][0], f"{self.name}_hubble.png")
+        self.output_plots = [
+            os.path.join(m, f"{self.name}_{(str(int(m)) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]
+        ]
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
-        self.output["hubble_plot"] = self.output_plot
+        self.output["hubble_plot"] = self.output_plots
 
     def generate_w_summary(self):
         try:
@@ -218,12 +220,12 @@ class BiasCor(ConfigBasedExecutable):
 
     def make_hubble_plot(self):
 
-        if os.path.exists(self.output_plot):
+        if os.path.exists(self.output_plots[0]):
             self.logger.debug("Output plot exists")
         else:
             try:
                 self.logger.info("Making output Hubble diagrams")
-                for m in self.output["m0dif_dirs"]:
+                for m, o in zip(self.output["m0dif_dirs"], self.output_plots):
 
                     fitres_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES")
                     m0dif_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.M0DIF")
@@ -321,10 +323,11 @@ class BiasCor(ConfigBasedExecutable):
                             cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
                             cbar.set_label("Prob Ia")
                         if log:
-                            fp = self.output_plot.replace(".png", "_log.png")
+                            fp = o.replace(".png", "_log.png")
                         else:
-                            fp = self.output_plot
+                            fp = o
                         fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
+                        fig.close()
             except Exception as e:
                 self.logger.exception(e, exc_info=True)
                 return False
