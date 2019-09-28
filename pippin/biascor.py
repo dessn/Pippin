@@ -272,11 +272,11 @@ class BiasCor(ConfigBasedExecutable):
                             if "CONTAM_TRUE" in line:
                                 v = float(line.split("=", 1)[1].split("#")[0].strip())
                                 n = v * num_sn_fit
-                                contam_true = f"$N_{{CC, true}} = {v} (\\approx {n} SN)"
+                                contam_true = f"$R_{{CC, true}} = {v:0.4f} (\\approx {int(n)} SN)$"
                             if "CONTAM_DATA" in line:
                                 v = float(line.split("=", 1)[1].split("#")[0].strip())
                                 n = v * num_sn_fit
-                                contam_data = f"$N_{{CC, data}} = {v} (\\approx {n} SN)"
+                                contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
 
                     label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data])
                     zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
