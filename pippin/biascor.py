@@ -108,11 +108,11 @@ class BiasCor(ConfigBasedExecutable):
                             if "ERROR:" in f2.read():
                                 self.logger.error(f"Error found in wfit file: {path}")
                                 failed = True
+                    plots_completed = self.make_hubble_plot()
                     if failed:
                         return Task.FINISHED_FAILURE
                     else:
                         self.generate_w_summary()
-                        plots_completed = self.make_hubble_plot()
                         if plots_completed:
                             return Task.FINISHED_SUCCESS
                         else:
