@@ -270,11 +270,11 @@ class BiasCor(ConfigBasedExecutable):
                             if "gamma" in line and "=" in line and "+-" in line:
                                 gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
                             if "CONTAM_TRUE" in line:
-                                v = float(line.split("=", 1)[1].split("#")[0].strip())
+                                v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
                                 n = v * num_sn_fit
                                 contam_true = f"$R_{{CC, true}} = {v:0.4f} (\\approx {int(n)} SN)$"
                             if "CONTAM_DATA" in line:
-                                v = float(line.split("=", 1)[1].split("#")[0].strip())
+                                v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
                                 n = v * num_sn_fit
                                 contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
 
