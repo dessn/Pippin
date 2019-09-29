@@ -330,6 +330,7 @@ class BiasCor(ConfigBasedExecutable):
                         fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
                         plt.close(fig)
                 except Exception as e:
+                    self.logger.error(f"Error making plots for {fitres_file}")
                     self.logger.exception(e, exc_info=True)
                     error = True
         return not error
