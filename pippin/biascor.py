@@ -122,6 +122,7 @@ class BiasCor(ConfigBasedExecutable):
                             self.logger.error("Hubble diagram failed to run")
                             return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
+                    self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return Task.FINISHED_SUCCESS
         if os.path.exists(self.logging_file):
             with open(self.logging_file) as f:
@@ -219,13 +220,13 @@ class BiasCor(ConfigBasedExecutable):
             return False
 
     def make_hubble_plot(self):
-
+        error = False
         if os.path.exists(self.output_plots[0]):
             self.logger.debug("Output plot exists")
         else:
-            try:
-                self.logger.info("Making output Hubble diagrams")
-                for m, o in zip(self.output["m0dif_dirs"], self.output_plots):
+            self.logger.info("Making output Hubble diagrams")
+            for m, o in zip(self.output["m0dif_dirs"], self.output_plots):
+                try:
 
                     fitres_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES")
                     m0dif_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.M0DIF")
@@ -328,10 +329,10 @@ class BiasCor(ConfigBasedExecutable):
                             fp = o
                         fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
                         plt.close(fig)
-            except Exception as e:
-                self.logger.exception(e, exc_info=True)
-                return False
-        return True
+                except Exception as e:
+                    self.logger.exception(e, exc_info=True)
+                    error = True
+        return not error
 
     def _run(self, force_refresh):
         regenerating = self.write_input(force_refresh)
