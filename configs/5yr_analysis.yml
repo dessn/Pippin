@@ -185,20 +185,37 @@ COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_omw
-#      COVOPTS: [ALL, NOSYS]  # If you leave this blank, you get them all. Exact matching
+      COVOPTS: [ALL, NOSYS]
       NUM_WALKERS: 20
 
-#  SN_CMB_OMW:
-#    OPTS:
-#      INI: sn_cmb_omw
-#      COVOPTS: [ALL]
-#      NUM_WALKERS: 20
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]
+      NUM_WALKERS: 20
+
+  SN_OMOL:
+    OPTS:
+      INI: sn_omol
+      COVOPTS: [ALL, NOSYS]
+      NUM_WALKERS: 20
+
+  SN_CMB_OMOL:
+    OPTS:
+      INI: sn_cmb_omol
+      COVOPTS: [ALL]
+      NUM_WALKERS: 20
 
 ANALYSE:
-#  ALL_OMW:
-#    MASK_COSMOMC: OMW
-#    OPTS:
-#      BLIND: w
+  ALL_OMOL:
+    MASK_COSMOMC: OMOL
+    OPTS:
+      BLIND: ol
+
+  ALL_OMW:
+    MASK_COSMOMC: OMW
+    OPTS:
+      BLIND: w
 
   SNONLY:
     MASK_COSMOMC: SN_OMW
