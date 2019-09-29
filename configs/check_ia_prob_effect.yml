@@ -33,10 +33,12 @@ SIM:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 30
 
   DESSIM:
-    IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10_des3yr.input
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_JONES:
+      BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 4
+      NGEN_UNIT: 1
       RANSEED_CHANGE: 30 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 30
 
