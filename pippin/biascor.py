@@ -282,7 +282,7 @@ class BiasCor(ConfigBasedExecutable):
                     zs = np.linspace(df["zHD"].min(), df["zHD"].max(), 500)
                     distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
-                    for log in [True, False]:
+                    for log in [False]:
 
                         fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [2, 1], "hspace": 0})
 
@@ -327,7 +327,8 @@ class BiasCor(ConfigBasedExecutable):
                             fp = o.replace(".png", "_log.png")
                         else:
                             fp = o
-                        fig.savefig(fp, dpi=600, transparent=True, bbox_inches="tight")
+                        self.logger.debug(f"Saving Hubble plot to {fp}")
+                        fig.savefig(fp, dpi=300, transparent=True, bbox_inches="tight")
                         plt.close(fig)
                 except Exception as e:
                     self.logger.error(f"Error making plots for {fitres_file}")
