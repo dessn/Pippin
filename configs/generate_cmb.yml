@@ -1,10 +1,4 @@
 DATAPREP:
-  DATALOWZ:  # lowz combined sample
-    OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
-      TYPES:
-        IA: [1, 101]
-        NONIA: [120, 130, 20, 30]
   DATADES3YR:  # 3yr spec sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
@@ -23,8 +17,8 @@ SIM:
       GENRANGE_SALT2BETA: 2.6  3.6
       GENGRID_SALT2BETA: 2
     GLOBAL:
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 3 12345
+      NGEN_UNIT: 2
+      RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
 LCFIT:
