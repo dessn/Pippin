@@ -147,6 +147,8 @@ python {path_to_code_biascor} {wfit_summary} {blind}
         key = "ANALYSE"
         for cname in c.get(key, []):
             config = c[key].get(cname, {})
+            if config is None:
+                config = {}
             options = config.get("OPTS", {})
 
             mask_cosmomc = config.get("MASK_COSMOMC", "")
