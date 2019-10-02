@@ -4,7 +4,7 @@ import subprocess
 import os
 
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config
+from pippin.config import mkdirs, get_config, ensure_list
 from pippin.cosmomc import CosmoMC
 from pippin.task import Task
 
@@ -46,7 +46,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.files = []
         self.names = []
         self.params = []
-        self.blind_params = options.get("BLIND")
+        self.blind_params = ensure_list(options.get("BLIND"))
 
         # Assuming all deps are cosmomc tasks
         self.cosmomc_deps = self.get_deps(CosmoMC)
