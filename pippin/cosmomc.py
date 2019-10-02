@@ -81,7 +81,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 ###SBATCH --nodes=1
 #SBATCH --ntasks={num_walkers}
 #SBATCH --array=1-{num_jobs}
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
