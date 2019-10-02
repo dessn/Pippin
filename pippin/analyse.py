@@ -130,7 +130,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)
-            self.logger.info(f"Submitting batch job for data prep")
+            self.logger.info(f"Submitting batch job for analyse chains")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
