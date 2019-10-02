@@ -123,6 +123,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
             shutil.copy(self.path_to_code, self.output_dir)
             shutil.copy(self.path_to_code_biascor, self.output_dir)
             for f in self.hubble_plots:
+                self.logger.debug(f"Searching for Hubble plot {f}")
                 if f is not None and os.path.exists(f):
                     self.logger.debug(f"Copying Hubble plot {f} to {self.output_dir}")
                     shutil.copy(f, os.path.join(self.output_dir, os.path.basename(f)))
