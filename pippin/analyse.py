@@ -64,7 +64,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
 
-        self.hubble_plots = [a for c in self.cosmomc_deps for a in c.output.get("hubble_plot")]
+        self.hubble_plots = list(set([a for c in self.biascor_deps + self.cosmomc_deps for a in c.output.get("hubble_plot")]))
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
 #SBATCH --time=1:00:00
