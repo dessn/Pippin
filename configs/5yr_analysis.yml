@@ -210,7 +210,7 @@ ANALYSE:
   ALL_OMOL:
     MASK_COSMOMC: OMOL
     OPTS:
-      BLIND: ol
+      BLIND: omegal
       SHIFT: True
 
   ALL_OMW:
