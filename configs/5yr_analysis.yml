@@ -186,7 +186,7 @@ COSMOMC:
     OPTS:
       INI: sn_omw
       COVOPTS: [ALL, NOSYS]
-      NUM_WALKERS: 20
+      NUM_WALKERS: 40
 
   SN_CMB_OMW:
     OPTS:
