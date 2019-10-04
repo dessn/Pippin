@@ -36,7 +36,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.global_config = global_config
 
         base = config["BASE"]
-        self.base_file = self.data_dir + base
+        self.base_file = get_data_loc(self.data_dir, base)
 
         super().__init__(name, output_dir, self.base_file, "= ", dependencies=[sim_task])
 

@@ -8,7 +8,7 @@ import collections
 import json
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, copytree, mkdirs
+from pippin.config import chown_dir, copytree, mkdirs, get_data_loc
 from pippin.task import Task
 
 
@@ -113,9 +113,9 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Copy the base files across
         for f in self.base_ia:
-            shutil.copy(self.data_dir + f, temp_dir)
+            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
         for f in self.base_cc:
-            shutil.copy(self.data_dir + f, temp_dir)
+            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
 
         # Copy the include input file if there is one
         input_copied = []
