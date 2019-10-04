@@ -2,16 +2,16 @@ BIASCOR:
   BCOR:
     BASE: bbc.input  # Base file to use, bbc.input is the default
     DATA: [DESFIT_DESSIM, LOWZFIT_LOWZSIM]  # The names of the lcfits_data/simulations going in. List format please.
-    SIMFILE_BIASCOR: [DESBIASCOR, LOWZBIASCOR]  # The names of the biascor simulations. Will find the merged fitres output for it. Might have issues if more than one exists
+    SIMFILE_BIASCOR: [DESFIT_DESBIASCOR, LOWZFIT_LOWZBIASCOR]  # The names of the biascor simulations. Will find the merged fitres output for it. Might have issues if more than one exists
     CLASSIFIER: UNITY  # The classifier to use. Should have a predict matching the data and biascor sims. Might have issues if more than one exists.
 
   MUOPTS:
     DATA: [D_DESSIM, L_LOWZSIM]
-    SIMFILE_BIASCOR: [DESBIASCOR, LOWZBIASCOR]
+    SIMFILE_BIASCOR: [D_DESBIASCOR, L_LOWZBIASCOR]
     CLASSIFIER: UNITY
     MUOPTS:  # A dict of muopt names and their biascor sims
       C11:
-        SIMFILE_BIASCOR: [DESBIASSYS_C11, LOWZBIASSYS_C11]
+        SIMFILE_BIASCOR: [D_DESBIASSYS_C11, L_LOWZBIASSYS_C11]
         FITOPT: 0  # Which fitopt to use. Untested on non-zero numbers.
     OTPS:  # Batch info can be overriden in the generic opts
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
