@@ -1,0 +1,76 @@
+# -----------------------------------------
+#
+# SPLIT	RANDOM 50% 
+#
+#
+# TEMPLATES presented in Vincenzi et al. 2019 (arXiv:1908.05228)
+# TEMPLATES used here has NOT been corrected for host extinction, only for MW reddening
+#
+# User-generated comments:
+#   MAGOFF and MAGSMEAR adjusted to match REVISED LF from Li. et al 2010 (arXiv:1006.4612).
+#   Li et al. LF has been revision following the re-classification from Shivvars et al. 2017, for details see Vincenzi et al. 2019) 
+#   Li et al. LF use a sample of SNe that has NOT been corrected for host extinction. Also the templates used here has NOT been corrected for host reddening (MW reddening has been corrected)
+#   WGT (relative rates) from Shivvars et al. 2017 (also reported in Vincenzi et al. 2019)
+#
+#
+# II    --> 25 (IIP+IIL, no distinction)
+# IIP   --> 20 (--> 25, no distiction IIP and IIL)
+# IIn   --> 21 (--> 25, no distiction IIP and IIL)
+# IIL   --> 22
+# IIb   --> 23
+# Ib    --> 32
+# Ic    --> 33
+# Ic-BL --> 35
+
+INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
+
+GENTYPE:  20
+GENSOURCE:   RANDOM
+GENMODEL:    NON1ASED
+
+DNDZ:       CC_S15
+DNDZ_PEC1A: POWERLAW  3.0E-6  1.5
+
+
+NON1A_KEYS: 5
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE
+NON1A:          851  0.015682    0.43      0.93    21    ## IIn   SN2011ht
+NON1A:          845  0.015682    0.43      0.93    21    ## IIn   SN2010al
+NON1A:          819  0.015682    0.43      0.93    21    ## IIn   SN2006aa
+NON1A:          832  0.018185    0.48      1.11    23    ## IIb   SN2008bo
+NON1A:          850  0.018185    0.48      1.11    23    ## IIb   SN2011hs
+NON1A:          849  0.018185    0.48      1.11    23    ## IIb   SN2011fu
+NON1A:          829  0.018185    0.48      1.11    23    ## IIb   SN2008aq
+NON1A:          865  0.018185    0.48      1.11    23    ## IIb  SN2016gkg
+NON1A:          822  0.018185    0.48      1.11    23    ## IIb    SN2006T
+NON1A:          838  0.054137   -0.19      0.54    25     ## II   SN2009dd
+NON1A:          860  0.054137   -0.19      0.54    25     ## II   SN2013ej
+NON1A:          858  0.054137    0.11      0.54    25     ## II   SN2013by
+NON1A:          824  0.054137    0.11      0.54    25     ## II   SN2007od
+NON1A:          856  0.054137   -0.19      0.54    25     ## II   SN2013ab
+NON1A:          817  0.054137   -0.69      0.54    25     ## II   SN2005cs
+NON1A:          831  0.054137   -0.19      0.54    25     ## II   SN2008bj
+NON1A:          864  0.054137   -0.19      0.54    25     ## II  SN2016bkv
+NON1A:          835  0.054137   -0.19      0.54    25     ## II   SN2008in
+NON1A:          837  0.054137   -0.19      0.54    25     ## II   SN2009bw
+NON1A:          839  0.054137   -0.69      0.54    25     ## II   SN2009ib
+NON1A:          843  0.054137   -0.19      0.54    25     ## II   SN2009kr
+NON1A:          854  0.018018    1.21      1.20    32     ## Ib   SN2012au
+NON1A:          813  0.018018    1.21      1.20    32     ## Ib   SN2004gq
+NON1A:          821  0.018018    1.21      1.20    32     ## Ib   SN2006ep
+NON1A:          827  0.018018    1.21      1.20    32     ## Ib   SN2007uy
+NON1A:          828  0.018018    1.21      1.20    32     ## Ib    SN2007Y
+NON1A:          841  0.018018    1.21      1.20    32     ## Ib   SN2009iz
+NON1A:          814  0.018769    0.34      0.79    33     ## Ic   SN2004gt
+NON1A:          812  0.018769    0.34      0.79    33     ## Ic   SN2004fe
+NON1A:          823  0.018769    0.34      0.79    33     ## Ic   SN2007gr
+NON1A:          805  0.018769    0.34      0.79    33     ## Ic    SN1994I
+NON1A:          836  0.003670    0.84      0.79    35  ## Ic-BL   SN2009bb
+NON1A:          809  0.003670    0.34      0.79    35  ## Ic-BL   SN2002ap
+NON1A:          826  0.003670    0.84      0.79    35  ## Ic-BL   SN2007ru
+
+PEC1A:    502   0.25   -17.447     0.5250     42    # Ia-91bg  (Nugent)
+PEC1A:    503   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-1999by)
+PEC1A:    506   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-1998de)
+PEC1A:    509   0.25    -0.030     0.5250     42    # Ia-91bg  (LOWZ-2005bl)
+
