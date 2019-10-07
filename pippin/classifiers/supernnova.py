@@ -68,6 +68,7 @@ if [ $? -ne 0 ]; then
 fi
 python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 50 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
 if [ $? -eq 0 ]; then
+    rm -rf {dump_dir}/processed
     echo SUCCESS > {done_file2}
 else
     echo FAILURE > {done_file2}

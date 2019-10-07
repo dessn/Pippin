@@ -85,9 +85,7 @@ SIM:
 
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
-      BASE: sn_ibc_templates.input
-    II_TEMPLATES:
-      BASE: sn_ii_templates.input
+      BASE: sn_collection_jones.input
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
