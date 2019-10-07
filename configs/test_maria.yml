@@ -1,0 +1,18 @@
+SIM:
+  CCTEST:
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 5
+
+
+LCFIT:
+  D:
+    BASE: des.nml
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20

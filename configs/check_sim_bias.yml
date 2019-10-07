@@ -19,7 +19,8 @@ SIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_TEMPLATES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria.input
+      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_CHANGE: 30 12345
@@ -55,7 +56,8 @@ SIM:
 
   DESSIMBIAS5YRCC:
     II_TEMPLATES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria.input
+      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
