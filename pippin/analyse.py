@@ -46,7 +46,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.files = []
         self.names = []
         self.params = []
-        self.blind_params = ensure_list(options.get("BLIND"))
+        self.blind_params = ensure_list(options.get("BLIND", []))
 
         # Assuming all deps are cosmomc tasks
         self.cosmomc_deps = self.get_deps(CosmoMC)
