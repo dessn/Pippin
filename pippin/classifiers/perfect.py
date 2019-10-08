@@ -49,7 +49,7 @@ class PerfectClassifier(Classifier):
 
     def check_regenerate(self, force_refresh):
 
-        new_hash = self.get_hash_from_string(self.name)
+        new_hash = self.get_hash_from_string(self.name + f"{self.prob_ia}_{self.prob_cc}")
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
