@@ -150,9 +150,11 @@ fi
                     has_ia = True
                     break
             if not has_ia:
+                self.logger.debug("No Ia type found, injecting type")
                 types.update({"1": "Ia"})
                 types.move_to_end("1", last=False)
         str_types = json.dumps(types)
+        self.logger.debug(f"Types set to {str_types}")
 
         sim_dep = self.get_simulation_dependency()
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
