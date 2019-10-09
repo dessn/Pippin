@@ -145,14 +145,19 @@ fi
             )
         else:
             has_ia = False
+            has_cc = False
             for key, value in types.items():
                 if value.upper() == "IA":
                     has_ia = True
-                    break
+                elif value.upper() in ["II", "IBC"]:
+                    has_cc = True
             if not has_ia:
                 self.logger.debug("No Ia type found, injecting type")
                 types.update({"1": "Ia"})
                 types.move_to_end("1", last=False)
+            if not has_cc:
+                self.logger.debug("No cc type found, injecting type")
+                types.update({"29": "II"})
         str_types = json.dumps(types)
         self.logger.debug(f"Types set to {str_types}")
 
