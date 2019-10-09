@@ -143,6 +143,15 @@ fi
                     "99": "pending",
                 }
             )
+        else:
+            has_ia = False
+            for key, value in types.items():
+                if value.upper() == "IA":
+                    has_ia = True
+                    break
+            if not has_ia:
+                types.update({"1": "Ia"})
+                types.move_to_end("1", last=False)
         str_types = json.dumps(types)
 
         sim_dep = self.get_simulation_dependency()
