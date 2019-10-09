@@ -164,7 +164,7 @@ class Merger(Task):
         tasks = []
 
         def _get_merge_output_dir(base_output_dir, stage_number, merge_name, lcfit_name, agg_name):
-            return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}_{agg_name}"
+            return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}"
 
         for name in c.get("MERGE", []):
             num_gen = 0
