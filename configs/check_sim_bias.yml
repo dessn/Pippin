@@ -104,19 +104,26 @@ CLASSIFICATION:
       PROB_IA: 1.0
       PROB_CC: 0.0
 
-  IMPERFECT:
+  IMPERFECT02:
     CLASSIFIER: PerfectClassifier
     MODE: predict
     OPTS:
       PROB_IA: 0.98
       PROB_CC: 0.02
 
-  IMPERFECT05:
+  IMPERFECT10:
     CLASSIFIER: PerfectClassifier
     MODE: predict
     OPTS:
-      PROB_IA: 0.95
-      PROB_CC: 0.05
+      PROB_IA: 0.9
+      PROB_CC: 0.1
+
+  EVERYTHING:
+    CLASSIFIER: PerfectClassifier
+    MODE: predict
+    OPTS:
+      PROB_IA: 1.0
+      PROB_CC: 1.0
 
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
