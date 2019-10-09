@@ -5,6 +5,8 @@ import sys
 import argparse
 import os
 import logging
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 
 def setup_logging():
@@ -81,6 +83,74 @@ def plot_all_files(source_files, inputs):
     wdf.to_csv(output_file.replace(".png", ".csv"), index=False, float_format="%0.4f")
     df_all.to_csv(output_file.replace(".png", "_individual.csv"), index=False, float_format="%0.4f")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
+
+    plot_scatter_comp(df_all)
+
+
+def plot_scatter_comp(df_all):
+    cols = ChainConsumer()._all_colours
+    # Cant plot data, want to make sure all the versions match
+    # So split these into groups base on how many versions
+    res = {}
+    for name, df in df_all.groupby("name"):
+        if df.shape[0] > 1:
+            key = df.shape[0]
+            if res.get(key) is None:
+                res[key] = []
+            res[key].append((name, df["w"].value))
+    for key, value in res.items():
+        if key < 2:
+            continue
+
+        n = len(value)
+        labels = [v[0] for v in value]
+        ws = np.array([v[1] for v in value])
+        bins = int(1.5 * np.ceil(np.sqrt(key)))
+        min_w = ws.min()
+        max_w = ws.max()
+        lim = (min_w, max_w)
+
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(1.5 * n, 1.5 * n), sharex=True)
+        for i, label1 in enumerate(labels):
+            for j, label2 in enumerate(labels):
+                ax = axes[i, j]
+                if i < j:
+                    ax.axis("off")
+                    continue
+                elif i == j:
+                    h, _, _ = ax.hist(ws[:, i], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
+                    ax.hist(ws[:, i], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
+                    ax.set_yticklabels([])
+                    ax.tick_params(axis="y", left=False)
+                    ax.set_xlim(*lim)
+                    yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([1.0])[0]
+                    ax.plot([1.0, 1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
+                    ax.spines["right"].set_visible(False)
+                    ax.spines["top"].set_visible(False)
+                    if j == 0:
+                        ax.spines["left"].set_visible(False)
+                    if j == 4:
+                        ax.set_xlabel(" ".join(label2.split()[:-1]), fontsize=12)
+                else:
+                    a1 = ws[:, j]
+                    a2 = ws[:, i]
+                    c = np.abs(a1 - a2)
+                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.0005, vmax=0.2)
+                    ax.set_xlim(*lim)
+                    ax.set_ylim(*lim)
+                    ax.plot([min_w, max_w], [min_w, max_w], c="k", lw=1, alpha=0.8, ls=":")
+                    ax.axvline(1.0, color="k", lw=1, ls="--", alpha=0.4)
+                    ax.axhline(1.0, color="k", lw=1, ls="--", alpha=0.4)
+
+                    if j != 0:
+                        ax.set_yticklabels([])
+                        ax.tick_params(axis="y", left=False)
+                    else:
+                        ax.set_ylabel(label1, fontsize=12)
+                    if i == 4:
+                        ax.set_xlabel(label2, fontsize=12)
+        plt.subplots_adjust(hspace=0.0, wspace=0)
+        fig.savefig(f"{key}_w_comp.png", bbox_inches="tight", dpi=300, transparent=True)
 
 
 if __name__ == "__main__":
