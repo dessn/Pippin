@@ -106,7 +106,7 @@ def plot_scatter_comp(df_all):
             continue
         logging.info(f"Creating scatter plot for key {key}")
         n = len(value)
-        labels = [v[0].replace("_", "\\_") for v in value]
+        labels = [v[0].replace("_", "\n") for v in value]
         ws = np.array([v[1] for v in value])
         num_bins = 1 + int(1.5 * np.ceil(np.sqrt(key)))
         min_w = ws.min()
@@ -114,7 +114,7 @@ def plot_scatter_comp(df_all):
         bins = np.linspace(min_w, max_w, num_bins)
         lim = (min_w, max_w)
 
-        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(1.5 * n, 1.5 * n), sharex=True)
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(2 * n, 2 * n), sharex=True)
         for i, label1 in enumerate(labels):
             for j, label2 in enumerate(labels):
                 ax = axes[i, j]
@@ -134,8 +134,8 @@ def plot_scatter_comp(df_all):
                     ax.spines["top"].set_visible(False)
                     if j == 0:
                         ax.spines["left"].set_visible(False)
-                    if j == 4:
-                        ax.set_xlabel(label2, fontsize=12)
+                    if j == n - 1:
+                        ax.set_xlabel(label2, fontsize=10)
                 else:
                     a1 = ws[:, j]
                     a2 = ws[:, i]
@@ -151,13 +151,13 @@ def plot_scatter_comp(df_all):
                         ax.set_yticklabels([])
                         ax.tick_params(axis="y", left=False)
                     else:
-                        ax.set_ylabel(label1, fontsize=12)
-                    if i == 4:
-                        ax.set_xlabel(label2, fontsize=12)
+                        ax.set_ylabel(label1, fontsize=10)
+                    if i == n - 1:
+                        ax.set_xlabel(label2, fontsize=10)
         plt.subplots_adjust(hspace=0.0, wspace=0)
         figname = f"{key}_w_comp.png"
         logging.info(f"Saving figure to {figname}")
-        fig.savefig(figname, bbox_inches="tight", dpi=300, transparent=True)
+        fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
 if __name__ == "__main__":
