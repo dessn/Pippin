@@ -91,7 +91,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
         num_success = 0
         for f in self.done_files:
             if os.path.exists(f):
-                self.logger.debug(f"Done file found at f{f}")
+                self.logger.debug(f"Done file found at {f}")
                 with open(f) as ff:
                     if "FAILURE" in ff.read():
                         self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
