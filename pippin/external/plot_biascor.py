@@ -91,7 +91,7 @@ def plot_all_files(source_files, inputs):
 
 def plot_scatter_comp(df_all):
     logging.info("Creating scatter plots")
-    cols = ChainConsumer()._all_colours
+    cols = ChainConsumer()._all_colours * 2
     # Cant plot data, want to make sure all the versions match
     # So split these into groups base on how many versions
     res = {}
@@ -123,7 +123,7 @@ def plot_scatter_comp(df_all):
                     continue
                 elif i == j:
                     h, _, _ = ax.hist(ws[i, :], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
-                    ax.hist(ws[:, i], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
+                    ax.hist(ws[i, :], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                     ax.set_xlim(*lim)
@@ -140,7 +140,7 @@ def plot_scatter_comp(df_all):
                     a1 = ws[j, :]
                     a2 = ws[i, :]
                     c = np.abs(a1 - a2)
-                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.0005, vmax=0.2)
+                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.05, vmax=0.2)
                     ax.set_xlim(*lim)
                     ax.set_ylim(*lim)
                     ax.plot([min_w, max_w], [min_w, max_w], c="k", lw=1, alpha=0.8, ls=":")
