@@ -30,6 +30,7 @@ class BiasCor(ConfigBasedExecutable):
         self.merged_iasim = config.get("SIMFILE_BIASCOR")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
         self.classifier = config.get("CLASSIFIER")
+        self.make_all = config.get("MAKE_ALL_HUBBLE", True)
 
         self.bias_cor_fits = None
         self.cc_prior_fits = None
@@ -68,6 +69,8 @@ class BiasCor(ConfigBasedExecutable):
             os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
             for m in self.output["m0dif_dirs"]
         ]
+        if not self.make_all:
+            self.output_plots = [self.output_plots[0]]
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
         self.output["hubble_plot"] = self.output_plots
