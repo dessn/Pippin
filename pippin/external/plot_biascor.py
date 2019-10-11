@@ -106,7 +106,7 @@ def plot_scatter_comp(df_all):
             continue
         logging.info(f"Creating scatter plot for key {key}")
         n = len(value)
-        labels = [v[0] for v in value]
+        labels = [v[0].replace("_", "\\_") for v in value]
         ws = np.array([v[1] for v in value])
         num_bins = 1 + int(1.5 * np.ceil(np.sqrt(key)))
         min_w = ws.min()
@@ -135,7 +135,7 @@ def plot_scatter_comp(df_all):
                     if j == 0:
                         ax.spines["left"].set_visible(False)
                     if j == 4:
-                        ax.set_xlabel(" ".join(label2.split()[:-1]), fontsize=12)
+                        ax.set_xlabel(label2, fontsize=12)
                 else:
                     a1 = ws[:, j]
                     a2 = ws[:, i]
