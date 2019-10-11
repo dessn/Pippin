@@ -122,7 +122,7 @@ def plot_scatter_comp(df_all):
                     ax.axis("off")
                     continue
                 elif i == j:
-                    h, _, _ = ax.hist(ws[:, i], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
+                    h, _, _ = ax.hist(ws[i, :], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
                     ax.hist(ws[:, i], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
@@ -137,8 +137,8 @@ def plot_scatter_comp(df_all):
                     if j == n - 1:
                         ax.set_xlabel(label2, fontsize=10)
                 else:
-                    a1 = ws[:, j]
-                    a2 = ws[:, i]
+                    a1 = ws[j, :]
+                    a2 = ws[i, :]
                     c = np.abs(a1 - a2)
                     ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.0005, vmax=0.2)
                     ax.set_xlim(*lim)
