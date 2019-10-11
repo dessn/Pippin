@@ -56,7 +56,7 @@ class Aggregator(Task):
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
-        self.plot = options.get("PLOT", False)
+        self.plot = options.get("PLOT", True)
         self.output["classifiers"] = self.classifiers
 
         if isinstance(self.plot, bool):
