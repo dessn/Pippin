@@ -97,7 +97,7 @@ def plot_scatter_comp(df_all):
             key = df.shape[0]
             if res.get(key) is None:
                 res[key] = []
-            res[key].append((name, df["w"].value))
+            res[key].append((name, df["w"].values))
     for key, value in res.items():
         if key < 2:
             continue
