@@ -26,6 +26,7 @@ class Aggregator(Task):
         MASK_CLAS: TEST  # partial match on classifier name
         OPTS:
           PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc. Can specify a PYTHON FILE WHICH GETS INVOKED
+          PLOT_ALL: False # If you use RANSEED_CHANGE, should we plot for all versions. Defaults to no.
           # PLOT: True will default to external/aggregator_plot.py, copy that for customisation
 
     OUTPUTS:
@@ -57,6 +58,7 @@ class Aggregator(Task):
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = options.get("PLOT", True)
+        self.plot_all = options.get("PLOT_ALL", False)
         self.output["classifiers"] = self.classifiers
 
         if isinstance(self.plot, bool):
@@ -174,9 +176,10 @@ class Aggregator(Task):
                 self.save_new_hash(new_hash)
 
                 if self.plot:
-                    return_good = self._plot(index)
-                    if not return_good:
-                        self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
+                    if index == 0 or self.plot_all:
+                        return_good = self._plot(index)
+                        if not return_good:
+                            self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
                 else:
                     self.logger.debug("Plot not set, skipping plotting section")
 
