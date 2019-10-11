@@ -40,6 +40,7 @@ def load_file(file, args):
 
 
 def plot_single_file(source_file, df):
+    logging.info(f"Plotting single file {source_file}")
     name = os.path.basename(os.path.dirname(os.path.dirname(source_file)))
     output_file = name + ".png"
     logging.info(f"Creating wfit plot output to {output_file}")
@@ -54,6 +55,7 @@ def plot_single_file(source_file, df):
 
 
 def plot_all_files(source_files, inputs):
+    logging.info("Plotting all files")
     output_file = "all_biascor.png"
 
     c = ChainConsumer()
@@ -88,6 +90,7 @@ def plot_all_files(source_files, inputs):
 
 
 def plot_scatter_comp(df_all):
+    logging.info("Creating scatter plots")
     cols = ChainConsumer()._all_colours
     # Cant plot data, want to make sure all the versions match
     # So split these into groups base on how many versions
@@ -101,13 +104,14 @@ def plot_scatter_comp(df_all):
     for key, value in res.items():
         if key < 2:
             continue
-
+        logging.info(f"Creating scatter plot for key {key}")
         n = len(value)
         labels = [v[0] for v in value]
         ws = np.array([v[1] for v in value])
-        bins = int(1.5 * np.ceil(np.sqrt(key)))
+        num_bins = 1 + int(1.5 * np.ceil(np.sqrt(key)))
         min_w = ws.min()
         max_w = ws.max()
+        bins = np.linspace(min_w, max_w, num_bins)
         lim = (min_w, max_w)
 
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(1.5 * n, 1.5 * n), sharex=True)
@@ -150,7 +154,9 @@ def plot_scatter_comp(df_all):
                     if i == 4:
                         ax.set_xlabel(label2, fontsize=12)
         plt.subplots_adjust(hspace=0.0, wspace=0)
-        fig.savefig(f"{key}_w_comp.png", bbox_inches="tight", dpi=300, transparent=True)
+        figname = f"{key}_w_comp.png"
+        logging.info(f"Saving figure to {figname}")
+        fig.savefig(figname, bbox_inches="tight", dpi=300, transparent=True)
 
 
 if __name__ == "__main__":
@@ -171,5 +177,6 @@ if __name__ == "__main__":
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
+        logging.error("Writing failure to file")
         with open(args.donefile, "w") as f:
             f.write("FAILURE")
