@@ -127,7 +127,7 @@ def plot_scatter_comp(df_all):
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                     ax.set_xlim(*lim)
-                    yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([1.0])[0]
+                    yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([-1.0])[0]
                     ax.plot([1.0, 1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
                     ax.spines["right"].set_visible(False)
                     ax.spines["top"].set_visible(False)
