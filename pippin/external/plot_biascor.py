@@ -127,8 +127,9 @@ def plot_scatter_comp(df_all):
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                     ax.set_xlim(*lim)
-                    yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([-1.0])[0]
-                    ax.plot([1.0, 1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
+                    if bins[0] < -1 < bins[-1]:
+                        yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([-1.0])[0]
+                        ax.plot([-1.0, -1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
                     ax.spines["right"].set_visible(False)
                     ax.spines["top"].set_visible(False)
                     if j == 0:
@@ -143,8 +144,8 @@ def plot_scatter_comp(df_all):
                     ax.set_xlim(*lim)
                     ax.set_ylim(*lim)
                     ax.plot([min_w, max_w], [min_w, max_w], c="k", lw=1, alpha=0.8, ls=":")
-                    ax.axvline(1.0, color="k", lw=1, ls="--", alpha=0.4)
-                    ax.axhline(1.0, color="k", lw=1, ls="--", alpha=0.4)
+                    ax.axvline(-1.0, color="k", lw=1, ls="--", alpha=0.4)
+                    ax.axhline(-1.0, color="k", lw=1, ls="--", alpha=0.4)
 
                     if j != 0:
                         ax.set_yticklabels([])
