@@ -116,6 +116,8 @@ fi
                     model = t.output["model_filename"]
 
         types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
+        if not types:
+            types = "1"
         command = (
             f"-p "
             f"--features {self.features} "
@@ -130,7 +132,9 @@ fi
 
     def train(self, force_refresh):
         types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
-
+        if not types:
+            self.logger.error("No Ia types for a training sim!")
+            return False
         command = (
             f"--features {self.features} "
             f"--done_file {self.done_file} "
