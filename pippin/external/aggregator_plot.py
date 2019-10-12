@@ -162,6 +162,9 @@ def plot_roc(df, output_dir, index):
 
 
 def plot_comparison(df, output_dir, index):
+
+    frac = 10000.0 / df.shape[0]
+    df = df.sample(frac=frac)
     logging.debug("Making comparison plot")
 
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
