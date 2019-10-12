@@ -29,6 +29,17 @@ SIM:
       RANSEED_REPEAT: 30 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
 
+  TESTDESSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_c11.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
   LOWZSIMBIAS:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
