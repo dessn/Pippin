@@ -116,12 +116,12 @@ CLASSIFICATION:
       MODEL: SNIRFTRAIN
 
   NNTRAIN:
-    CLASSIFIER: NearestNeighborClassifier
+    CLASSIFIER: NearestNeighborPyClassifier
     MODE: train
     MASK_SIM: TRAINDESSIM
 
   NNTEST:
-    CLASSIFIER: NearestNeighborClassifier
+    CLASSIFIER: NearestNeighborPyClassifier
     MODE: predict
     OPTS:
         MODEL: NNTRAIN
@@ -179,6 +179,7 @@ BIASCOR:
     SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
     SIMFILE_CCPRIOR: D_DESSIMBIAS5YRCC
     CLASSIFIER: SNIRFTEST
+    MAKE_ALL_HUBBLE: False
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
       chi2max: 16

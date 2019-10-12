@@ -140,7 +140,7 @@ def plot_scatter_comp(df_all):
                     a1 = ws[j, :]
                     a2 = ws[i, :]
                     c = np.abs(a1 - a2)
-                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.03, vmax=0.07)
+                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.02, vmax=0.05)
                     ax.set_xlim(*lim)
                     ax.set_ylim(*lim)
                     ax.plot([min_w, max_w], [min_w, max_w], c="k", lw=1, alpha=0.8, ls=":")
