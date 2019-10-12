@@ -102,7 +102,7 @@ CLASSIFICATION:
     MODE: predict
     OPTS:
       PROB_IA: 1.0
-      PROB_CC: 0.0
+      PROB_CC: 0.005
 
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
