@@ -174,7 +174,7 @@ def plot_comparison(df, output_dir, index):
     fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
     if n == 1:
         axes = np.atleast_2d(axes)
-    lim = (-0.01, 1.01)
+    lim = (-0.1, 1.1)
     bins = np.linspace(0, 1, 51)
 
     for i, label1 in enumerate(columns):
