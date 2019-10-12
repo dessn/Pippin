@@ -102,7 +102,7 @@ CLASSIFICATION:
     MODE: predict
     OPTS:
       PROB_IA: 1.0
-      PROB_CC: 0.005
+      PROB_CC: 0.0
 
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
@@ -162,6 +162,7 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
       chi2max: 16
+      u13: 0 # Turns of scalePCC
 
   CC_UNITY:
     DATA: [D_DESSIMCC, L_LOWZSIM]
