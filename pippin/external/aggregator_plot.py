@@ -162,8 +162,8 @@ def plot_roc(df, output_dir, index):
 
 
 def plot_comparison(df, output_dir, index):
-
-    frac = 10000.0 / df.shape[0]
+    df = df.dropna()
+    frac = min(10000.0 / df.shape[0], 1)
     df = df.sample(frac=frac)
     logging.debug("Making comparison plot")
 
@@ -174,8 +174,8 @@ def plot_comparison(df, output_dir, index):
     fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
     if n == 1:
         axes = np.atleast_2d(axes)
-    lim = (0, 1)
-    bins = np.linspace(lim[0], lim[1], 51)
+    lim = (-0.01, 1.01)
+    bins = np.linspace(0, 1, 51)
 
     for i, label1 in enumerate(columns):
         for j, label2 in enumerate(columns):
@@ -194,7 +194,7 @@ def plot_comparison(df, output_dir, index):
                 if j == 0:
                     ax.spines["left"].set_visible(False)
                 if j == n - 1:
-                    ax.set_xlabel(label1, fontsize=6, rotation=5)
+                    ax.set_xlabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 else:
                     ax.set_xticklabels([])
             else:
@@ -209,9 +209,9 @@ def plot_comparison(df, output_dir, index):
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                 else:
-                    ax.set_ylabel(label1, fontsize=6, rotation=85)
+                    ax.set_ylabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 if i == n - 1:
-                    ax.set_xlabel(label2, fontsize=6, rotation=5)
+                    ax.set_xlabel(label2.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 else:
                     ax.set_xticklabels([])
     plt.subplots_adjust(hspace=0.0, wspace=0)
@@ -223,7 +223,7 @@ def plot_comparison(df, output_dir, index):
 
 def plot(df, output_dir, index):
 
-    # plot_corr(df, output_dir, index)
+    plot_corr(df, output_dir, index)
     plot_prob_acc(df, output_dir, index)
     # plot_thresholds(df, output_dir, index)
     plot_roc(df, output_dir, index)
