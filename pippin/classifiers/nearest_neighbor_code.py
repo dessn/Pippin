@@ -109,9 +109,9 @@ if __name__ == "__main__":
         else:
             train(args)
 
-        with open(args.donefile, "w") as f:
+        with open(args.done_file, "w") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(e, exc_info=True)
-        with open(args.donefile, "w") as f:
+        with open(args.done_file, "w") as f:
             f.write("FAILURE")
