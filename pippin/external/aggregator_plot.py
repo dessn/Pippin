@@ -7,7 +7,7 @@ import logging
 import seaborn as sb
 from scipy.stats import binned_statistic
 
-colours = ["#f95b4a", "#3d9fe2", "#ffa847", "#c4ef7a", "#e195e2", "#ced9ed", "#fff29b", "#903de3", "#31b58b", "#99825a"]
+colours = ["#1976D2", "#8BC34A", "#E53935", "#673AB7", "#F2D026", "#9E9E9E", "#4FC3F7", "#E91E63", "#43A047", "#795548", "#333333", "#FB8C00"] * 2
 
 
 def plot_corr(df, output_dir, index):
