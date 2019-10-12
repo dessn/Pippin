@@ -64,9 +64,6 @@ source activate {conda_env}
 echo `which python`
 cd {path_to_classifier}
 python SNIRF.py {command_opts}
-if [ $? -ne 0 ]; then
-    echo FAILURE > {done_file}
-fi
 """
 
     def classify(self, force_refresh, command):
