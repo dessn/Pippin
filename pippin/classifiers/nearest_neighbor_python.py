@@ -120,7 +120,7 @@ fi
             f"-p "
             f"--features {self.features} "
             f"--done_file {self.done_file} "
-            f"--model {self.output_pk_file} "
+            f"--model {model} "
             f"--types {types} "
             f"--name {self.get_prob_column_name()} "
             f"--output {self.predictions_filename} "
