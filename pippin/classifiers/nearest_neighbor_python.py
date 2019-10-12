@@ -115,7 +115,7 @@ fi
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
 
-        types = " ".join(self.get_simulation_dependency().output["types_dict"]["IA"])
+        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
         command = (
             f"-p "
             f"--features {self.features} "
@@ -129,7 +129,7 @@ fi
         return self.classify(force_refresh, command)
 
     def train(self, force_refresh):
-        types = " ".join(self.get_simulation_dependency().output["types_dict"]["IA"])
+        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
 
         command = (
             f"--features {self.features} "
