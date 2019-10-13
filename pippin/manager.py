@@ -133,7 +133,7 @@ class Manager:
         self.logger.debug("")
         self.logger.debug(f"Status as of {time.ctime()}:")
         self.logger.debug(f"    Waiting: {[t.name for t in waiting]}")
-        self.logger.debug(f"    Running: {[t.name for t in running]}")
+        self.logger.debug(f"    Running: {[str(t) for t in running]}")
         if done:
             self.logger.debug(f"    Done:    {[t.name for t in done]}")
         if failed:
