@@ -102,6 +102,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def print_stats(self):
         folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
+        if len(folders) > 5:
+            self.logger.debug(f"Have {len(folders)} folders, only showing first five!")
+            folders = folders[:5]
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
             try:
