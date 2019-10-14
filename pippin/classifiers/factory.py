@@ -1,3 +1,4 @@
+from pippin.classifiers.nearest_neighbor_python import NearestNeighborPyClassifier
 from pippin.classifiers.perfect import PerfectClassifier
 from pippin.classifiers.snirf import SnirfClassifier
 from pippin.classifiers.nearest_neighbor import NearestNeighborClassifier
@@ -22,5 +23,6 @@ ClassifierFactory.add_factory(FitProbClassifier)
 ClassifierFactory.add_factory(SuperNNovaClassifier)
 ClassifierFactory.add_factory(SnirfClassifier)
 ClassifierFactory.add_factory(NearestNeighborClassifier)
+ClassifierFactory.add_factory(NearestNeighborPyClassifier)
 ClassifierFactory.add_factory(UnityClassifier)
 ClassifierFactory.add_factory(PerfectClassifier)

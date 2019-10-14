@@ -52,6 +52,12 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.cosmomc_deps = self.get_deps(CosmoMC)
         self.biascor_deps = self.get_deps(BiasCor)
 
+        self.done_files = []
+        if self.cosmomc_deps:
+            self.done_file.append(self.done_file)
+        if self.biascor_deps:
+            self.done_files.append(self.done_file.replace(".txt", "2.txt"))
+
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
@@ -82,14 +88,18 @@ python {path_to_code_biascor} {wfit_summary} {blind}
 """
 
     def _check_completion(self, squeue):
-        if os.path.exists(self.done_file):
-            self.logger.debug(f"Done file found at f{self.done_file}")
-            with open(self.done_file) as f:
-                if "FAILURE" in f.read():
-                    self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
-                    return Task.FINISHED_FAILURE
-                else:
-                    return Task.FINISHED_SUCCESS
+        num_success = 0
+        for f in self.done_files:
+            if os.path.exists(f):
+                self.logger.debug(f"Done file found at {f}")
+                with open(f) as ff:
+                    if "FAILURE" in ff.read():
+                        self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                        return Task.FINISHED_FAILURE
+                    else:
+                        num_success += 1
+        if num_success == len(self.done_files):
+            return Task.FINISHED_SUCCESS
         return 1
 
     def _run(self, force_refresh):

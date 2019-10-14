@@ -7,7 +7,7 @@ import logging
 import seaborn as sb
 from scipy.stats import binned_statistic
 
-colours = ["#f95b4a", "#3d9fe2", "#ffa847", "#c4ef7a", "#e195e2", "#ced9ed", "#fff29b", "#903de3", "#31b58b", "#99825a"]
+colours = ["#1976D2", "#8BC34A", "#E53935", "#673AB7", "#F2D026", "#9E9E9E", "#4FC3F7", "#E91E63", "#43A047", "#795548", "#333333", "#FB8C00"] * 2
 
 
 def plot_corr(df, output_dir, index):
@@ -162,6 +162,9 @@ def plot_roc(df, output_dir, index):
 
 
 def plot_comparison(df, output_dir, index):
+    df = df.dropna()
+    frac = min(10000.0 / df.shape[0], 1)
+    df = df.sample(frac=frac)
     logging.debug("Making comparison plot")
 
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
@@ -171,8 +174,8 @@ def plot_comparison(df, output_dir, index):
     fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(n * scale, n * scale))
     if n == 1:
         axes = np.atleast_2d(axes)
-    lim = (0, 1)
-    bins = np.linspace(lim[0], lim[1], 51)
+    lim = (-0.1, 1.1)
+    bins = np.linspace(0, 1, 51)
 
     for i, label1 in enumerate(columns):
         for j, label2 in enumerate(columns):
@@ -191,7 +194,7 @@ def plot_comparison(df, output_dir, index):
                 if j == 0:
                     ax.spines["left"].set_visible(False)
                 if j == n - 1:
-                    ax.set_xlabel(label1, fontsize=6, rotation=5)
+                    ax.set_xlabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 else:
                     ax.set_xticklabels([])
             else:
@@ -206,9 +209,9 @@ def plot_comparison(df, output_dir, index):
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                 else:
-                    ax.set_ylabel(label1, fontsize=6, rotation=85)
+                    ax.set_ylabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 if i == n - 1:
-                    ax.set_xlabel(label2, fontsize=6, rotation=5)
+                    ax.set_xlabel(label2.replace("PROB_", "").replace("_", "\n"), fontsize=10)
                 else:
                     ax.set_xticklabels([])
     plt.subplots_adjust(hspace=0.0, wspace=0)
@@ -220,7 +223,7 @@ def plot_comparison(df, output_dir, index):
 
 def plot(df, output_dir, index):
 
-    # plot_corr(df, output_dir, index)
+    plot_corr(df, output_dir, index)
     plot_prob_acc(df, output_dir, index)
     # plot_thresholds(df, output_dir, index)
     plot_roc(df, output_dir, index)

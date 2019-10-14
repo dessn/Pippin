@@ -1,15 +1,15 @@
+import inspect
 import os
 import shutil
 import subprocess
-import pandas as pd
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
 from pippin.task import Task
 
 
-class SnirfClassifier(Classifier):
-    """ SNIRF classifier
+class NearestNeighborPyClassifier(Classifier):
+    """ Nearest Neighbor Python classifier
 
     CONFIGURATION:
     ==============
@@ -36,34 +36,43 @@ class SnirfClassifier(Classifier):
     def __init__(self, name, output_dir, dependencies, mode, options, index=0):
         super().__init__(name, output_dir, dependencies, mode, options, index=index)
         self.global_config = get_config()
-        self.num_jobs = 4
+        self.num_jobs = 1
 
         self.conda_env = self.global_config["ArgonneClassifier"]["conda_env"]
-        self.path_to_classifier = get_output_loc(self.global_config["ArgonneClassifier"]["location"])
+
+        self.path_to_classifier = os.path.dirname(inspect.stack()[0][1])
         self.job_base_name = os.path.basename(output_dir)
-        self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
-        self.model_pk_file = "modelpkl.pkl"
+        self.features = options.get("FEATURES", "zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR")
+        self.model_pk_file = "model.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
+        self.predictions_filename = os.path.join(self.output_dir, "predictions.csv")
+
         self.fitopt = options.get("FITOPT", "DEFAULT")
         lcfit = self.get_fit_dependency()
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
+        self.output["predictions_filename"] = self.predictions_filename
+        self.output["model_filename"] = self.output_pk_file
+
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
-#SBATCH --time=15:00:00
+#SBATCH --time=00:55:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=1
 #SBATCH --partition=broadwl
 #SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=14GB
+#SBATCH --mem=8GB
 
 source activate {conda_env}
 echo `which python`
 cd {path_to_classifier}
-python SNIRF.py {command_opts}
+python nearest_neighbor_code.py {command_opts}
+if [ $? -ne 0 ]; then
+    echo FAILURE > {done_file}
+fi
 """
 
     def classify(self, force_refresh, command):
@@ -81,7 +90,6 @@ python SNIRF.py {command_opts}
 
         if force_refresh or new_hash != old_hash:
             self.logger.debug("Regenerating")
-
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
 
@@ -106,33 +114,35 @@ python SNIRF.py {command_opts}
                 if model == t.name:
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
+
+        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
+        if not types:
+            types = "1"
         command = (
-            f"--nc 4 "
-            f"--nclass 2 "
-            f"--ft {self.features} "
-            f"--restore "
-            f"--pklfile {model} "
-            f"--pklformat FITRES "
-            f"--test {self.fitres_file} "
-            f"--filedir {self.output_dir} "
+            f"-p "
+            f"--features {self.features} "
             f"--done_file {self.done_file} "
-            f"--use_filenames "
+            f"--model {model} "
+            f"--types {types} "
+            f"--name {self.get_prob_column_name()} "
+            f"--output {self.predictions_filename} "
+            f"{self.fitres_file}"
         )
         return self.classify(force_refresh, command)
 
     def train(self, force_refresh):
+        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
+        if not types:
+            self.logger.error("No Ia types for a training sim!")
+            return False
         command = (
-            f"--nc 4 "
-            f"--nclass 2 "
-            f"--ft {self.features} "
-            f"--train_only "
-            f"--test '' "
-            f"--pklfile {self.output_pk_file} "
-            f"--pklformat FITRES "
-            f"--filedir {self.output_dir} "
-            f"--train {self.fitres_file} "
+            f"--features {self.features} "
             f"--done_file {self.done_file} "
-            f"--use_filenames "
+            f"--model {self.output_pk_file} "
+            f"--types {types} "
+            f"--name {self.get_prob_column_name()} "
+            f"--output {self.predictions_filename} "
+            f"{self.fitres_file}"
         )
         return self.classify(force_refresh, command)
 
@@ -142,27 +152,7 @@ python SNIRF.py {command_opts}
             with open(self.done_file) as f:
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
-                else:
-                    if self.mode == Classifier.PREDICT:
-                        # Rename output file myself
-                        # First check to see if this is already done
-                        predictions_filename = os.path.join(self.output_dir, "predictions.csv")
-                        if not os.path.exists(predictions_filename):
-                            # Find the output file
-                            output_files = [i for i in os.listdir(self.output_dir) if i.endswith("Classes.txt")]
-                            if len(output_files) != 1:
-                                self.logger.error(f"Could not find the output file in {self.output_dir}")
-                                return Task.FINISHED_FAILURE
-                            df = pd.read_csv(os.path.join(self.output_dir, output_files[0]), delim_whitespace=True)
-                            df_final = df[["CID", "RFprobability0"]]
-                            df_final = df_final.rename(columns={"CID": "SNID", "RFprobability0": self.get_prob_column_name()})
-                            df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
-                        self.output["predictions_filename"] = predictions_filename
-                    else:
-                        self.output["model_filename"] = [
-                            os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)
-                        ][0]
-                    return Task.FINISHED_SUCCESS
+                return Task.FINISHED_SUCCESS
         return self.num_jobs
 
     @staticmethod

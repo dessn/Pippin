@@ -40,6 +40,7 @@ def load_file(file, args):
 
 
 def plot_single_file(source_file, df):
+    logging.info(f"Plotting single file {source_file}")
     name = os.path.basename(os.path.dirname(os.path.dirname(source_file)))
     output_file = name + ".png"
     logging.info(f"Creating wfit plot output to {output_file}")
@@ -54,6 +55,7 @@ def plot_single_file(source_file, df):
 
 
 def plot_all_files(source_files, inputs):
+    logging.info("Plotting all files")
     output_file = "all_biascor.png"
 
     c = ChainConsumer()
@@ -88,7 +90,8 @@ def plot_all_files(source_files, inputs):
 
 
 def plot_scatter_comp(df_all):
-    cols = ChainConsumer()._all_colours
+    logging.info("Creating scatter plots")
+    cols = ChainConsumer()._all_colours * 2
     # Cant plot data, want to make sure all the versions match
     # So split these into groups base on how many versions
     res = {}
@@ -97,20 +100,21 @@ def plot_scatter_comp(df_all):
             key = df.shape[0]
             if res.get(key) is None:
                 res[key] = []
-            res[key].append((name, df["w"].value))
+            res[key].append((name, df["w"].values))
     for key, value in res.items():
         if key < 2:
             continue
-
+        logging.info(f"Creating scatter plot for key {key}")
         n = len(value)
-        labels = [v[0] for v in value]
+        labels = [v[0].replace("_", "\n") for v in value]
         ws = np.array([v[1] for v in value])
-        bins = int(1.5 * np.ceil(np.sqrt(key)))
+        num_bins = 1 + int(1.5 * np.ceil(np.sqrt(key)))
         min_w = ws.min()
         max_w = ws.max()
-        lim = (min_w, max_w)
+        bins = np.linspace(min_w, max_w, num_bins)
+        lim = (min_w - 0.001, max_w + 0.001)
 
-        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(1.5 * n, 1.5 * n), sharex=True)
+        fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(2 * n, 2 * n), sharex=True)
         for i, label1 in enumerate(labels):
             for j, label2 in enumerate(labels):
                 ax = axes[i, j]
@@ -118,39 +122,42 @@ def plot_scatter_comp(df_all):
                     ax.axis("off")
                     continue
                 elif i == j:
-                    h, _, _ = ax.hist(ws[:, i], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
-                    ax.hist(ws[:, i], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
+                    h, _, _ = ax.hist(ws[i, :], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=cols[i])
+                    ax.hist(ws[i, :], bins=bins, histtype="step", linewidth=1.5, color=cols[i])
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                     ax.set_xlim(*lim)
-                    yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([1.0])[0]
-                    ax.plot([1.0, 1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
+                    if bins[0] < -1 < bins[-1]:
+                        yval = interp1d(0.5 * (bins[:-1] + bins[1:]), h, kind="nearest")([-1.0])[0]
+                        ax.plot([-1.0, -1.0], [0, yval], color="k", lw=1, ls="--", alpha=0.4)
                     ax.spines["right"].set_visible(False)
                     ax.spines["top"].set_visible(False)
                     if j == 0:
                         ax.spines["left"].set_visible(False)
-                    if j == 4:
-                        ax.set_xlabel(" ".join(label2.split()[:-1]), fontsize=12)
+                    if j == n - 1:
+                        ax.set_xlabel(label2, fontsize=10)
                 else:
-                    a1 = ws[:, j]
-                    a2 = ws[:, i]
+                    a1 = ws[j, :]
+                    a2 = ws[i, :]
                     c = np.abs(a1 - a2)
-                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.0005, vmax=0.2)
+                    ax.scatter(a1, a2, s=2, c=c, cmap="viridis_r", vmin=-0.02, vmax=0.05)
                     ax.set_xlim(*lim)
                     ax.set_ylim(*lim)
                     ax.plot([min_w, max_w], [min_w, max_w], c="k", lw=1, alpha=0.8, ls=":")
-                    ax.axvline(1.0, color="k", lw=1, ls="--", alpha=0.4)
-                    ax.axhline(1.0, color="k", lw=1, ls="--", alpha=0.4)
+                    ax.axvline(-1.0, color="k", lw=1, ls="--", alpha=0.4)
+                    ax.axhline(-1.0, color="k", lw=1, ls="--", alpha=0.4)
 
                     if j != 0:
                         ax.set_yticklabels([])
                         ax.tick_params(axis="y", left=False)
                     else:
-                        ax.set_ylabel(label1, fontsize=12)
-                    if i == 4:
-                        ax.set_xlabel(label2, fontsize=12)
+                        ax.set_ylabel(label1, fontsize=10)
+                    if i == n - 1:
+                        ax.set_xlabel(label2, fontsize=10)
         plt.subplots_adjust(hspace=0.0, wspace=0)
-        fig.savefig(f"{key}_w_comp.png", bbox_inches="tight", dpi=300, transparent=True)
+        figname = f"{key}_w_comp.png"
+        logging.info(f"Saving figure to {figname}")
+        fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
 if __name__ == "__main__":
@@ -171,5 +178,6 @@ if __name__ == "__main__":
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
+        logging.error("Writing failure to file")
         with open(args.donefile, "w") as f:
             f.write("FAILURE")

@@ -135,7 +135,11 @@ class Task(ABC):
             extra = f"wall time {wall_time}, "
         else:
             extra = ""
-        return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {[d.name for d in self.dependencies]})"
+        if len(self.dependencies) > 5:
+            deps = f"{[d.name for d in self.dependencies[:5]]} + {len(self.dependencies) - 5} more deps"
+        else:
+            deps = f"{[d.name for d in self.dependencies]}"
+        return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {deps})"
 
     def __repr__(self):
         return self.__str__()
