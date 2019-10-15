@@ -100,12 +100,13 @@ python {path_to_code_biascor} {wfit_summary} {blind}
                         num_success += 1
         if num_success == len(self.done_files):
             return Task.FINISHED_SUCCESS
-        with open(self.logfile) as f:
-            for line in f.read().splitlines():
-                if "kill event" in line:
-                    self.logger.error(f"Kill event found in {self.logfile}")
-                    self.logger.error(line)
-                    return Task.FINISHED_FAILURE
+        if os.path.exists(self.logfile):
+            with open(self.logfile) as f:
+                for line in f.read().splitlines():
+                    if "kill event" in line:
+                        self.logger.error(f"Kill event found in {self.logfile}")
+                        self.logger.error(line)
+                        return Task.FINISHED_FAILURE
         return 1
 
     def _run(self, force_refresh):
