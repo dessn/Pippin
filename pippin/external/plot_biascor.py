@@ -10,10 +10,11 @@ from scipy.interpolate import interp1d
 
 
 def setup_logging():
-    fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
+    fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_biascor.log")])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("chainconsumer").setLevel(logging.WARNING)
 
 
 def get_arguments():
@@ -174,10 +175,11 @@ if __name__ == "__main__":
                     logging.info(f"File {file} has df shape {str(df.shape)}")
             plot_all_files(args.basename, inputs)
 
+        logging.info(f"Writing success to {args.donefile}")
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
-        logging.error("Writing failure to file")
+        logging.error(f"Writing failure to file {args.donefile}")
         with open(args.donefile, "w") as f:
             f.write("FAILURE")
