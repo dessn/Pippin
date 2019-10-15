@@ -9,12 +9,13 @@ simfile_biascor=something.FITRES
 simfile_ccprior=something.FITRES
 STRINGMATCH_IGNORE: _
 INPDIR+: _
+WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
 
 surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
 idsurvey_list_probcc0=CSP,CSP3,CFA1,CFA2,CFA3,CFA3S,CFA3K,CFA4,CFA4p1,CFA4p2,CFA4p3
 prefix=None
 file=None
-WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
+chi2max=16
 powzbin=6.
 dumpflag_nobiascor=1  # added by RK, 4/18/2017
 blindflag=0

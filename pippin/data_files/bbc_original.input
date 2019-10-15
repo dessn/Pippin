@@ -21,17 +21,11 @@ BATCH_INFO:  sbatch  $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 40
 surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
 file=None
 
-
-
-
-
-
 varname_pIa=NN_PROB_IA
 simfile_biascor=$SCRATCH_FITDIR/DES3YR_v8/CATBIASCOR/BIASCOR_MAGLIM+G10.FITRES
-prefix=SALT2mu_fitopt_CT_oned
 
-
-
+prefix=None
+chi2max=16
 powzbin=6.
 dumpflag_nobiascor=1  # added by RK, 4/18/2017
 blindflag=0
