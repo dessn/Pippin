@@ -423,7 +423,8 @@ class BiasCor(ConfigBasedExecutable):
             def resolve_merged_fitres_files(name, classifier_name):
                 task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["lcfit_name"] == name]
                 if len(task) == 0:
-                    message = f"Unable to resolve merge merge {name} from list of merge_tasks {merge_tasks}"
+                    valid = [m.output["lcfit_name"] for m in merge_tasks]
+                    message = f"Unable to resolve merge {name} from list of merge_tasks. There are valid options: {valid}"
                     Task.fail_config(message)
                 elif len(task) > 1:
                     message = f"Resolved multiple merge tasks {task} for name {name}"
