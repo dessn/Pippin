@@ -53,6 +53,7 @@ def plot_single_file(source_file, df):
         cov = np.diag([row["OM_sig"] ** 2, row["wsig_marg"] ** 2, 0.01 ** 2])
         c.add_covariance(means, cov, parameters=labels, name=f"Realisation {index}")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
+    del c
 
 
 def plot_all_files(source_files, inputs):
