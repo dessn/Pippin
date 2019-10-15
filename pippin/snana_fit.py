@@ -72,7 +72,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 with open(potential_path) as f:
                     new_fitopts = list(f.read().splitlines())
                     self.fitopts += new_fitopts
-                    self.logger.info(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
+                    self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
             else:
                 assert "[" in f and "]" in f, f"Manual fitopt {f} should specify a label in square brackets"
                 if not f.startswith("FITOPT:"):
@@ -236,13 +236,17 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         tasks = []
         sim_tasks = Task.get_task_of_type(prior_tasks, DataPrep, SNANASimulation)
-
         for fit_name in config.get("LCFIT", []):
+            num_matches = 0
             fit_config = config["LCFIT"][fit_name]
+            mask = fit_config.get("MASK", "")
             for sim in sim_tasks:
-                if fit_config.get("MASK") is None or fit_config.get("MASK") in sim.name:
+                if mask in sim.name:
+                    num_matches += 1
                     fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
                     f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)
                     Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
+            if num_matches == 0:
+                Task.logger.warning(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in sim_tasks]}")
         return tasks
