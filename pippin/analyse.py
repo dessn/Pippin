@@ -54,7 +54,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.done_files = []
         if self.cosmomc_deps:
-            self.done_file.append(self.done_file)
+            self.done_files.append(self.done_file)
         if self.biascor_deps:
             self.done_files.append(self.done_file.replace(".txt", "2.txt"))
 

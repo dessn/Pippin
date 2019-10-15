@@ -201,6 +201,8 @@ class Classifier(Task):
                             # deps.append(t)
                             extra = t.get_unique_name()
 
+                            assert t.__class__ == cls, f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+
                             indexes = get_num_ranseed(s, l)
                             for i in range(indexes):
                                 num = i + 1 if indexes > 1 else None
