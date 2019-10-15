@@ -80,7 +80,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=10GB
+#SBATCH --mem=20GB
 
 cd {output_dir}
 python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
