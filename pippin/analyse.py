@@ -91,8 +91,17 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
 cd {output_dir}
 python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
+if [ $? -ne 0 ]; then
+    echo FAILURE > done.txt
+fi
 python {path_to_code_biascor} {wfit_summary} {blind}
+if [ $? -ne 0 ]; then
+    echo FAILURE > done2.txt
+fi
 python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
+if [ $? -ne 0 ]; then
+    echo FAILURE > done3.txt
+fi
 """
 
     def _check_completion(self, squeue):
