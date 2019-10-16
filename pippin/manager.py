@@ -167,6 +167,10 @@ class Manager:
         blocked_tasks = []
         squeue = None
 
+        start_sleep_time = self.global_config["OUTPUT"].getint("ping_frequency")
+        max_sleep_time = self.global_config["OUTPUT"].getint("max_ping_frequency")
+        current_sleep_time = start_sleep_time
+
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         self.logger.info(f"Copying config file from {self.filename_path} to {config_file_output}")
         shutil.copy(self.filename_path, config_file_output)
@@ -213,10 +217,14 @@ class Manager:
             # Check quickly if we've added a new job, etc, in case of immediate failure
             if small_wait:
                 self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
-                time.sleep(0.5)
+                current_sleep_time = start_sleep_time
+                time.sleep(0.1)
                 squeue = None
             else:
-                time.sleep(self.global_config["OUTPUT"].getint("ping_frequency"))
+                time.sleep(current_sleep_time)
+                current_sleep_time *= 2
+                if current_sleep_time > max_sleep_time:
+                    current_sleep_time = max_sleep_time
                 squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True, text=True).splitlines()]
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
