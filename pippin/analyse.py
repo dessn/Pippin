@@ -41,7 +41,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.job_name = f"anaylyse_chains_{name}"
         self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
         self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
-        self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histograms.py"
+        self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histogram.py"
 
         self.covopts = options.get("COVOPTS")
         if isinstance(self.covopts, str):
