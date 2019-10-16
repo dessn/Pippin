@@ -137,8 +137,8 @@ python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
             "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
             "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
             "wfit_summary": " ".join(self.wsummary_files),
-            "data_fitres_files": "--data" + (" ".join(data_fitres_files)),
-            "sim_fitres_files": "--sim" + (" ".join(sim_fitres_files)),
+            "data_fitres_files": "--data " + (" ".join(data_fitres_files)),
+            "sim_fitres_files": "--sim " + (" ".join(sim_fitres_files)),
             "types": "--types " + types,
             "path_to_histogram": os.path.basename(self.path_to_code_histogram),
         }
