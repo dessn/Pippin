@@ -62,8 +62,8 @@ def plot_histograms(data, sims, types):
             area = (bins[1] - bins[0]) * hist.sum()
 
             ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area)
-            ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area)
-            ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area)
+            ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--")
+            ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":")
 
         ax.set_xlabel(c)
     fig.tight_layout()
