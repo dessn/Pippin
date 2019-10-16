@@ -39,7 +39,7 @@ class Task(ABC):
                 self.logger.error(f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}")
                 return Task.FINISHED_FAILURE
             else:
-                self.logger.warning(f"No match for {match} found, warning {self.num_empty}/{self.num_empty_threshold}")
+                self.logger.warning(f"Task {str(self)} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}")
             return 0
         return num_jobs
 
