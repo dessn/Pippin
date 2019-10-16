@@ -77,7 +77,7 @@ def train(args):
     score = clf.score(X_test, y_test)
     logging.info(f"Evaluating on 5% test set: got accuracy {score:0.4f}")
 
-    assert os.path.exists(args.model), "Model {args.model} does not exist! Check to see what happened with the training job!"
+    assert os.path.exists(args.model), f"Model {args.model} does not exist! Check to see what happened with the training job!"
     with open(args.model, "wb") as f:
         pickle.dump(clf, f)
     logging.info(f"Saved trained model out to {args.model}")
