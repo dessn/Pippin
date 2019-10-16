@@ -140,6 +140,7 @@ python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
             "data_fitres_files": "--data" + (" ".join(data_fitres_files)),
             "sim_fitres_files": "--sim" + (" ".join(sim_fitres_files)),
             "types": "--types " + types,
+            "path_to_histogram": os.path.basename(self.path_to_code_histogram),
         }
         final_slurm = self.slurm.format(**format_dict)
 
@@ -153,6 +154,7 @@ python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
             self.save_new_hash(new_hash)
             shutil.copy(self.path_to_code, self.output_dir)
             shutil.copy(self.path_to_code_biascor, self.output_dir)
+            shutil.copy(self.path_to_code_histogram, self.output_dir)
             for f in self.hubble_plots:
                 self.logger.debug(f"Searching for Hubble plot {f}")
                 if f is not None and os.path.exists(f):
