@@ -120,7 +120,7 @@ python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
     def _run(self, force_refresh):
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
-        types = " ".join([str(a) for l in self.lcfit_deps for a in l.get_simulation_dependency().output["types_dict"]["IA"]])
+        types = " ".join([str(a) for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]])
 
         format_dict = {
             "job_name": self.job_name,
