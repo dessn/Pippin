@@ -42,8 +42,8 @@ def plot_histograms(data, sims, types):
     cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
 
     for c, ax in zip(cols, axes.flatten()):
-        minv = min([x[c].min() for x in data + sims])
-        maxv = max([x[c].max() for x in data + sims])
+        minv = min([x[c].quantile(0.01) for x in data + sims])
+        maxv = max([x[c].quantile(0.99) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
@@ -51,7 +51,7 @@ def plot_histograms(data, sims, types):
             hist, _ = np.histogram(d[c], bins=bins)
             err = np.sqrt(hist)
             area = (bins[1] - bins[0]) * hist.sum()
-            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", c="k", ms=3)
+            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", c="k", ms=2, elinewidth=0.75)
 
         for s in sims:
             mask = np.isin(s["TYPE"], types)
