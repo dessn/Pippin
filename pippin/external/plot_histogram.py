@@ -7,6 +7,7 @@ import os
 import logging
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from scipy.stats import binned_statistic, moment
 
 
 def setup_logging():
@@ -70,6 +71,58 @@ def plot_histograms(data, sims, types):
     fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
+def get_means_and_errors(x, y, bins):
+    means, *_ = binned_statistic(x, y, bins=bins, statistic="mean")
+    err, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size))
+
+    std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
+    std_err, *_ = binned_statistic(
+        x, y, bins=bins, statistic=lambda x: np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x))
+    )
+    return means, err, std, std_err
+
+
+def plot_redshift_evolution(data, sims, types):
+
+    fig, axes = plt.subplots(2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0})
+    cols = ["x1", "c"]
+
+    for c, row in zip(cols, axes.T):
+        ax0, ax1 = row
+
+        minv = min([x["zHD"].min() for x in data + sims])
+        maxv = max([x["zHD"].max() for x in data + sims])
+        bins = np.linspace(minv, maxv, 10)  # Keep binning uniform.
+        bc = 0.5 * (bins[1:] + bins[:-1])
+        lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
+        for d in data:
+
+            means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
+            ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
+            ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
+
+        for sim in sims:
+            mask = np.isin(sim["TYPE"], types)
+            ia = sim[mask]
+            nonia = sim[~mask]
+
+            for s, ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
+                means, err, std, std_err = get_means_and_errors(s["zHD"], s[c], bins=bins)
+                ax0.plot(bc, means, ls=ls, zorder=z)
+                ax0.fill_between(bc, means - err, means + err, alpha=0.1, zorder=z)
+                ax1.plot(bc, std, ls=ls, zorder=z)
+                ax1.fill_between(bc, std - std_err, std + std_err, alpha=0.1, zorder=z)
+
+        ax0.set_ylabel(f"Mean {c}")
+        ax1.set_ylabel(f"Std {c}")
+        ax0.set_xlim(*lim)
+        ax1.set_xlim(*lim)
+    axes[1, 0].set_xlabel("z")
+    axes[1, 1].set_xlabel("z")
+    fig.tight_layout()
+    fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
+
+
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
@@ -86,6 +139,8 @@ if __name__ == "__main__":
         sim_dfs = [load_file(f) for f in args.sims]
 
         plot_histograms(data_dfs, sim_dfs, args.types)
+        plot_redshift_evolution(data_dfs, sim_dfs, args.types)
+
         logging.info(f"Writing success to {args.done_file}")
         with open(args.done_file, "w") as f:
             f.write("SUCCESS")
