@@ -1,12 +1,9 @@
 import numpy as np
-from chainconsumer import ChainConsumer
 import pandas as pd
 import sys
 import argparse
-import os
 import logging
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 from scipy.stats import binned_statistic, moment
 
 
