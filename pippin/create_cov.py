@@ -2,6 +2,8 @@ import inspect
 import shutil
 import subprocess
 import os
+from pathlib import Path
+
 from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, get_data_loc
@@ -42,8 +44,7 @@ class CreateCov(ConfigBasedExecutable):
         self.options = options
         self.global_config = get_config()
         self.index = index
-
-        self.job_name = f"CREATE_COV_{name}"
+        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_CREATE_COV_" + name
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -87,7 +88,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
-        return 1  # The number of CPUs being utilised
+        return self.check_for_job(squeue, self.job_name)
 
     def calculate_input(self):
         self.logger.debug(f"Calculating input")

@@ -1,6 +1,8 @@
 import shutil
 import subprocess
 import os
+from pathlib import Path
+
 from pippin.config import mkdirs, get_config, get_output_loc
 from pippin.create_cov import CreateCov
 from pippin.task import Task
@@ -39,7 +41,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.options = options
         self.global_config = get_config()
 
-        self.job_name = f"cosmomc_{name}"
+        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_COSMOMC_" + name
         self.logfile = os.path.join(self.output_dir, "output.log")
 
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
@@ -148,7 +150,7 @@ fi
                         if "CANCELLED AT" in f.read():
                             self.logger.debug(f"The job was cancelled! Check {self.logfile} for details")
                             return Task.FINISHED_FAILURE
-        return 4 * self.num_jobs
+        return self.check_for_job(squeue, self.job_name)
 
     def get_ini_file(self):
         mkdirs(self.chain_dir)

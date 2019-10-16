@@ -24,6 +24,27 @@ class Task(ABC):
         self.end_time = None
         self.wall_time = None
         self.stage = None
+        self.fresh_run = True
+        self.num_empty = 0
+        self.num_empty_threshold = 5
+
+    def check_for_job(self, squeue, match):
+        if squeue is None:
+            return self.num_jobs
+
+        num_jobs = len([i for i in squeue if match in i])
+        if num_jobs == 0:
+            self.num_empty += 1
+            if self.num_empty >= self.num_empty_threshold:
+                self.logger.error(f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}")
+                return Task.FINISHED_FAILURE
+            else:
+                self.logger.warning(f"No match for {match} found, warning {self.num_empty}/{self.num_empty_threshold}")
+            return 0
+        return num_jobs
+
+    def should_be_done(self):
+        self.fresh_run = False
 
     def set_stage(self, stage):
         self.stage = stage
@@ -114,6 +135,12 @@ class Task(ABC):
                     self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
                     self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
             if result == Task.FINISHED_FAILURE and os.path.exists(self.hash_file):
+                os.remove(self.hash_file)
+        elif not self.fresh_run:
+            self.logger.error("Hash check had passed, so the task should be done, but it said it wasn't!")
+            self.logger.error(f"This means it probably crashed, have a look in {self.output_dir}")
+            self.logger.error(f"Removing hash from {self.hash_file}")
+            if os.path.exists(self.hash_file):
                 os.remove(self.hash_file)
         return result
 

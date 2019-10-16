@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import os
 from collections import OrderedDict
+from pathlib import Path
 
 from pippin.config import mkdirs, get_output_loc, get_config
 from pippin.task import Task
@@ -37,7 +38,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.data_path = os.path.dirname(self.raw_dir)
         if self.data_path == "$SCRATCH_SIMDIR":
             self.data_path = ""
-        self.job_name = f"DATAPREP_{self.name}"
+        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_DATAPREP_" + self.name
 
         self.output["genversion"] = self.genversion
         self.output["data_path"] = self.data_path
@@ -118,7 +119,7 @@ fi
                 else:
                     self.output["types"] = self._get_types()
                     return Task.FINISHED_SUCCESS
-        return 1  # The number of CPUs being utilised
+        return self.check_for_job(squeue, self.job_name)
 
     def _run(self, force_refresh):
 

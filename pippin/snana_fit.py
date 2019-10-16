@@ -236,7 +236,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 if not success:
                     return Task.FINISHED_FAILURE
             return Task.FINISHED_SUCCESS
-        return 0
+        return self.check_for_job(squeue, os.path.basename(self.config_path))
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):

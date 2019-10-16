@@ -14,9 +14,9 @@ SIM:
       BASE: sn_collection_maria.input
       PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 50 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
 
 
 LCFIT:

@@ -44,6 +44,7 @@ class BiasCor(ConfigBasedExecutable):
 
         self.config_filename = f"{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
+        self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
         self.probability_column_name = self.classifier.output["prob_column_name"]
@@ -149,7 +150,7 @@ class BiasCor(ConfigBasedExecutable):
                         self.logger.error(line)
                 if output_error:
                     return Task.FINISHED_FAILURE
-        return 1
+        return self.check_for_job(squeue, self.job_name)
 
     def write_input(self, force_refresh):
         for m in self.merged_iasim:
@@ -379,6 +380,8 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.logging_file, "w") as f:
                 subprocess.Popen(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             chown_dir(self.output_dir)
+        else:
+            self.should_be_done()
         return True
 
     @staticmethod

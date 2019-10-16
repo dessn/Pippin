@@ -261,14 +261,7 @@ fi
             self.output.update({"model_filename": new_model_file, "predictions_filename": new_pred_file})
             return Task.FINISHED_SUCCESS
         else:
-            num_jobs = self.num_jobs if squeue is None else len([i for i in squeue if self.job_base_name in i])
-            if squeue is not None and num_jobs == 0:
-                self.logger.warning(f"SuperNNova has no done file and has no active jobs. This is not good. Check output dir if persists: {self.output_dir}")
-                # if os.path.exists(self.hash_file):
-                #     self.logger.info("Removing hash on failure")
-                #     os.remove(self.hash_file)
-                # return Task.FINISHED_FAILURE
-            return num_jobs
+            return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
     def get_requirements(options):

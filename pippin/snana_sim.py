@@ -243,7 +243,7 @@ class SNANASimulation(ConfigBasedExecutable):
                             count = line.split()[2]
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
             else:
-                self.logger.debug(f"Cannot find {self.total_summary}")
+                self.logger.warning(f"Cannot find {self.total_summary}")
 
             self.logger.info("Done file found, creating symlinks")
             s_ends = [os.path.join(self.output_dir, os.path.basename(s)) for s in self.sim_folders]
@@ -254,7 +254,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 chown_dir(self.output_dir)
             self.output.update({"photometry_dirs": s_ends, "types": self.get_types()})
             return Task.FINISHED_SUCCESS
-        return 0  # TODO: Update to num jobs
+
+        return self.check_for_job(squeue, f"{self.genversion}_0")
 
     def resolve_name_to_type(self, name):
         """ I know this is wrong, but its just for Supernnova to split Ia and everything else """

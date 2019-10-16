@@ -2,6 +2,7 @@ import inspect
 import os
 import shutil
 import subprocess
+from pathlib import Path
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
@@ -41,7 +42,7 @@ class NearestNeighborPyClassifier(Classifier):
         self.conda_env = self.global_config["ArgonneClassifier"]["conda_env"]
 
         self.path_to_classifier = os.path.dirname(inspect.stack()[0][1])
-        self.job_base_name = os.path.basename(output_dir)
+        self.job_base_name = os.path.basename(Path(output_dir).parent[1]) + "__" + os.path.basename(output_dir)
         self.features = options.get("FEATURES", "zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR")
         self.model_pk_file = "model.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
@@ -153,7 +154,7 @@ fi
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
                 return Task.FINISHED_SUCCESS
-        return self.num_jobs
+        return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
     def get_requirements(options):

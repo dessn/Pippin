@@ -2,6 +2,7 @@ import inspect
 import shutil
 import subprocess
 import os
+from pathlib import Path
 
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, ensure_list
@@ -38,7 +39,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.global_config = get_config()
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.job_name = f"anaylyse_chains_{name}"
+
+        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_ANALYSE_" + os.path.basename(output_dir)
+
         self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
         self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
         self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histogram.py"
@@ -124,7 +127,7 @@ fi
                         self.logger.error(f"Kill event found in {self.logfile}")
                         self.logger.error(line)
                         return Task.FINISHED_FAILURE
-        return 1
+        return self.check_for_job(squeue, self.job_name)
 
     def _run(self, force_refresh):
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]

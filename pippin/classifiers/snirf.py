@@ -2,6 +2,7 @@ import os
 import shutil
 import subprocess
 import pandas as pd
+from pathlib import Path
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
@@ -40,7 +41,7 @@ class SnirfClassifier(Classifier):
 
         self.conda_env = self.global_config["ArgonneClassifier"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["ArgonneClassifier"]["location"])
-        self.job_base_name = os.path.basename(output_dir)
+        self.job_base_name = os.path.basename(Path(output_dir).parent[1]) + "__" + os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
         self.model_pk_file = "modelpkl.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
@@ -163,7 +164,7 @@ python SNIRF.py {command_opts}
                             os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)
                         ][0]
                     return Task.FINISHED_SUCCESS
-        return self.num_jobs
+        return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
     def get_requirements(options):
