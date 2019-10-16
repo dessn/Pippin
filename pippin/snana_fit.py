@@ -26,7 +26,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         sim_name: name of the underlying sim task
         lc_output_dir: directory which contains fitres_dir and the simlogs dir
         fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
-        fitres_file: path to the default FITOPT000.FITRES file
+        is_data: true if the dependence is a DataPrep, false if its from a simulation
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
@@ -57,6 +57,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["genversion"] = self.sim_version
         self.output["sim_name"] = sim_task.output["name"]
         self.output["lc_output_dir"] = self.lc_output_dir
+
+        is_data = False
+        for d in self.dependencies:
+            if isinstance(d, DataPrep):
+                is_data = True
+        self.output["is_data"] = is_data
 
         # Loading fitopts
         fitopts = config.get("FITOPTS", ["empty.fitopts"])

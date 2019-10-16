@@ -6,6 +6,7 @@ import os
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, ensure_list
 from pippin.cosmomc import CosmoMC
+from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
 
 
@@ -15,9 +16,11 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
     CONFIGURATION
     =============
 
-    COSMOMC:
+    ANALYSE:
         label:
             MASK_COSMOMC: mask  # partial match
+            MASK_BIASCOR: mask # partial match
+            HISTOGRAMS: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
             OPTS:
                 BLIND: [omegam, w]  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
                 COVOPTS: [ALL, NOSYS] # Optional. Covopts to match. Single or list. Exact match.
@@ -38,6 +41,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.job_name = f"anaylyse_chains_{name}"
         self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
         self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
+        self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histograms.py"
 
         self.covopts = options.get("COVOPTS")
         if isinstance(self.covopts, str):
@@ -51,12 +55,15 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         # Assuming all deps are cosmomc tasks
         self.cosmomc_deps = self.get_deps(CosmoMC)
         self.biascor_deps = self.get_deps(BiasCor)
+        self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 
         self.done_files = []
         if self.cosmomc_deps:
             self.done_files.append(self.done_file)
         if self.biascor_deps:
             self.done_files.append(self.done_file.replace(".txt", "2.txt"))
+        if self.lcfit_deps:
+            self.done_files.append(self.done_file.replace(".txt", "3.txt"))
 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
@@ -85,6 +92,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 cd {output_dir}
 python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
 python {path_to_code_biascor} {wfit_summary} {blind}
+python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
 """
 
     def _check_completion(self, squeue):
@@ -110,6 +118,9 @@ python {path_to_code_biascor} {wfit_summary} {blind}
         return 1
 
     def _run(self, force_refresh):
+        data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
+        sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
+        types = " ".join([str(a) for l in self.lcfit_deps for a in l.get_simulation_dependency().output["types_dict"]["IA"]])
 
         format_dict = {
             "job_name": self.job_name,
@@ -126,6 +137,9 @@ python {path_to_code_biascor} {wfit_summary} {blind}
             "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
             "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
             "wfit_summary": " ".join(self.wsummary_files),
+            "data_fitres_files": "--data" + (" ".join(data_fitres_files)),
+            "sim_fitres_files": "--sim" + (" ".join(sim_fitres_files)),
+            "types": "--types " + types,
         }
         final_slurm = self.slurm.format(**format_dict)
 
@@ -157,6 +171,7 @@ python {path_to_code_biascor} {wfit_summary} {blind}
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         cosmomc_tasks = Task.get_task_of_type(prior_tasks, CosmoMC)
         biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
+        lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
 
         def _get_analyse_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
@@ -171,12 +186,16 @@ python {path_to_code_biascor} {wfit_summary} {blind}
 
             mask_cosmomc = config.get("MASK_COSMOMC", "")
             mask_biascor = config.get("MASK_BIASCOR", "")
+            histograms = config.get("HISTOGRAM", [])
 
             deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
             deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
-            deps = deps_cosmomc + deps_biascor
+            deps_hist = [l for l in lcfit_tasks if l.name in histograms]
+            if len(histograms) != len(deps_hist):
+                Task.fail_config(f"Couldn't match all HISTOGRAM inputs {histograms} with selection: {[l.name for l in lcfit_tasks]}")
+            deps = deps_cosmomc + deps_biascor + deps_hist
             if len(deps) == 0:
-                Task.fail_config(f"Analyse task {cname} has no CosmoMC task to run on!")
+                Task.fail_config(f"Analyse task {cname} has no dependencies!")
 
             a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), options, deps)
             Task.logger.info(f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs")
