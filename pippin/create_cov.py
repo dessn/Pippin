@@ -44,7 +44,7 @@ class CreateCov(ConfigBasedExecutable):
         self.options = options
         self.global_config = get_config()
         self.index = index
-        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_CREATE_COV_" + name
+        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")

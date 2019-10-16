@@ -38,7 +38,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.data_path = os.path.dirname(self.raw_dir)
         if self.data_path == "$SCRATCH_SIMDIR":
             self.data_path = ""
-        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_DATAPREP_" + self.name
+        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
 
         self.output["genversion"] = self.genversion
         self.output["data_path"] = self.data_path

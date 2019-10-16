@@ -41,7 +41,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.options = options
         self.global_config = get_config()
 
-        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_COSMOMC_" + name
+        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_COSMOMC_" + name
         self.logfile = os.path.join(self.output_dir, "output.log")
 
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])

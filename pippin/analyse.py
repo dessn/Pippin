@@ -40,7 +40,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.logfile = os.path.join(self.output_dir, "output.log")
 
-        self.job_name = os.path.basename(Path(output_dir).parent[1]) + "_ANALYSE_" + os.path.basename(output_dir)
+        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_ANALYSE_" + os.path.basename(output_dir)
 
         self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
         self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"

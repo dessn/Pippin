@@ -41,7 +41,7 @@ class SnirfClassifier(Classifier):
 
         self.conda_env = self.global_config["ArgonneClassifier"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["ArgonneClassifier"]["location"])
-        self.job_base_name = os.path.basename(Path(output_dir).parent[1]) + "__" + os.path.basename(output_dir)
+        self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
         self.model_pk_file = "modelpkl.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
