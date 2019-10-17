@@ -112,7 +112,7 @@ if [ $? -ne 0 ]; then
 fi
 """
         for path, donefile in zip(self.path_to_codes, self.done_files):
-            base += template.format(path=path, donefile=donefile)
+            base += template.format(path=os.path.basename(path), donefile=donefile)
         return base
 
     def add_plot_script_to_run(self, script_name):
