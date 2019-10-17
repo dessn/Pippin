@@ -91,6 +91,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             label = line.split("[")[1].split("]")[0]
             mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
         self.output["fitopt_map"] = mapped
+        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
 
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue

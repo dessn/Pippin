@@ -58,6 +58,7 @@ class Merger(Task):
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
+        self.output["fitres_file"] = self.lc_fit["fitres_file"]
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
