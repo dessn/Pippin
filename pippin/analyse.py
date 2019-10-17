@@ -73,7 +73,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         if self.lcfit_deps:
             self.add_plot_script_to_run("plot_histogram.py")
 
-        self.done_file = self.done_files[2]
+        self.done_file = self.done_files[-1]
 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
