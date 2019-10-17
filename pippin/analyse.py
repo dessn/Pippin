@@ -23,6 +23,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             MASK_COSMOMC: mask  # partial match
             MASK_BIASCOR: mask # partial match
             HISTOGRAMS: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
+            EFFICIENCY: [D_DESSIM, D_DATADES] # Attempts to make histogram efficiency
             OPTS:
                 BLIND: [omegam, w]  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
                 COVOPTS: [ALL, NOSYS] # Optional. Covopts to match. Single or list. Exact match.
@@ -145,7 +146,7 @@ fi
     def _run(self, force_refresh):
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
-        types = [a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]
+        types = list(set([a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]))
         input_yml_file = "input.yml"
         output_dict = {
             "COSMOMC": {

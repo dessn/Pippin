@@ -76,7 +76,7 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
+    parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="plot_cosmomc.done")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:

@@ -154,10 +154,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
-        if self.options.get("BATCH_INFO"):
-            self.set_property("BATCH_INFO", self.options.get("BATCH_INFO"), assignment=": ")
-        if self.options.get("BATCH_MEM"):
-            self.set_property("BATCH_MEM", self.options.get("BATCH_MEM"), assignment=": ")
+        for key, value in self.options.items():
+            self.set_property(key, value, assignment=": ")
 
         if self.sim_task.output["ranseed_change"]:
             self.set_property("VERSION", self.sim_version + "-0*", assignment=": ", section_end="&SNLCINP")
