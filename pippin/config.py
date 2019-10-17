@@ -112,6 +112,7 @@ def chown_dir(directory):
     logger = get_logger()
     try:
         shutil.chown(directory, group=global_config["SNANA"]["group"])
+        os.chmod(directory, 0o777)
     except Exception as e:
         logger.debug(str(e))
         return
@@ -119,11 +120,14 @@ def chown_dir(directory):
         for d in dirs:
             try:
                 shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
+                os.chmod(os.path.join(root, d), 0o774)
+
             except Exception:
                 logger.debug(f"Chown error: {os.path.join(root, d)}")
         for f in files:
             try:
                 shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
+                os.chmod(os.path.join(root, f), 0o664)
             except Exception:
                 logger.debug(f"Chown error: {os.path.join(root, f)}")
 
