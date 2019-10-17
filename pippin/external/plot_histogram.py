@@ -4,6 +4,7 @@ import sys
 import argparse
 import logging
 import matplotlib.pyplot as plt
+import yaml
 from scipy.stats import binned_statistic, moment
 
 
@@ -18,14 +19,15 @@ def setup_logging():
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--data", help="FITRES files with data", nargs="*", type=str, default=[])
-    parser.add_argument("-s", "--sims", help="FITRES files with sims", nargs="*", type=str, default=[])
-    parser.add_argument("-t", "--types", help="Ia types, space separated list", type=int, nargs="*", default=[])
+    parser.add_argument("input_file", help="Input yml file", type=str)
     parser.add_argument("--done_file", help="Path of done file", type=str, default="done3.txt")
     args = parser.parse_args()
 
-    logging.info(str(args))
-    return args
+    with open(args.input_file, "r") as f:
+        config = yaml.safe_load(f)
+    config["donefile"] = args.donefile
+    config.update(config["HISTOGRAM"])
+    return config
 
 
 def load_file(file):
@@ -124,25 +126,25 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if not args.data:
+        if not args.get("DATA_FITRES"):
             logging.warning("Warning, no data files specified")
-        if not args.sims:
+        if not args.get("SIM_FITRES"):
             logging.warning("Warning, no sim files specified")
-        if not args.types:
+        if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
-            args.types = [1, 101]
+            args["IA_TYPES"] = [1, 101]
 
-        data_dfs = [load_file(f) for f in args.data]
-        sim_dfs = [load_file(f) for f in args.sims]
+        data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
+        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
 
-        plot_histograms(data_dfs, sim_dfs, args.types)
-        plot_redshift_evolution(data_dfs, sim_dfs, args.types)
+        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"])
+        plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"])
 
-        logging.info(f"Writing success to {args.done_file}")
-        with open(args.done_file, "w") as f:
+        logging.info(f"Writing success to {args['donefile']}")
+        with open(args["donefile"], "w") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
-        logging.error(f"Writing failure to file {args.done_file}")
-        with open(args.done_file, "w") as f:
+        logging.error(f"Writing failure to file {args['donefile']}")
+        with open(args["donefile"], "w") as f:
             f.write("FAILURE")

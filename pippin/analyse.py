@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config, ensure_list
+from pippin.config import mkdirs, get_config, ensure_list, get_data_loc
 from pippin.cosmomc import CosmoMC
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
@@ -43,7 +43,12 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_ANALYSE_" + os.path.basename(output_dir)
 
-        self.path_to_code = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_cosmomc.py"
+        self.path_to_codes = []
+        self.done_files = []
+
+        self.plot_code_dir = os.path.join(os.path.dirname(inspect.stack()[0][1]), "external")
+
+        self.path_to_code = "plot_cosmomc.py"
         self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
         self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histogram.py"
 
@@ -61,13 +66,14 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.biascor_deps = self.get_deps(BiasCor)
         self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 
-        self.done_files = []
         if self.cosmomc_deps:
-            self.done_files.append(self.done_file)
+            self.add_plot_script_to_run("plot_cosmomc.py")
         if self.biascor_deps:
-            self.done_files.append(self.done_file.replace(".txt", "2.txt"))
+            self.add_plot_script_to_run("plot_biascor.py")
         if self.lcfit_deps:
-            self.done_files.append(self.done_file.replace(".txt", "3.txt"))
+            self.add_plot_script_to_run("plot_histogram.py")
+
+        self.done_file = self.done_files[2]
 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
@@ -77,7 +83,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
                     for p in c.output["cosmology_params"]:
                         if p not in self.params:
                             self.params.append(p)
-        self.logger.debug(f"Analyse task will create plots with {len(self.files)} covopts/plots")
+            self.logger.debug(f"Analyse task will create CosmoMC plots with {len(self.files)} covopts/plots")
 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
 
@@ -94,19 +100,25 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=20GB
 
 cd {output_dir}
-python {path_to_code} {input_yml}
+
+"""
+
+    def get_slurm_raw(self):
+        base = self.slurm
+        template = """
+        python {path} {{input_yml}} --donefile {donefile}
 if [ $? -ne 0 ]; then
-    echo FAILURE > done.txt
-fi
-python {path_to_code_biascor} {input_yml}
-if [ $? -ne 0 ]; then
-    echo FAILURE > done2.txt
-fi
-python {path_to_histogram} {input_yml}
-if [ $? -ne 0 ]; then
-    echo FAILURE > done3.txt
+    echo FAILURE > {donefile}
 fi
 """
+        for path, donefile in zip(self.path_to_codes, self.done_files):
+            base += template.format(path=path, donefile=donefile)
+        return base
+
+    def add_plot_script_to_run(self, script_name):
+        script_path = get_data_loc(self.plot_code_dir, script_name)
+        self.path_to_codes.append(script_path)
+        self.done_files.append(script_path.replace(".py", ".done"))
 
     def _check_completion(self, squeue):
         num_success = 0
@@ -149,16 +161,8 @@ fi
             "HISTOGRAM": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
         }
 
-        format_dict = {
-            "job_name": self.job_name,
-            "log_file": self.logfile,
-            "output_dir": self.output_dir,
-            "path_to_code": os.path.basename(self.path_to_code),
-            "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
-            "path_to_histogram": os.path.basename(self.path_to_code_histogram),
-            "input_yml": input_yml_file,
-        }
-        final_slurm = self.slurm.format(**format_dict)
+        format_dict = {"job_name": self.job_name, "log_file": self.logfile, "output_dir": self.output_dir, "input_yml": input_yml_file}
+        final_slurm = self.get_slurm_raw().format(**format_dict)
 
         new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))
         old_hash = self.get_old_hash()
