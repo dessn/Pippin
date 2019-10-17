@@ -204,10 +204,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def _check_completion(self, squeue):
         # Check for errors
+        output_error = False
         for file in self.log_files:
             if os.path.exists(file):
                 with open(file, "r") as f:
-                    output_error = False
                     for line in f.read().splitlines():
                         if ("ERROR" in line or ("ABORT" in line and " 0 " not in line) or "QOSMaxSubmitJobPerUserLimit" in line) and not output_error:
                             self.logger.error(f"Fatal error in light curve fitting. See {file} for details.")
@@ -215,8 +215,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         if output_error:
                             self.logger.info(f"Excerpt: {line}")
 
-                if output_error:
-                    return Task.FINISHED_FAILURE
+        if output_error:
+            return Task.FINISHED_FAILURE
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
