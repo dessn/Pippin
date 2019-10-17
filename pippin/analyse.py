@@ -172,9 +172,8 @@ fi
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
-            shutil.copy(self.path_to_code, self.output_dir)
-            shutil.copy(self.path_to_code_biascor, self.output_dir)
-            shutil.copy(self.path_to_code_histogram, self.output_dir)
+            for c in self.path_to_codes:
+                shutil.copy(c, self.output_dir)
             input_yml_path = os.path.join(self.output_dir, input_yml_file)
             with open(input_yml_path, "w") as f:
                 json.dump(output_dict, f)
