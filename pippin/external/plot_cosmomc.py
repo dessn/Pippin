@@ -1,4 +1,5 @@
 import numpy as np
+import yaml
 from chainconsumer import ChainConsumer
 import pandas as pd
 import sys
@@ -74,22 +75,20 @@ def blind(chain, names, columns_to_blind, index=0):
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="*", type=str)
-    parser.add_argument("-p", "--params", help="Param names to plot", nargs="*", type=str, default=["omegam", "w"])
-    parser.add_argument("-o", "--output", help="Name of plot: eg name_without_extension", type=str, default="output")
-    parser.add_argument("-n", "--names", help="Names of the chains", type=str, default=None, nargs="+")
-    parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=None)
-    parser.add_argument("-s", "--shift", help="Shift om, w, ol to truth values", action="store_true", default=False)
-    parser.add_argument("--prior", help="Enforce prior on om", type=float, default=None)
+    parser.add_argument("input_file", help="Input yml file", type=str)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done.txt")
     args = parser.parse_args()
 
-    logging.info(str(args))
+    with open(args.input_file, "r") as f:
+        config = yaml.safe_load(f)
+    config["donefile"] = args.donefile
+    config.update(config["COSMOMC"])
+
     if args.names is not None:
-        assert len(args.names) == len(args.basename), (
-            "You should specify one name per base file you pass in." + f" Have {len(args.basename)} base names and {len(args.names)} names"
+        assert len(config["NAMES"]) == len(config["FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
         )
-    return args
+    return config
 
 
 def get_output_name(args, name):
@@ -107,12 +106,14 @@ def get_output(basename, args, index, name):
         param_file = os.path.join(basename) + ".paramnames"
         chain_files = get_chain_files(basename)
         names, labels = load_params(param_file)
+        blind_params = args.get("BLIND")
+        params = args.get("PARAMS")
         weights, likelihood, chain = load_chains(chain_files, names, args.params)
-        if args.blind:
-            blind(chain, args.params or names, args.blind, index=index)
+        if blind_params:
+            blind(chain, params or names, blind_params, index=index)
         labels = [
-            f"${l}" + (r"\ \mathrm{Blinded}" if args.blind is not None and u in args.blind else "") + "$"
-            for u in args.params
+            f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$"
+            for u in params
             for l, n in zip(labels, names)
             if n == u
         ]
@@ -140,7 +141,7 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if args.basename:
+        if args.get("FILES"):
             logging.info("Creating chain consumer object")
             c = ChainConsumer()
             do_full = False
@@ -149,9 +150,9 @@ if __name__ == "__main__":
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
             shift_params = truth if args.shift else None
 
-            for index, basename in enumerate(args.basename):
-                if args.names:
-                    name = args.names[index].replace("_", " ")
+            for index, basename in enumerate(args.get("FILES")):
+                if args.get("NAMES"):
+                    name = args.get("NAMES")[index].replace("_", " ")
                 else:
                     name = os.path.basename(basename).replace("_", " ")
                 # Do smarter biascor
@@ -166,23 +167,25 @@ if __name__ == "__main__":
 
                 weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
 
-                if args.prior:
-                    logging.info(f"Applying prior width {args.prior} around 0.3")
+                if args.get("PRIOR"):
+                    prior = args.get("PRIOR", 0.01)
+                    logging.info(f"Applying prior width {prior} around 0.3")
                     om_index = labels.index("$\\Omega_m$")
                     from scipy.stats import norm
 
-                    prior = norm.pdf(chain[:, om_index], loc=0.3, scale=args.prior)
+                    prior = norm.pdf(chain[:, om_index], loc=0.3, scale=prior)
                     weights *= prior
 
                 do_full = do_full or f
                 c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
 
             # Write all our glorious output
-            c.analysis.get_latex_table(filename=args.output + "_params.txt")
-            c.plotter.plot(filename=args.output + ".png", figsize=1.5)
-            c.plotter.plot_summary(filename=args.output + "_summary.png", errorbar=True)
+            out = args.get("OUTPUT")
+            c.analysis.get_latex_table(filename=out + "_params.txt")
+            c.plotter.plot(filename=out + ".png", figsize=1.5)
+            c.plotter.plot_summary(filename=out + "_summary.png", errorbar=True)
             if do_full:
-                c.plotter.plot_walks(filename=args.output + "_walks.png")
+                c.plotter.plot_walks(filename=out + "_walks.png")
 
         with open(args.donefile, "w") as f:
             f.write("SUCCESS")

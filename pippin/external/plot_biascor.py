@@ -1,4 +1,5 @@
 import numpy as np
+import yaml
 from chainconsumer import ChainConsumer
 import pandas as pd
 import sys
@@ -20,22 +21,25 @@ def setup_logging():
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("basename", help="The base to use for paramnames Eg /path/SN_CMB_OMW_ALL", nargs="*", type=str)
-    parser.add_argument("-b", "--blind", help="Blind these parameters", nargs="*", type=str, default=[])
+    parser.add_argument("input_file", help="Input yml file", type=str)
     parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="done2.txt")
     args = parser.parse_args()
 
-    logging.info(str(args))
-    return args
+    with open(args.input_file, "r") as f:
+        config = yaml.safe_load(f)
+    config["donefile"] = args.donefile
+    config.update(config["BIASCOR"])
+
+    return config
 
 
 def load_file(file, args):
     np.random.seed(123)
     logging.info(f"Loading in file {file}")
     df = pd.read_csv(file)
-    if "w" in args.blind:
+    if "w" in args.get("BLIND", []):
         df["w"] += np.random.normal(loc=0, scale=0.2, size=1000)[343]
-    if "om" in args.blind:
+    if "om" in args.get("BLIND", []):
         df["OM"] += np.random.normal(loc=0, scale=0.1, size=1000)[432]
     return df
 
@@ -165,22 +169,24 @@ def plot_scatter_comp(df_all):
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
+    donefile = args.get("donefile")
     try:
-        if args.basename:
-            inputs = [load_file(w, args) for w in args.basename]
+        wfit_files = args.get("WFIT_SUMMARY")
+        if wfit_files:
+            inputs = [load_file(w, args) for w in wfit_files]
 
-            for file, df in zip(args.basename, inputs):
+            for file, df in zip(wfit_files, inputs):
                 if df.shape[0] > 1:
                     plot_single_file(file, df)
                 else:
                     logging.info(f"File {file} has df shape {str(df.shape)}")
-            plot_all_files(args.basename, inputs)
+            plot_all_files(wfit_files, inputs)
 
-        logging.info(f"Writing success to {args.donefile}")
-        with open(args.donefile, "w") as f:
+        logging.info(f"Writing success to {donefile}")
+        with open(donefile, "w") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
-        logging.error(f"Writing failure to file {args.donefile}")
-        with open(args.donefile, "w") as f:
+        logging.error(f"Writing failure to file {donefile}")
+        with open(donefile, "w") as f:
             f.write("FAILURE")

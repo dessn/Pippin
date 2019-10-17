@@ -1,4 +1,5 @@
 import inspect
+import json
 import shutil
 import subprocess
 import os
@@ -93,15 +94,15 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 #SBATCH --mem=20GB
 
 cd {output_dir}
-python {path_to_code} {files} {output} {blind} {names} {prior} {done_file} {params} {shift}
+python {path_to_code} {input_yml}
 if [ $? -ne 0 ]; then
     echo FAILURE > done.txt
 fi
-python {path_to_code_biascor} {wfit_summary} {blind}
+python {path_to_code_biascor} {input_yml}
 if [ $? -ne 0 ]; then
     echo FAILURE > done2.txt
 fi
-python {path_to_histogram} {data_fitres_files} {sim_fitres_files} {types}
+python {path_to_histogram} {input_yml}
 if [ $? -ne 0 ]; then
     echo FAILURE > done3.txt
 fi
@@ -132,31 +133,34 @@ fi
     def _run(self, force_refresh):
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
-        types = " ".join([str(a) for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]])
+        types = [a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]
+        input_yml_file = "input.yml"
+        output_dict = {
+            "COSMOMC": {
+                "FILES": self.files,
+                "PARAMS": self.params,
+                "SHIFT": self.options.get("SHIFT", False),
+                "PRIOR": self.options.get("PRIOR"),
+                "NAMES": self.names,
+            },
+            "BIASCOR": {"WFIT_SUMMARY": self.wsummary_files},
+            "OUTPUT_NAME": self.name,
+            "BLIND": self.blind_params,
+            "HISTOGRAM": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
+        }
 
         format_dict = {
             "job_name": self.job_name,
             "log_file": self.logfile,
-            "done_file": "-d " + os.path.basename(self.done_file),
-            "path_to_code": os.path.basename(self.path_to_code),
             "output_dir": self.output_dir,
-            "files": " ".join(self.files),
-            "output": "-o " + self.name,
-            "names": ("-n " + " ".join(['"' + n + '"' for n in self.names])) if self.names else "",
-            "blind": ("-b " + " ".join(self.blind_params)) if self.blind_params else "",
-            "params": ("-p " + " ".join(self.params)) if self.params else "",
-            "shift": "-s" if self.options.get("SHIFT") else "",
-            "prior": f"--prior {self.options.get('PRIOR')}" if self.options.get("PRIOR") else "",
+            "path_to_code": os.path.basename(self.path_to_code),
             "path_to_code_biascor": os.path.basename(self.path_to_code_biascor),
-            "wfit_summary": " ".join(self.wsummary_files),
-            "data_fitres_files": "--data " + (" ".join(data_fitres_files)),
-            "sim_fitres_files": "--sim " + (" ".join(sim_fitres_files)),
-            "types": "--types " + types,
             "path_to_histogram": os.path.basename(self.path_to_code_histogram),
+            "input_yml": input_yml_file,
         }
         final_slurm = self.slurm.format(**format_dict)
 
-        new_hash = self.get_hash_from_string(final_slurm)
+        new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))
         old_hash = self.get_old_hash()
 
         if force_refresh or new_hash != old_hash:
@@ -167,6 +171,10 @@ fi
             shutil.copy(self.path_to_code, self.output_dir)
             shutil.copy(self.path_to_code_biascor, self.output_dir)
             shutil.copy(self.path_to_code_histogram, self.output_dir)
+            input_yml_path = os.path.join(self.output_dir, input_yml_file)
+            with open(input_yml_path, "w") as f:
+                json.dump(output_dict, f)
+                self.logger.debug(f"Input yml file written out to {input_yml_path}")
             for f in self.hubble_plots:
                 self.logger.debug(f"Searching for Hubble plot {f}")
                 if f is not None and os.path.exists(f):
