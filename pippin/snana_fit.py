@@ -155,7 +155,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
         for key, value in self.options.items():
-            self.set_property(key, value, assignment=": ")
+            self.set_property(key, value, assignment=": ", section_end="&SNLCINP")
 
         if self.sim_task.output["ranseed_change"]:
             self.set_property("VERSION", self.sim_version + "-0*", assignment=": ", section_end="&SNLCINP")
