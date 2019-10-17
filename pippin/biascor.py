@@ -107,8 +107,8 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.done_file) as f:
                 failed = False
                 if "FAIL" in f.read():
-                    failed = True
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
+                    return Task.FINISHED_FAILURE
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
@@ -127,15 +127,15 @@ class BiasCor(ConfigBasedExecutable):
                                     self.logger.warning(f"File {path} reporting severe warning: {line}")
                                     self.logger.warning("You wont see this warning on a rerun, so look into it now!")
                     plots_completed = self.make_hubble_plot()
-                    if failed:
-                        return Task.FINISHED_FAILURE
+
+                    self.generate_w_summary()
+                    if plots_completed:
+                        return Task.FINISHED_SUCCESS
                     else:
-                        self.generate_w_summary()
-                        if plots_completed:
-                            return Task.FINISHED_SUCCESS
-                        else:
-                            self.logger.error("Hubble diagram failed to run")
-                            return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
+                        self.logger.error(
+                            f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}"
+                        )
+                        return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return Task.FINISHED_SUCCESS
