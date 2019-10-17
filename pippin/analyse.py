@@ -118,7 +118,7 @@ fi
     def add_plot_script_to_run(self, script_name):
         script_path = get_data_loc(self.plot_code_dir, script_name)
         self.path_to_codes.append(script_path)
-        self.done_files.append(script_path.replace(".py", ".done"))
+        self.done_files.append(os.path.join(self.output_dir, os.path.basename(script_name).split(".")[0] + ".done"))
 
     def _check_completion(self, squeue):
         num_success = 0
