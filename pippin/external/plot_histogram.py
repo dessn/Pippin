@@ -20,7 +20,7 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("--done_file", help="Path of done file", type=str, default="done3.txt")
+    parser.add_argument("--donefile", help="Path of done file", type=str, default="done3.txt")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:
