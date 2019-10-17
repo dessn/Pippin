@@ -106,7 +106,7 @@ cd {output_dir}
     def get_slurm_raw(self):
         base = self.slurm
         template = """
-        python {path} {{input_yml}} --donefile {donefile}
+python {path} {{input_yml}} --donefile {donefile}
 if [ $? -ne 0 ]; then
     echo FAILURE > {donefile}
 fi
