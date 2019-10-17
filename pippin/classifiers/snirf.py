@@ -93,7 +93,8 @@ python SNIRF.py {command_opts}
             self.logger.info(f"Submitting batch job {slurm_output_file}")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
-            self.logger.debug("Not regenerating")
+            self.logger.info("Hash check passed, not rerunning")
+            self.should_be_done()
         return True
 
     def predict(self, force_refresh):

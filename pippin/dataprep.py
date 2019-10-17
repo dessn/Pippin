@@ -146,6 +146,7 @@ fi
             self.logger.info(f"Submitting batch job for data prep")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
+            self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
         return True
 

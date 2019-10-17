@@ -183,6 +183,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         regenerate, new_hash = self.write_input(force_refresh)
         if not regenerate:
+            self.should_be_done()
             return True
 
         with open(self.logging_file, "w") as f:

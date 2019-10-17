@@ -202,6 +202,7 @@ fi
 
         if not force_refresh and new_hash == old_hash:
             self.logger.info("Hash check passed, not rerunning")
+            self.should_be_done()
         else:
             self.logger.info("Rerunning. Cleaning output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)

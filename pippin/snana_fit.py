@@ -197,6 +197,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     def _run(self, force_refresh):
         regenerate, new_hash = self.write_nml(force_refresh)
         if not regenerate:
+            self.should_be_done()
             return True
         self.logger.info(f"Light curve fitting outputting to {self.logging_file}")
         with open(self.logging_file, "w") as f:

@@ -49,6 +49,7 @@ class FitProbClassifier(Classifier):
             return new_hash
         else:
             self.logger.info("Hash check passed, not rerunning")
+            self.should_be_done()
             return False
 
     def classify(self, force_refresh):

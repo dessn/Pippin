@@ -43,6 +43,7 @@ class PerfectClassifier(Classifier):
         self.prob_ia = options.get("PROB_IA", 1.0)
         self.prob_cc = options.get("PROB_CC", 0.0)
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
+        self.output.update({"predictions_filename": self.output_file})
 
     def get_unique_name(self):
         return self.name
@@ -110,11 +111,12 @@ class PerfectClassifier(Classifier):
                 with open(self.done_file, "w") as f:
                     f.write("FAILED")
                 return False
+        else:
+            self.should_be_done()
         self.passed = True
         return True
 
     def _check_completion(self, squeue):
-        self.output.update({"predictions_filename": self.output_file})
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self, force_refresh):

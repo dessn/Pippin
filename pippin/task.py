@@ -142,6 +142,7 @@ class Task(ABC):
             self.logger.error(f"Removing hash from {self.hash_file}")
             if os.path.exists(self.hash_file):
                 os.remove(self.hash_file)
+            return Task.FINISHED_FAILURE
         return result
 
     @abstractmethod

@@ -147,7 +147,8 @@ class NearestNeighborClassifier(Classifier):
             self.save_new_hash(new_hash)
             return new_hash, train_info_local
         else:
-            self.logger.debug("Not regenerating")
+            self.logger.info("Hash check passed, not rerunning")
+            self.should_be_done()
             return None, train_info_local
 
     def run_train_job(self):

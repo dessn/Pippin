@@ -154,7 +154,8 @@ class Merger(Task):
                 self.logger.error(f"Check log at {self.logfile}")
                 return False
         else:
-            self.logger.debug("Not regnerating")
+            self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod

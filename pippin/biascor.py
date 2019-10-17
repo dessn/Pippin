@@ -382,6 +382,7 @@ class BiasCor(ConfigBasedExecutable):
             chown_dir(self.output_dir)
         else:
             self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod

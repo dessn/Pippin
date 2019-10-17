@@ -182,6 +182,9 @@ class Aggregator(Task):
                             self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
                 else:
                     self.logger.debug("Plot not set, skipping plotting section")
+        else:
+            self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
 
         self.output["merge_predictions_filename"] = self.output_dfs
         self.output["merge_key_filename"] = self.output_dfs_key

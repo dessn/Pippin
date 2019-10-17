@@ -38,6 +38,7 @@ class UnityClassifier(Classifier):
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
+        self.output.update({"predictions_filename": self.output_file})
 
     def get_unique_name(self):
         return "UNITY"
@@ -97,11 +98,13 @@ class UnityClassifier(Classifier):
                 with open(self.done_file, "w") as f:
                     f.write("FAILED")
                 return False
+        else:
+            self.should_be_done()
         self.passed = True
+
         return True
 
     def _check_completion(self, squeue):
-        self.output.update({"predictions_filename": self.output_file})
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self, force_refresh):
