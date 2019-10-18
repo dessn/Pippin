@@ -136,7 +136,6 @@ class Merger(Task):
                             self.add_to_fitres(os.path.join(f[0], f[2]), f[1], index=f[3])
                     for s in symlink_files:
                         if s[1] == fitres_dir:
-                            print(fitres_dir, s)
                             self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES')}")
                             os.symlink(os.path.join(s[1], "FITOPT000.FITRES"), os.path.join(s[1], s[2]))
 
