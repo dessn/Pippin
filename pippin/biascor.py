@@ -311,8 +311,12 @@ class BiasCor(ConfigBasedExecutable):
                     def tranz(zs):
                         return interp1d(z_trans, z_scale)(zs)
 
-                    x_ticks = [0.01, 0.02, 0.05, 0.2, 0.4, 0.6, 0.8, 1.0]
-                    x_ticks_m = [0.03, 0.04, 0.1, 0.3, 0.5, 0.6, 0.7, 0.9]
+                    x_ticks = np.array([0.01, 0.02, 0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
+                    x_ticks_m = np.array([0.03, 0.04, 0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
+                    mask = (x_ticks > z_trans.min()) & (x_ticks < z_trans.max())
+                    mask_m = (x_ticks_m > z_trans.min()) & (x_ticks_m < z_trans.max())
+                    x_ticks = x_ticks[mask]
+                    x_ticks_m = x_ticks_m[mask_m]
                     x_tick_t = tranz(x_ticks)
                     x_ticks_mt = tranz(x_ticks_m)
 
