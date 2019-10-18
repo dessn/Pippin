@@ -118,6 +118,7 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
+            print(fitres_dir, outdir)
             fitres_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
             symlink_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
