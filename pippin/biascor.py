@@ -133,6 +133,8 @@ class BiasCor(ConfigBasedExecutable):
                                     self.logger.warning(f"File {path} reporting severe warning: {line}")
                                     self.logger.warning("You wont see this warning on a rerun, so look into it now!")
                     plots_completed = self.make_hubble_plot()
+                    if failed:
+                        return Task.FINISHED_FAILURE
 
                     self.generate_w_summary()
                     if plots_completed:
