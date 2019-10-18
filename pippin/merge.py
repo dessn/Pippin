@@ -101,12 +101,12 @@ class Merger(Task):
     def add_to_fitres(self, fitres_file, outdir, index=0):
         command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"][index], "--outfile_text", os.path.basename(fitres_file), "T"]
         try:
-            self.logger.debug(f"Executing command {command}")
+            self.logger.debug(f"Executing command {' '.join(command)}")
             with open(self.logfile, "w+") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
             # Run sed command
             sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
-            self.logger.debug(f"Executing command {sed_command}")
+            self.logger.debug(f"Executing command {' '.join(sed_command)}")
             with open(self.logfile, "w+") as f:
                 subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
 
@@ -129,6 +129,7 @@ class Merger(Task):
             self.logger.debug("Regenerating, running combine_fitres")
             try:
                 for fitres_dir in self.fitres_outdirs:
+                    self.logger.debug(f"Creating directory {fitres_dir}")
                     mkdirs(fitres_dir)
                     for f in fitres_files:
                         if f[1] == fitres_dir:
