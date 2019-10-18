@@ -137,7 +137,7 @@ class Merger(Task):
                     for s in symlink_files:
                         if s[1] == fitres_dir:
                             print(fitres_dir, s)
-                            self.logger.debug(f"Creating symlink for {os.path.join(f[0], s[2])} to {os.path.join(f[1], 'FITOPT000.FITRES')}")
+                            self.logger.debug(f"Creating symlink for {os.path.join(f[1], s[2])} to {os.path.join(f[1], 'FITOPT000.FITRES')}")
                             os.symlink(os.path.join(f[1], "FITOPT000.FITRES"), os.path.join(f[1], s[2]))
 
                     self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
