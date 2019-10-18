@@ -153,6 +153,7 @@ class Merger(Task):
             except Exception as e:
                 self.logger.error("Error running merger!")
                 self.logger.error(f"Check log at {self.logfile}")
+                self.logger.exception(e, exc_info=True)
                 return False
         else:
             self.should_be_done()
