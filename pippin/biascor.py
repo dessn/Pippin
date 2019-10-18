@@ -83,15 +83,21 @@ class BiasCor(ConfigBasedExecutable):
             header = None
             rows = []
             for d in self.output["m0dif_dirs"]:
-                wpath = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
-                if os.path.exists(wpath):
+                wpath1 = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
+                wpath2 = os.path.join(d, "wfit_M0DIF_FITOPT000_MUOPT000.COSPAR")
+                wpath = None
+                if os.path.exists(wpath1):
+                    wpath = wpath1
+                elif os.path.exists(wpath2):
+                    wpath = wpath2
+                if wpath is not None:
                     with open(wpath) as f:
                         lines = f.read().splitlines()
                         header = ["VERSION"] + lines[0].split()[1:]
                         values = [os.path.basename(d)] + lines[1].split()
                         rows.append(values)
                 else:
-                    self.logger.warning(f"Cannot find file {wpath} when generating wfit summary")
+                    self.logger.warning(f"Cannot find file {wpath1} or {wpath2} when generating wfit summary")
 
             df = pd.DataFrame(rows, columns=header).apply(pd.to_numeric, errors="ignore")
             self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
