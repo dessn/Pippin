@@ -118,7 +118,6 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            print(fitres_dir, outdir)
             fitres_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
             symlink_files += [(fitres_dir, outdir, f, index) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
@@ -137,6 +136,7 @@ class Merger(Task):
                             self.add_to_fitres(os.path.join(f[0], f[2]), f[1], index=f[3])
                     for s in symlink_files:
                         if s[1] == fitres_dir:
+                            print(fitres_dir, s)
                             self.logger.debug(f"Creating symlink for {os.path.join(f[0], s[1])} to {os.path.join(f[0], 'FITOPT000.FITRES')}")
                             os.symlink(os.path.join(f[1], "FITOPT000.FITRES"), os.path.join(f[1], s[2]))
 
