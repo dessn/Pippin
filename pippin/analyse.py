@@ -177,7 +177,7 @@ fi
                 shutil.copy(c, self.output_dir)
             input_yml_path = os.path.join(self.output_dir, input_yml_file)
             with open(input_yml_path, "w") as f:
-                json.dump(output_dict, f)
+                json.dump(output_dict, f, indent=2)
                 self.logger.debug(f"Input yml file written out to {input_yml_path}")
             for f in self.hubble_plots:
                 self.logger.debug(f"Searching for Hubble plot {f}")
