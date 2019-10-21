@@ -197,13 +197,13 @@ class Manager:
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
                 t = self.get_task_to_run(self.tasks, done_tasks)
-                if t.gpu and self.num_jobs_queue_gpu >= self.max_jobs_gpu:
-                    continue
-                if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
-                    continue
-                if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
-                    continue
                 if t is not None:
+                    if t.gpu and self.num_jobs_queue_gpu >= self.max_jobs_gpu:
+                        continue
+                    if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
+                        continue
+                    if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
+                        continue
                     self.logger.info("")
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
