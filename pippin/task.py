@@ -26,7 +26,8 @@ class Task(ABC):
         self.stage = None
         self.fresh_run = True
         self.num_empty = 0
-        self.num_empty_threshold = 25
+        self.num_empty_threshold = 10
+        self.gpu = False
 
     def check_for_job(self, squeue, match):
         if squeue is None:

@@ -51,7 +51,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
 
         self.log_files = [self.logging_file, secondary_log]
-
+        self.num_empty_threshold = 25  # Damn that tarball creation can be so slow
         self.output["fitres_dirs"] = self.fitres_dirs
         self.output["nml_file"] = self.config_path
         self.output["genversion"] = self.sim_version

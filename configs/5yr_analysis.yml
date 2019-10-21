@@ -23,10 +23,10 @@ SIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria_split_a.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
-      NGEN_UNIT: 2.0
+      NGEN_UNIT: 4.0
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
@@ -34,7 +34,7 @@ SIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria_split_b.input
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
       NGEN_UNIT: 0.2
@@ -85,7 +85,7 @@ SIM:
 
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria.input
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
@@ -127,16 +127,16 @@ LCFIT:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CLASSIFICATION:
-  SNIRFTRAIN:
-    CLASSIFIER: SnirfClassifier
+  SNN:
+    CLASSIFIER: SuperNNovaClassifier
     MODE: train
     MASK_SIM: TRAINDESSIM
 
-  SNIRFTEST:
-    CLASSIFIER: SnirfClassifier
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     OPTS:
-      MODEL: SNIRFTRAIN
+      MODEL: SNN
 
   UNITY:
     CLASSIFIER: UnityClassifier
@@ -156,7 +156,7 @@ BIASCOR:
     DATA: [DS_DATADES5YR, LS_DATALOWZ]
     SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
     SIMFILE_CCPRIOR: D_DESSIMBIAS5YRCC
-    CLASSIFIER: SNIRFTEST
+    CLASSIFIER: SNNTEST
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16

@@ -40,7 +40,7 @@ class SuperNNovaClassifier(Classifier):
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
-
+        self.gpu = True
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")

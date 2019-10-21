@@ -35,11 +35,14 @@ class Manager:
 
         self.prefix = self.global_config["GLOBAL"]["prefix"] + "_" + filename
         self.max_jobs = int(self.global_config["GLOBAL"]["max_jobs"])
+        self.max_jobs_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs"])
         self.max_jobs_in_queue = int(self.global_config["GLOBAL"]["max_jobs_in_queue"])
+        self.max_jobs_in_queue_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs_in_queue"])
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
         self.num_jobs_queue = 0
+        self.num_jobs_queue_gpu = 0
 
         self.start = None
         self.finish = None
@@ -161,6 +164,7 @@ class Manager:
             return
 
         self.num_jobs_queue = 0
+        self.num_jobs_queue_gpu = 0
         running_tasks = []
         done_tasks = []
         failed_tasks = []
@@ -193,6 +197,12 @@ class Manager:
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
                 t = self.get_task_to_run(self.tasks, done_tasks)
+                if t.gpu and self.num_jobs_queue_gpu >= self.max_jobs_gpu:
+                    continue
+                if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
+                    continue
+                if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
+                    continue
                 if t is not None:
                     self.logger.info("")
                     self.tasks.remove(t)
@@ -203,7 +213,10 @@ class Manager:
                         self.logger.exception(e, exc_info=True)
                         started = False
                     if started:
-                        self.num_jobs_queue += t.num_jobs
+                        if t.gpu:
+                            self.num_jobs_queue_gpu += t.num_jobs
+                        else:
+                            self.num_jobs_queue += t.num_jobs
                         self.logger.notice(f"LAUNCHED: {t} with total {self.num_jobs_queue} jobs")
                         running_tasks.append(t)
                         completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
@@ -234,7 +247,10 @@ class Manager:
         result = t.check_completion(squeue)
         # If its finished, good or bad, juggle tasks
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
-            self.num_jobs_queue -= t.num_jobs
+            if t.gpu:
+                self.num_jobs_queue_gpu -= t.num_jobs
+            else:
+                self.num_jobs_queue -= t.num_jobs
             if result == Task.FINISHED_SUCCESS:
                 running_tasks.remove(t)
                 self.logger.notice(f"FINISHED: {t}, total jobs now {self.num_jobs_queue}")
