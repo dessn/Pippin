@@ -23,6 +23,7 @@
 # Ic-BL --> 35
 
 INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
+GENMODEL: $SNDATA_ROOT/models/NON1ASED/NON1ASED.V19_CC_noHostXT
 
 GENTYPE:  20
 GENSOURCE:   RANDOM

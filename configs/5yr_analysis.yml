@@ -24,7 +24,6 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_maria_split_a.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
       NGEN_UNIT: 4.0
@@ -36,7 +35,6 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
       BASE: sn_collection_maria_split_b.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
       DNDZ_ALLSCALE: 1.0
     GLOBAL:
       NGEN_UNIT: 2
@@ -88,7 +86,6 @@ SIM:
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
       BASE: sn_collection_maria.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
