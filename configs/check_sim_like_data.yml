@@ -5,9 +5,9 @@ SIM:
     II_TEMPLATES:
       BASE: sn_collection_maria_split_a.input
     GLOBAL:
-      NGEN_UNIT: 1
+      NGEN_UNIT: 0.2
       FORMAT_MASK: 56           # 16=RanCID  32=FITS-FORMAT 8=DATA-LIKE
-      RANSEED_CHANGE: 1 12345
+      RANSEED_REPEAT: 4 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
 
   DESSIMBIAS5YRIA:
