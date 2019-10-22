@@ -29,6 +29,8 @@ def get_arguments():
         config = yaml.safe_load(f)
     config["donefile"] = args.donefile
     config.update(config["HISTOGRAM"])
+    if config.get("FIELDS") is None:
+        config["FIELDS"] = []
     return config
 
 
@@ -39,7 +41,7 @@ def load_file(file):
 
 
 def plot_efficiency(data_all, sims, types, fields):
-    all_fields = list(set([a for f in fields for a in f]))
+    all_fields = data_all["FIELD"].unique()
     fields.append(all_fields)
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(len(fields), 3, figsize=(12, 7))
@@ -124,7 +126,7 @@ def save_efficiency_file(xs, ys, c):
 def plot_efficiency2d(data_all, sims, types, fields):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-    all_fields = list(set([a for f in fields for a in f]))
+    all_fields = data_all["FIELD"].unique()
     fields.append(all_fields)
 
     for i, sim in enumerate(sims):
