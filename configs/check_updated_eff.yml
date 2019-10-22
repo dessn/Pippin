@@ -1,0 +1,58 @@
+SIM:
+  DESSIMCC:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
+      RANSEED_CHANGE: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+  DESSIMBIAS5YRIA:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
+      NGEN_UNIT: 5
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+LCFIT:
+  D:
+    BASE: des.nml
+    MASK: DES
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 80
+
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  UNITY:
+    DATA: [D_DESSIMCC]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA]
+    CLASSIFIER: UNITY
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+      u13: 0 # Turns of scalePCC
+
+ANALYSE:
+  SIMDATA:
