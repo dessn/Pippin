@@ -7,7 +7,7 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 1
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
-      RANSEED_CHANGE: 1 12345
+      RANSEED_REPEAT: 1 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
 
   DESSIMBIAS5YRIA:
