@@ -28,7 +28,7 @@ def get_arguments():
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
     config["donefile"] = args.donefile
-    config.update(config["EFFICIENCY"])
+    config.update(config["HISTOGRAM"])
     return config
 
 
