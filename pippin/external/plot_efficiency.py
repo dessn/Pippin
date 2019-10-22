@@ -44,7 +44,7 @@ def plot_efficiency(data_all, sims, types, fields):
     all_fields = data_all["FIELD"].unique()
     fields.append(all_fields)
     for i, sim in enumerate(sims):
-        fig, axes = plt.subplots(len(fields), 3, figsize=(12, 7))
+        fig, axes = plt.subplots(len(fields), 3, figsize=(12, 7), squeeze=False)
         cols = ["HOST_MAG_i", "HOST_MAG_r", "zHD"]
 
         for field, row in zip(fields, axes):
@@ -130,7 +130,7 @@ def plot_efficiency2d(data_all, sims, types, fields):
     fields.append(all_fields)
 
     for i, sim in enumerate(sims):
-        fig, axes = plt.subplots(3, len(fields), figsize=(15, 8))
+        fig, axes = plt.subplots(3, len(fields), figsize=(15, 8), squeeze=False)
         axes = np.atleast_2d(axes)
 
         ci = "HOST_MAG_i"
