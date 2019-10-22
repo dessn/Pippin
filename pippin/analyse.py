@@ -160,6 +160,7 @@ fi
             "OUTPUT_NAME": self.name,
             "BLIND": self.blind_params,
             "HISTOGRAM": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
+            "EFFICIENCY": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
         }
 
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "output_dir": self.output_dir, "input_yml": input_yml_file}
@@ -213,13 +214,17 @@ fi
             mask_cosmomc = config.get("MASK_COSMOMC", "")
             mask_biascor = config.get("MASK_BIASCOR", "")
             histograms = config.get("HISTOGRAM", [])
+            efficiency = config.get("EFFICIENCY", [])
 
             deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
             deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
             deps_hist = [l for l in lcfit_tasks if l.name in histograms]
+            deps_eff = [l for l in lcfit_tasks if l.name in efficiency]
             if len(histograms) != len(deps_hist):
                 Task.fail_config(f"Couldn't match all HISTOGRAM inputs {histograms} with selection: {[l.name for l in lcfit_tasks]}")
-            deps = deps_cosmomc + deps_biascor + deps_hist
+            if len(efficiency) != len(deps_eff):
+                Task.fail_config(f"Couldn't match all EFFICIENCY inputs {efficiency} with selection: {[l.name for l in lcfit_tasks]}")
+            deps = deps_cosmomc + deps_biascor + deps_hist + deps_eff
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no dependencies!")
 
