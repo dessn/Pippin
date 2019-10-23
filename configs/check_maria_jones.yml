@@ -5,8 +5,8 @@ SIM:
     IA_G10_LOWZ:
       BASE: sn_ia_salt2_g10_lowz.input
     GLOBAL:
-      NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   DESMARIA:
@@ -15,8 +15,8 @@ SIM:
     II_TEMPLATES:
       BASE: sn_collection_maria.input
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   DESJONES:
@@ -25,8 +25,8 @@ SIM:
     II_TEMPLATES:
       BASE: sn_collection_jones.input
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
   TRAINDES:
@@ -140,14 +140,14 @@ BIASCOR:
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
-CREATE_COV:
-  ALL:
-
-COSMOMC:
-  SN_OMW:
-    OPTS:
-      INI: sn_omw
-      NUM_WALKERS: 20
+#CREATE_COV:
+#  ALL:
+#
+#COSMOMC:
+#  SN_OMW:
+#    OPTS:
+#      INI: sn_omw
+#      NUM_WALKERS: 20
 
 ANALYSE:
   MARIAvJONES:
