@@ -97,7 +97,6 @@ SIM:
   DESSIMBIAS5YRCC:
     II_TEMPLATES:
       BASE: sn_collection_maria_split_a.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
@@ -106,7 +105,6 @@ SIM:
   DESSIMBIAS5YRCCEFF:
     II_TEMPLATES:
       BASE: sn_collection_maria_split_a.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 10
       RANSEED_REPEAT: 10 12345
