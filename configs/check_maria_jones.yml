@@ -108,7 +108,7 @@ CLASSIFICATION:
   SNN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
-    MASK_SIM: TRAINDESSIM
+    MASK_SIM: TRAINDES
 
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
