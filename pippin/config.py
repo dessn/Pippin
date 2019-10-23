@@ -70,7 +70,7 @@ def mkdirs(path):
     if not os.path.exists(path):
         parent = os.path.dirname(path)
         mkdirs(parent)
-        os.makedirs(path, exist_ok=True, mode=0o7771)
+        os.makedirs(path, exist_ok=True, mode=0o7701)
         chown_dir(path)
 
 
@@ -112,7 +112,7 @@ def chown_dir(directory):
     logger = get_logger()
     try:
         shutil.chown(directory, group=global_config["SNANA"]["group"])
-        os.chmod(directory, 0o777)
+        os.chmod(directory, 0o770)
     except Exception as e:
         logger.exception(f"Chown error: {directory}", exc_info=e)
         return
@@ -120,13 +120,13 @@ def chown_dir(directory):
         for d in dirs:
             try:
                 shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
-                os.chmod(os.path.join(root, d), 0o777)
+                os.chmod(os.path.join(root, d), 0o770)
             except Exception as e:
                 logger.exception(f"Chown error: {os.path.join(root, d)}", exc_info=e)
         for f in files:
             try:
                 shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
-                os.chmod(os.path.join(root, f), 0o664)
+                os.chmod(os.path.join(root, f), 0o660)
             except Exception as e:
                 logger.exception(f"Chown error: {os.path.join(root, f)}", exc_info=e)
 
