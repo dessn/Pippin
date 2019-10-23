@@ -1,3 +1,5 @@
+# Checks the bias introduced by swapping out different classifiers over a large suite of 100 sims
+
 SIM:
   LOWZSIM:
     IA_G10_LOWZ:

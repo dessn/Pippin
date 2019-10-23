@@ -1,3 +1,5 @@
+# Compute the hostgal efficiency using data / sim ratio
+
 DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
     OPTS:

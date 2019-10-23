@@ -1,3 +1,5 @@
+# Check the impact of changing our probability thresholds
+
 DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
     OPTS:

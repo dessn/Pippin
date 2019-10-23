@@ -1,3 +1,5 @@
+# A check to make sure that we can get the biascor blinding going automatically
+
 SIM:
   DESSIMCC:
     IA_G10:

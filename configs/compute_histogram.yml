@@ -1,3 +1,5 @@
+# Plot hjistograms comparing data to sims
+
 DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
     OPTS:

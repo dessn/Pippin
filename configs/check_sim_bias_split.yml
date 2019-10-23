@@ -1,3 +1,5 @@
+# Similar to check_sim_bias, but splitting the training and test templates so there is no overlap
+
 SIM:
   LOWZSIM:
     IA_G10_LOWZ:

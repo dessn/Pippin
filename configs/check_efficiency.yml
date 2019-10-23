@@ -1,3 +1,7 @@
+# This test is designed to check the maximum impact of getting our efficiency wrong
+# To do this there are three biascor jobs - a reference job, one with the data using eff=1
+# and one with normal data with the biascor sims using eff=1
+
 SIM:
   LOWZSIM:
     IA_G10_LOWZ:

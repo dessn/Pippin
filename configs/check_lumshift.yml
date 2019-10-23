@@ -1,3 +1,6 @@
+# Check the impact of making our contaminants 1 mag brighter only in the data - so training and biascor sims
+# will be wrong
+
 SIM:
   LOWZSIM:
     IA_G10_LOWZ:
