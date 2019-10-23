@@ -1,0 +1,45 @@
+DATAPREP:
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+SIM:
+  DESSIMCC2:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 50 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+  DESSIMCC:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 50 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+LCFIT:
+  D:
+    BASE: des.nml
+    MASK: DES
+    SNLCINP:
+      USE_MINOS: F
+      ROOTFILE_OUT: "'FIT.ROOT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
+      APPEND_FITRES: MWEBV HOST_MAG_i HOST_MAG_r HOST_MAG_g
+
+
+ANALYSE:
+  HIST:
+    HISTOGRAM: [D_DESSIMCC, D_DESSIMCC2, D_DATADES5YR]
