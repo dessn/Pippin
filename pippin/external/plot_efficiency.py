@@ -44,7 +44,7 @@ def plot_efficiency(data_all, sims, types, fields):
     all_fields = data_all["FIELD"].unique().tolist()
     fields.append(all_fields)
     for i, sim in enumerate(sims):
-        fig, axes = plt.subplots(len(fields), 3, figsize=(12, 7), squeeze=False)
+        fig, axes = plt.subplots(len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False)
         cols = ["HOST_MAG_i", "HOST_MAG_r", "zHD"]
 
         for field, row in zip(fields, axes):
