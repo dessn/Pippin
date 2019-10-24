@@ -28,6 +28,7 @@ SIM:
       BASE: sn_collection_maria_split_a.input
     GLOBAL:
       SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
       NGENTOT_LC: 3000
       RANSEED_CHANGE: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
@@ -37,7 +38,6 @@ SIM:
       BASE: sn_ia_salt2_g10.input
     II_TEMPLATES:
       BASE: sn_collection_maria_split_b.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 20 12345
@@ -48,8 +48,6 @@ SIM:
       BASE: sn_ia_salt2_c11.input
     II_TEMPLATES:
       BASE: sn_collection_maria_split_a.input
-      PATH_NON1ASED: $DES_USERS/mvincenzi/NON1A/
-      GENMAG_OFF_GLOBAL: 1
     GLOBAL:
       NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
@@ -94,6 +92,7 @@ SIM:
       GENGRID_SALT2BETA: 2
     GLOBAL:
       SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
       NGEN_UNIT: 10
       RANSEED_REPEAT: 30 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
@@ -114,6 +113,7 @@ SIM:
       RANSEED_REPEAT: 10 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
       SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
 
 LCFIT:
   L:
