@@ -84,7 +84,7 @@ def get_arguments():
     config["donefile"] = args.donefile
     config.update(config["COSMOMC"])
 
-    if args.names is not None:
+    if args["names"] is not None:
         assert len(config["NAMES"]) == len(config["FILES"]), (
             "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
         )
@@ -92,7 +92,7 @@ def get_arguments():
 
 
 def get_output_name(args, name):
-    path = args.output + "___" + name + ".csv.gz"
+    path = args["output"] + "___" + name + ".csv.gz"
     basename = os.path.basename(path)
     return path, basename
 
@@ -108,7 +108,7 @@ def get_output(basename, args, index, name):
         names, labels = load_params(param_file)
         blind_params = args.get("BLIND")
         params = args.get("PARAMS")
-        weights, likelihood, chain = load_chains(chain_files, names, args.params)
+        weights, likelihood, chain = load_chains(chain_files, names, args["params"])
         if blind_params:
             blind(chain, params or names, blind_params, index=index)
         labels = [
@@ -148,7 +148,7 @@ if __name__ == "__main__":
             biases = {}
             b = 1
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
-            shift_params = truth if args.shift else None
+            shift_params = truth if args["shift"] else None
 
             for index, basename in enumerate(args.get("FILES")):
                 if args.get("NAMES"):
@@ -187,9 +187,9 @@ if __name__ == "__main__":
             if do_full:
                 c.plotter.plot_walks(filename=out + "_walks.png")
 
-        with open(args.donefile, "w") as f:
+        with open(args["donefile"], "w") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
-        with open(args.donefile, "w") as f:
+        with open(args["donefile"], "w") as f:
             f.write("FAILURE")
