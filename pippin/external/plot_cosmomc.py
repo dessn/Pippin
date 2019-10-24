@@ -92,7 +92,7 @@ def get_arguments():
 
 
 def get_output_name(args, name):
-    path = args["output"] + "___" + name + ".csv.gz"
+    path = args["OUTPUT"] + "___" + name + ".csv.gz"
     basename = os.path.basename(path)
     return path, basename
 
