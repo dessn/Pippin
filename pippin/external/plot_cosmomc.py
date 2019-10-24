@@ -148,7 +148,7 @@ if __name__ == "__main__":
             biases = {}
             b = 1
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
-            shift_params = truth if args["shift"] else None
+            shift_params = truth if args.get("SHIFT") else None
 
             for index, basename in enumerate(args.get("FILES")):
                 if args.get("NAMES"):
