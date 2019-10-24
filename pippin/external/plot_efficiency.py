@@ -52,7 +52,10 @@ def plot_efficiency(data_all, sims, types, fields):
             s = sim[np.isin(sim["FIELD"], field)]
 
             for c, ax in zip(cols, row):
-                ax.set_title(" ".join(field))
+                title = " ".join(field)
+                if len(title) > 20:
+                    title = title[:20] + "..."
+                ax.set_title(title)
 
                 minv = min([x[c].quantile(0.01) for x in [data, s]])
                 maxv = max([x[c].quantile(0.99) for x in [data, s]])
