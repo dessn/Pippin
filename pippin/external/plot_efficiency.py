@@ -100,9 +100,9 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 x = None
                 if c == "zHD":
-                    x = np.arange(0, 1.5, 0.05)
+                    x = np.arange(0, 2.0, 0.05)
                 else:
-                    x = np.arange(15, 30, 0.25)
+                    x = np.arange(5, 30, 0.25)
                 y = interp1d(bc3, smoothed_ratio, fill_value=(smoothed_ratio[0], smoothed_ratio[-1]), bounds_error=False)(x)
                 y = y / y.max()
                 y[y < 0.001] = 0
