@@ -34,6 +34,7 @@ class BiasCor(ConfigBasedExecutable):
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
         self.classifier = config.get("CLASSIFIER")
         self.make_all = config.get("MAKE_ALL_HUBBLE", True)
+        self.use_recalibrated = config.get("USE_RECALIBRATED", False)
 
         self.bias_cor_fits = None
         self.cc_prior_fits = None
@@ -52,6 +53,10 @@ class BiasCor(ConfigBasedExecutable):
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
         self.probability_column_name = self.classifier.output["prob_column_name"]
 
+        if self.use_recalibrated:
+            new_name = self.probability_column_name.replace("PROB_", "CPROB_")
+            self.logger.debug(f"Updating prob column name from {self.probability_column_name} to {new_name}. I hope it exists!")
+            self.probability_column_name = new_name
         self.output["fit_output_dir"] = self.fit_output_dir
 
         # calculate genversion the hard way

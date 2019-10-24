@@ -2,6 +2,10 @@ import inspect
 import shutil
 import subprocess
 
+from scipy.interpolate import interp1d
+from scipy.ndimage import gaussian_filter
+from scipy.stats import binned_statistic
+
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs, get_output_loc
 from pippin.dataprep import DataPrep
@@ -39,19 +43,23 @@ class Aggregator(Task):
         merge_key_filename: location of the merged fitres file
         sn_column_name: name of the SNID column
         sn_type_name: name of type column, only exists if INCLUDE_TYPE was set
-
+        sim_name: name of sim
+        calibration_files: list[str] - all the calibration files. Hopefully only one will be made if you havent done something weird with the config
     """
 
-    def __init__(self, name, output_dir, dependencies, options):
+    def __init__(self, name, output_dir, dependencies, options, recal_aggtask):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
 
         self.sim_task = self.get_underlying_sim_task()
+        self.output["sim_name"] = self.sim_task.name
+        self.recal_aggtask = recal_aggtask
         self.num_versions = len(self.sim_task.output["sim_folders"])
 
         self.output_dfs = [os.path.join(self.output_dir, f"merged_{i}.csv") for i in range(self.num_versions)]
         self.output_dfs_key = [os.path.join(self.output_dir, f"merged_{i}.key") for i in range(self.num_versions)]
+        self.output_cals = [os.path.join(self.output_dir, f"calibration_{i}.csv") for i in range(self.num_versions)]
 
         self.id = "CID"
         self.type_name = "SNTYPE"
@@ -60,7 +68,7 @@ class Aggregator(Task):
         self.plot = options.get("PLOT", True)
         self.plot_all = options.get("PLOT_ALL", False)
         self.output["classifiers"] = self.classifiers
-
+        self.output["calibration_files"] = self.output_cals
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
         else:
@@ -110,6 +118,66 @@ class Aggregator(Task):
             df = df.drop(columns="VARNAMES:")
         remove_columns = [c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c]
         df = df.drop(columns=remove_columns)
+        return df
+
+    def save_calibration_curve(self, df, output_name):
+
+        self.logger.debug("Creating calibration curves")
+
+        # First let us define some prob bins
+        bins = np.linspace(-1, 2, 61)  # Yes, outside normal range, so if we smooth it we dont screw things up with edge effects
+        bc = 0.5 * (bins[:-1] + bins[1:])
+        mask = (bc >= 0) & (bc <= 1)
+        bc3 = bc[mask]  # Dont bother saving out the negative probs
+        bc4 = np.concatenate(([0], bc3, [1.0]))  # For them bounds
+
+        truth = df["IA"]
+        cols = [c for c in df.columns() if c.startswith("PROB_")]
+        result = {"bins": bc4}
+        for c in cols:
+            data = df[c]
+
+            actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=bins, statistic="mean")
+            m = np.isfinite(actual_prob)  # All the -1 to 0 and 1 to 2 probs will be NaN
+
+            # Sets a 1:1 line outside of 0 to 1
+            actual_prob2 = actual_prob.copy()
+            actual_prob2[~m] = bc[~m]
+
+            # Optional Gaussian filter. Turning this off but I'll keep the code in, in case we want to play around later with changing sigma
+            actual_prob3 = gaussian_filter(actual_prob2, sigma=0)[mask]
+
+            # Lets make sure out bounds are correct and all prob values are good. The last two lines will only do anything if sigma>0
+            actual_prob4 = np.concatenate(([0], actual_prob3, [1.0]))
+            actual_prob4[actual_prob4 < 0] = 0
+            actual_prob4[actual_prob4 > 1] = 1
+            result[c] = actual_prob4
+
+        result_df = pd.DataFrame(result)
+        result_df.to_csv(output_name, index=False)
+        self.logger.debug(f"Calibration curves output to {output_name}")
+
+    def recalibrate(self, df):
+        self.logger.debug("Recalibrating!")
+        curves = self.load_calibration_curve()
+        cols = [c for c in df.columns() if c.startswith("PROB_")]
+        for c in cols:
+            self.logger.debug(f"Recalibrating column {c}")
+            data = df[c]
+            recalibrated = interp1d(curves["bins"], curves[c])(data)
+            df[c.replace("PROB_", "CPROB_")] = recalibrated
+        self.logger.debug("Returning recalibrated curves. They start with CPROB_, instead of PROB_")
+        return df
+
+    def load_calibration_curve(self):
+        path = self.recal_aggtask.output["calibration_files"]
+        if len(path) > 1:
+            self.logger.warning(f"Warning, found multiple calibration files, only using first one: {path}")
+        assert len(path) != 0, f"No calibration files found for agg task {self.recal_aggtask}"
+        path = path[0]
+
+        df = pd.read_csv(path)
+        self.logger.debug(f"Reading calibration curves from {path}")
         return df
 
     def _run(self, force_refresh):
@@ -170,7 +238,12 @@ class Aggregator(Task):
                 sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
                 df = df.reindex(sorted_columns, axis=1)
                 self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
+
+                self.save_calibration_curve(df, self.output_cals[index])
+                if self.recal_aggtask:
+                    df = self.recalibrate(df)
                 df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
+
                 self.save_key_format(df, index)
                 self.logger.debug(f"Saving merged dataframe to {self.output_dfs[index]}")
                 self.save_new_hash(new_hash)
@@ -229,6 +302,7 @@ class Aggregator(Task):
 
         tasks = []
 
+        # Check for recalibration, and if so, find that task first
         for agg_name in c.get("AGGREGATION", []):
             config = c["AGGREGATION"][agg_name]
             if config is None:
@@ -237,8 +311,24 @@ class Aggregator(Task):
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
             mask_clas = config.get("MASK_CLAS", "")
+            recalibration = config.get("RECALIBRATION")
+            recal_simtask = None
+            recal_aggtask = None
+            if recalibration:
+                recal_sim = [i for i, s in enumerate(sim_tasks) if s.name == recalibration]
+
+                if len(recal_sim) == 0:
+                    Task.fail_config(f"Recalibration sim {recalibration} not in the list of available sims: {[s.name for s in sim_tasks]}")
+                elif len(recal_sim) > 1:
+                    Task.fail_config(f"Recalibration aggregation {recalibration} not in the list of available aggs: {[s.name for s in sim_tasks]}")
+
+                # Move the recal sim task to the front of the queue so it executes first
+                recal_sim_index = recal_sim[0]
+                recal_simtask = sim_tasks[recal_sim_index]
+                sim_tasks.insert(0, sim_tasks.pop(recal_sim_index))
+
             for sim_task in sim_tasks:
-                if mask_sim not in sim_task.name or mask not in sim_task.name:
+                if mask_sim not in sim_task.name or mask not in sim_task.name and recal_simtask != sim_task:
                     continue
 
                 agg_name2 = f"{agg_name}_{sim_task.name}"
@@ -250,7 +340,14 @@ class Aggregator(Task):
                 if len(deps) == 0:
                     Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
                 else:
-                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options)
+                    if recalibration and sim_task != recal_simtask:
+                        if recal_aggtask is None:
+                            Task.fail_config("The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
+                        else:
+                            deps.append(recal_aggtask)
+                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options, recal_aggtask)
+                    if sim_task == recal_simtask:
+                        recal_aggtask = a
                     Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
                     tasks.append(a)
 

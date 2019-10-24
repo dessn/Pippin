@@ -5,7 +5,7 @@ BIASCOR:
     SIMFILE_BIASCOR: [DESFIT_DESBIASCOR, LOWZFIT_LOWZBIASCOR]  # The names of the biascor simulations. Will find the merged fitres output for it. Might have issues if more than one exists
     CLASSIFIER: UNITY  # The classifier to use. Should have a predict matching the data and biascor sims. Might have issues if more than one exists.
     MAKE_ALL_HUBBLE: False # Defaults to True. If True, makes one hubble diagram for each sim version (ranseed change). Else only makes the first hubble diagram. Good for when you generate 100 sims but dont want 100 plots clogging up the dir
-
+    USE_RECALIBRATED: True # Defaults to False. Will load in the recalibrated probabilities, and crash and burn if they dont exist.
   MUOPTS:
     DATA: [D_DESSIM, L_LOWZSIM]
     SIMFILE_BIASCOR: [D_DESBIASCOR, L_LOWZBIASCOR]
