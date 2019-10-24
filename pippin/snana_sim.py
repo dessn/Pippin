@@ -99,7 +99,12 @@ class SNANASimulation(ConfigBasedExecutable):
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
-            self.set_property(key, self.config["GLOBAL"][key])
+            direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM"]
+            if key in direct_set:
+                self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
+            else:
+                self.set_property(f"GENOPT_GLOBAL: {key}", self.config["GLOBAL"][key], assignment=" ")
+
             if key == "RANSEED_CHANGE":
                 self.delete_property("RANSEED_REPEAT")
             elif key == "RANSEED_REPEAT":
