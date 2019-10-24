@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import sys
@@ -30,16 +32,23 @@ def get_arguments():
     return config
 
 
-def load_file(file):
-    logging.info(f"Loading file {file}")
-    df = pd.read_csv(file, delim_whitespace=True, comment="#")
-    return df
+def load_file(file, cols):
+    name = file.split("/")[-4]
+    newfile = name + ".csv.gz"
+    if os.path.exists(newfile):
+        logging.info(f"Loading existing csv.gz file: {newfile}")
+        return pd.read_csv(newfile), name
+    else:
+        df = pd.read_csv(file, delim_whitespace=True, comment="#")
+        df2 = df[cols]
+        df2.to_csv(newfile, index=False, float_format="%0.5f")
+        logging.info(f"Saved dataframe from {file} to {newfile}")
+        return df2, name
 
 
-def plot_histograms(data, sims, types):
+def plot_histograms(data, sims, types, cols):
 
     fig, axes = plt.subplots(2, 4, figsize=(9, 5))
-    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
 
     for c, ax in zip(cols, axes.flatten()):
         minv = min([x[c].quantile(0.01) for x in data + sims])
@@ -47,13 +56,13 @@ def plot_histograms(data, sims, types):
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
-        for d in data:
+        for d, n in data:
             hist, _ = np.histogram(d[c], bins=bins)
             err = np.sqrt(hist)
             area = (bins[1] - bins[0]) * hist.sum()
-            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", c="k", ms=2, elinewidth=0.75)
+            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", c="k", ms=2, elinewidth=0.75, label=n)
 
-        for s in sims:
+        for s, n in sims:
             mask = np.isin(s["TYPE"], types)
             ia = s[mask]
             nonia = s[~mask]
@@ -61,12 +70,14 @@ def plot_histograms(data, sims, types):
             hist, _ = np.histogram(s[c], bins=bins)
             area = (bins[1] - bins[0]) * hist.sum()
 
-            ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area)
-            ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--")
-            ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":")
+            ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n)
+            if len(sims < 3):
+                ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only")
+                ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only")
 
         ax.set_xlabel(c)
-    fig.tight_layout()
+    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", ncol=6)
+    plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
@@ -94,10 +105,10 @@ def plot_redshift_evolution(data, sims, types):
         bins = np.linspace(minv, maxv, 10)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
         lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
-        for d in data:
+        for d, n in data:
 
             means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
-            ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
+            ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
             ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
 
         for sim in sims:
@@ -105,9 +116,9 @@ def plot_redshift_evolution(data, sims, types):
             ia = sim[mask]
             nonia = sim[~mask]
 
-            for s, ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
+            for (s, n), ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
                 means, err, std, std_err = get_means_and_errors(s["zHD"], s[c], bins=bins)
-                ax0.plot(bc, means, ls=ls, zorder=z)
+                ax0.plot(bc, means, ls=ls, zorder=z, label=n)
                 ax0.fill_between(bc, means - err, means + err, alpha=0.1, zorder=z)
                 ax1.plot(bc, std, ls=ls, zorder=z)
                 ax1.fill_between(bc, std - std_err, std + std_err, alpha=0.1, zorder=z)
@@ -118,7 +129,8 @@ def plot_redshift_evolution(data, sims, types):
         ax1.set_xlim(*lim)
     axes[1, 0].set_xlabel("z")
     axes[1, 1].set_xlabel("z")
-    fig.tight_layout()
+    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", ncol=6)
+    plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
@@ -133,11 +145,12 @@ if __name__ == "__main__":
         if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
+        cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
 
-        data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
-        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
+        data_dfs = [load_file(f, cols) for f in args.get("DATA_FITRES", [])]
+        sim_dfs = [load_file(f, cols) for f in args.get("SIM_FITRES", [])]
 
-        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"])
+        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], cols)
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"])
 
         logging.info(f"Writing success to {args['donefile']}")
