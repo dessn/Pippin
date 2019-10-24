@@ -35,6 +35,7 @@ class Merger(Task):
         fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
         lc_output_dir: path to the "output" folder created by split and fit
         lcfit_name: light curve fit name
+        blind: bool - whether or not to blind cosmo results
     """
 
     def __init__(self, name, output_dir, dependencies, options):
@@ -59,6 +60,7 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
+        self.output["blind"] = self.lc_fit["blind"]
 
     def get_lcfit_dep(self):
         for d in self.dependencies:

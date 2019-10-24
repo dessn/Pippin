@@ -37,6 +37,7 @@ class SNANASimulation(ConfigBasedExecutable):
         types: dict map from numeric gentype to string (Ia, II, etc)
         photometry_dirs: location of fits files with photometry. is a list.
         ranseed_change: true or false for if RANSEED_CHANGE was set
+        blind: bool - whether to blind cosmo results
     """
 
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
@@ -45,6 +46,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.genversion = genversion
         self.config = config
+        self.options = config.get("OPTS", {})
         self.reserved_keywords = ["BASE"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.base_ia = [config[k]["BASE"] for k in config.keys() if k.startswith("IA_") or k == "IA"]
@@ -59,7 +61,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
-
+        self.output["blind"] = self.options.get("BLIND", False)
         # Try to determine how many jobs will be put in the queue
         try:
             property = self.config.get("GLOBAL", {}).get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")

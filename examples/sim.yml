@@ -2,6 +2,8 @@ SIM:
   LOWZSIM:
     IA_G10_LOWZ:  # Must have a sim type that starts with IA_ or is called exactly IA. Its how it gets divided into Ia or contaminant.
       BASE: sn_ia_salt2_g10_lowz.input
+    OPTS:
+      BLIND: True # Turns on blinding for cosmomc and wfit if they use this sim
 
   DESSIM:
     IA_G10_DES3YR:

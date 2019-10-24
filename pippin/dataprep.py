@@ -22,6 +22,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         clump_file: clumping file with estimate of t0 for each event
         types_dict: dict mapping IA and NONIA to types
         types: dict mapping numbers to types, used by Supernnova
+        blind: bool - whether or not to blind cosmo results
     """
 
     def __init__(self, name, output_dir, options, dependencies=None):
@@ -48,6 +49,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.clump_file = os.path.join(self.output_dir, self.genversion + ".SNANA.TEXT")
         self.output["clump_file"] = self.clump_file
         self.output["ranseed_change"] = False
+        self.output["blind"] = options.get("BLIND", True)
 
         self.types_dict = options.get("TYPES")
         if self.types_dict is None:

@@ -32,6 +32,7 @@ class CreateCov(ConfigBasedExecutable):
         output_dir: top level output directory
         ini_dir : The directory the .ini files for cosmomc will be output to
         covopts : a dictionary mapping a covopt label to a number
+        blind: bool - whether or not to blind cosmo results
 
     """
 
@@ -54,6 +55,7 @@ class CreateCov(ConfigBasedExecutable):
         self.config_dir = os.path.join(self.output_dir, "output")
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
+        self.output["blind"] = self.biascor_dep.output["blind"]
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 

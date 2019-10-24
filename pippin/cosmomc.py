@@ -33,6 +33,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
     chain_dict : a map from covopt label to a .txt file to be loaded in
     param_dict : a map from covopt label to a text file listing param names and latex label
     cosmology_params : a list of cosmology parameter names output by cosmomc that we really care about
+    blind: bool - whether or not to blind cosmo results
 
     """
 
@@ -47,6 +48,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
         self.create_cov_dep = self.get_dep(CreateCov)
+        self.blind = self.create_cov_dep.output["blind"]
         avail_cov_opts = self.create_cov_dep.output["covopts"]
 
         self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())

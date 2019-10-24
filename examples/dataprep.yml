@@ -14,3 +14,4 @@ DATAPREP:
         IA: [118, 120]  # For secure typing.
         NONIA: [113, 117, 111, 115, 112, 114, 110]  # II, Ibc, SLSN, Iax, 91bg, etc. Anything which is known not to be Ia.
         # Anything NOT IN either of the above list becomes an "UNKNOWN"
+        BLIND: False # Blind the data. DEFAULTS TO TRUE

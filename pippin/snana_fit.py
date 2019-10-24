@@ -27,6 +27,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         lc_output_dir: directory which contains fitres_dir and the simlogs dir
         fitopt_map: map from fitopt name (DEFAULT being nothing) to the FITOPTxxx.FITRES file
         is_data: true if the dependence is a DataPrep, false if its from a simulation
+        blind: bool - whether or not to blind cosmo results
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
@@ -56,6 +57,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["nml_file"] = self.config_path
         self.output["genversion"] = self.sim_version
         self.output["sim_name"] = sim_task.output["name"]
+        self.output["blind"] = sim_task.output["blind"]
         self.output["lc_output_dir"] = self.lc_output_dir
 
         is_data = False

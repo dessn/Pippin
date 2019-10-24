@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import os
 from pathlib import Path
+import numpy as np
 
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, ensure_list, get_data_loc
@@ -60,10 +61,14 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.files = []
         self.names = []
         self.params = []
-        self.blind_params = ensure_list(options.get("BLIND", []))
 
         # Assuming all deps are cosmomc tasks
         self.cosmomc_deps = self.get_deps(CosmoMC)
+        self.blind = np.any([c.output["blind"] for c in self.cosmomc_deps])
+        if self.blind:
+            self.blind_params = ["w", "om", "ol", "omegam", "omegal"]
+        else:
+            self.blind_params = []
         self.biascor_deps = self.get_deps(BiasCor)
         self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 

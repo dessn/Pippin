@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import os
 import pandas as pd
+import numpy as np
 from scipy.interpolate import interp1d
 
 from pippin.base import ConfigBasedExecutable
@@ -38,6 +39,8 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = None
         self.data = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
+        self.blind = np.any([m.output["blind"] for m in self.merged_data])
+        self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
         self.num_verions = [len(m.output["fitres_dirs"]) for m in self.merged_data]
         self.genversion = "_".join(self.sim_names) + "_" + self.classifier.name
@@ -195,6 +198,13 @@ class BiasCor(ConfigBasedExecutable):
                     col = self.probability_column_name
                 key = f"{c} {col}"
             self.set_property(key, value, assignment=assignment)
+
+        if self.blind:
+            self.set_property("blindflag", 1, assignment="=")
+            self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121 --blind", assignment=": ")
+        else:
+            self.set_property("blindflag", 0, assignment="=")
+            self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121", assignment=": ")
 
         bullshit_hack = ""
         for i, d in enumerate(self.data):
@@ -383,6 +393,8 @@ class BiasCor(ConfigBasedExecutable):
         return not error
 
     def _run(self, force_refresh):
+        if self.blind:
+            self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input(force_refresh)
         if regenerating:
             command = ["SALT2mu_fit.pl", self.config_filename, "NOPROMPT"]
