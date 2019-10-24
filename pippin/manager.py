@@ -240,6 +240,9 @@ class Manager:
                 if current_sleep_time > max_sleep_time:
                     current_sleep_time = max_sleep_time
                 squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.70j'", shell=True, text=True).splitlines()]
+                n = len(squeue)
+                if n == 0 or n > self.max_jobs:
+                    self.logger.debug("Squeue is reporting {n} jobs in the queue... this is either 0 or toeing the line as to too many")
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 
