@@ -114,7 +114,7 @@ def plot_efficiency(data_all, sims, types, fields):
 
 
 def save_efficiency_file(xs, ys, c):
-    name_map = {"HOST_MAG_i": "i_obs", "HOST_MAG_r": "r_obs", "HOST_MAG_z": "z_obs", "HOST_MAG_g": "g_obs", "zHD": "z_obs"}
+    name_map = {"HOST_MAG_i": "i_obs", "HOST_MAG_r": "r_obs", "HOST_MAG_z": "z_obs", "HOST_MAG_g": "g_obs", "zHD": "ZTRUE"}
     with open(f"efficiency_{c}.dat", "w") as f:
         header = f"""OPT_EXTRAP: 1
 
