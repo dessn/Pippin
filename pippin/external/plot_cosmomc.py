@@ -92,7 +92,7 @@ def get_arguments():
 
 
 def get_output_name(args, name):
-    path = args["OUTPUT"] + "___" + name + ".csv.gz"
+    path = args["OUTPUT_NAME"] + "___" + name + ".csv.gz"
     basename = os.path.basename(path)
     return path, basename
 
@@ -180,7 +180,7 @@ if __name__ == "__main__":
                 c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
 
             # Write all our glorious output
-            out = args.get("OUTPUT")
+            out = args.get("OUTPUT_NAME")
             c.analysis.get_latex_table(filename=out + "_params.txt")
             c.plotter.plot(filename=out + ".png", figsize=1.5)
             c.plotter.plot_summary(filename=out + "_summary.png", errorbar=True)
