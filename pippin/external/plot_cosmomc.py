@@ -84,7 +84,7 @@ def get_arguments():
     config["donefile"] = args.donefile
     config.update(config["COSMOMC"])
 
-    if args["names"] is not None:
+    if config["names"] is not None:
         assert len(config["NAMES"]) == len(config["FILES"]), (
             "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
         )
