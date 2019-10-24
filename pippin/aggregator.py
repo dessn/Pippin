@@ -28,6 +28,7 @@ class Aggregator(Task):
         MASK: TEST  # partial match on sim and classifier
         MASK_SIM: TEST  # partial match on sim name
         MASK_CLAS: TEST  # partial match on classifier name
+        RECALIBRATION: SIMNAME # To recalibrate on.
         OPTS:
           PLOT: True  # Whether or not to generate the PR curve, ROC curve, reliability plot, etc. Can specify a PYTHON FILE WHICH GETS INVOKED
           PLOT_ALL: False # If you use RANSEED_CHANGE, should we plot for all versions. Defaults to no.
