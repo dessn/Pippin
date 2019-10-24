@@ -162,11 +162,14 @@ class Aggregator(Task):
         self.logger.debug("Recalibrating!")
         curves = self.load_calibration_curve()
         cols = [c for c in df.columns if c.startswith("PROB_")]
-        print(cols, list(curves.keys()))
         for c in cols:
             self.logger.debug(f"Recalibrating column {c}")
             data = df[c]
-            recalibrated = interp1d(curves["bins"], curves[c])(data)
+            if c not in curves:
+                self.logger.warning(f"Classifier {c} cannot be recalibrated. If this is because its FITPROB or another fake classifier, all good.")
+                recalibrated = data
+            else:
+                recalibrated = interp1d(curves["bins"], curves[c])(data)
             df[c.replace("PROB_", "CPROB_")] = recalibrated
         self.logger.debug("Returning recalibrated curves. They start with CPROB_, instead of PROB_")
         return df
