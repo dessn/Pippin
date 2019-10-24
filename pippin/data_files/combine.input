@@ -8,7 +8,7 @@ PATH_SNDATA_SIM:  $SCRATCH_SIMDIR
 
 SIMGEN_INFILE_Ia:       des_ia.input
 SIMGEN_INFILE_NONIa:    contaminant_iax.input
-NGEN_UNIT:  0.1
+
 
 H0: 70
 FORMAT_MASK: 48           # 2=TERSE    16=RanCID  32=FITS-FORMAT
