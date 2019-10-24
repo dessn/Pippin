@@ -285,7 +285,8 @@ class BiasCor(ConfigBasedExecutable):
                     alpha = 0
                     beta = 0
                     sigint = 0
-                    gamma = r"$\gamma$ not fit"
+                    gamma = r"$\gamma = 0$"
+                    scalepcc = "NA"
                     num_sn_fit = df.shape[0]
                     contam_data, contam_true = "", ""
                     with open(m0dif_file) as f:
@@ -316,8 +317,10 @@ class BiasCor(ConfigBasedExecutable):
                                 v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
                                 n = v * num_sn_fit
                                 contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
+                            if "scalePCC" in line:
+                                scalepcc = "scalePCC = $" + line.split("=")[-1].strip().replace("+-", r"\pm") + "$"
                     prob_label = prob_col_name.replace("PROB_", "").replace("_", " ")
-                    label = "\n".join([num_sn, alpha, beta, sigint, gamma, contam_true, contam_data, f"Classifier = {prob_label}"])
+                    label = "\n".join([num_sn, alpha, beta, sigint, gamma, scalepcc, contam_true, contam_data, f"Classifier = {prob_label}"])
                     label = label.replace("\n\n", "\n").replace("\n\n", "\n")
                     dfz = df["zHD"]
                     zs = np.linspace(dfz.min(), dfz.max(), 500)
@@ -359,7 +362,7 @@ class BiasCor(ConfigBasedExecutable):
                             sub2 = -dfm["MUREF"]
                             sub3 = 0
                             ax.set_ylabel(r"$\mu$")
-                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=10)
+                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=8)
 
                         ax.set_xlabel("$z$")
                         ax.axvline(tranz(n_thresh), c="#888888", alpha=0.4, zorder=0, lw=0.7, ls="--")
