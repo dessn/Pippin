@@ -161,7 +161,7 @@ class Aggregator(Task):
     def recalibrate(self, df):
         self.logger.debug("Recalibrating!")
         curves = self.load_calibration_curve()
-        cols = [c for c in df.columns() if c.startswith("PROB_")]
+        cols = [c for c in df.columns if c.startswith("PROB_")]
         for c in cols:
             self.logger.debug(f"Recalibrating column {c}")
             data = df[c]
