@@ -108,7 +108,7 @@ def get_output(basename, args, index, name):
         names, labels = load_params(param_file)
         blind_params = args.get("BLIND")
         params = args.get("PARAMS")
-        weights, likelihood, chain = load_chains(chain_files, names, args["params"])
+        weights, likelihood, chain = load_chains(chain_files, names, params)
         if blind_params:
             blind(chain, params or names, blind_params, index=index)
         labels = [
