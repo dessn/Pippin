@@ -102,7 +102,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 if c == "zHD":
                     x = np.arange(0, 2.0, 0.05)
                 else:
-                    x = np.arange(5, 30, 0.25)
+                    x = np.arange(15, 30, 0.25)
                 y = interp1d(bc3, smoothed_ratio, fill_value=(smoothed_ratio[0], smoothed_ratio[-1]), bounds_error=False)(x)
                 y = y / y.max()
                 y[y < 0.001] = 0
@@ -114,12 +114,11 @@ def plot_efficiency(data_all, sims, types, fields):
 
 
 def save_efficiency_file(xs, ys, c):
+    name_map = {"HOST_MAG_i": "i_obs", "HOST_MAG_r": "r_obs", "HOST_MAG_z": "z_obs", "HOST_MAG_g": "g_obs", "zHD": "z_obs"}
     with open(f"efficiency_{c}.dat", "w") as f:
-        header = f"""# ----------------------------
-#   BEGIN MAP
-#
-#      {c}      eff
-# -----------------------------
+        header = f"""OPT_EXTRAP: 1
+
+VARNAMES: {name_map[c]} HOSTEFF
 """
         f.write(header)
         for x, y in zip(xs, ys):
