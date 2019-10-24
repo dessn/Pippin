@@ -162,6 +162,7 @@ class Aggregator(Task):
         self.logger.debug("Recalibrating!")
         curves = self.load_calibration_curve()
         cols = [c for c in df.columns if c.startswith("PROB_")]
+        print(cols, list(curves.keys()))
         for c in cols:
             self.logger.debug(f"Recalibrating column {c}")
             data = df[c]
