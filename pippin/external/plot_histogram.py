@@ -40,10 +40,10 @@ def load_file(file):
         return pd.read_csv(newfile), name
     else:
         df = pd.read_csv(file, delim_whitespace=True, comment="#")
-        df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
-        df2.to_csv(newfile, index=False, float_format="%0.5f")
+        # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
+        df.to_csv(newfile, index=False, float_format="%0.5f")
         logging.info(f"Saved dataframe from {file} to {newfile}")
-        return df2, name
+        return df, name
 
 
 def plot_histograms(data, sims, types):
