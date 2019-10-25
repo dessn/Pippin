@@ -2,10 +2,10 @@
 
 
 # full 5-year simlib
-SIMLIB_FILE:  $DES_ROOT/simlibs/DES_DIFFIMG_20180516_withCCDnum.SIMLIB
+SIMLIB_FILE:  $DES_ROOT/simlibs/DES_DIFFIMG.SIMLIB
 
 # ----------------- host info ---------------
-HOSTLIB_FILE:    $DES_ROOT/fakeSN/LIBS/HOSTLIB_Y2/DES_SVA2_Y2.HOSTLIB
+HOSTLIB_FILE:    $DES_ROOT/simlibs/DES_5YR.HOSTLIB
 HOSTLIB_GENRANGE_NSIGZ: -3. +3.  # not yet implemented
 HOSTLIB_MSKOPT:     258           # 2=noise, 256=vbose
 
