@@ -145,7 +145,7 @@ if __name__ == "__main__":
         if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
-        cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
+        cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]
 
         data_dfs = [load_file(f, cols) for f in args.get("DATA_FITRES", [])]
         sim_dfs = [load_file(f, cols) for f in args.get("SIM_FITRES", [])]
