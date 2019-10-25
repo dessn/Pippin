@@ -99,7 +99,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
-            direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT", "NGENTOT_LC"]
+            direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT"]
             if key in direct_set:
                 self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
             else:
@@ -258,6 +258,11 @@ class SNANASimulation(ConfigBasedExecutable):
                         return Task.FINISHED_FAILURE
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
+
+            with open(self.done_file) as f:
+                if "FAILURE" in f.read():
+                    self.logger.error("Done file {self.done_file} reporting failure")
+                    return Task.FINISHED_FAILURE
 
             self.logger.info("Done file found, creating symlinks")
             s_ends = [os.path.join(self.output_dir, os.path.basename(s)) for s in self.sim_folders]
