@@ -100,8 +100,8 @@ def plot_redshift_evolution(data, sims, types):
     for c, row in zip(cols, axes.T):
         ax0, ax1 = row
 
-        minv = min([x["zHD"].min() for x in data + sims])
-        maxv = max([x["zHD"].max() for x in data + sims])
+        minv = min([x[0]["zHD"].min() for x in data + sims])
+        maxv = max([x[0]["zHD"].max() for x in data + sims])
         bins = np.linspace(minv, maxv, 10)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
         lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
