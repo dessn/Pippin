@@ -261,7 +261,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
-                    self.logger.error("Done file {self.done_file} reporting failure")
+                    self.logger.error(f"Done file {self.done_file} reporting failure")
                     return Task.FINISHED_FAILURE
 
             self.logger.info("Done file found, creating symlinks")
