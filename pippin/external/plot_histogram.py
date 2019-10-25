@@ -48,8 +48,9 @@ def load_file(file):
 
 def plot_histograms(data, sims, types):
 
-    fig, axes = plt.subplots(2, 4, figsize=(9, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
+    ncols = (len(cols) + 1) // 2
+    fig, axes = plt.subplots(2, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
         maxv = max([x[0][c].quantile(0.99) for x in data + sims])
@@ -148,6 +149,9 @@ if __name__ == "__main__":
 
         data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
         sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
+
+        for df, n in data_dfs + sim_dfs:
+            df.replace(-999, np.nan, inplace=True)
 
         plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"])
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"])
