@@ -71,7 +71,7 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --time=00:10:00
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl-lc
+#SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=1GB
