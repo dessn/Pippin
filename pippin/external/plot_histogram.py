@@ -32,7 +32,7 @@ def get_arguments():
     return config
 
 
-def load_file(file, cols):
+def load_file(file):
     name = file.split("/")[-4]
     newfile = name + ".csv.gz"
     if os.path.exists(newfile):
@@ -40,16 +40,16 @@ def load_file(file, cols):
         return pd.read_csv(newfile), name
     else:
         df = pd.read_csv(file, delim_whitespace=True, comment="#")
-        df2 = df[cols]
+        df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
         df2.to_csv(newfile, index=False, float_format="%0.5f")
         logging.info(f"Saved dataframe from {file} to {newfile}")
         return df2, name
 
 
-def plot_histograms(data, sims, types, cols):
+def plot_histograms(data, sims, types):
 
     fig, axes = plt.subplots(2, 4, figsize=(9, 5))
-
+    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
     for c, ax in zip(cols, axes.flatten()):
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
         maxv = max([x[0][c].quantile(0.99) for x in data + sims])
@@ -145,12 +145,11 @@ if __name__ == "__main__":
         if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
-        cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]
 
-        data_dfs = [load_file(f, cols) for f in args.get("DATA_FITRES", [])]
-        sim_dfs = [load_file(f, cols) for f in args.get("SIM_FITRES", [])]
+        data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
+        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
 
-        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], cols)
+        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"])
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"])
 
         logging.info(f"Writing success to {args['donefile']}")
