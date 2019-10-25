@@ -94,7 +94,7 @@ def get_means_and_errors(x, y, bins):
 
 def plot_redshift_evolution(data, sims, types):
 
-    fig, axes = plt.subplots(2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0})
+    fig, axes = plt.subplots(2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0, "wspace": 0.4})
     cols = ["x1", "c"]
 
     for c, row in zip(cols, axes.T):
@@ -129,7 +129,7 @@ def plot_redshift_evolution(data, sims, types):
         ax1.set_xlim(*lim)
     axes[1, 0].set_xlabel("z")
     axes[1, 1].set_xlabel("z")
-    plt.legend(bbox_to_anchor=(-1.1, 2.0, 2, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
+    plt.legend(bbox_to_anchor=(-1.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
 
