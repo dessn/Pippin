@@ -40,13 +40,13 @@ def load_file(file):
     newfile = name + ".csv.gz"
     if os.path.exists(newfile):
         logging.info(f"Loading existing csv.gz file: {newfile}")
-        return pd.read_csv(newfile), name
+        return pd.read_csv(newfile)
     else:
         df = pd.read_csv(file, delim_whitespace=True, comment="#")
         # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
         df.to_csv(newfile, index=False, float_format="%0.5f")
         logging.info(f"Saved dataframe from {file} to {newfile}")
-        return df, name
+        return df
 
 
 def plot_efficiency(data_all, sims, types, fields):
@@ -78,7 +78,13 @@ def plot_efficiency(data_all, sims, types, fields):
                 err_data = np.sqrt(hist_data)
 
                 hist_sim, _ = np.histogram(s[c], bins=bins)
+                mask_sim_zero = hist_sim == 0
                 hist_sim2, _ = np.histogram(s[c], bins=bins2)
+                mask_sim2_zero = hist_sim2 == 0
+
+                hist_sim[mask_sim_zero] = 1
+                hist_sim2[mask_sim2_zero] = 1
+
                 err_sim = np.sqrt(hist_sim)
 
                 ratio = hist_data / hist_sim
