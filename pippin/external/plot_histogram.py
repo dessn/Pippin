@@ -111,12 +111,12 @@ def plot_redshift_evolution(data, sims, types):
             ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
             ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
 
-        for sim in sims:
+        for sim, n in sims:
             mask = np.isin(sim["TYPE"], types)
             ia = sim[mask]
             nonia = sim[~mask]
 
-            for (s, n), ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
+            for s, ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
                 means, err, std, std_err = get_means_and_errors(s["zHD"], s[c], bins=bins)
                 ax0.plot(bc, means, ls=ls, zorder=z, label=n)
                 ax0.fill_between(bc, means - err, means + err, alpha=0.1, zorder=z)
