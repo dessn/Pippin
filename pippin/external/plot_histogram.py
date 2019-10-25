@@ -48,7 +48,7 @@ def load_file(file):
 
 def plot_histograms(data, sims, types):
 
-    fig, axes = plt.subplots(2, 4, figsize=(9, 5))
+    fig, axes = plt.subplots(2, 4, figsize=(9, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
     for c, ax in zip(cols, axes.flatten()):
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
@@ -76,8 +76,8 @@ def plot_histograms(data, sims, types):
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only")
 
         ax.set_xlabel(c)
-    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", ncol=6)
-    plt.tight_layout(rect=[0, 0, 0.75, 1])
+    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=6, frameon=False)
+    # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
@@ -109,18 +109,18 @@ def plot_redshift_evolution(data, sims, types):
 
             means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
             ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
-            ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20)
+            ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
 
         for sim, n in sims:
             mask = np.isin(sim["TYPE"], types)
             ia = sim[mask]
             nonia = sim[~mask]
 
-            for s, ls, z in [(sim, "-", 10), (ia, "--", 3), (nonia, ":", 2)]:
+            for s, ls, z, n2 in [(sim, "-", 10, " all"), (ia, "--", 3, " Ia"), (nonia, ":", 2, " CC")]:
                 means, err, std, std_err = get_means_and_errors(s["zHD"], s[c], bins=bins)
-                ax0.plot(bc, means, ls=ls, zorder=z, label=n)
+                ax0.plot(bc, means, ls=ls, zorder=z, label=n + n2)
                 ax0.fill_between(bc, means - err, means + err, alpha=0.1, zorder=z)
-                ax1.plot(bc, std, ls=ls, zorder=z)
+                ax1.plot(bc, std, ls=ls, zorder=z, label=n + n2)
                 ax1.fill_between(bc, std - std_err, std + std_err, alpha=0.1, zorder=z)
 
         ax0.set_ylabel(f"Mean {c}")
@@ -129,8 +129,8 @@ def plot_redshift_evolution(data, sims, types):
         ax1.set_xlim(*lim)
     axes[1, 0].set_xlabel("z")
     axes[1, 1].set_xlabel("z")
-    plt.legend(bbox_to_anchor=(0, 1.02, 1, 0.2), loc="lower left", mode="expand", ncol=6)
-    plt.tight_layout(rect=[0, 0, 0.75, 1])
+    plt.legend(bbox_to_anchor=(-1.1, 2.0, 2, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
+    # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
