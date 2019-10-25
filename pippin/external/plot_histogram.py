@@ -51,8 +51,8 @@ def plot_histograms(data, sims, types, cols):
     fig, axes = plt.subplots(2, 4, figsize=(9, 5))
 
     for c, ax in zip(cols, axes.flatten()):
-        minv = min([x[c].quantile(0.01) for x in data + sims])
-        maxv = max([x[c].quantile(0.99) for x in data + sims])
+        minv = min([x[0][c].quantile(0.01) for x in data + sims])
+        maxv = max([x[0][c].quantile(0.99) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
