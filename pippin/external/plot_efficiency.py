@@ -8,6 +8,7 @@ import yaml
 from scipy.stats import binned_statistic, moment
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
+import os
 
 
 def setup_logging():
@@ -35,9 +36,17 @@ def get_arguments():
 
 
 def load_file(file):
-    logging.info(f"Loading file {file}")
-    df = pd.read_csv(file, delim_whitespace=True, comment="#")
-    return df
+    name = file.split("/")[-4]
+    newfile = name + ".csv.gz"
+    if os.path.exists(newfile):
+        logging.info(f"Loading existing csv.gz file: {newfile}")
+        return pd.read_csv(newfile), name
+    else:
+        df = pd.read_csv(file, delim_whitespace=True, comment="#")
+        # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
+        df.to_csv(newfile, index=False, float_format="%0.5f")
+        logging.info(f"Saved dataframe from {file} to {newfile}")
+        return df, name
 
 
 def plot_efficiency(data_all, sims, types, fields):
