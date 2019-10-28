@@ -249,9 +249,9 @@ BIASCOR:
       HostMass:
         SIMFILE_BIASCOR: [Dbias_DESBIASG10, Fbias_FOUNDBIASG10]
         FITOPT: 0
-        p5: 0.02
-	u5: 0
-
+        OPTS:
+          p5: 0.02
+          u5: 0
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
       zmax: 1.2
