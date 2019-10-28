@@ -1,0 +1,290 @@
+DATAPREP:
+  DATADES:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+  DATAFOUND:
+    OPTS:
+      RAW_DIR: /scratch/midway2/djbrout/djbrout_workingdir/djbrout/DATA/Foundation_DJ17_COMBINED_FITS
+
+SIM:  
+  # ----------- Data Sized Simulations ----------------------------------------
+  smallDES:
+    IA_DES:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/sn_ia_salt2_g10_des3yr.input
+      GENMAG_SMEAR_MODELNAME:  C11
+      SEARCHEFF_SPEC_FILE: $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_DES_C11.TXT
+      GENPEAK_SALT2BETA: 3.8
+      GENRANGE_SALT2BETA: 3.3  4.3
+      GENSIGMA_SALT2BETA: 0 0
+      GENPEAK_SALT2c:    -0.10
+      GENSIGMA_SALT2c:    0.003   0.12
+      GENRANGE_SALT2c:   -0.20    0.50
+      GENPEAK_SALT2x1:   0.964
+      GENSIGMA_SALT2x1:  1.467   0.235
+      CIDOFF: 200000
+    GLOBAL:
+      NGEN_UNIT: .6
+      FORMAT_MASK: 32
+      RANSEED_CHANGE: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+  smallFOUND:
+    IA_FOUND:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/SIMGEN_MASTER_FOUND_data.INPUT
+      GENMAG_SMEAR_MODELNAME:  C11
+      GENPEAK_SALT2BETA: 3.8
+      GENRANGE_SALT2BETA: 3.3  4.3
+      GENSIGMA_SALT2BETA: 0 0
+
+      GENPEAK_SALT2c:    -0.10
+      GENSIGMA_SALT2c:    0.0   0.134
+      GENPEAK_SALT2x1:   0.703
+      GENSIGMA_SALT2x1:  2.15   0.472
+      NGENTOT_LC: 5000
+      CIDOFF: 500000
+
+    GLOBAL:
+      NGEN_UNIT: .6
+      #NGENTOT_LC: 5000
+      FORMAT_MASK: 32
+      RANSEED_CHANGE: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+
+  # -----------       BIASCOR Simulations ----------------------------------------
+
+  DESBIASG10:
+    IA_G10_DES:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/sn_ia_salt2_g10_des3yr.input
+
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+
+    GLOBAL:
+      NGEN_UNIT: 1.0
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+  DESBIASC11:
+    IA_C11_DES:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/sn_ia_salt2_g10_des3yr.input
+
+      GENMAG_SMEAR_MODELNAME:  C11
+      SEARCHEFF_SPEC_FILE: $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_DES_C11.TXT
+
+
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENPEAK_SALT2BETA: 3.8
+      GENRANGE_SALT2BETA: 3.3  4.3
+      GENGRID_SALT2BETA: 2
+
+      GENPEAK_SALT2c:    -0.10
+      GENSIGMA_SALT2c:    0.003   0.12
+      GENRANGE_SALT2c:   -0.20    0.50
+      GENPEAK_SALT2x1:   0.964
+      GENSIGMA_SALT2x1:  1.467   0.235
+      
+
+    GLOBAL:
+      NGEN_UNIT: 1.0
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+  FOUNDBIASG10:
+    IA_G10_FOUND:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/SIMGEN_MASTER_FOUND_data.INPUT
+
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+      NGENTOT_LC: 5000
+
+    GLOBAL:
+      NGEN_UNIT: 1
+      NGENTOT_LC: 5000
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+  FOUNDBIASC11:
+    IA_C11_FOUND:
+      BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/SIMGEN_MASTER_FOUND_data.INPUT
+
+      GENMAG_SMEAR_MODELNAME:  C11
+
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENPEAK_SALT2BETA: 3.8
+      GENRANGE_SALT2BETA: 3.3  4.3
+      GENGRID_SALT2BETA: 2
+
+      GENPEAK_SALT2c:    -0.112
+      GENSIGMA_SALT2c:    0.0   0.144
+      GENRANGE_SALT2c:   -0.4   0.4
+      GENPEAK_SALT2x1:   0.974
+      GENSIGMA_SALT2x1:  1.234   0.283
+      GENRANGE_SALT2x1:   -4.0   4.0
+
+      NGENTOT_LC: 5000
+
+    GLOBAL:
+      NGEN_UNIT: 1
+      NGENTOT_LC: 5000
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+
+  # -----------      Lightcurve Fitting  ----------------------------------------
+
+
+LCFIT:
+
+  Ddata:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/DES_nofo.nml
+    MASK: DATADES
+    SNLCINP:
+      USE_MINOS: F
+    FITOPTS:
+      - /project2/rkessler/SURVEYS/DES/USERS/djbrout/des.fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+
+
+  Dsim:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/DES_nofo.nml
+    MASK: smallDES
+    SNLCINP:
+      USE_MINOS: F
+    FITOPTS:
+      - /project2/rkessler/SURVEYS/DES/USERS/djbrout/des.fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+
+  Fdata:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/FOUND_nofo.nml
+    MASK: DATAFOUND
+    SNLCINP:
+      USE_MINOS: F
+    FITOPTS:
+      - /project2/rkessler/SURVEYS/DES/USERS/djbrout/found.fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+
+  Fsim:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/FOUND_nofo.nml
+    MASK: smallFOUND
+    SNLCINP:
+      USE_MINOS: F
+    FITOPTS:
+      - /project2/rkessler/SURVEYS/DES/USERS/djbrout/found.fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+
+  Dbias:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/DES_nofo.nml
+    MASK: DESBIAS
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+  Fbias:
+    BASE: /project2/rkessler/SURVEYS/DES/USERS/djbrout/FOUND_nofo.nml
+    MASK: FOUNDBIAS
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 10
+
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+
+AGGREGATION:
+  AGG:
+#    OPTS:
+#      PLOT: True
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  realData:
+    DATA: [Ddata_DATADES, Fdata_DATAFOUND]
+    SIMFILE_BIASCOR: [Dbias_DESBIASC11, Fbias_FOUNDBIASC11]
+    CLASSIFIER: UNITY
+    MUOPTS:
+      G10:
+        SIMFILE_BIASCOR: [Dbias_DESBIASG10, Fbias_FOUNDBIASG10]
+        FITOPT: 0
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+      zmax: 1.2
+
+  sim:
+    DATA: [Dsim_smallDES, Fsim_smallFOUND]
+    SIMFILE_BIASCOR: [Dbias_DESBIASC11, Fbias_FOUNDBIASC11]
+    CLASSIFIER: UNITY
+    MUOPTS:
+      G10:
+        SIMFILE_BIASCOR: [Dbias_DESBIASG10, Fbias_FOUNDBIASG10]
+        FITOPT: 0
+      HostMass:
+        SIMFILE_BIASCOR: [Dbias_DESBIASG10, Fbias_FOUNDBIASG10]
+        FITOPT: 0
+        p5: 0.02
+	u5: 0
+
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_3hr.TEMPLATE 20
+      zmax: 1.2
+
+CREATE_COV:
+  ALL:
+    OPTS:
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[G10] [=DEFAULT,=G10]"
+        - "[Cal] [+cal,=DEFAULT]"
+        - "[MWEBV] [=MWEBV,=DEFAULT]"
+
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+      COVOPTS: [ALL, NOSYS, G10]  # If you leave this blank, you get them all. Exact matching
+      NUM_WALKERS: 8
+
+##  SN_CMB_OMW:
+##    OPTS:
+##      INI: sn_cmb_omw
+###      COVOPTS: [ALL]
+##      NUM_WALKERS: 4
+
+ANALYSE:
+#  ALL_OMW:
+#    MASK_COSMOMC: OMW
+#    OPTS:
+#      BLIND: w
+  SNONLY:
+    MASK_COSMOMC: SN_OMW
+    #OPTS:
+    #  BLIND: w
