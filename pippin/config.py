@@ -99,17 +99,25 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 
 def chown_file(path):
+    import grp
+
     global_config = get_config()
     logger = get_logger()
+    groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
+    group_id = groupinfo.gr_gid
     try:
-        shutil.chown(path, group=global_config["SNANA"]["group"])
+        os.chown(path, -1, group=group_id, follow_symlinks=False)
     except Exception:
         logger.debug(f"Chown error: {path}")
 
 
 def chown_dir(directory):
+    import grp
+
     global_config = get_config()
     logger = get_logger()
+    groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
+    group_id = groupinfo.gr_gid
     try:
         shutil.chown(directory, group=global_config["SNANA"]["group"])
         os.chmod(directory, 0o770)
@@ -119,13 +127,13 @@ def chown_dir(directory):
     for root, dirs, files in os.walk(directory):
         for d in dirs:
             try:
-                shutil.chown(os.path.join(root, d), group=global_config["SNANA"]["group"])
+                os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
                 os.chmod(os.path.join(root, d), 0o770)
             except Exception as e:
                 logger.exception(f"Chown error: {os.path.join(root, d)}", exc_info=e)
         for f in files:
             try:
-                shutil.chown(os.path.join(root, f), group=global_config["SNANA"]["group"])
+                os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
                 os.chmod(os.path.join(root, f), 0o660)
             except Exception as e:
                 logger.exception(f"Chown error: {os.path.join(root, f)}", exc_info=e)
