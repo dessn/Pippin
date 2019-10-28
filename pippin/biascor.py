@@ -233,6 +233,7 @@ class BiasCor(ConfigBasedExecutable):
             if value.get("FITOPT") is not None:
                 mu_str += f"FITOPT={value.get('FITOPT')} "
             for opt, opt_value in value.get("OPTS", {}).items():
+                self.logger.info(f"In MUOPT {label}, found OPTS flag for myopt with opt {opt} and value {opt_value}")
                 mu_str += f"{opt}={opt_value} "
             mu_str += "\n"
         if mu_str:
