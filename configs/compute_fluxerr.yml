@@ -24,7 +24,7 @@ LCFIT:
     BASE: des.nml
     SNLCINP:
       USE_MINOS: F
-      SNTABLE_LIST: "'FITRES LCPLOT'"
+      SNTABLE_LIST: "'FITRES LCPLOT(text:col)'"
       MXLC_PLOT: 100
       OPT_LCPLOT: 1
     OPTS:
