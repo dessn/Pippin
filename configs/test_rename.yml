@@ -1,0 +1,63 @@
+SIM:
+  TRAININGSIM:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 3 12345
+
+  TESTSIM1:
+    IA_C11:
+      BASE: sn_ia_salt2_c11.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 2 12345
+
+  TESTSIM2:
+    IA_C11:
+      BASE: sn_ia_salt2_c11.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 2 12345
+LCFIT:
+  TESTLC1:
+    BASE: des.nml
+  TESTLC2:
+    BASE: des.nml
+
+CLASSIFICATION:
+  SNNVANILLATRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNNVANILLATEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      MODEL: SNNVANILLATRAIN
+
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+    MASK: TESTSIM2
+
+  SNIRFTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    MASK_SIM: TESTSIM2
+    OPTS:
+      MODEL: SNIRFTRAIN
+
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:

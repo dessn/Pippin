@@ -45,6 +45,7 @@ class Aggregator(Task):
         sn_column_name: name of the SNID column
         sn_type_name: name of type column, only exists if INCLUDE_TYPE was set
         sim_name: name of sim
+        lcfit_names: names of the lcfit tasks being merged
         calibration_files: list[str] - all the calibration files. Hopefully only one will be made if you havent done something weird with the config
     """
 
@@ -52,6 +53,12 @@ class Aggregator(Task):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
+        self.lcfit_deps = [c.get_fit_dependency(output=False) for c in self.classifiers]
+        self.lcfit_names = list(set([l.output["name"] for l in self.lcfit_deps if l is not None]))
+        self.output["lcfit_names"] = self.lcfit_names
+        if not self.lcfit_names:
+            self.logger.debug("No jobs depend on the LCFIT, so adding a dummy one")
+            self.lcfit_names = [""]
 
         self.sim_task = self.get_underlying_sim_task()
         self.output["sim_name"] = self.sim_task.name
@@ -59,7 +66,7 @@ class Aggregator(Task):
         self.num_versions = len(self.sim_task.output["sim_folders"])
 
         self.output_dfs = [os.path.join(self.output_dir, f"merged_{i}.csv") for i in range(self.num_versions)]
-        self.output_dfs_key = [os.path.join(self.output_dir, f"merged_{i}.key") for i in range(self.num_versions)]
+        self.output_dfs_key = [[os.path.join(self.output_dir, f"merged_{l}_{i}.key") for l in self.lcfit_names] for i in range(self.num_versions)]
         self.output_cals = [os.path.join(self.output_dir, f"calibration_{i}.csv") for i in range(self.num_versions)]
 
         self.id = "CID"
@@ -196,18 +203,28 @@ class Aggregator(Task):
                 relevant_classifiers = [c for c in self.classifiers if c.index == index]
 
                 prediction_files = [d.output["predictions_filename"] for d in relevant_classifiers]
+                lcfits = [d.get_fit_dependency() for d in relevant_classifiers]
+
                 df = None
 
-                for f in prediction_files:
+                colnames = [d.get_prob_column_name() for d in relevant_classifiers]
+                need_to_rename = len(colnames) != len(set(colnames))
+                self.logger.info("Detected duplicate probability column names, will need to rename them")
+
+                for f, d, l in zip(prediction_files, relevant_classifiers, lcfits):
                     dataframe = self.load_prediction_file(f)
                     dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                     dataframe[self.id] = dataframe[self.id].apply(str)
                     dataframe[self.id] = dataframe[self.id].str.strip()
+                    if need_to_rename and l is not None:
+                        lcname = l["name"]
+                        self.logger.debug(f"Renaming column {d.get_prob_column_name()} to include LCFIT name {lcname}")
+                        dataframe = dataframe.rename(columns={d.get_prob_column_name(): d.get_prob_column_name() + "_RENAMED_" + lcname})
                     self.logger.debug(f"Merging on column {self.id} for file {f}")
                     if df is None:
                         df = dataframe
                     else:
-                        df = pd.merge(df, dataframe, on=self.id, how="outer")  # Inner join atm, should I make this outer?
+                        df = pd.merge(df, dataframe, on=self.id, how="outer")
 
                 self.logger.info("Finding original types")
                 s = self.get_underlying_sim_task()
@@ -249,7 +266,8 @@ class Aggregator(Task):
                     df = self.recalibrate(df)
                 df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
 
-                self.save_key_format(df, index)
+                for l in self.lcfit_names:
+                    self.save_key_format(df, index, l)
                 self.logger.debug(f"Saving merged dataframe to {self.output_dfs[index]}")
                 self.save_new_hash(new_hash)
 
@@ -273,9 +291,16 @@ class Aggregator(Task):
         self.passed = True
         return True
 
-    def save_key_format(self, df, index):
+    def save_key_format(self, df, index, lcfitname):
         if "IA" in df.columns:
             df = df.drop(columns=[self.type_name, "IA"])
+        cols_to_rename = [c for c in df.columns if "_RENAMED_" in c]
+        for c in cols_to_rename:
+            name, lcfit = c.split("_RENAMED_")
+            if lcfit == lcfitname:
+                df = df.rename(columns={c: name})
+            else:
+                df = df.drop(columns=[c])
         df2 = df.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
         df2.to_csv(self.output_dfs_key[index], index=False, float_format="%0.4f", sep=" ")
