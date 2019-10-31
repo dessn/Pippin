@@ -292,6 +292,7 @@ class Aggregator(Task):
         return True
 
     def save_key_format(self, df, index, lcfitname):
+        lc_index = 0 if len(self.lcfit_names) == 1 else self.lcfit_names.index(lcfitname)
         if "IA" in df.columns:
             df = df.drop(columns=[self.type_name, "IA"])
         cols_to_rename = [c for c in df.columns if "_RENAMED_" in c]
@@ -303,7 +304,7 @@ class Aggregator(Task):
                 df = df.drop(columns=[c])
         df2 = df.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
-        df2.to_csv(self.output_dfs_key[index], index=False, float_format="%0.4f", sep=" ")
+        df2.to_csv(self.output_dfs_key[index][lc_index], index=False, float_format="%0.4f", sep=" ")
 
     def _plot(self, index):
         cmd = ["python", self.python_file, self.output_dfs[index], self.output_dir, f"{index}"]
