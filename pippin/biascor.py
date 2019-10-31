@@ -235,7 +235,10 @@ class BiasCor(ConfigBasedExecutable):
             for opt, opt_value in value.get("OPTS", {}).items():
                 self.logger.info(f"In MUOPT {label}, found OPTS flag for myopt with opt {opt} and value {opt_value}")
                 if "CUTWIN_" in opt:
-                    mu_str += f"CUTWIN {opt.replace('CUTWIN_', '')} {opt_value}"
+                    opt2 = opt.replace("CUTWIN_", "")
+                    if opt2 == "PROB_IA":
+                        opt2 = self.probability_column_name
+                    mu_str += f"CUTWIN {opt2} {opt_value}"
                 else:
                     mu_str += f"{opt}={opt_value} "
             mu_str += "\n"
