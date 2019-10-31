@@ -36,17 +36,12 @@ LCFIT:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CLASSIFICATION:
-  SNNVANILLATRAIN:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: train
-    MASK_SIM: TRAINING
-
-  SNNVANILLATEST:
-    CLASSIFIER: SuperNNovaClassifier
+  PERFECT:
+    CLASSIFIER: PerfectClassifier
     MODE: predict
-    MASK: TEST
     OPTS:
-      MODEL: SNNVANILLATRAIN
+      PROB_IA: 1.0
+      PROB_CC: 0.0
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier

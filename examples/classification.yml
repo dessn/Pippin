@@ -1,4 +1,11 @@
 CLASSIFICATION:
+  PERFECT:
+    CLASSIFIER: PerfectClassifier
+    MODE: predict
+    OPTS:
+      PROB_IA: 1.0
+      PROB_CC: 0.0
+
   SNNVANILLATRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train  # Mode is either train or predict.
