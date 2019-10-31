@@ -234,7 +234,10 @@ class BiasCor(ConfigBasedExecutable):
                 mu_str += f"FITOPT={value.get('FITOPT')} "
             for opt, opt_value in value.get("OPTS", {}).items():
                 self.logger.info(f"In MUOPT {label}, found OPTS flag for myopt with opt {opt} and value {opt_value}")
-                mu_str += f"{opt}={opt_value} "
+                if "CUTWIN_" in opt:
+                    mu_str += f"CUTWIN {opt.replace('CUTWIN_', '')} {opt_value}"
+                else:
+                    mu_str += f"{opt}={opt_value} "
             mu_str += "\n"
         if mu_str:
             self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
