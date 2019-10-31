@@ -2,6 +2,8 @@ SIM:
   TRAININGSIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 3 12345
@@ -9,6 +11,8 @@ SIM:
   TESTSIM1:
     IA_C11:
       BASE: sn_ia_salt2_c11.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 2 12345
@@ -16,6 +20,8 @@ SIM:
   TESTSIM2:
     IA_C11:
       BASE: sn_ia_salt2_c11.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 2 12345
