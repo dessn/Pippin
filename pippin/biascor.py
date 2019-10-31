@@ -320,7 +320,7 @@ class BiasCor(ConfigBasedExecutable):
                                 v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
                                 n = v * num_sn_fit
                                 contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
-                            if "scalePCC" in line:
+                            if "scalePCC" in line and "+-" in line:
                                 scalepcc = "scalePCC = $" + line.split("=")[-1].strip().replace("+-", r"\pm") + "$"
                     prob_label = prob_col_name.replace("PROB_", "").replace("_", " ")
                     label = "\n".join([num_sn, alpha, beta, sigint, gamma, scalepcc, contam_true, contam_data, f"Classifier = {prob_label}"])
