@@ -1,7 +1,3 @@
-import sys
-
-assert sys.version_info >= (3, 6), "Sorry, you need python 3.6. If you're on midway, there is a conda env at $PRODUCTS/miniconda for you to use"
-
 import argparse
 import os
 import yaml
