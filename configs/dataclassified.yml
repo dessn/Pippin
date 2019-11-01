@@ -12,10 +12,10 @@ SIM:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_JONES:
-      BASE: sn_collection_jones.input
+      BASE: sn_collection_maria.input
     GLOBAL:
-      NGEN_UNIT: 0.2
-      RANSEED_REPEAT: 10 12345
+      NGEN_UNIT: 3
+      RANSEED_REPEAT: 30 12345
 
   TESTSIM:
     IA_C11:
@@ -25,30 +25,26 @@ SIM:
     II_TEMPLATES:
       BASE: sn_ii_templates.input
     GLOBAL:
-      NGEN_UNIT: 0.1
+      NGEN_UNIT: 1
       RANSEED_REPEAT: 10 12345
 
 
 
 CLASSIFICATION:
-  SNNVANILLATRAIN:
+  SNNTRAIN:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
     MASK: TRAINING
-    OPTS:
-      USE_PHOTOMETRY: True
 
-  SNNVANILLATEST:
+
+  SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     MASK: TEST
     OPTS:
-      USE_PHOTOMETRY: True
-      MODEL: SNNVANILLATRAIN
+      MODEL: SNNTRAIN
 
 AGGREGATION:
   AGG:
     MASK: TEST
-    OPTS:
-      INCLUDE_TYPE: True
-      PLOT: True
+
