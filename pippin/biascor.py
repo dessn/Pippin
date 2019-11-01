@@ -283,18 +283,19 @@ class BiasCor(ConfigBasedExecutable):
                     m0dif_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.M0DIF")
                     prob_col_name = self.probability_column_name
 
+                    blind = False
+                    with open(fitres_file) as f:
+                        for line in f.readlines():
+                            if "RESULTS ARE BLINDED" in line:
+                                blind = True
+                                break
+
                     df = pd.read_csv(fitres_file, comment="#", sep=r"\s+", skiprows=5)
                     dfm = pd.read_csv(m0dif_file, comment="#", sep=r"\s+", skiprows=10)
                     df.sort_values(by="zHD", inplace=True)
                     dfm.sort_values(by="z", inplace=True)
                     dfm = dfm[dfm["MUDIFERR"] < 10]
 
-                    if "MUPULL" in df.columns:
-                        mupull = df["MUPULL"]
-                        plot_cosmology = False
-                    else:
-                        mupull = np.zeros(df["MU"].size)
-                        plot_cosmology = True
                     ol = 0.7
                     w = -1
                     alpha = 0
@@ -402,15 +403,18 @@ class BiasCor(ConfigBasedExecutable):
                             vmax = 1.05
                             color_prob = True
                             cmap = "inferno"
-                        h = ax.scatter(tranz(dfz), df["MU"] - sub + mupull, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
-                        if plot_cosmology:
+                        h = ax.scatter(tranz(dfz), df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
+                        if not blind:
                             ax.plot(tranz(zs), distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
-                        ax.errorbar(tranz(dfm["z"]), dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", mew=0.5, capsize=3, elinewidth=0.5, c="k", ms=4)
+                            ax.errorbar(tranz(dfm["z"]), dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", mew=0.5, capsize=3, elinewidth=0.5, c="k", ms=4)
                         ax.set_xticks(x_tick_t)
                         ax.set_xticks(x_ticks_mt, minor=True)
                         ax.set_xticklabels(x_ticks)
                         ax.set_xlim(z_scale.min(), z_scale.max())
 
+                        if blind:
+                            ax.set_yticklabels([])
+                            ax.set_yticks([])
                     if color_prob:
                         cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
                         cbar.set_label("Prob Ia")
