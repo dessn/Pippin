@@ -1,6 +1,7 @@
 import argparse
 import os
 import yaml
+import sys
 import logging
 import coloredlogs
 from pippin.config import mkdirs, get_logger, get_output_dir, chown_file
@@ -28,6 +29,7 @@ class MessageStore(logging.Handler):
 
 
 if __name__ == "__main__":
+    assert sys.version_info >= (3, 6), "Sorry, you need python 3.6. If you're on midway, there is a conda env at $PRODUCTS/miniconda for you to use"
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("config", help="the name of the yml config file to run. For example: configs/default.yml")
