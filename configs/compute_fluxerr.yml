@@ -7,6 +7,9 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
+  FAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
 
 SIM:
   BASE:
