@@ -289,6 +289,12 @@ class BiasCor(ConfigBasedExecutable):
                     dfm.sort_values(by="z", inplace=True)
                     dfm = dfm[dfm["MUDIFERR"] < 10]
 
+                    if "MUPULL" in df.columns:
+                        mupull = df["MUPULL"]
+                        plot_cosmology = False
+                    else:
+                        mupull = np.zeros(df["MU"].size)
+                        plot_cosmology = True
                     ol = 0.7
                     w = -1
                     alpha = 0
@@ -335,9 +341,13 @@ class BiasCor(ConfigBasedExecutable):
                     zs = np.linspace(dfz.min(), dfz.max(), 500)
                     distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
 
-                    n_trans = 100
+                    n_trans = 1000
                     n_thresh = 0.05
                     n_space = 0.3
+                    subsec = True
+                    if zs.min() > n_thresh:
+                        n_space = 0.01
+                        subsec = False
                     z_a = np.logspace(np.log10(min(0.01, zs.min() * 0.9)), np.log10(n_thresh), int(n_space * n_trans))
                     z_b = np.linspace(n_thresh, zs.max() * 1.01, 1 + int((1 - n_space) * n_trans))[1:]
                     z_trans = np.concatenate((z_a, z_b))
@@ -346,8 +356,12 @@ class BiasCor(ConfigBasedExecutable):
                     def tranz(zs):
                         return interp1d(z_trans, z_scale)(zs)
 
-                    x_ticks = np.array([0.01, 0.02, 0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
-                    x_ticks_m = np.array([0.03, 0.04, 0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
+                    if subsec:
+                        x_ticks = np.array([0.01, 0.02, 0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
+                        x_ticks_m = np.array([0.03, 0.04, 0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
+                    else:
+                        x_ticks = np.array([0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
+                        x_ticks_m = np.array([0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
                     mask = (x_ticks > z_trans.min()) & (x_ticks < z_trans.max())
                     mask_m = (x_ticks_m > z_trans.min()) & (x_ticks_m < z_trans.max())
                     x_ticks = x_ticks[mask]
@@ -374,7 +388,8 @@ class BiasCor(ConfigBasedExecutable):
                             ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=8)
 
                         ax.set_xlabel("$z$")
-                        ax.axvline(tranz(n_thresh), c="#888888", alpha=0.4, zorder=0, lw=0.7, ls="--")
+                        if subsec:
+                            ax.axvline(tranz(n_thresh), c="#888888", alpha=0.4, zorder=0, lw=0.7, ls="--")
 
                         ax.errorbar(tranz(dfz), df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
                         if df[prob_col_name].min() >= 1.0:
@@ -387,8 +402,9 @@ class BiasCor(ConfigBasedExecutable):
                             vmax = 1.05
                             color_prob = True
                             cmap = "inferno"
-                        h = ax.scatter(tranz(dfz), df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
-                        ax.plot(tranz(zs), distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
+                        h = ax.scatter(tranz(dfz), df["MU"] - sub + mupull, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
+                        if plot_cosmology:
+                            ax.plot(tranz(zs), distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
                         ax.errorbar(tranz(dfm["z"]), dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", mew=0.5, capsize=3, elinewidth=0.5, c="k", ms=4)
                         ax.set_xticks(x_tick_t)
                         ax.set_xticks(x_ticks_mt, minor=True)
