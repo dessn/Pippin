@@ -50,6 +50,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.output["clump_file"] = self.clump_file
         self.output["ranseed_change"] = False
         self.output["blind"] = options.get("BLIND", True)
+        self.output["is_sim"] = options.get("SIM", False)
 
         self.types_dict = options.get("TYPES")
         if self.types_dict is None:

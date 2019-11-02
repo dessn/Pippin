@@ -15,3 +15,8 @@ DATAPREP:
         NONIA: [113, 117, 111, 115, 112, 114, 110]  # II, Ibc, SLSN, Iax, 91bg, etc. Anything which is known not to be Ia.
         # Anything NOT IN either of the above list becomes an "UNKNOWN"
         BLIND: False # Blind the data. DEFAULTS TO TRUE
+
+  OLD_SIM:
+    OPTS:
+      RAW_DIR: PIP_COMPUTE_SPEC_EFF_DESSIMCC  # The GENVERSION for a simulation generated
+      SIM: True  # Important to set this flag so that we can tell whats a sim and whats not if you're loading in a sim like data

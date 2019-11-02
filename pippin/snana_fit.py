@@ -63,7 +63,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         is_data = False
         for d in self.dependencies:
             if isinstance(d, DataPrep):
-                is_data = True
+                is_data = not d.output["is_sim"]
         self.output["is_data"] = is_data
 
         # Loading fitopts
