@@ -230,7 +230,8 @@ fi
                         return Task.FINISHED_FAILURE
 
             new_pred_file = self.output_dir + "/predictions.csv"
-            new_model_file = self.output_dir + "/model.pt"
+            self.model_pk_file = self.get_unique_name() + ".pkl"
+            new_model_file = os.path.join(self.output_dir, f"{self.get_unique_name()}.pt")
 
             if not os.path.exists(new_pred_file) or not os.path.exists(new_model_file):
                 self.logger.info("Updating model location or generating predictions file")
