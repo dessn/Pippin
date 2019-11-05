@@ -36,6 +36,9 @@ def get_arguments():
 def load_file(file, args):
     np.random.seed(123)
     logging.info(f"Loading in file {file}")
+    if not os.path.exists(file):
+        logging.warning(f"File {file} not count, continuing and hoping this is executing on your local compute and you have the summary")
+        return None
     df = pd.read_csv(file)
     if "w" in args.get("BLIND", []):
         df["w"] += np.random.normal(loc=0, scale=0.2, size=1000)[343]
@@ -60,39 +63,46 @@ def plot_single_file(source_file, df):
     del c
 
 
-def plot_all_files(source_files, inputs):
+def make_summary_file(wfit_files):
+    logging.info("Creating summary file")
+    all_output_csv = "all_biascor_individual.csv"
+
+    if os.path.exists(all_output_csv):
+        df_all = pd.read_csv(all_output_csv)
+    else:
+        df_all = None
+        for f in zip(wfit_files):
+            df = pd.read_csv(f)
+            name = os.path.basename(os.path.dirname(os.path.dirname(f)))
+            df["name"] = name
+            if df_all is None:
+                df_all = df
+            else:
+                df_all = pd.concat([df_all, df])
+        df_all.to_csv(all_output_csv, index=False, float_format="%0.5f")
+    return df_all
+
+
+def plot_all_files(df_all):
     logging.info("Plotting all files")
     output_file = "all_biascor.png"
 
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     data = []
-    df_all = None
-    for f, df in zip(source_files, inputs):
-        name = os.path.basename(os.path.dirname(os.path.dirname(f)))
+    for name, df in df_all.groupby("name"):
         means = [df["OM"].mean(), df["w"].mean(), df["sigint"].mean()]
         if df.shape[0] < 2:
             name2 = name + " (showing mean error)"
             cov = np.diag([df["OM_sig"].mean() ** 2, df["wsig_marg"].mean() ** 2, 0.01 ** 2])
-
         else:
             name2 = name + " (showing scatter error)"
             cov = np.diag([df["OM"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2])
-
-        df["name"] = name
-        if df_all is None:
-            df_all = df
-        else:
-            df_all = pd.concat([df_all, df])
-
-        data.append([name, df["w"].mean(), df["w"].std(), df["wsig_marg"].mean()])
         c.add_covariance(means, cov, parameters=labels, name=name2.replace("_", "\\_"))
+        data.append([name, df["w"].mean(), df["w"].std(), df["wsig_marg"].mean()])
     wdf = pd.DataFrame(data, columns=["name", "mean_w", "scatter_mean_w", "mean_std_w"])
     wdf.to_csv(output_file.replace(".png", ".csv"), index=False, float_format="%0.4f")
-    df_all.to_csv(output_file.replace(".png", "_individual.csv"), index=False, float_format="%0.4f")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
-
-    plot_scatter_comp(df_all)
 
 
 def plot_scatter_comp(df_all):
@@ -173,14 +183,14 @@ if __name__ == "__main__":
     try:
         wfit_files = args.get("WFIT_SUMMARY")
         if wfit_files:
-            inputs = [load_file(w, args) for w in wfit_files]
-
-            for file, df in zip(wfit_files, inputs):
+            df_all = make_summary_file(wfit_files)
+            for name, df in df_all.groupby("name"):
                 if df.shape[0] > 1:
-                    plot_single_file(file, df)
+                    plot_single_file(name, df)
                 else:
-                    logging.info(f"File {file} has df shape {str(df.shape)}")
-            plot_all_files(wfit_files, inputs)
+                    logging.info(f"Gruop {name} has df shape {str(df.shape)}")
+            plot_all_files(df_all)
+            plot_scatter_comp(df_all)
 
         logging.info(f"Writing success to {donefile}")
         with open(donefile, "w") as f:
