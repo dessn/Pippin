@@ -72,12 +72,12 @@ CLASSIFICATION:
     MASK: TEST
 
   NNTRAIN:
-    CLASSIFIER: NearestNeighborClassifier
+    CLASSIFIER: NearestNeighborPyClassifier
     MODE: train
     MASK_SIM: TRAINING
 
   NNTEST:
-    CLASSIFIER: NearestNeighborClassifier
+    CLASSIFIER: NearestNeighborPyClassifier
     MODE: predict
     MASK_SIM: TEST
     OPTS:
