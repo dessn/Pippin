@@ -51,20 +51,20 @@ CLASSIFICATION:
       MODEL: SNNVARTRAIN
       VARIANT: variational
 
-  SNNBAYTRAIN:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: train
-    MASK_SIM: TRAINING
-    OPTS:
-      VARIANT: bayesian
-
-  SNNBAYTEST:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: predict
-    MASK: TEST
-    OPTS:
-      MODEL: SNNBAYTRAIN
-      VARIANT: bayesian
+#  SNNBAYTRAIN:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: train
+#    MASK_SIM: TRAINING
+#    OPTS:
+#      VARIANT: bayesian
+#
+#  SNNBAYTEST:
+#    CLASSIFIER: SuperNNovaClassifier
+#    MODE: predict
+#    MASK: TEST
+#    OPTS:
+#      MODEL: SNNBAYTRAIN
+#      VARIANT: bayesian
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
