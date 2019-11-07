@@ -5,7 +5,7 @@ SIM:
     II:
       BASE: sn_collection_maria_split_a.input
     GLOBAL:
-      NGEN_UNIT: 10
+      NGEN_UNIT: 5
       RANSEED_REPEAT: 40 12345
 
   TESTSIM:
@@ -51,20 +51,20 @@ CLASSIFICATION:
       MODEL: SNNVARTRAIN
       VARIANT: variational
 
-#  SNNBAYTRAIN:
-#    CLASSIFIER: SuperNNovaClassifier
-#    MODE: train
-#    MASK_SIM: TRAINING
-#    OPTS:
-#      VARIANT: bayesian
-#
-#  SNNBAYTEST:
-#    CLASSIFIER: SuperNNovaClassifier
-#    MODE: predict
-#    MASK: TEST
-#    OPTS:
-#      MODEL: SNNBAYTRAIN
-#      VARIANT: bayesian
+  SNNBAYTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+    OPTS:
+      VARIANT: bayesian
+
+  SNNBAYTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    MASK: TEST
+    OPTS:
+      MODEL: SNNBAYTRAIN
+      VARIANT: bayesian
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
