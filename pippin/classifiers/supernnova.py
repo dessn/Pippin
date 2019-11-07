@@ -110,11 +110,11 @@ fi
         model_path = ""
         if not training:
             assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
-            for t in self.dependencies:
-                if model == t.name:
-                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
-                    model = t.output["model_filename"]
-
+            if not os.path.exists(get_output_loc(model)):
+                for t in self.dependencies:
+                    if model == t.name:
+                        self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
+                        model = t.output["model_filename"]
             model_path = get_output_loc(model)
             self.logger.debug(f"Looking for model in {model_path}")
             assert os.path.exists(model_path), f"Cannot find {model_path}"

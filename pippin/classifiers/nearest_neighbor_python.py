@@ -118,7 +118,8 @@ fi
                 if model == t.name:
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
-
+        else:
+            model = get_output_loc(model)
         types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
         if not types:
             types = "1"
