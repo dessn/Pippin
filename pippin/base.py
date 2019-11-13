@@ -59,6 +59,10 @@ class ConfigBasedExecutable(Task):
         # Want to scan the input files to see if the value exists
         reached_section = section_start is None
         added = False
+        others = None
+        if isinstance(value, list):
+            others = value[1:]
+            value = value[0]
         desired_line = f"{name}{assignment}{value}"
         for i, line in enumerate(self.base):
             modified_line = line.upper().replace(assignment, " ").strip()
@@ -88,3 +92,7 @@ class ConfigBasedExecutable(Task):
         if not added and value is not None:
             self.base.append(desired_line)
             self.logger.debug(f"Adding to end of file: {desired_line}")
+
+        if others is not None:
+            for o in others:
+                self.set_property(name, o, section_start=section_start, section_end=section_end, assignment=assignment, only_add=True)
