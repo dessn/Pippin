@@ -122,7 +122,7 @@ def chown_dir(directory):
         shutil.chown(directory, group=global_config["SNANA"]["group"])
         os.chmod(directory, 0o770)
     except Exception as e:
-        logger.exception(f"Chown error: {directory}", exc_info=e)
+        logger.exception(f"Chown error: {directory}")
         return
     for root, dirs, files in os.walk(directory):
         for d in dirs:
@@ -130,13 +130,13 @@ def chown_dir(directory):
                 os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
                 os.chmod(os.path.join(root, d), 0o770)
             except Exception as e:
-                logger.exception(f"Chown error: {os.path.join(root, d)}", exc_info=e)
+                logger.exception(f"Chown error: {os.path.join(root, d)}")
         for f in files:
             try:
                 os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
                 os.chmod(os.path.join(root, f), 0o660)
             except Exception as e:
-                logger.exception(f"Chown error: {os.path.join(root, f)}", exc_info=e)
+                logger.exception(f"Chown error: {os.path.join(root, f)}")
 
 
 def ensure_list(a):
