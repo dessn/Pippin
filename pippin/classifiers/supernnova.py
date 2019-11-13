@@ -24,6 +24,8 @@ class SuperNNovaClassifier(Classifier):
             OPTS:  # Options
                 VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
                 MODEL: someName # exact name of training classification task
+                REDSHIFT: True # Use spec redshift, defaults to True
+                NORM: global # Global is default, can also pick cosmo or perfilter
 
     OUTPUTS:
     ========
@@ -45,6 +47,9 @@ class SuperNNovaClassifier(Classifier):
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
+        self.redshift = "zspe" if options.get("REDSHIFT", True) else "None"
+        self.norm = options.get("NORM", "global")
+        assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
 
@@ -62,7 +67,7 @@ source activate {conda_env}
 module load cuda
 echo `which python`
 cd {path_to_classifier}
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train}
+python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train} {redshift} {norm}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 fi
@@ -188,6 +193,8 @@ fi
             "model": "" if training else f"--model_files {model_path}",
             "phot": "",
             "test_or_train": "" if training else "--data_testing",
+            "redshift": "--redshift " + self.redshift,
+            "norm": "--norm " + self.norm,
             "done_file": self.done_file,
             "clump": clump_txt,
             "done_file2": self.done_file2,
