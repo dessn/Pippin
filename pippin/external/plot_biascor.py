@@ -71,7 +71,7 @@ def make_summary_file(wfit_files):
         df_all = pd.read_csv(all_output_csv)
     else:
         df_all = None
-        for f in zip(wfit_files):
+        for f in wfit_files:
             df = pd.read_csv(f)
             name = os.path.basename(os.path.dirname(os.path.dirname(f)))
             df["name"] = name
