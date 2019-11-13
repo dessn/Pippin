@@ -183,7 +183,7 @@ class Manager:
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         self.logger.info(f"Copying config file from {self.filename_path} to {config_file_output}")
-        if self.filename_path != config_file_output:
+        if not check_config and self.filename_path != config_file_output:
             shutil.copy(self.filename_path, config_file_output)
         chown_file(config_file_output)
 

@@ -44,7 +44,8 @@ if __name__ == "__main__":
     config_filename = os.path.basename(args.config).split(".")[0].upper()
     output_dir = get_output_dir()
     logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
-    mkdirs(logging_folder)
+    if not args.check:
+        mkdirs(logging_folder)
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
     message_store = MessageStore()
@@ -57,7 +58,10 @@ if __name__ == "__main__":
 
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
-    logging.basicConfig(level=level, format=fmt, handlers=[logging.FileHandler(logging_filename), logging.StreamHandler(), message_store])
+    handlers = [logging.StreamHandler(), message_store]
+    if not args.check:
+        handlers.append(logging.FileHandler(logging_filename))
+    logging.basicConfig(level=level, format=fmt, handlers=handlers)
     coloredlogs.install(
         level=level,
         fmt=fmt,
