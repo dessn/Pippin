@@ -47,7 +47,7 @@ class SuperNNovaClassifier(Classifier):
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
-        self.redshift = "zspe" if options.get("REDSHIFT", True) else "None"
+        self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
         self.norm = options.get("NORM", "global")
         assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"

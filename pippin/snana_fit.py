@@ -1,13 +1,11 @@
 import inspect
 import os
-import logging
 import shutil
 import subprocess
-import time
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, mkdirs, get_data_loc
+from pippin.config import mkdirs, get_data_loc
 from pippin.dataprep import DataPrep
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
@@ -234,7 +232,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 #         time.sleep(2)
                 # except subprocess.CalledProcessError as e:
                 #     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
-                chown_dir(self.output_dir)
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
