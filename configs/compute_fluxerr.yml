@@ -18,8 +18,8 @@ SIM:
     II_TEMPLATES:
       BASE: sn_collection_maria.input
     GLOBAL:
-      NGEN_UNIT: 0.1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 5
 
 LCFIT:
