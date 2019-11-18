@@ -5,7 +5,7 @@ import subprocess
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import mkdirs, get_data_loc
+from pippin.config import mkdirs, get_data_loc, chown_dir
 from pippin.dataprep import DataPrep
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
