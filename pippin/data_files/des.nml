@@ -43,8 +43,6 @@ DONE_STAMP: FINISHED.DONE
     CUTWIN_SNRMAX       =  5.0, 1.0E8
     CUTWIN_NFILT_SNRMAX =  2.0, 99.
 
-    cutwin_Nband_thresh = 1
-
     CUTWIN_ZPNPE = 30.5, 100.  ! cut on ZP in Npe
 
     FUDGE_MAG_ERROR = ''
