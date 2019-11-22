@@ -115,12 +115,16 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
             try:
-                data = pd.read_csv(os.path.join(path, "FITOPT000.FITRES"), delim_whitespace=True, comment="#", compression="infer")
+                path = os.path.join(path, "FITOPT000.FITRES")
+                if not os.path.exists(path):
+                    self.logger.info(f"{path} not found, seeing if it was gzipped")
+                    path += ".gz"
+                data = pd.read_csv(path, delim_whitespace=True, comment="#", compression="infer")
                 d = data.groupby("TYPE").agg(num=("CID", "count"))
                 self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
                 d.to_csv(os.path.join(path, "stats.txt"))
             except Exception:
-                self.logger.error(f"Cannot load {os.path.join(path, 'FITOPT000.FITRES')}")
+                self.logger.error(f"Cannot load {path}")
                 return False
         return True
 
@@ -225,13 +229,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.logger.info("Light curve done file found")
             logging_file2 = self.logging_file.replace("_log", "_log2")
             if not os.path.exists(logging_file2):
-                self.logger.info("Tarball found, fitting complete, NOT cleaning up the directory")
-                # try:
-                #     with open(logging_file2, "w") as f:
-                #         subprocess.run(["split_and_fit.pl", "CLEANMASK", "4", "NOPROMPT"], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
-                #         time.sleep(2)
-                # except subprocess.CalledProcessError as e:
-                #     self.logger.warning(f"split_and_fit.pl has a return code of {e.returncode}. This may or may not be an issue.")
+                self.logger.info("{logging_file2} not found, checking FITOPT existence")
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
