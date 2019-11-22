@@ -1,5 +1,10 @@
 # Once I understand whats happening, replace this with a useful comment on why any of this is happening.
 
+DATAPREP:
+  FAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
 SIM:
   Y1E1:
     IA:
