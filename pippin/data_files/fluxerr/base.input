@@ -36,11 +36,7 @@ HOSTLIB_GENRANGE_NSIGZ: -3. +3.  # not yet implemented
 
 HOSTLIB_GALID_NULL:  -20   # GALID for FIXMAG fake with no host
 
-
-#NGEN_LC:    1560
-NGENTOT_LC: 200000
-GENSOURCE:  RANDOM   
-
+GENSOURCE:  RANDOM
 GENFILTERS:  griz
 
 
