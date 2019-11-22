@@ -17,7 +17,6 @@ HOSTLIB_MSKOPT: 258      # 2=galNoise 16=Zgal, 32=1 SN per gal
 EXPOSURE_TIME:  1
 
 CIDOFF:  0      # 2480 
-GENVERSION: REGEN_DES2013_FAKESN_Ia
 FORMAT_MASK:  32
 
 GENRANGE_TREST:   -15.0  65    # TrestMax matches actual fakes
