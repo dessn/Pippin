@@ -1,0 +1,11 @@
+SIM:
+  FakesY1E1:
+    IA:
+      BASE: fluxerr/fluxerr_base.input
+      SIMLIB_FIELDLIST: E1
+      DNDZ: ZPOLY 1.0  0.0  0.0 0.0
+      GENMODEL: SALT2.Guy10_LAMOPEN
+    GLOBAL:
+      RANSEED_REPEAT: 2 12345
+      NGENTOT_LC: 2000
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
