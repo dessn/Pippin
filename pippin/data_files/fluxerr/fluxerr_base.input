@@ -18,7 +18,7 @@ EXPOSURE_TIME:  1
 
 CIDOFF:  0      # 2480 
 FORMAT_MASK:  32
-NGENTOT_LC: 200000
+NGENTOT_LC: 400000
 GENRANGE_TREST:   -15.0  65    # TrestMax matches actual fakes
 GENRANGE_REDSHIFT:  0.12  1.45
 GENSIGMA_REDSHIFT:  .001        # no redshift info in data file
