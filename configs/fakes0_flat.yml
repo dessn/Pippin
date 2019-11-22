@@ -1,7 +1,7 @@
 # Once I understand whats happening, replace this with a useful comment on why any of this is happening.
 
 SIM:
-  FakesY1E1:
+  Y1E1:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -13,7 +13,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1E2:
+  Y1E2:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -25,7 +25,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1S1:
+  Y1S1:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -37,7 +37,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1S2:
+  Y1S2:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -49,7 +49,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1C1:
+  Y1C1:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -61,7 +61,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1C2:
+  Y1C2:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -73,7 +73,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1C3:
+  Y1C3:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -85,7 +85,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1X1:
+  Y1X1:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -97,7 +97,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1X2:
+  Y1X2:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -109,7 +109,7 @@ SIM:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
-  FakesY1X3:
+  Y1X3:
     IA:
       BASE: fluxerr/fluxerr_base.input
       GENRANGE_PEAKMJD: 56505 56726
@@ -120,3 +120,7 @@ SIM:
     GLOBAL:
       RANSEED_REPEAT: 2 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
+
+LCFIT:
+  FAKES:
+    BASE: fluxerr/fluxerr_base.nml
