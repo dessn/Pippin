@@ -486,6 +486,13 @@ SIM:
       RANSEED_REPEAT: 3 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 2
 
+  FAKESIMLIB:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      RANDSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
 LCFIT:
   FAKES:
     BASE: fluxerr/fluxerr_base.nml
