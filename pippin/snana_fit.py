@@ -229,7 +229,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.logger.info("Light curve done file found")
             logging_file2 = self.logging_file.replace("_log", "_log2")
             if not os.path.exists(logging_file2):
-                self.logger.info("{logging_file2} not found, checking FITOPT existence")
+                self.logger.info(f"{logging_file2} not found, checking FITOPT existence")
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
