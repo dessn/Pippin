@@ -115,11 +115,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
             try:
-                path = os.path.join(path, "FITOPT000.FITRES")
-                if not os.path.exists(path):
-                    self.logger.info(f"{path} not found, seeing if it was gzipped")
-                    path += ".gz"
-                data = pd.read_csv(path, delim_whitespace=True, comment="#", compression="infer")
+                full_path = os.path.join(path, "FITOPT000.FITRES")
+                if not os.path.exists(full_path):
+                    self.logger.info(f"{full_path} not found, seeing if it was gzipped")
+                    full_path += ".gz"
+                data = pd.read_csv(full_path, delim_whitespace=True, comment="#", compression="infer")
                 d = data.groupby("TYPE").agg(num=("CID", "count"))
                 self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
                 d.to_csv(os.path.join(path, "stats.txt"))
