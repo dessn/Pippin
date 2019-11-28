@@ -12,7 +12,8 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
-        BLIND: True # Defaults to true anyway! Set to false to unblind
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+
 SIM:
   BASE:
     IA_G10:
