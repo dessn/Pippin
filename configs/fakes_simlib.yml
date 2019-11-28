@@ -16,3 +16,5 @@ SIM:
 LCFIT:
   FAKES:
     BASE: fluxerr/fluxerr_base.nml
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
