@@ -1,0 +1,20 @@
+
+ &SNLCINP
+   PRIVATE_DATA_PATH  = '$DES_ROOT/lcmerge'
+   VERSION_PHOTOMETRY = 'DESALL_forcePhoto_fake_snana_fits'
+   KCOR_FILE          = '$SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_DECam.fits'
+   HEADER_OVERRIDE_FILE = 'HEADER_OVERRIDE.LIST'
+
+   PHOTFLAG_MSKREJ    =  1016, 0
+   OPT_SETPKMJD       =  0
+   CUTWIN_NFIELD      =  1,1
+   SIMVAR_CUTWIN_STRING = 'NEP_SIM_MAGOBS 4 9999'
+   CUTWIN_PEAKMJD     = 56000, 57850
+
+   SIMLIB_OUT         = 'DES_FAKES.SIMLIB'
+   OPT_SIMLIB_OUT     = 2 ! 1->ALL epochs, 2->only epochs with Ftrue>0
+
+   SNTABLE_LIST       = 'SNANA(text:key)'
+   HFILE_OUT          = 'OUT2_TABLE_FAKES.HBOOK'
+
+ &END

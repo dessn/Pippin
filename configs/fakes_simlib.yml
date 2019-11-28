@@ -1,0 +1,18 @@
+# Once I understand whats happening, replace this with a useful comment on why any of this is happening.
+
+DATAPREP:
+  FAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
+SIM:
+  FAKESIMLIB:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+LCFIT:
+  FAKES:
+    BASE: fluxerr/fluxerr_base.nml

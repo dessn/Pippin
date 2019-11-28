@@ -1,0 +1,25 @@
+
+ &SNLCINP
+   PRIVATE_DATA_PATH  = '$DES_ROOT/lcmerge'
+   VERSION_PHOTOMETRY = 'DESALL_forcePhoto_fake_snana_fits'
+   KCOR_FILE          = '$SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_DECam.fits'
+
+   PHOTFLAG_MSKREJ    =  1016, 0
+   OPT_SETPKMJD       =  20
+   CUTWIN_NFIELD      =  1,1
+   SIMVAR_CUTWIN_STRING = 'NEP_SIM_MAGOBS 4 9999'
+   CUTWIN_PEAKMJD     = 56000, 57850
+
+   SNTABLE_LIST       = 'SNANA(text:key)'
+   HFILE_OUT          = 'OUT1a_TABLE_FAKES.HBOOK'
+
+ &END
+
+
+
+
+## Dont need to turn off magerr and use the extended SALT2 model???
+&FITINP
+    USE_MODEL_MAGERR=F
+    FITMODEL_NAME  = 'SALT2.Guy10_UV2IR'
+&END
