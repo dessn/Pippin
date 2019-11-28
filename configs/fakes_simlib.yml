@@ -1,4 +1,5 @@
-# Once I understand whats happening, replace this with a useful comment on why any of this is happening.
+# Run LC fits on the fakes, and a simulated library using the Fakes SIMLIB.
+# After that, run sntable_dump.pl FITOPT000.ROOT FITRES obs in both of the LCFIT output folders
 
 DATAPREP:
   FAKES:
