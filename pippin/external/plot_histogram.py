@@ -57,11 +57,12 @@ def plot_histograms(data, sims, types):
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
-        for d, n in data:
+        for i, (d, n) in enumerate(data):
             hist, _ = np.histogram(d[c], bins=bins)
             err = np.sqrt(hist)
             area = (bins[1] - bins[0]) * hist.sum()
-            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", ms=2, elinewidth=0.75, label=n)
+            delta = (bc[1] - bc[0]) / 20
+            ax.errorbar(bc + i * delta, hist / area, yerr=err / area, fmt="o", ms=2, elinewidth=0.75, label=n)
 
         for s, n in sims:
             mask = np.isin(s["TYPE"], types)
@@ -79,7 +80,7 @@ def plot_histograms(data, sims, types):
         ax.set_xlabel(c)
     plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
+    fig.savefig("hist.png", bbox_inches="tight", dpi=600, transparent=True)
 
 
 def get_means_and_errors(x, y, bins):
