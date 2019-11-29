@@ -230,10 +230,13 @@ if __name__ == "__main__":
         assert len(data_dfs) == 1, "Please specify only one data file"
         sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
 
-        for d in data_dfs + sim_dfs:
-            d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
-        plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
-        plot_efficiency2d(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+        if "HOST_MAG_i" not in sim_dfs[0].columns:
+            logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
+        else:
+            for d in data_dfs + sim_dfs:
+                d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
+            plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+            plot_efficiency2d(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:
