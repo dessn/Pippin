@@ -77,7 +77,7 @@ def plot_histograms(data, sims, types):
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only")
 
         ax.set_xlabel(c)
-    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=6, frameon=False)
+    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
 
