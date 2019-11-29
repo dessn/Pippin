@@ -21,7 +21,7 @@ SIM:
     II_TEMPLATES:
       BASE: sn_collection_maria.input
     GLOBAL:
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES_LOGSNR_SBMAG.dat
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES_LOGSNR_SBMAG.DAT
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
       NGEN_UNIT: 0.4
       RANSEED_REPEAT: 20 12345
