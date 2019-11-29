@@ -39,6 +39,7 @@ def load_file(file):
         logging.info(f"Loading existing csv.gz file: {newfile}")
         return pd.read_csv(newfile), name
     else:
+        logging.info(f"Attempting to load in original file {file}")
         df = pd.read_csv(file, delim_whitespace=True, comment="#")
         # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
         df.to_csv(newfile, index=False, float_format="%0.5f")
