@@ -15,7 +15,7 @@ DATAPREP:
       BLIND: True # Defaults to true anyway! Set to false to unblind
 
 SIM:
-  BASE_FUDGE:
+  SIM_5YR_2D_FUDGE:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_TEMPLATES:
@@ -27,7 +27,19 @@ SIM:
       RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
 
-  BASE_NOFUDGE:
+  SIM_3YR_1D_FUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES3YR_SIM_ERRORFUDGES.DAT
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.4
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
+
+  SIM_NOFUDGE:
     IA_G10:
       BASE: sn_ia_salt2_g10.input
     II_TEMPLATES:
@@ -59,7 +71,7 @@ LCFIT:
       FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/DES5YR_FAKE_ERRORFUDGES_SBMAG.DAT'"
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
-  D_3YRERR:
+  D_3YR_1DERR:
     MASK: DATA
     BASE: des.nml
     SNLCINP:
@@ -69,4 +81,4 @@ LCFIT:
 
 ANALYSE:
   HIST_ALL:
-    HISTOGRAM: [D_DATA, D_5YR_1DERR_DATA, D_5YR_2DERR_DATA, D_3YRERR_DATA, D_BASE_FUDGE, D_BASE_NOFUDGE]
+    HISTOGRAM: [D_DATA, D_5YR_1DERR_DATA, D_5YR_2DERR_DATA, D_3YR_1DERR_DATA, D_SIM_3YR_1D_FUDGE, D_SIM_NOFUDGE, D_SIM_5YR_2D_FUDGE]
