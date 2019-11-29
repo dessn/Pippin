@@ -35,7 +35,7 @@ SIM:
     GLOBAL:
       FLUXERRMODEL_FILE:
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
-      NGEN_UNIT: 1
+      NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
 LCFIT:
