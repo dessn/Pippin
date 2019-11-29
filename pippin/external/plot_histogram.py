@@ -137,7 +137,7 @@ def plot_redshift_evolution(data, sims, types):
         ax1.set_xlim(*lim)
     axes[1, 0].set_xlabel("z")
     axes[1, 1].set_xlabel("z")
-    plt.legend(bbox_to_anchor=(-1.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
+    plt.legend(bbox_to_anchor=(-2.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
 
