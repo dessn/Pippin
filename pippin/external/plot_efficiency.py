@@ -227,12 +227,14 @@ if __name__ == "__main__":
             args["IA_TYPES"] = [1, 101]
 
         data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
-        assert len(data_dfs) == 1, "Please specify only one data file"
         sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
 
         if "HOST_MAG_i" not in sim_dfs[0].columns:
             logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
         else:
+
+            assert len(data_dfs) == 1, "Please specify only one data file"
+
             for d in data_dfs + sim_dfs:
                 d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
             plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
