@@ -108,8 +108,8 @@ def plot_redshift_evolution(data, sims, types):
         lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
         for d, n in data:
             means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
-            ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
-            ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
+            ax0.errorbar(bc, means, yerr=err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
+            ax1.errorbar(bc, std, yerr=std_err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
 
         for sim, n in sims:
             mask = np.isin(sim["TYPE"], types)
