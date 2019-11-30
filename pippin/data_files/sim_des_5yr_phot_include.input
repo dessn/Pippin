@@ -8,8 +8,6 @@ UVLAM_EXTRAPFLUX: 500  # extrap model down to 500A.
 # ----------------- host info ---------------
 # HOSTLIB_FILE:    $DES_ROOT/simlibs/DES_5YR.HOSTLIB
 HOSTLIB_FILE:    $DES_ROOT/simlibs/DES_SVA2+LOGMASS.HOSTLIB
-HOSTNOISE_FILE:       $SNDATA_ROOT/simlib/DES/DES_Y1reproc2_SBNOISEMODEL.DAT
-FUDGEOPT_FLUXERR:      1  # fudge PSF-dependence on reported errors
 
 HOSTLIB_GENRANGE_NSIGZ: -3. +3.  # not yet implemented
 HOSTLIB_MSKOPT:     258           # 2=noise, 256=vbose

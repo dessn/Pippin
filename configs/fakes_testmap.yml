@@ -23,8 +23,7 @@ SIM:
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES_LOGSNR_SBMAG.DAT
       # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
-      FUDGEOPT_FLUXERR: 0
-      NGEN_UNIT: 0.4
+      NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
 
@@ -36,8 +35,21 @@ SIM:
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES3YR_SIM_ERRORFUDGES.DAT
       # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
-      FUDGEOPT_FLUXERR: 0
-      NGEN_UNIT: 0.4
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
+
+  SIM_OLDFUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE:
+      HOSTNOISE_FILE:  $SNDATA_ROOT/simlib/DES/DES_Y1reproc2_SBNOISEMODEL.DAT
+      FUDGEOPT_FLUXERR: 1
+      # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
 
@@ -49,7 +61,7 @@ SIM:
     GLOBAL:
       FLUXERRMODEL_FILE:
       # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
-      NGEN_UNIT: 0.4
+      NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 20
 LCFIT:
