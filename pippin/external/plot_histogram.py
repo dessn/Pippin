@@ -49,12 +49,14 @@ def load_file(file):
 
 def plot_histograms(data, sims, types):
 
-    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
+    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR"]
+    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3"]
     ncols = (len(cols) + 1) // 2
     fig, axes = plt.subplots(2, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
+        u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
-        maxv = max([x[0][c].quantile(0.99) for x in data + sims])
+        maxv = max([x[0][c].quantile(u) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
@@ -81,7 +83,7 @@ def plot_histograms(data, sims, types):
         ax.set_xlabel(c)
     plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig("hist.png", bbox_inches="tight", dpi=600, transparent=True)
+    fig.savefig("hist.png", bbox_inches="tight", dpi=600)
 
 
 def get_means_and_errors(x, y, bins):
