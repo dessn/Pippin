@@ -2,14 +2,13 @@ INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
 
 GENTYPE:   1
 GENMODEL:  SALT2.WFIRST-H17
-GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
 
 GENMAG_SMEAR_MODELNAME: C11
 
 # Use rate assumption from Housell 2017 (WFIRST sims)
-DNDZ: POWERLAW2 2.5E-5  1.5 0.0 1.0    # from Didlay 2008
-DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 3.0    # high-z extenstion from Lou
-
+DNDZ: POWERLAW2 2.6E-5  1.5 0.0 1.0    # from Didlay 2008
+# DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 3.0    # high-z extenstion from Lou Needs normalisation to z=1
+DNDZ: POWERLAW2  7.35E-5  0.0 1.0 2.0
 
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using C11 High-z row
@@ -21,7 +20,6 @@ GENRANGE_SALT2c:   -0.200  0.500     # color range
 GENPEAK_SALT2x1:     0.964
 GENSIGMA_SALT2x1:    1.467   0.235     # bifurcated sigmas
 GENRANGE_SALT2x1:   -3.0     2.0       # x1 (stretch) range
-
 
 # SALT2 alpha and beta
 GENPEAK_SALT2ALPHA:   0.15
