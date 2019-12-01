@@ -13,7 +13,7 @@ DNDZ: POWERLAW2  7.35E-5  0.0 1.0 2.0
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using G10 High-z row
 
-GENPEAK_SALT2c:    -0.054
+GENPEAK_SALT2c:    -0.024
 GENSIGMA_SALT2c:    0.043  0.101     # bifurcated sigmas
 GENRANGE_SALT2c:   -0.300  0.500     # color range
 
