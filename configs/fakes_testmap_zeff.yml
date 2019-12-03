@@ -2,17 +2,17 @@
 # and see if the sim looks more like the data
 
 
-DATAPREP:
+#DATAPREP:
 #  FAKES:
 #    OPTS:
 #      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
-  DATA:  # 5 yr photometry sample
-    OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
-      TYPES:
-        IA: [1, 101]
-        NONIA: [120, 130, 20, 30]
-      BLIND: True # Defaults to true anyway! Set to false to unblind
+#  DATA:  # 5 yr photometry sample
+#    OPTS:
+#      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+#      TYPES:
+#        IA: [1, 101]
+#        NONIA: [120, 130, 20, 30]
+#      BLIND: True # Defaults to true anyway! Set to false to unblind
 
 SIM:
   SIM_5YR_2D_NEWEFF:
