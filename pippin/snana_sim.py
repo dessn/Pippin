@@ -45,6 +45,7 @@ class SNANASimulation(ConfigBasedExecutable):
         super().__init__(name, output_dir, self.data_dir + combine, ": ")
 
         self.genversion = genversion
+        self.genprefix = "SIM"
         self.config = config
         self.options = config.get("OPTS", {})
         self.reserved_keywords = ["BASE"]
@@ -57,7 +58,7 @@ class SNANASimulation(ConfigBasedExecutable):
         value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
         self.set_num_jobs(2 * value)
 
-        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genversion}"
+        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genprefix}"
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
@@ -71,6 +72,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.num_jobs = 10
 
         self.output["genversion"] = self.genversion
+        self.output["genprefix"] = self.genprefix
 
         ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
         base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
@@ -116,7 +118,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.set_property("SIMGEN_INFILE_Ia", " ".join([os.path.basename(f) for f in self.base_ia]) if self.base_ia else None)
         self.set_property("SIMGEN_INFILE_NONIa", " ".join([os.path.basename(f) for f in self.base_cc]) if self.base_cc else None)
-        self.set_property("GENPREFIX", self.genversion)
+        self.set_property("GENPREFIX", "SIM")
 
         # Put config in a temp directory
         temp_dir_obj = tempfile.TemporaryDirectory()
