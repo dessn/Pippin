@@ -9,6 +9,7 @@ from scipy.stats import binned_statistic, moment
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
 import os
+from scipy.optimize import curve_fit
 
 
 def setup_logging():
@@ -17,6 +18,10 @@ def setup_logging():
     logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_biascor.log")])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
     logging.getLogger("chainconsumer").setLevel(logging.WARNING)
+
+
+def sigmoid(x, a, b, c):
+    return c * np.exp(-a * (x - b))
 
 
 def get_arguments():
@@ -31,7 +36,7 @@ def get_arguments():
     config["donefile"] = args.donefile
     config.update(config["HISTOGRAM"])
     if config.get("FIELDS") is None:
-        config["FIELDS"] = []
+        config["FIELDS"] = [["X3", "C3"], ["E1", "E2", "C1", "C2", "S1", "S2", "X1", "X2"]]
     return config
 
 
@@ -50,12 +55,12 @@ def load_file(file):
 
 
 def plot_efficiency(data_all, sims, types, fields):
-    all_fields = data_all["FIELD"].unique().tolist()
-    fields.append(all_fields)
+
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False)
         cols = ["HOST_MAG_i", "HOST_MAG_r", "zHD"]
 
+        field_eff = {}
         for field, row in zip(fields, axes):
             data = data_all[np.isin(data_all["FIELD"], field)]
             s = sim[np.isin(sim["FIELD"], field)]
@@ -94,7 +99,7 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 ratio3 = np.concatenate((ratio2, np.zeros(100)))
                 bc3 = interp1d(np.arange(bc2.size), bc2, bounds_error=False, fill_value="extrapolate")(np.arange(bc2.size + 20))
-                smoothed_ratio = gaussian_filter(ratio3, sigma=6, mode="nearest")[:-80]
+                smoothed_ratio = gaussian_filter(ratio3, sigma=12, mode="nearest")[:-80]
                 smoothed_ratio = smoothed_ratio / smoothed_ratio.max()
 
                 err = np.sqrt((err_data / hist_data) ** 2 + (err_sim / hist_sim) ** 2) * ratio
@@ -115,36 +120,51 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 x = None
                 if c == "zHD":
-                    x = np.arange(0, 2.0, 0.05)
+                    x = np.arange(0, 2.0, 0.1)
                 else:
                     x = np.arange(15, 30, 0.25)
                 y = interp1d(bc3, smoothed_ratio, fill_value=(smoothed_ratio[0], smoothed_ratio[-1]), bounds_error=False)(x)
                 y = y / y.max()
-                y[y < 0.001] = 0
-                if field == all_fields:
-                    save_efficiency_file(x, y, c)
+                y[y < 0.02] = 0
+
+                if field_eff.get(c) is None:
+                    field_eff[c] = []
+
+                # popt, pcov = curve_fit(sigmoid, x, y, p0=[1,1,1])
+                # print(c, popt)
+                # yy = sigmoid(x, *popt)
+
+                # ax.plot(x, yy, c="c", lw=2)
+                field_eff[c].append((x, y))
+
+        save_efficiency_file(field_eff, fields)
 
         fig.tight_layout()
         fig.savefig(f"efficiency_{i}.png", bbox_inches="tight", dpi=150, transparent=True)
 
 
-def save_efficiency_file(xs, ys, c):
+def save_efficiency_file(field_eff, fields):
+    labels = field_eff.keys()
     name_map = {"HOST_MAG_i": "i_obs", "HOST_MAG_r": "r_obs", "HOST_MAG_z": "z_obs", "HOST_MAG_g": "g_obs", "zHD": "ZTRUE"}
-    with open(f"efficiency_{c}.dat", "w") as f:
-        header = f"""OPT_EXTRAP: 1
+    for c in labels:
+        with open(f"efficiency_{c}.dat", "w") as f:
+            header = f"OPT_EXTRAP: 1\n\n"
+            f.write(header)
 
+            for field, (xs, ys) in zip(fields, field_eff[c]):
+                header2 = f"""FIELDLIST: {'+'.join(field)}
 VARNAMES: {name_map[c]} HOSTEFF
 """
-        f.write(header)
-        for x, y in zip(xs, ys):
-            f.write(f"HOSTEFF:  {x:7.2f} {y:8.4f}\n")
+                f.write(header2)
+                for x, y in zip(xs, ys):
+                    f.write(f"HOSTEFF:  {x:7.2f} {y:8.3f}\n")
+                f.write("ENDMAP:\n\n")
 
 
 def plot_efficiency2d(data_all, sims, types, fields):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     all_fields = data_all["FIELD"].unique().tolist()
-    fields.append(all_fields)
 
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(3, len(fields), figsize=(15, 8), squeeze=False)
@@ -227,13 +247,18 @@ if __name__ == "__main__":
             args["IA_TYPES"] = [1, 101]
 
         data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
-        assert len(data_dfs) == 1, "Please specify only one data file"
         sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
 
-        for d in data_dfs + sim_dfs:
-            d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
-        plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
-        plot_efficiency2d(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+        if "HOST_MAG_i" not in sim_dfs[0].columns:
+            logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
+        else:
+
+            assert len(data_dfs) == 1, "Please specify only one data file"
+
+            for d in data_dfs + sim_dfs:
+                d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
+            plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+            # plot_efficiency2d(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:

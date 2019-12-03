@@ -1,0 +1,112 @@
+# Run a test using the updated fake and sim error fudges and updated spec eff
+# and see if the sim looks more like the data
+
+
+DATAPREP:
+#  FAKES:
+#    OPTS:
+#      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+  DATA:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+
+SIM:
+  SIM_5YR_2D_NEWEFF:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES_LOGSNR_SBMAG.DAT
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  SIM_5YR_2D_FUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES_LOGSNR_SBMAG.DAT
+      # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  SIM_3YR_1D_FUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES3YR_SIM_ERRORFUDGES.DAT
+      # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  SIM_OLDFUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE:
+      HOSTNOISE_FILE:  $SNDATA_ROOT/simlib/DES/DES_Y1reproc2_SBNOISEMODEL.DAT
+      FUDGEOPT_FLUXERR: 1
+      # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  SIM_NOFUDGE:
+    IA_G10:
+      BASE: sn_ia_salt2_g10.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria.input
+    GLOBAL:
+      FLUXERRMODEL_FILE:
+      # SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+LCFIT:
+  D:
+    BASE: des.nml
+    SNLCINP:
+      FLUXERRMODEL_FILE:
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+  D_5YR_2DERR:
+    MASK: DATA
+    BASE: des.nml
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/DES5YR_FAKE_ERRORFUDGES_LOGSNR_SBMAG.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+  D_5YR_1DERR:
+    MASK: DATA
+    BASE: des.nml
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/DES5YR_FAKE_ERRORFUDGES_SBMAG.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+  D_3YR_1DERR:
+    MASK: DATA
+    BASE: des.nml
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/DES3YR_FAKE_ERRORFUDGES.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+
+ANALYSE:
+  HIST_ALL:
+    HISTOGRAM: [D_DATA, D_5YR_1DERR_DATA, D_5YR_2DERR_DATA, D_3YR_1DERR_DATA, D_SIM_OLDFUDGE, D_SIM_3YR_1D_FUDGE, D_SIM_NOFUDGE, D_SIM_5YR_2D_FUDGE, D_SIM_5YR_2D_NEWEFF]
+  HIST_NEW:
+    HISTOGRAM: [D_5YR_2DERR_DATA, D_SIM_5YR_2D_FUDGE, D_SIM_5YR_2D_NEWEFF]

@@ -39,6 +39,7 @@ def load_file(file):
         logging.info(f"Loading existing csv.gz file: {newfile}")
         return pd.read_csv(newfile), name
     else:
+        logging.info(f"Attempting to load in original file {file}")
         df = pd.read_csv(file, delim_whitespace=True, comment="#")
         # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
         df.to_csv(newfile, index=False, float_format="%0.5f")
@@ -48,20 +49,23 @@ def load_file(file):
 
 def plot_histograms(data, sims, types):
 
-    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR"]
+    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR"]
+    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3"]
     ncols = (len(cols) + 1) // 2
     fig, axes = plt.subplots(2, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
+        u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
-        maxv = max([x[0][c].quantile(0.99) for x in data + sims])
+        maxv = max([x[0][c].quantile(u) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
 
-        for d, n in data:
+        for i, (d, n) in enumerate(data):
             hist, _ = np.histogram(d[c], bins=bins)
             err = np.sqrt(hist)
             area = (bins[1] - bins[0]) * hist.sum()
-            ax.errorbar(bc, hist / area, yerr=err / area, fmt="o", c="k", ms=2, elinewidth=0.75, label=n)
+            delta = (bc[1] - bc[0]) / 20
+            ax.errorbar(bc + i * delta, hist / area, yerr=err / area, fmt="o", ms=2, elinewidth=0.75, label=n)
 
         for s, n in sims:
             mask = np.isin(s["TYPE"], types)
@@ -72,14 +76,14 @@ def plot_histograms(data, sims, types):
             area = (bins[1] - bins[0]) * hist.sum()
 
             ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n)
-            if len(sims) < 3 and nonia.shape[0] > 0:
+            if len(sims) < 3 and nonia.shape[0] > 0 and len(data) == 1:
                 ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only")
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only")
 
         ax.set_xlabel(c)
-    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=6, frameon=False)
+    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig("hist.png", bbox_inches="tight", dpi=150, transparent=True)
+    fig.savefig("hist.png", bbox_inches="tight", dpi=600)
 
 
 def get_means_and_errors(x, y, bins):
@@ -108,8 +112,8 @@ def plot_redshift_evolution(data, sims, types):
         lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
         for d, n in data:
             means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
-            ax0.errorbar(bc, means, yerr=err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
-            ax1.errorbar(bc, std, yerr=std_err, fmt="o", c="k", ms=2, elinewidth=0.75, zorder=20, label=n)
+            ax0.errorbar(bc, means, yerr=err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
+            ax1.errorbar(bc, std, yerr=std_err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
 
         for sim, n in sims:
             mask = np.isin(sim["TYPE"], types)
@@ -137,7 +141,7 @@ def plot_redshift_evolution(data, sims, types):
         ax1.set_xlim(*lim)
     axes[1, 0].set_xlabel("z")
     axes[1, 1].set_xlabel("z")
-    plt.legend(bbox_to_anchor=(-1.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
+    plt.legend(bbox_to_anchor=(-1.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
 

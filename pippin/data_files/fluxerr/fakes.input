@@ -1,0 +1,31 @@
+# use new "SIMLIB" model to use SIM_MAGOBS column of SIMLIB
+
+NGENTOT_LC:  45043  # Y1-Y4 x1
+
+SIMLIB_FILE:     $DES_ROOT/analysis_photoIa_5yr/simFakes/DES_FAKES.SIMLIB
+HOSTLIB_FILE:    $DES_ROOT/fakeSN/LIBS/HOSTLIB_SVA2/DES_SVA2.HOSTLIB
+HOSTLIB_SERSIC_SCALE:  1.5
+HOSTLIB_MSKOPT:        258   # 256(verbose) + 2(noise)
+
+GENVERSION:  RKTEST_FAKES
+GENSOURCE:   RANDOM
+GENMODEL:    SIMLIB
+
+GENFILTERS:  griz
+
+CIDOFF: 0
+
+KCOR_FILE: $SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_DECam.fits
+
+# selection criteria for generation
+GENRANGE_PEAKMJD: 56000   57850  # 63000
+GENRANGE_REDSHIFT:  0.02   2.0
+GENRANGE_TREST:   -50.0   100.0     # rest epoch relative to peak (days)
+
+RANSEED: 12945       # random number seed
+
+# smear flags: 0=off, 1=on
+SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  1  # smear zero-point with zptsig
+
+FORMAT_MASK:  32  ! 2=terse/text  32=FITS  1=verbose

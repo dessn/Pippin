@@ -1,0 +1,21 @@
+# Run LC fits on the fakes, and a simulated library using the Fakes SIMLIB.
+# After that, run sntable_dump.pl FITOPT000.ROOT FITRES obs in both of the LCFIT output folders
+
+DATAPREP:
+  FAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
+SIM:
+  FAKESIMLIB:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+LCFIT:
+  FAKES:
+    BASE: fluxerr/fluxerr_base.nml
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
