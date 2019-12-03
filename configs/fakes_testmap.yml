@@ -17,7 +17,7 @@ DATAPREP:
 SIM:
   SIM_5YR_2D_NEWEFF:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: sn_ia_salt2_g10_test.input
     II_TEMPLATES:
       BASE: sn_collection_maria.input
     GLOBAL:
