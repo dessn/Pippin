@@ -46,6 +46,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         self.genversion = genversion
         self.genprefix = "SIM"
+        self.simlogdir = "SIM"
         self.config = config
         self.options = config.get("OPTS", {})
         self.reserved_keywords = ["BASE"]
@@ -58,7 +59,7 @@ class SNANASimulation(ConfigBasedExecutable):
         value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
         self.set_num_jobs(2 * value)
 
-        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.genprefix}"
+        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.simlogdir}"
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
@@ -279,7 +280,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output.update({"photometry_dirs": s_ends, "types": self.get_types()})
             return Task.FINISHED_SUCCESS
 
-        return self.check_for_job(squeue, f"{self.genversion}_0")
+        return self.check_for_job(squeue, f"{self.genprefix}_0")
 
     def resolve_name_to_type(self, name):
         """ I know this is wrong, but its just for Supernnova to split Ia and everything else """
