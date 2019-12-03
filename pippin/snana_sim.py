@@ -8,7 +8,7 @@ import collections
 import json
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, copytree, mkdirs, get_data_loc
+from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash
 from pippin.task import Task
 
 
@@ -45,8 +45,12 @@ class SNANASimulation(ConfigBasedExecutable):
         super().__init__(name, output_dir, self.data_dir + combine, ": ")
 
         self.genversion = genversion
-        self.genprefix = "SIM"
-        self.simlogdir = "SIM"
+        if len(genversion) < 30:
+            self.genprefix = self.genversion
+        else:
+            hash = get_hash(self.genversion)[:5]
+            self.genprefix = self.genversion[:25] + hash
+
         self.config = config
         self.options = config.get("OPTS", {})
         self.reserved_keywords = ["BASE"]
@@ -59,7 +63,7 @@ class SNANASimulation(ConfigBasedExecutable):
         value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
         self.set_num_jobs(2 * value)
 
-        self.sim_log_dir = f"{self.output_dir}/SIMLOGS_{self.simlogdir}"
+        self.sim_log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
@@ -87,6 +91,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
+        self.set_property("LOGDIR", self.sim_log_dir, assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
             if k.upper() != "GLOBAL":
                 run_config = self.config[k]
