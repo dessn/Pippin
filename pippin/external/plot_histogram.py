@@ -51,6 +51,11 @@ def plot_histograms(data, sims, types):
 
     cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR"]
     restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3"]
+
+    for c in restricted:
+        for x in data + sims:
+            x[x[c] < -10] = -9
+
     ncols = (len(cols) + 1) // 2
     fig, axes = plt.subplots(2, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
