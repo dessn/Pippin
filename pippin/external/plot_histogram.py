@@ -49,8 +49,11 @@ def load_file(file):
 
 def plot_histograms(data, sims, types):
 
-    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR"]
-    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3"]
+    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
+    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
+
+    cols = [c for c in cols if c in data.columns]
+    restricted = [c for c in restricted if c in data.columns]
 
     for c in restricted:
         for x in data + sims:
