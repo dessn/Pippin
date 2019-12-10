@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 import coloredlogs
-from pippin.config import mkdirs, get_logger, get_output_dir, chown_file
+from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config
 from pippin.manager import Manager
 
 
@@ -30,7 +30,8 @@ class MessageStore(logging.Handler):
 if __name__ == "__main__":
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("--config", help="Location of global config", default=None, type=str)
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
     parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
@@ -38,10 +39,14 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
 
     args = parser.parse_args()
+
+    # Load global config
+    get_config(initial_path=args.config)
+
     level = logging.DEBUG if args.verbose else logging.INFO
 
     # Get base filename
-    config_filename = os.path.basename(args.config).split(".")[0].upper()
+    config_filename = os.path.basename(args.yaml).split(".")[0].upper()
     output_dir = get_output_dir()
     logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
     if not args.check:
@@ -74,12 +79,12 @@ if __name__ == "__main__":
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
     # Load YAML config file
-    config_path = os.path.abspath(os.path.expandvars(args.config))
-    assert os.path.exists(config_path), f"File {config_path} cannot be found."
-    with open(config_path, "r") as f:
+    yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
+    assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
+    with open(yaml_path, "r") as f:
         config = yaml.safe_load(f)
 
-    manager = Manager(config_filename, config_path, config, message_store)
+    manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:
         args.refresh = True
     manager.set_start(args.start)
