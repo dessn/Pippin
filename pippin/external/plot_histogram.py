@@ -48,8 +48,7 @@ def load_file(file):
 
 
 def plot_histograms(data, sims, types):
-
-    cols = ["x1", "c", "zHD", "FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "cERR", "x1ERR", "PKMJDERR", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
+    cols = ["x1", "c", "zHD", "FITPROB", "cERR", "x1ERR", "PKMJDERR", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
     restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
 
     cols = [c for c in cols if c in data[0][0].columns]
@@ -67,6 +66,8 @@ def plot_histograms(data, sims, types):
         maxv = max([x[0][c].quantile(u) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
+
+        ax.set_yticklabels([])
 
         for i, (d, n) in enumerate(data):
             hist, _ = np.histogram(d[c], bins=bins)
@@ -89,7 +90,12 @@ def plot_histograms(data, sims, types):
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
         ax.set_xlabel(c)
-    plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
+
+    handles, labels = ax.get_legend_handles_labels()
+    bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
+
+    fig.legend(handles, labels, loc="upper center", ncol=6, mode="expand", frameon=False, bbox_to_anchor=bb, borderaxespad=0.0, bbox_transform=fig.transFigure)
+    # plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
     fig.savefig("hist.png", bbox_inches="tight", dpi=600)
 
@@ -106,7 +112,6 @@ def get_means_and_errors(x, y, bins):
 
 
 def plot_redshift_evolution(data, sims, types):
-
     fig, axes = plt.subplots(2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0, "wspace": 0.4})
     cols = ["x1", "c"]
 
