@@ -47,7 +47,7 @@ def load_file(file):
         return df, name
 
 
-def plot_histograms(data, sims, types):
+def plot_histograms(data, sims, types, figname):
     cols = ["x1", "c", "zHD", "FITPROB", "cERR", "x1ERR", "PKMJDERR", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
     restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
 
@@ -97,7 +97,7 @@ def plot_histograms(data, sims, types):
     fig.legend(handles, labels, loc="upper center", ncol=6, mode="expand", frameon=False, bbox_to_anchor=bb, borderaxespad=0.0, bbox_transform=fig.transFigure)
     # plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig("hist.png", bbox_inches="tight", dpi=600)
+    fig.savefig(figname, bbox_inches="tight", dpi=600)
 
 
 def get_means_and_errors(x, y, bins):
@@ -111,7 +111,7 @@ def get_means_and_errors(x, y, bins):
     return means, err, std, std_err
 
 
-def plot_redshift_evolution(data, sims, types):
+def plot_redshift_evolution(data, sims, types, figname):
     fig, axes = plt.subplots(2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0, "wspace": 0.4})
     cols = ["x1", "c"]
 
@@ -156,7 +156,7 @@ def plot_redshift_evolution(data, sims, types):
     axes[1, 1].set_xlabel("z")
     plt.legend(bbox_to_anchor=(-1.2, 2, 2.1, 0.2), loc="lower left", mode="expand", ncol=2, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig("redshift.png", bbox_inches="tight", dpi=150, transparent=True)
+    fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
 if __name__ == "__main__":
@@ -177,8 +177,18 @@ if __name__ == "__main__":
         for df, n in data_dfs + sim_dfs:
             df.replace(-999, np.nan, inplace=True)
 
-        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"])
-        plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"])
+        plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], "hist.png")
+        plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"], "redshift.png")
+
+        fields = [(["X3", "C3"], "DEEP"), (["C1", "C2", "S1", "S2", "E1", "E2", "X1", "X2"], "SHALLOW")]
+        for f, n in fields:
+            data_masks = [np.isin(d["FIELD"], f) for d, _ in data_dfs]
+            sim_masks = [np.isin(s["FIELD"], f) for s, _ in sim_dfs]
+
+            masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+            masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+            plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
+            plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:
