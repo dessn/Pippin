@@ -84,7 +84,7 @@ def plot_histograms(data, sims, types, figname):
             hist, _ = np.histogram(s[c], bins=bins)
             area = (bins[1] - bins[0]) * hist.sum()
 
-            ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=1)
+            ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=0.5)
             if len(sims) < 3 and nonia.shape[0] > 10 and len(data) == 1:
                 ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
@@ -97,7 +97,7 @@ def plot_histograms(data, sims, types, figname):
     fig.legend(handles, labels, loc="upper center", ncol=6, mode="expand", frameon=False, bbox_to_anchor=bb, borderaxespad=0.0, bbox_transform=fig.transFigure)
     # plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
     # plt.tight_layout(rect=[0, 0, 0.75, 1])
-    fig.savefig(figname, bbox_inches="tight", dpi=600)
+    fig.savefig(figname, bbox_inches="tight", dpi=1200)
 
 
 def get_means_and_errors(x, y, bins):
