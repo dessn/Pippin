@@ -7,6 +7,8 @@ HOSTLIB_FILE:    $DES_ROOT/fakeSN/LIBS/HOSTLIB_SVA2/DES_SVA2.HOSTLIB
 HOSTLIB_SERSIC_SCALE:  1.5
 HOSTLIB_MSKOPT:        258   # 256(verbose) + 2(noise)
 
+OPT_MWEBV: 0
+
 GENVERSION:  RKTEST_FAKES
 GENSOURCE:   RANDOM
 GENMODEL:    SIMLIB
@@ -26,6 +28,6 @@ RANSEED: 12945       # random number seed
 
 # smear flags: 0=off, 1=on
 SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
-SMEARFLAG_ZEROPT:  1  # smear zero-point with zptsig
+SMEARFLAG_ZEROPT:  0  # smear zero-point with zptsig
 
 FORMAT_MASK:  32  ! 2=terse/text  32=FITS  1=verbose
