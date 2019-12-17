@@ -11,11 +11,11 @@ SIM:
     IA:
       BASE: fluxerr/fakes.input
     GLOBAL:
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+      RANSEED_REPEAT: 2 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr-lc.TEMPLATE 2
 
 LCFIT:
   FAKES:
     BASE: fluxerr/fluxerr_base.nml
     OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr-lc.TEMPLATE 40
