@@ -48,8 +48,27 @@ def load_file(file):
 
 
 def plot_histograms(data, sims, types, figname):
-    cols = ["x1", "c", "zHD", "FITPROB", "cERR", "x1ERR", "PKMJDERR", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
-    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z"]
+    cols = [
+        "x1",
+        "c",
+        "zHD",
+        "FITPROB",
+        "cERR",
+        "x1ERR",
+        "PKMJDERR",
+        "SNRMAX1",
+        "SNRMAX2",
+        "SNRMAX3",
+        "SNRMAX_g",
+        "SNRMAX_r",
+        "SNRMAX_i",
+        "SNRMAX_z",
+        "chi2_g",
+        "chi2_r",
+        "chi2_i",
+        "chi2_z",
+    ]
+    restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
 
     cols = [c for c in cols if c in data[0][0].columns]
     restricted = [c for c in restricted if c in data[0][0].columns]
@@ -58,8 +77,8 @@ def plot_histograms(data, sims, types, figname):
         for x in data + sims:
             x[0].loc[x[0][c] < -10, c] = -9
 
-    ncols = (len(cols) + 1) // 2
-    fig, axes = plt.subplots(2, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
+    ncols = (len(cols) + 1) // 3
+    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
         u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
@@ -85,7 +104,7 @@ def plot_histograms(data, sims, types, figname):
             area = (bins[1] - bins[0]) * hist.sum()
 
             ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=0.5)
-            if len(sims) < 3 and nonia.shape[0] > 10 and len(data) == 1:
+            if len(sims) == 1 and nonia.shape[0] > 10 and len(data) == 1:
                 ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
