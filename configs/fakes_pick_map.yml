@@ -74,7 +74,7 @@ LCFIT:
 
   FIT3D:
     BASE: fluxerr/fluxerr_base.nml
-    MASK: 2D
+    MASK: 3D
     SNLCINP:
       FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT'"
     OPTS:
