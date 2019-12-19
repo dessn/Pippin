@@ -70,7 +70,7 @@ def plot_histograms(data, sims, types, figname):
         "chi2_z",
     ]
     restricted = ["FITCHI2", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
-    logs = ["FITPROB", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
+    logs = ["FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
 
     cols = [c for c in cols if c in data[0][0].columns]
     restricted = [c for c in restricted if c in data[0][0].columns]
