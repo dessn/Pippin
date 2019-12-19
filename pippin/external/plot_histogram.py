@@ -69,6 +69,7 @@ def plot_histograms(data, sims, types, figname):
         "chi2_z",
     ]
     restricted = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
+    logs = ["FITPROB", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
 
     cols = [c for c in cols if c in data[0][0].columns]
     restricted = [c for c in restricted if c in data[0][0].columns]
@@ -78,7 +79,7 @@ def plot_histograms(data, sims, types, figname):
             x[0].loc[x[0][c] < -10, c] = -9
 
     ncols = (len(cols) + 1) // 3
-    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.3, "hspace": 0.3})
+    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 5), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
         u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
@@ -109,6 +110,8 @@ def plot_histograms(data, sims, types, figname):
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
         ax.set_xlabel(c)
+        if c in logs:
+            ax.set_yscale("log")
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
@@ -213,6 +216,22 @@ if __name__ == "__main__":
             masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
             plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
             plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
+
+        zbins = [0, 0.2, 0.6, 2]
+        for i, z1 in enumerate(zbins[:-1]):
+            z2 = zbins[i + 1]
+            data_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in data_dfs]
+            sim_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in sim_dfs]
+
+            masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+            masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+            plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{z1:0.1f}_{z2:0.1f}.png")
+
+        data_masks = [d["FITPROB"] > 0.01 for d, _ in data_dfs]
+        sim_masks = [d["FITPROB"] > 0.01 for d, _ in sim_dfs]
+        masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+        masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+        plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_fitprob_g0.01.png")
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:
