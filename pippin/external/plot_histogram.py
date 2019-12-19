@@ -73,13 +73,12 @@ def plot_histograms(data, sims, types, figname):
     logs = ["FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
 
     cols = [c for c in cols if c in data[0][0].columns]
-    restricted = [c for c in restricted if c in data[0][0].columns]
 
     for c in restricted:
         for x in data + sims:
             x[0].loc[x[0][c] < -10, c] = -9
 
-    ncols = (len(cols) + 1) // 3
+    ncols = (len(cols) + 2) // 3
     fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 7), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
         u = 0.95 if c in restricted else 0.99
