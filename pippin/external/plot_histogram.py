@@ -107,6 +107,7 @@ def plot_histograms(data, sims, types, figname):
 
             ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=0.5)
             if len(sims) == 1 and nonia.shape[0] > 10 and len(data) == 1:
+                logging.info(f"Nonia shape is {nonia.shape}")
                 ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
