@@ -1,0 +1,92 @@
+# Run with no correction, the 1D correction, 2D and 3D ones so we can see if there
+# are any catastrophic failures in them
+
+DATAPREP:
+  FAKES0D:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+  FAKES1D:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+  FAKES2D:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+  FAKES3D:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+SIM:
+  SIM3D:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 1
+
+  SIM2D:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_5.DAT
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 1
+
+  SIM1D:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 1
+
+  SIM0D:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 1
+
+LCFIT:
+  FIT0D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: 0D
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+  FIT1D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: 1D
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+  FIT2D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: 2D
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_5.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+  FIT3D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: 2D
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+ANALYSE:
+  PLT_0D:
+    HISTOGRAM: [FIT0D_FAKES0D, FIT0D_SIM0D]
+  PLT_1D:
+    HISTOGRAM: [FIT1D_FAKES1D, FIT0D_SIM1D, FIT0D_FAKES0D, FIT0D_SIM0D]
+  PLT_2D:
+    HISTOGRAM: [FIT2D_FAKES2D, FIT0D_SIM2D, FIT0D_FAKES0D, FIT0D_SIM0D]
+  PLT_3D:
+    HISTOGRAM: [FIT3D_FAKES3D, FIT0D_SIM3D, FIT0D_FAKES0D, FIT0D_SIM0D]
