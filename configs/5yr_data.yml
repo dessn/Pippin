@@ -1,0 +1,19 @@
+DATAPREP:
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+        BLIND: True # Defaults to true anyway! Set to false to unblind
+
+LCFIT:
+
+  DS:
+    BASE: des.nml
+    MASK: DATADES
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+      APPEND_TABLE_TEXT: RA DECL
