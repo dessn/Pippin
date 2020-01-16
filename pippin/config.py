@@ -129,17 +129,19 @@ def chown_dir(directory):
         return
     for root, dirs, files in os.walk(directory):
         for d in dirs:
-            try:
-                os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
-                os.chmod(os.path.join(root, d), 0o770)
-            except Exception as e:
-                logger.exception(f"Chown error: {os.path.join(root, d)}")
+            if not os.path.islink(os.path.join(root, d)):
+                try:
+                    os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
+                    os.chmod(os.path.join(root, d), 0o770)
+                except Exception as e:
+                    logger.warning(f"Chown error: {os.path.join(root, d)}")
         for f in files:
-            try:
-                os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
-                os.chmod(os.path.join(root, f), 0o660)
-            except Exception as e:
-                logger.exception(f"Chown error: {os.path.join(root, f)}")
+            if not os.path.islink(os.path.join(root, f)):
+                try:
+                    os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
+                    os.chmod(os.path.join(root, f), 0o660)
+                except Exception as e:
+                    logger.warning(f"Chown error: {os.path.join(root, f)}")
 
 
 def ensure_list(a):
