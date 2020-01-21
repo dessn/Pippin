@@ -76,7 +76,8 @@ def plot_histograms(data, sims, types, figname):
 
     for c in restricted:
         for x in data + sims:
-            x[0].loc[x[0][c] < -10, c] = -9
+            if c in cols:
+                x[0].loc[x[0][c] < -10, c] = -9
 
     ncols = (len(cols) + 2) // 3
     fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 7), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
