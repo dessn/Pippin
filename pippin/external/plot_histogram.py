@@ -167,7 +167,7 @@ def plot_redshift_evolution(data, sims, types, figname):
             nonia = sim[~mask]
 
             has_nonia = nonia.shape[0] > 0
-            if has_nonia:
+            if has_nonia and len(sims) == 1:
                 groups = [(sim, "-", 10, " all"), (ia, "--", 3, " Ia"), (nonia, ":", 2, " CC")]
             else:
                 groups = [(sim, "-", 10, "")]
@@ -231,6 +231,8 @@ if __name__ == "__main__":
                     masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
                     masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
                     plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}_{b}.png")
+                    plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}_{b}.png")
+
             except Exception as e:
                 logging.warning("Not all plots made. Do you have the SNRMAX_g r i z columns extracted from the ROOT file?")
 
