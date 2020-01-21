@@ -111,7 +111,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
-            direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT"]
+            direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT", "RESET_CIDOFF"]
             if key in direct_set:
                 self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
             else:
