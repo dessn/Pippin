@@ -116,6 +116,9 @@ def plot_histograms(data, sims, types, figname):
         if c in logs:
             ax.set_yscale("log")
 
+        if c == "FITPROB" and "FITPROB" in logs:
+            ax.set_ylim(0.1, 10)
+
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
 
@@ -219,6 +222,17 @@ if __name__ == "__main__":
             masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
             plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
             plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
+
+            try:
+                for b in ["g", "r", "i", "z"]:
+                    data_masks = [np.isin(d["FIELD"], f) & (d[f"SNRMAX_{b}"] > 5) for d, _ in data_dfs]
+                    sim_masks = [np.isin(s["FIELD"], f) & (s[f"SNRMAX_{b}"] > 5) for s, _ in sim_dfs]
+
+                    masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+                    masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+                    plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}_{b}.png")
+            except Exception as e:
+                logging.warning("Not all plots made. Do you have the SNRMAX_g r i z columns extracted from the ROOT file?")
 
         zbins = [0, 0.2, 0.6, 2]
         for i, z1 in enumerate(zbins[:-1]):
