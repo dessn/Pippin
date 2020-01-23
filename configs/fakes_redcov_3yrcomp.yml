@@ -5,7 +5,7 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
-        BLIND: False
+      BLIND: False
 SIM:
   SIMDES_G10_REDCOV:
     IA_G10:
