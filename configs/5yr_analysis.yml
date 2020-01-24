@@ -5,14 +5,14 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
-        BLIND: True # Defaults to true anyway! Set to false to unblind
+      BLIND: True # Defaults to true anyway! Set to false to unblind
   DATALOWZ:  # lowz combined sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
-        BLIND: True # Defaults to true anyway! Set to false to unblind
+      BLIND: True # Defaults to true anyway! Set to false to unblind
 
   DATADES3YR:  # 3yr spec sample
     OPTS:
@@ -20,7 +20,7 @@ DATAPREP:
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
-        BLIND: True # Defaults to true anyway! Set to false to unblind
+      BLIND: True # Defaults to true anyway! Set to false to unblind
 
 SIM:
   TRAINDESSIM:
