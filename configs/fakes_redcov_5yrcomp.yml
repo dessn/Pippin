@@ -6,49 +6,40 @@ DATAPREP:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
       BLIND: False # Defaults to true anyway! Set to false to unblind
+
 SIM:
-  SIMDES_G10_REDCOV:
+  SIM_REDCOV:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
+    IAX:
+      BASE: mv_input/sn_iax_dust.input
+    IA91BG:
+      BASE: sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: mv_input/pippin_CC_dust1_minimized.INPUT
     GLOBAL:
+      NGEN_UNIT: 1
       OPT_DEVEL_GENFLUX: 2
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
       FLUXERRMODEL_REDCOV(DEEP): "griz:0.6"
       FLUXERRMODEL_REDCOV(SHALLOW): "g:0.2,r:0.2,i:0.2,z:0.0"
-      NGEN_UNIT: 1.0
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  SIMDES_C11_REDCOV:
-    IA_C11:
-      BASE: sn_ia_salt2_c11.input
-    GLOBAL:
-      OPT_DEVEL_GENFLUX: 2
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
-      FLUXERRMODEL_REDCOV(DEEP): "griz:0.6"
-      FLUXERRMODEL_REDCOV(SHALLOW): "g:0.2,r:0.2,i:0.2,z:0.0"
-      NGEN_UNIT: 1.0
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
-  SIMDES_G10:
+  SIM_INDEP:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
+    IAX:
+      BASE: mv_input/sn_iax_dust.input
+    IA91BG:
+      BASE: sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: mv_input/pippin_CC_dust1_minimized.INPUT
     GLOBAL:
+      NGEN_UNIT: 1
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
-      NGEN_UNIT: 1.0
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
-  SIMDES_C11:
-    IA_C11:
-      BASE: sn_ia_salt2_c11.input
-    GLOBAL:
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
-      NGEN_UNIT: 1.0
-      RANSEED_REPEAT: 10 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
 LCFIT:
   D:
@@ -58,8 +49,8 @@ LCFIT:
       ROOTFILE_OUT: "'FIT.ROOT'"
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
-      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
 ANALYSE:
   5YR_REDCOV_COMP:
-    HISTOGRAM: [D_SIMDES_C11, D_SIMDES_G10, D_SIMDES_C11_REDCOV, D_SIMDES_G10_REDCOV, D_DATADES5YR]
+    HISTOGRAM: [D_SIM_REDCOV, D_SIM_INDEP, D_DATADES5YR]
