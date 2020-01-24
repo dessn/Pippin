@@ -9,7 +9,7 @@ DATAPREP:
 SIM:
   SIMDES_G10_REDCOV:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: sn_ia_salt2_g10_des3yr.input
     GLOBAL:
       OPT_DEVEL_GENFLUX: 2
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
@@ -21,7 +21,7 @@ SIM:
 
   SIMDES_C11_REDCOV:
     IA_C11:
-      BASE: sn_ia_salt2_c11.input
+      BASE: sn_ia_salt2_c11_des3yr.input
     GLOBAL:
       OPT_DEVEL_GENFLUX: 2
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
@@ -33,7 +33,7 @@ SIM:
 
   SIMDES_G10:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: sn_ia_salt2_g10_des3yr.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
       NGEN_UNIT: 4.0
@@ -42,7 +42,7 @@ SIM:
 
   SIMDES_C11:
     IA_C11:
-      BASE: sn_ia_salt2_c11.input
+      BASE: sn_ia_salt2_c11_des3yr.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
       NGEN_UNIT: 4.0
