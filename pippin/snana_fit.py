@@ -2,6 +2,7 @@ import inspect
 import os
 import shutil
 import subprocess
+import re
 import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
@@ -57,6 +58,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["sim_name"] = sim_task.output["name"]
         self.output["blind"] = sim_task.output["blind"]
         self.output["lc_output_dir"] = self.lc_output_dir
+        self.str_pattern = re.compile("[A-EG-SU-Za-eg-su-z]")
 
         is_data = False
         for d in self.dependencies:
@@ -138,6 +140,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         value : object
             The value to use. Object will be cast to string. For strings, include single quotes.
         """
+        value = self.ensure_quotes_good(value)
         self.set_property(name, value, section_start="&SNLCINP", section_end="&END")
 
     def set_fitinp(self, name, value):
@@ -150,7 +153,27 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         value : object
             The value to use. Object will be cast to string. For strings, include single quotes.
         """
+        value = self.ensure_quotes_good(value)
         self.set_property(name, value, section_start="&FITINP", section_end="&END")
+
+    def ensure_quotes_good(self, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if "!" in value:
+                s = value.split("!", maxsplit=1)
+                test = s[0].strip()
+                comment = " ! " + s[1].strip()
+            else:
+                test = value
+                comment = ""
+            if self.str_pattern.search(test):
+                if test.lower() not in [".true.", ".false."]:
+                    # Ensure we have quotes
+                    if test[0] == "'" and test[-1] == "'":
+                        return value
+                    else:
+                        return f"'{test}'{comment}"
+        return value
 
     def write_nml(self, force_refresh):
 
