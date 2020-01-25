@@ -8,7 +8,23 @@ DATAPREP:
       BLIND: False # Defaults to true anyway! Set to false to unblind
 
 SIM:
-  SIM_REDCOV:
+
+  SIM_3YRMAP:
+    IA_G10:
+      BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
+    IAX:
+      BASE: mv_input/sn_iax_dust.input
+    IA91BG:
+      BASE: sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: mv_input/pippin_CC_dust1_minimized.INPUT
+    GLOBAL:
+      NGEN_UNIT: 1
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES3YR_SIM_ERRORFUDGES.DAT
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
+  SIM_1D_REDCOV:
     IA_G10:
       BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
     IAX:
@@ -22,11 +38,11 @@ SIM:
       OPT_DEVEL_GENFLUX: 2
       FLUXERRMODEL_REDCOV(DEEP): "griz:0.6"
       FLUXERRMODEL_REDCOV(SHALLOW): "g:0.2,r:0.2,i:0.2,z:0.0"
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       RANSEED_REPEAT: 5 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
-  SIM_INDEP:
+  SIM_1D_INDEP:
     IA_G10:
       BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
     IAX:
@@ -37,7 +53,22 @@ SIM:
       BASE: mv_input/pippin_CC_dust1_minimized.INPUT
     GLOBAL:
       NGEN_UNIT: 1
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/DES5YR_SIM_ERRORFUDGES.DAT
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
+  SIMNOCOR:
+    IA_G10:
+      BASE: mv_input/sn_ia_salt2_g10_UVIRext.input
+    IAX:
+      BASE: mv_input/sn_iax_dust.input
+    IA91BG:
+      BASE: sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: mv_input/pippin_CC_dust1_minimized.INPUT
+    GLOBAL:
+      NGEN_UNIT: 1
+      FLUXERRMODEL_FILE: NONE
       RANSEED_REPEAT: 5 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
@@ -51,6 +82,33 @@ LCFIT:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
       APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
+  D_3YR:
+    BASE: des.nml
+    MASK: DATA
+    SNLCINP:
+      FLUXERRMODEL_FILE: "'$DES_ROOT/simlibs/DES3YR_FAKE_ERRORFUDGES.DAT'"
+      ROOTFILE_OUT: "'FIT.ROOT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+  D_NODATAFUDGE:
+    BASE: des.nml
+    MASK: DATA
+    SNLCINP:
+      FLUXERRMODEL_FILE: "NONE"
+      ROOTFILE_OUT: "'FIT.ROOT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+
 ANALYSE:
   5YR_REDCOV_COMP:
     HISTOGRAM: [D_SIM_REDCOV, D_SIM_INDEP, D_DATADES5YR]
+  3YR_COMP:
+    HISTOGRAM: [D_SIM_3YRMAP, D_3YR_DATADES5YR]
+  5YR_REDCOV_ALL:
+    HISTOGRAM: [D_SIM_REDCOV, D_SIM_INDEP, D_DATADES5YR, D_SIMNOCOR, D_NODATAFUDGE_DATADES5YR, D_SIM_3YRMAP, D_3YR_DATADES5YR]
+  5YR_NOCORR_COMP:
+    HISTOGRAM: [D_NODATAFUDGE_DATADES5YR, D_DATADES5YR, D_SIMNOCOR, D_SIM_REDCOV]
