@@ -67,12 +67,12 @@ source activate {conda_env}
 module load cuda
 echo `which python`
 cd {path_to_classifier}
-echo "#################  Starting here:   `date`"
+echo "#################TIMING  Starting here:   `date`"
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train} {redshift} {norm}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 fi
-echo "#################  Database done now, starting classifier:   `date`"
+echo "#################TIMING  Database done now, starting classifier:   `date`"
 python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 50 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {command}
 if [ $? -eq 0 ]; then
     rm -rf {dump_dir}/processed
@@ -80,7 +80,7 @@ if [ $? -eq 0 ]; then
 else
     echo FAILURE > {done_file2}
 fi
-echo "#################  Classifier finished:   `date`"
+echo "#################TIMING  Classifier finished:   `date`"
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
