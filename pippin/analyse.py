@@ -223,12 +223,15 @@ fi
             deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
             deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
             deps_hist = [l for l in lcfit_tasks if l.name in histograms]
+
+            num_missing = 0
             if len(histograms) != len(deps_hist):
                 for h in histograms:
                     missing = len([l for l in lcfit_tasks if l.name == h]) == 0
                     if missing:
+                        num_missing += 1
                         Task.logger.error(f"The histogram dependency {h} could not be found in any LCFIT task. Please check for typos.")
-                Task.fail_config(f"Couldn't match all HISTOGRAM inputs {histograms} with selection: {[l.name for l in lcfit_tasks]}")
+                Task.fail_config(f"Couldn't match {num_missing} histogram tasts. These are your options:\n\n {[l.name for l in lcfit_tasks]}")
 
             deps = deps_cosmomc + deps_biascor + deps_hist
             if len(deps) == 0:
