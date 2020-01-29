@@ -72,7 +72,7 @@ SIM:
       BASE: fluxerr/fakes.input
     GLOBAL:
       <<: *default_map
-      FLUXERRMODEL_REDCOV: "griz:0.0"
+
   SIMFAKE_2D_CORR_ALL02:
     IA:
       BASE: fluxerr/fakes.input
@@ -131,6 +131,26 @@ SIM:
       <<: *default_map
       <<: *default_corr
 
+
+
+
+
+  # Lets also compare the 1D, 2D and 3D maps with the fakes without correlations
+  SIMFAKE_1D_CORR_ALL00:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+
+  SIMFAKE_3D_CORR_ALL00:
+    IA:
+      BASE: fluxerr/fakes.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+
+
+
+
   # So now that we have the correlations, lets apply them to the 3yr data and then the 5yr data,
   # with and without the correlations, and also with no fudges at all
 
@@ -188,10 +208,22 @@ LCFIT:
     SNLCINP:
       FLUXERRMODEL_FILE: NONE
     OPTS: *default_fitopts
+  F1D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: FAKES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    OPTS: *default_fitopts
   F2D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: fluxerr/fluxerr_base.nml
     MASK: FAKE
     SNLCINP: *default_mapdata
+    OPTS: *default_fitopts
+  F3D:
+    BASE: fluxerr/fluxerr_base.nml
+    MASK: FAKES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
     OPTS: *default_fitopts
 
   # Fit the DES sims
@@ -209,6 +241,15 @@ LCFIT:
 
 
 ANALYSE:
+  CHECK_DIMENSIONALITY:
+    HISTOGRAM:
+      - F0D_FAKES
+      - F1D_FAKES
+      - F2D_FAKES
+      - F2D_SIMFAKE_1D_CORR_ALL00
+      - F2D_SIMFAKE_2D_CORR_ALL00
+      - F2D_SIMFAKE_3D_CORR_ALL00
+
   CHECK_FAKES:
     HISTOGRAM:
       - F0D_FAKES
