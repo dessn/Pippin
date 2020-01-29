@@ -232,11 +232,14 @@ LCFIT:
     MASK: DATADES
     SNLCINP:
       FLUXERRMODEL_FILE: NONE
+      ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
   D2D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: des.nml
     MASK: DES
-    SNLCINP: *default_mapdata
+    SNLCINP:
+      <<: *default_mapdata
+      ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
 
 
