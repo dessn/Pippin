@@ -1,5 +1,6 @@
 # Run LC fits on the fakes, and a simulated library using the Fakes SIMLIB.
 # After that, run sntable_dump.pl FITOPT000.ROOT FITRES obs in both of the LCFIT output folders
+# After that, you can copy the fakes and the sim dumps back and run the compute_maps.py file on them.
 
 DATAPREP:
   FAKES:

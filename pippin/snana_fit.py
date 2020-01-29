@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import re
 import pandas as pd
+import numpy as np
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import mkdirs, get_data_loc, chown_dir
@@ -267,8 +268,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             num_matches = 0
             fit_config = config["LCFIT"][fit_name]
             mask = fit_config.get("MASK", "")
+            if isinstance("MASK", (str, int)):
+                mask = [mask]
             for sim in sim_tasks:
-                if mask in sim.name:
+                matches = np.any([m in sim.name] for m in mask)
+                if matches:
                     num_matches += 1
                     fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
                     f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)

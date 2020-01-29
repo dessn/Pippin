@@ -68,9 +68,27 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
         self.output["blind"] = self.options.get("BLIND", False)
+
+        self.derived_batch_info = None
         # Try to determine how many jobs will be put in the queue
         try:
-            property = self.config.get("GLOBAL", {}).get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")
+            # If BATCH_INFO is set, we'll use that
+            batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
+
+            # If its not set, lets check for ranseed_repeat or ranseed_change
+            if batch_info is None:
+                ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
+                ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+                ranseed = ranseed_repeat or ranseed_change
+                if ranseed:
+                    num_jobs = int(ranseed.strip().split()[0])
+                    self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
+
+                    default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
+                    comps = default_batch_info.strip().split()
+                    comps[-1] = str(num_jobs)
+                    self.derived_batch_info = " ".join(comps)
+
             # self.logger.debug(f"BATCH INFO property detected as {property}")
             self.num_jobs = int(property.split()[-1])
         except Exception:
@@ -116,6 +134,9 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
             else:
                 self.set_property(f"GENOPT_GLOBAL: {key}", self.config["GLOBAL"][key], assignment=" ")
+
+            if self.derived_batch_info:
+                self.set_property("BATCH_INFO", self.derived_batch_info, assignment=": ")
 
             if key == "RANSEED_CHANGE":
                 self.delete_property("RANSEED_REPEAT")

@@ -31,7 +31,7 @@ class ConfigBasedExecutable(Task):
 
         for line in self.base:
             if line.startswith(name):
-                return line.split(assignment)[1]
+                return line.split(assignment, maxsplit=1)[1]
         return None
 
     def set_property(self, name, value, section_start=None, section_end=None, assignment=None, only_add=False):
