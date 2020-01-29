@@ -34,7 +34,6 @@ CLASSIFICATION:
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
     OPTS:
       MODEL: SNNTRAIN
       NORM: cosmo
@@ -50,7 +49,6 @@ CLASSIFICATION:
   SNNVARTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
     OPTS:
       MODEL: SNNVARTRAIN
       VARIANT: variational
@@ -67,7 +65,6 @@ CLASSIFICATION:
   SNNBAYTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
-    MASK: TEST
     OPTS:
       MODEL: SNNBAYTRAIN
       VARIANT: bayesian
@@ -76,7 +73,6 @@ CLASSIFICATION:
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
     MODE: predict
-    MASK: TEST
 
   NNTRAIN:
     CLASSIFIER: NearestNeighborPyClassifier
@@ -86,31 +82,26 @@ CLASSIFICATION:
   NNTEST:
     CLASSIFIER: NearestNeighborPyClassifier
     MODE: predict
-    MASK_SIM: TEST
     OPTS:
         MODEL: NNTRAIN
 
-  SNIRF-TRAIN:
+  SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
     MODE: train
     MASK_SIM: TRAINING
 
-  SNIRF-TEST:
+  SNIRFTEST:
     CLASSIFIER: SnirfClassifier
     MODE: predict
-    MASK_SIM: TEST
     OPTS:
-      MODEL: SNIRF-TRAIN
+      MODEL: SNIRFTRAIN
 
 
 AGGREGATION:
   AGG:
-    MASK: TEST
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
 
 MERGE:
   MERGE:
-    MASK_SIM: TEST
-    MASK_FIT: TEST
