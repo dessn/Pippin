@@ -74,24 +74,26 @@ class SNANASimulation(ConfigBasedExecutable):
         try:
             # If BATCH_INFO is set, we'll use that
             batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
+            default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
 
             # If its not set, lets check for ranseed_repeat or ranseed_change
             if batch_info is None:
                 ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
                 ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
                 ranseed = ranseed_repeat or ranseed_change
+
                 if ranseed:
                     num_jobs = int(ranseed.strip().split()[0])
                     self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
-
-                    default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
                     comps = default_batch_info.strip().split()
                     comps[-1] = str(num_jobs)
                     self.derived_batch_info = " ".join(comps)
-
-            # self.logger.debug(f"BATCH INFO property detected as {property}")
-            self.num_jobs = int(property.split()[-1])
+                    self.num_jobs = num_jobs
+            else:
+                # self.logger.debug(f"BATCH INFO property detected as {property}")
+                self.num_jobs = int(default_batch_info.split()[-1])
         except Exception:
+            self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
             self.num_jobs = 10
 
         self.output["genversion"] = self.genversion
