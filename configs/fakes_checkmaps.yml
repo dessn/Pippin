@@ -168,7 +168,7 @@ SIM:
       GLOBAL:
         <<: *default_map
         NGEN_UNIT: 10.0
-  SIMDES3YR_NOCOR:
+  SIMDES3YR_2D_NOCOR:
     IA_G10:
       BASE: sn_ia_salt2_g10_des3yr.input
     GLOBAL:
