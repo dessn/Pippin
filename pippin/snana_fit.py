@@ -272,6 +272,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 mask = [mask]
             for sim in sim_tasks:
                 matches = np.any([m in sim.name] for m in mask)
+                print("AAAA ", mask, sim.name, np.any([m in sim.name] for m in mask))
                 if matches:
                     num_matches += 1
                     fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
