@@ -175,6 +175,7 @@ class SNANASimulation(ConfigBasedExecutable):
                             if include_file.startswith("/"):
                                 shutil.copy(include_file, temp_dir)
                             else:
+                                include_file = get_data_loc(self.data_dir, include_file)
                                 # Dont copy it over, we need to sed it to update the INPUT_FILE_INCLUDE to be relative
                                 # Ah crap, this will only work for a single include.
                                 base = os.path.basename(include_file)
