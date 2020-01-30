@@ -107,7 +107,7 @@ class Task(ABC):
     @staticmethod
     def fail_config(message):
         Task.logger.error(message)
-        raise ValueError(f"Task {self.name} failed config")
+        raise ValueError(f"Task {Task.name} failed config")
 
     @staticmethod
     @abstractmethod
