@@ -180,11 +180,10 @@ class SNANASimulation(ConfigBasedExecutable):
                                 # Ah crap, this will only work for a single include.
                                 base = os.path.basename(include_file_full)
                                 input_file = os.path.join(temp_dir, os.path.basename(ff))
+                                shutil.copy(include_file_full, temp_dir)
                                 sed_command = f"sed -i -e 's|{include_file}|{base}|g' {input_file}"
                                 self.logger.debug(f"Running sed command: {sed_command}")
                                 subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
-
-                                shutil.copy(include_file, temp_dir)
 
                             fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
 
