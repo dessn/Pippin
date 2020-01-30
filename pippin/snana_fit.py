@@ -68,7 +68,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["is_data"] = is_data
 
         # Loading fitopts
-        fitopts = config.get("FITOPTS", ["empty.fitopts"])
+        fitopts = config.get("FITOPTS", [])
         if isinstance(fitopts, str):
             fitopts = [fitopts]
 
@@ -83,7 +83,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.fitopts += new_fitopts
                     self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
             else:
-                assert "[" in f and "]" in f, f"Manual fitopt {f} should specify a label in square brackets"
+                assert "[" in f and "]" in f, f"Manual fitopt {f} for lcfit {self.name} should specify a label in square brackets"
                 if not f.startswith("FITOPT:"):
                     f = "FITOPT: " + f
                 self.logger.debug(f"Adding manual fitopt {f}")
