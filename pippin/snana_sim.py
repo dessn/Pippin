@@ -40,7 +40,7 @@ class SNANASimulation(ConfigBasedExecutable):
         blind: bool - whether to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
+    def __init__(self, name, output_dir, genversion, config, global_config, combine="/combine.input"):
         self.data_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/")
         super().__init__(name, output_dir, self.data_dir + combine, ": ")
 
