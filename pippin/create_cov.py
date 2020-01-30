@@ -37,8 +37,8 @@ class CreateCov(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, options, dependencies=None, index=0):
-        self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/create_cov"
-        self.template_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/cosmomc_templates"
+        self.data_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/create_cov")
+        self.template_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/cosmomc_templates")
         base_file = os.path.join(self.data_dir, "input_file.txt")
         super().__init__(name, output_dir, base_file, default_assignment=": ", dependencies=dependencies)
 
