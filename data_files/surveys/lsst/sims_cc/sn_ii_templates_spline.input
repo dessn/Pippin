@@ -11,7 +11,7 @@ GENTYPE:   20
 DNDZ_ALLSCALE:    0.35          # share with II-pca model
 GENRANGE_TREST:  -50 300
 
-INPUT_FILE_INCLUDE:  djbrout_spec_test/SIMGEN_TEMPLATE_LSST.input
+INPUT_FILE_INCLUDE: surveys/lsst/sims_instrument/sim_lsst.input
 
 
 # Some of the models plateau at	end of epoch range,

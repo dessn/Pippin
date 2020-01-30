@@ -2,7 +2,7 @@
 # Aug 12 2018: remove SDSS-013195, SDSS-014475, SNLS-04D1la
 #                 (artifact warning from Justin)
 #
-INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
+INPUT_FILE_INCLUDE: surveys/des/sims_instrument/sim_des_5yr_phot_include.input
 
 GENTYPE:   30
 GENMODEL:  $PLASTICC_MODELS/NON1ASED.SNIbc-Templates

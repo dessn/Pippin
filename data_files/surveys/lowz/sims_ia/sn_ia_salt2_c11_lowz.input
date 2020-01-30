@@ -1,4 +1,4 @@
-INPUT_FILE_INCLUDE:  sim_lowz_spec_include.input
+INPUT_FILE_INCLUDE: surveys/lowz/sims_instrument/sim_lowz_spec_include.input
 
 GENTYPE:   1
 GENMODEL:  SALT2.WFIRST-H17

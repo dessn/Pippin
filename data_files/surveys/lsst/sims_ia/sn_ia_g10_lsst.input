@@ -1,4 +1,4 @@
-INPUT_FILE_INCLUDE:  djbrout_spec_test/SIMGEN_TEMPLATE_LSST.input
+INPUT_FILE_INCLUDE: surveys/lsst/sims_instrument/sim_lsst.input
 
 GENTYPE:   1
 GENMODEL:  SALT2.WFIRST-H17

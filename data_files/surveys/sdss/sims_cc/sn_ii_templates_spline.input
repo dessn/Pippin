@@ -10,7 +10,7 @@ GENTYPE:   20
 DNDZ_ALLSCALE:    0.35          # share with II-pca model
 GENRANGE_TREST:  -50 300
 
-INPUT_FILE_INCLUDE:  djbrout_sdss/SIMGEN_TEMPLATE_SDSS.input
+INPUT_FILE_INCLUDE:  surveys/sdss/sims_instrument/sim_sdss_3yr.input
 
 
 # Some of the models plateau at	end of epoch range,

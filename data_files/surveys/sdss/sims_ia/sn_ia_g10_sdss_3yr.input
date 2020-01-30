@@ -1,4 +1,4 @@
-INPUT_FILE_INCLUDE:  djbrout_sdss/SIMGEN_TEMPLATE_SDSS.input
+INPUT_FILE_INCLUDE:  surveys/sdss/sims_instrument/sim_sdss_3yr.input
 
 # ========================================
 # DES sim file SALT2-SNIa: for BCD paper

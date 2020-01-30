@@ -1,4 +1,4 @@
-INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
+INPUT_FILE_INCLUDE:  surveys/des/sims_instrument/sim_des_5yr_phot_include.input
 
 GENTYPE:   1
 GENMODEL:  SALT2.P18_UV2IR
