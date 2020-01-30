@@ -184,7 +184,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                 self.logger.debug(f"Running sed command: {sed_command}")
                                 subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
-                                shutil.copy(self.data_dir + include_file, temp_dir)
+                                shutil.copy(include_file, temp_dir)
 
                             fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
 
