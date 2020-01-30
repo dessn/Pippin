@@ -34,7 +34,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     IA91BG:
       BASE: surveys/des/sims_cc/sn_ia91bg.input
     CC_TEMPLATES:
-      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.INPUT
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
 
 
 DATAPREP:
