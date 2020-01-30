@@ -111,7 +111,7 @@ def chown_file(path):
     try:
         os.chown(path, -1, group=group_id, follow_symlinks=False)
     except Exception:
-        logger.debug(f"Chown error: {path}")
+        logger.debug(f"Did not chown {path}")
 
 
 def chown_dir(directory):
