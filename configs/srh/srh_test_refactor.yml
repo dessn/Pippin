@@ -1,0 +1,26 @@
+DATAPREP:
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+
+SIM:
+  TRAIN:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20

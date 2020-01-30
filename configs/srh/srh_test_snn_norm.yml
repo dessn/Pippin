@@ -3,7 +3,7 @@ SIM:
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     II:
-      BASE: sn_collection_maria_split_a.input
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
     GLOBAL:
       NGEN_UNIT: 0.2
       RANSEED_REPEAT: 20 12345
