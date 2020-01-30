@@ -143,7 +143,7 @@ SIM:
 
 LCFIT:
   BASEDES:
-    BASE: des.nml
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
   
 CLASSIFICATION:
   FITPROBTEST:

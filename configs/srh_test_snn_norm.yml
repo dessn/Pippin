@@ -1,0 +1,25 @@
+SIM:
+  TRAIN:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+
+CLASSIFICATION:
+  SNNTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    OPTS:
+      REDSHIFT: False
+      NORM: cosmo
+
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNNTRAIN
+      REDSHIFT: False
+      NORM: cosmo

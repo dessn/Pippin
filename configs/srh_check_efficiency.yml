@@ -1,0 +1,182 @@
+# This test is designed to check the maximum impact of getting our efficiency wrong
+# To do this there are three biascor jobs - a reference job, one with the data using eff=1
+# and one with normal data with the biascor sims using eff=1
+
+SIM:
+  LOWZSIM:
+    IA_G10_LOWZ:
+      BASE: sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+  DESSIMCC:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGENTOT_LC: 3000
+      RANSEED_CHANGE: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+  DESSIMCCEFF:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
+      NGENTOT_LC: 3000
+      RANSEED_CHANGE: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 50
+
+  TRAINDESSIM:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_b.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  TESTDESSIM:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 0.2
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  LOWZ:
+    IA_G10_LOWZ:
+      BASE: sn_ia_salt2_g10_lowz.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 30 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+
+  DESIA:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 30 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+
+  DESIAEFF:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENSIGMA_SALT2ALPHA: 1E8  1E8
+      GENRANGE_SALT2ALPHA: 0.12 0.20
+      GENGRID_SALT2ALPHA: 2
+      GENSIGMA_SALT2BETA: 1E8  1E8
+      GENRANGE_SALT2BETA: 2.6  3.6
+      GENGRID_SALT2BETA: 2
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 30 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
+
+  DESCC:
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+  DESCCEFF:
+    II_TEMPLATES:
+      BASE: sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 10
+      RANSEED_REPEAT: 10 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+      SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
+
+LCFIT:
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZ
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 80
+
+CLASSIFICATION:
+  SNIRF:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINDESSIM
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNIRF
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  NORMAL:
+    DATA: [D_DESSIMCC, L_LOWZSIM]
+    SIMFILE_BIASCOR: [D_DESIA, L_LOWZ]
+    SIMFILE_CCPRIOR: D_DESCC
+    CLASSIFIER: SNIRFTEST
+    MAKE_ALL_HUBBLE: False
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  SIMEFF:
+    DATA: [D_DESSIMCCEFF, L_LOWZSIM]
+    SIMFILE_BIASCOR: [D_DESIA, L_LOWZ]
+    SIMFILE_CCPRIOR: D_DESCC
+    CLASSIFIER: SNIRFTEST
+    MAKE_ALL_HUBBLE: False
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  BIASEFF:
+    DATA: [D_DESSIMCC, L_LOWZSIM]
+    SIMFILE_BIASCOR: [D_DESIAEFF, L_LOWZ]
+    SIMFILE_CCPRIOR: D_DESCCEFF
+    CLASSIFIER: SNIRFTEST
+    MAKE_ALL_HUBBLE: False
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+ANALYSE:
+  EFFONE:

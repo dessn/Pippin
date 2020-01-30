@@ -149,6 +149,9 @@ echo "#################TIMING  Classifier finished:   `date`"
                     "81": "galaxy",
                     "98": "None",
                     "99": "pending",
+                    "101": "Ia",
+                    "120": "SNII",
+                    "130": "SNIbc",
                 }
             )
         else:

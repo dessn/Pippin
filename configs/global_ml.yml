@@ -1,25 +1,25 @@
 SIM:
   TRAININGSIM:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     II:
-      BASE: sn_collection_maria_split_a.input
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
     GLOBAL:
       NGEN_UNIT: 5
       RANSEED_REPEAT: 40 12345
 
   TESTSIM:
     IA_C11:
-      BASE: sn_ia_salt2_c11.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
     II:
-      BASE: sn_collection_maria_split_b.input
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
     GLOBAL:
       NGEN_UNIT: 3
       RANSEED_REPEAT: 20 12345
 
 LCFIT:
   TESTFIT:
-    BASE: des.nml
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
     SNLCINP:
       USE_MINOS: F
 

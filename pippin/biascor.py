@@ -17,7 +17,7 @@ from pippin.task import Task
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, dependencies, options, config):
         self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        base = config.get("BASE", "bbc.input")
+        base = config.get("BASE", "surveys/des/bbc/bbc_5yr.input")
         if "$" in base or base.startswith("/"):
             base = os.path.expandvars(base)
         else:

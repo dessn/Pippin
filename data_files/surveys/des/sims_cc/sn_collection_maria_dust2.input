@@ -1,0 +1,107 @@
+
+# -----------------------------------------
+# TEMPLATES presented in Vincenzi et al. 2019 (arXiv:1908.05228)
+# TEMPLATES used here HAS BEEN corrected for MW and host extinction.
+#
+#
+#   NSED(NON1A): 1
+#
+# User-generated comments:
+#   MAGOFF and MAGSMEAR adjusted to match REVISED LF from Li. et al 2010 (arXiv:1006.4612)
+#   Li et al. LF has been revision following the re-classification from Shivvars et al. 2017, for details see Vincenzi et al. 2019)
+#   Li et al. LF use a sample of SNe that has NOT been corrected for host extinction, for this reason we artificially brighten them up by 0.2mag.
+#   Also the templates used here has been corrected for host and MW reddening.
+#   WGT (relative rates) from Shivvars et al. 2017 (also reported in Vincenzi et al. 2019)
+#
+#
+# II    --> 25 (IIP+IIL, no distinction)
+# IIP   --> 20
+# IIn   --> 21
+# IIL   --> 22
+# IIb   --> 23
+# Ib    --> 32
+# Ic    --> 33
+# Ic-BL --> 35
+
+INPUT_FILE_INCLUDE:  sim_des_5yr_phot_include.input
+
+GENSOURCE: RANDOM
+GENMODEL: $SNDATA_ROOT/models/NON1ASED/NON1ASED.V19_CC+HostXT
+DNDZ: CC_S15
+
+GENRANGE_AV: 0.001 3.
+GENTAU_AV: 0.02
+GENSIG_AV: 0.6
+GENRATIO_AV0: 100.
+
+
+NON1A_KEYS: 5
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE
+NON1A:          734  0.007841    0.02      0.46    21    ## IIn    SN2008fq
+NON1A:          725  0.007841    0.02      0.46    21    ## IIn    SN2007pk
+NON1A:          740  0.007841    0.02      0.46    21    ## IIn    SN2009ip
+NON1A:          745  0.007841    0.02      0.46    21    ## IIn    SN2010al
+NON1A:          719  0.007841    0.02      0.46    21    ## IIn    SN2006aa
+NON1A:          751  0.007841    0.02      0.46    21    ## IIn    SN2011ht
+NON1A:          730  0.009919   -0.03      1.07    23    ## IIb    SN2008ax
+NON1A:          729  0.009919   -0.03      1.07    23    ## IIb    SN2008aq
+NON1A:          722  0.009919   -0.03      1.07    23    ## IIb     SN2006T
+NON1A:          747  0.009919   -0.03      1.07    23    ## IIb    SN2011dh
+NON1A:          765  0.009919   -0.03      1.07    23    ## IIb   SN2016gkg
+NON1A:          749  0.009919   -0.03      1.07    23    ## IIb    SN2011fu
+NON1A:          750  0.009919   -0.03      1.07    23    ## IIb    SN2011hs
+NON1A:          748  0.009919   -0.03      1.07    23    ## IIb    SN2011ei
+NON1A:          732  0.009919   -0.03      1.07    23    ## IIb    SN2008bo
+NON1A:          759  0.009919   -0.03      1.07    23    ## IIb    SN2013df
+NON1A:          704  0.009919   -2.53      1.07    23    ## IIb     SN1993J
+NON1A:          764  0.027069    0.61      0.80    25     ## II   SN2016bkv
+NON1A:          766  0.027069    0.61      0.80    25     ## II     SN2016X
+NON1A:          735  0.027069    0.61      0.80    25     ## II    SN2008in
+NON1A:          744  0.027069    0.61      0.80    25     ## II     SN2009N
+NON1A:          737  0.027069    0.61      0.80    25     ## II    SN2009bw
+NON1A:          738  0.027069    0.61      0.80    25     ## II    SN2009dd
+NON1A:          755  0.027069    0.61      0.80    25     ## II    SN2012aw
+NON1A:          763  0.027069    0.61      0.80    25     ## II     SN2014G
+NON1A:          743  0.027069    0.61      0.80    25     ## II    SN2009kr
+NON1A:          761  0.027069    0.61      0.80    25     ## II    SN2013fs
+NON1A:          760  0.027069    0.61      0.80    25     ## II    SN2013ej
+NON1A:          758  0.027069    0.61      0.80    25     ## II    SN2013by
+NON1A:          757  0.027069    0.61      0.80    25     ## II    SN2013am
+NON1A:          756  0.027069    0.61      0.80    25     ## II    SN2013ab
+NON1A:          752  0.027069    0.61      0.80    25     ## II     SN2012A
+NON1A:          739  0.027069    0.61      0.80    25     ## II    SN2009ib
+NON1A:          701  0.027069    0.61      0.80    25     ## II  ASASSN14jb
+NON1A:          702  0.027069    0.61      0.80    25     ## II  ASASSN15oz
+# NON1A:          767  0.027069    0.61      0.80    25     ## II     SN1987A
+NON1A:          724  0.027069    0.61      0.80    25     ## II    SN2007od
+NON1A:          708  0.027069    0.61      0.80    25     ## II    SN1999em
+NON1A:          711  0.027069    0.61      0.80    25     ## II    SN2004et
+NON1A:          731  0.027069    0.61      0.80    25     ## II    SN2008bj
+NON1A:          717  0.027069    0.61      0.80    25     ## II    SN2005cs
+NON1A:          733  0.008316    1.38      1.14    32     ## Ib     SN2008D
+NON1A:          707  0.008316    1.38      1.14    32     ## Ib    SN1999dn
+NON1A:          754  0.008316    1.38      1.14    32     ## Ib    SN2012au
+NON1A:          713  0.008316    1.38      1.14    32     ## Ib    SN2004gq
+NON1A:          715  0.008316    1.38      1.14    32     ## Ib    SN2004gv
+NON1A:          716  0.008316    1.38      1.14    32     ## Ib    SN2005bf
+NON1A:          703  0.008316    1.38      1.14    32     ## Ib   iPTF13bvn
+NON1A:          727  0.008316    1.38      1.14    32     ## Ib    SN2007uy
+NON1A:          721  0.008316    1.38      1.14    32     ## Ib    SN2006ep
+NON1A:          742  0.008316    1.38      1.14    32     ## Ib    SN2009jf
+NON1A:          741  0.008316    1.38      1.14    32     ## Ib    SN2009iz
+NON1A:          728  0.008316    1.38      1.14    32     ## Ib     SN2007Y
+NON1A:          718  0.008316    1.38      1.14    32     ## Ib    SN2005hg
+NON1A:          746  0.010725   -2.97      0.68    33     ## Ic    SN2011bm
+NON1A:          705  0.010725    0.53      0.68    33     ## Ic     SN1994I
+NON1A:          762  0.010725    0.53      0.68    33     ## Ic    SN2013ge
+NON1A:          723  0.010725    0.53      0.68    33     ## Ic    SN2007gr
+NON1A:          714  0.010725    0.53      0.68    33     ## Ic    SN2004gt
+NON1A:          712  0.010725    0.53      0.68    33     ## Ic    SN2004fe
+NON1A:          710  0.010725    0.53      0.68    33     ## Ic    SN2004aw
+NON1A:          726  0.001835    1.03      0.68    35  ## Ic-BL    SN2007ru
+NON1A:          706  0.001835    1.03      0.68    35  ## Ic-BL    SN1998bw
+NON1A:          753  0.001835    0.53      0.68    35  ## Ic-BL    SN2012ap
+NON1A:          736  0.001835    1.03      0.68    35  ## Ic-BL    SN2009bb
+NON1A:          720  0.001835    0.53      0.68    35  ## Ic-BL    SN2006aj
+NON1A:          709  0.001835    0.53      0.68    35  ## Ic-BL    SN2002ap
+

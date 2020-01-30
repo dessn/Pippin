@@ -1,0 +1,38 @@
+# Generates bias cor simulations that can be used by other configurations
+
+ALIAS:
+  GRID: &grid
+    GENSIGMA_SALT2ALPHA: 1E8  1E8
+    GENRANGE_SALT2ALPHA: 0.12 0.20
+    GENGRID_SALT2ALPHA: 2
+    GENSIGMA_SALT2BETA: 1E8  1E8
+    GENRANGE_SALT2BETA: 2.6  3.6
+    GENGRID_SALT2BETA: 2
+  NUMS: &nums
+    NGEN_UNIT: 10
+    RANSEED_REPEAT: 10 12345
+
+SIM:
+  LOWZSIMBIAS:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+      <<: *grid
+    GLOBAL: *nums
+
+  DESSIMBIAS3YRIA:
+    IA_G10_DES3YR:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+      <<: *grid
+    GLOBAL: *nums
+
+  DESSIMBIAS5YRIA:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      <<: *grid
+    GLOBAL: *nums
+
+  DESSIMBIAS5YRCC:
+    IBC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria.input
+    GLOBAL:
+      NGEN_UNIT: *nums

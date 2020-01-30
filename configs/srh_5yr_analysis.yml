@@ -1,0 +1,169 @@
+DATAPREP:
+
+  # Load in the actual data that we will work with
+
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+  DATALOWZ:  # lowz combined sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True # Defaults to true anyway! Set to false to unblind
+
+  # Load in the existing bias cor simulations
+  LOWZSIMBIAS:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_LOWZSIMBIAS
+  DESSIMBIAS3YRIA:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS3YRIA
+  DESSIMBIAS5YRIA:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRIA
+  DESSIMBIAS5YRCC:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRCC
+
+LCFIT:
+
+  # Run the full fitopts again only the data
+  LS:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: DATALOWZ
+    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  DS:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DATADES
+    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  # For the biascor sims, fit without fitopt
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DESSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+CLASSIFICATION:
+  # Load the existing SNN classifier from GLOBAL_ML
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: $PIPPIN_OUTPUT/GLOBAL_ML/3_CLAS/SNNTRAIN_TRAININGSIM/model.pt
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+
+AGGREGATION:
+  AGG:
+    OPTS:
+      PLOT: True
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  5YR:
+    DATA: [DS_DATADES5YR, LS_DATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA, L_LOWZSIMBIAS]
+    SIMFILE_CCPRIOR: D_DESSIMBIAS5YRCC
+    CLASSIFIER: SNNTEST
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+      CUTWIN_PROB_IA: 0.8 1.0
+
+  3YR:
+    BASE: bbc_spec.input
+    DATA: [DS_DATADES3YR, LS_DATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA, L_LOWZSIMBIAS]
+    CLASSIFIER: UNITY
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+
+
+CREATE_COV:
+  ALL:
+    OPTS:
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+      COVOPTS: [ALL, NOSYS]
+      NUM_WALKERS: 40
+
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]
+      NUM_WALKERS: 20
+
+  SN_OMOL:
+    OPTS:
+      INI: sn_omol
+      COVOPTS: [ALL, NOSYS]
+      NUM_WALKERS: 20
+
+  SN_CMB_OMOL:
+    OPTS:
+      INI: sn_cmb_omol
+      COVOPTS: [ALL]
+      NUM_WALKERS: 20
+
+ANALYSE:
+  ALL_OMOL:
+    MASK_COSMOMC: OMOL
+    OPTS:
+      BLIND: omegal
+      SHIFT: True
+
+  ALL_OMW:
+    MASK_COSMOMC: OMW
+    OPTS:
+      BLIND: w
+      SHIFT: True
+
+  SNONLY:
+    MASK_COSMOMC: SN_OMW
+    OPTS:
+      BLIND: w
+      SHIFT: True
