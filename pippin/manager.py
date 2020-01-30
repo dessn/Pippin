@@ -4,6 +4,7 @@ import inspect
 import shutil
 import subprocess
 import time
+import yaml
 
 from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
@@ -18,6 +19,11 @@ from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
+
+
+class NoAliasDumper(yaml.Dumper):
+    def ignore_aliases(self, data):
+        return True
 
 
 class Manager:
@@ -182,10 +188,11 @@ class Manager:
         current_sleep_time = start_sleep_time
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
-        self.logger.info(f"Copying config file from {self.filename_path} to {config_file_output}")
         if not check_config and self.filename_path != config_file_output:
-            shutil.copy(self.filename_path, config_file_output)
-        chown_file(config_file_output)
+            self.logger.info(f"Saving parsed config file from {self.filename_path} to {config_file_output}")
+            with open(config_file_output, "w") as f:
+                yaml.dump(self.run_config, f, default_flow_style=False, Dumper=NoAliasDumper)
+            chown_file(config_file_output)
 
         # Welcome to the primary loop
         while self.tasks or running_tasks:

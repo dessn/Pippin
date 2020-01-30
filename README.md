@@ -3,7 +3,7 @@
 
 Pippin - a pipeline for Supernova cosmology analysis
 
-![Pippin Meme](https://i.imgflip.com/3nlrb8.jpg)
+![Pippin Meme](meme.jpg)
 
 
 

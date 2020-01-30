@@ -268,7 +268,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             num_matches = 0
             fit_config = config["LCFIT"][fit_name]
             mask = fit_config.get("MASK", "")
-            if isinstance("MASK", (str, int)):
+            if isinstance(mask, (str, int)):
                 mask = [mask]
             for sim in sim_tasks:
                 matches = np.any([m in sim.name] for m in mask)
