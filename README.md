@@ -16,7 +16,7 @@ Pippin - a pipeline for Supernova cosmology analysis
 - [Examples](#examples)
 - [FAQ](#faq)
 - [Tasks](#tasks)
-    - [DataPrep](#dataprep)
+    - [DataPrep](#data-preparation)
     - [Simulation](#simulation)
     - [Light Curve Fit](#light-curve-fit)
     - [Classification](#classification)
@@ -198,6 +198,165 @@ GLOBAL:
     - /some/new/directory/with/your/files/in/it
 ```
 
+## Tasks
+
+Pippin is essentially a wrapper around many different tasks. In this section, 
+I'll try and explain how tasks are related to each other, and what each task is.
+
+As a general note, most tasks have an `OPTS` where most details go. This is partially historical, but essentially properties
+that Pippin uses to determine how to construct tasks (like `MASK`, classification mode, etc) are top level, and the Task itself gets passed everything
+inside `OPTS` to use however it wants. 
+
+### Data Preparation
+
+The DataPrep task is simple - it is mostly a pointer for Pippin towards an external directory that contains
+some photometry, to say we're going to make use of it. Normally this means data files,
+though you can also use it to point to simulations that have already been run to save yourself
+the hassle of rerunning them.  The other thing the DataPrep task will do is run the new 
+method of determining a viable initial guess for the peak time, which will be used by the light curve fitting task down the road. 
+The full options available for the DataPrep task are:
+
+```yaml
+DATAPREP:
+  SOMENAME:
+    OPTS:
+    
+      # Location of the photometry files
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      
+      # Specify which types are confirmed Ia's, confirmed CC or unconfirmed. Used by ML down the line
+      TYPES:
+        IA: [101, 1]
+        NONIA: [20, 30, 120, 130]
+
+     # Blind the data. Defaults to True if SIM:True not set
+      BLIND: False
+      
+      # Defaults to False. Important to set this flag if analysing a sim in the same way as data, as there
+      # are some subtle differences
+      SIM: False
+
+```
+
+### Simulation
+
+The simulation task does exactly what you'd think it does. It invokes SNANA to run some similation as per your configuration. 
+If something goes wrong, Pippin tries to dig through the log files to give you a useful error message, but sometimes this
+is difficult (i.e. the logs have been zipped up). With the current version of SNANA, each simulation can have at most one Ia component, 
+and an arbitrary number of CC components. The specification for the simulation task config is as follows:
+
+```yaml
+SIM:
+  SOMENAMEHERE:
+  
+    # We specify the Ia component, so it must have IA in its name
+    IA_G10: 
+      BASE: sn_ia_salt2_g10.input  # And then we specify the base input file which generates it.
+      
+    # Now we can specify as many CC sims to mix in as we want
+    II_JONES:
+      BASE: sn_collection_jones.input
+    
+    IAX:
+      BASE: sn_iax.input
+      DNDZ_ALLSCALE: 3.0  # Note you can add/overwrite keys like so for specific files
+
+    # This section will apply to all components of the sim
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+```
+
+### Light Curve Fit
+
+This task runs the SALT2 light curve fitting process on light curves from the simulation or DataPrep task. As above,
+if something goes wrong I try and give a good reason why, if you don't get a good reason, let me know. The task is 
+specified like so:
+
+```yaml
+LCFIT:
+  SOMENAMEHERE:
+    # MASK means only apply this light curve fitting on sims/Dataprep which have DES in the name
+    # You can also specify a list for this, and they will be applied as a logical or
+    MASK: DES
+      
+    # The base nml file used 
+    BASE: des.nml
+      
+    # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
+    # Normally this would be a single entry like des.fitopts, but you can also pass a list
+    # If you specify a FITOPT manually, make sure it has the square bracket label at the start
+    FITOPS:
+      - des.fitopts
+      - "[custom_extra_fitopt] REDSHIFT_FINAL_SHIFT 0.0001"
+
+    # We can optionally customise keys in the FITINP section
+    FITINP:
+      FILTLIST_FIT: 'gri'
+      
+    # And do the same for the optional SNLCINP section
+    SNLCINP:
+      CUTWIN_SNRMAX:  3.0, 1.0E8
+      CUTWIN_NFILT_SNRMAX:  3.0, 99.
+
+    # Finally, options that go outside either of these sections just go in the generic OPTS
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+```
+
+### Classification
+
+Within Pippin, there are many different classifiers implemented. Most classifiers need to be trained, and 
+can then run in predict mode. All classifiers that require training can either be trained in the same yml 
+file, or you can point to an external serialised instance of the trained class and use that. The general syntax
+for a classifier is:
+
+```yaml
+CLASSIFICATION:
+  SOMELABEL:
+    CLASSIFIER: NameOfTheClass
+    MODE: train  # or predict
+    MASK: optional_mask  # Masks both sim and lcfit together, logical and
+    MASK_SIM: optional_sim_only_mask
+    MASK_FIT: optional_lcfit_only_mask
+    OPTS:
+      MODEL: file_or_label  # only needed in predict mode, how to find the trained classifier
+      WHATREVER_THE: CLASSIFIER_NEEDS  
+```
+
+#### SuperNNova Classifier
+
+The [SuperNNova classifier](https://github.com/supernnova/SuperNNova) is a recurrent neural network that
+operates on simulation photometry. It has three in vuilt variants - its normal (vanilla) mode, a Bayesian mode
+and a Variational mode. After training, a `model.pt` can be found in the output directory,
+which you can point to from a different yaml file. You can define a classifier like so:
+
+```yaml
+CLASSIFICATION:
+  SNN_TEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
+      MODEL: SNN_TRAIN  # Havent shown this defined. Or /somepath/to/model.pt
+      REDSHIFT: True  # Use redshift info when classifying. Defaults to True.
+      NORM: global  # How to normalise LCs. Other options are "perfilter" or "cosmo".  
+```
+
+
+### Aggregation
+
+
+### Merging
+
+
+### Bias Corrections
+
+### Create Covariance
+
+### CosmoMC
+
+### Analyse
 
 ![Developer Documentation Below](doc/developer.jpg)
 
