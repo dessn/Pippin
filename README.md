@@ -206,8 +206,12 @@ GLOBAL:
 *********
 
 
-## Adding a new task
+<h2 style="color: red;">Adding a new task</h2>
 
+<details>
+  <summary>Click for the gory details</summary>
+  
+  
 Alright there, you want to add a new task to Pippin? Great. Here's what you've got to do:
 
 1. Create an implementation of the `Task` class, can keep it empty for now.
@@ -247,8 +251,13 @@ Once you have figured it out, import the task and slot it in.
             return tasks
         ```
 
+</details>
+
 ## Adding a new classifier
 
+<details>
+  <summary>Click for the gory details</summary>
+  
 Alright, so what if we're not after a brand new task, but just adding another classifier. Well, its easier to do, and I recommend looking at 
 `nearest_neighbor_python.py` for something to copy from. You'll see we have the parent Classifier class, I write out the slurm script that
 would be used, and then define the `train` and `predict` method (which both invoke a general `classify` function in different ways, you can do this
@@ -261,3 +270,5 @@ only on SALT2 features, so I return `(False, True)`.
 Finally, you'll need to add your classifier into the ClassifierFactory in `classifiers/factory.py`, so that I can link a class name
 in the YAML configuration to your actual class. Yeah yeah, I could use reflection or dynamic module scanning or similar, but I've had issues getting
 the behaviour consistent across systems and conda environments, so we're doing it the hard way.
+
+</details>
