@@ -75,7 +75,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.logger.debug("Loading fitopts")
         self.fitopts = []
         for f in fitopts:
-            potential_path = get_data_loc(self.data_dir, f)
+            potential_path = get_data_loc(self.data_dirs, f)
             if os.path.exists(potential_path):
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 with open(potential_path) as f:
