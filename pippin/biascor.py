@@ -554,7 +554,7 @@ class BiasCor(ConfigBasedExecutable):
             for label, mu_conf in muopts.items():
                 deps += resolve_conf(mu_conf, default=config)
 
-            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), deps, options, config)
+            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), deps, options, config, global_config)
             Task.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
             tasks.append(task)
 
