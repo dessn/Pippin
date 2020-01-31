@@ -22,10 +22,8 @@ def singleton(fn):
 @singleton
 def get_config(initial_path=None, overwrites=None):
     this_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]))
-    print("AAA ", this_dir)
     if initial_path is None:
         filename = os.path.abspath(os.path.join(this_dir, "..", "cfg.yml"))
-        print("BBB ", filename)
     else:
         filename = initial_path
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
@@ -37,7 +35,7 @@ def get_config(initial_path=None, overwrites=None):
             overwrites["DATA_DIRS"] = overwrites["DATA_DIRS"] + config["DATA_DIRS"]
         config.update(overwrites)
 
-    for i, path in config["DATA_DIRS"]:
+    for i, path in enumerate(config["DATA_DIRS"]):
         updated = get_data_loc([this_dir], path)
         if updated is None:
             logging.error(f"Data dir {path} cannot be resolved!")
