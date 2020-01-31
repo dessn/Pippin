@@ -177,8 +177,8 @@ class Manager:
         blocked_tasks = []
         squeue = None
 
-        start_sleep_time = self.global_config["OUTPUT"].getint("ping_frequency")
-        max_sleep_time = self.global_config["OUTPUT"].getint("max_ping_frequency")
+        start_sleep_time = self.global_config["OUTPUT"]["ping_frequency"]
+        max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
         current_sleep_time = start_sleep_time
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))

@@ -181,4 +181,4 @@ if __name__ == "__main__":
     c = get_config()
     print(c.sections())
     print(c.get("SNANA", "sim_dir"))
-    print(c["OUTPUT"].getint("ping_frequency"))
+    print(c["OUTPUT"]["ping_frequency"])
