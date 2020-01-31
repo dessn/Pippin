@@ -43,13 +43,8 @@ def get_config(initial_path=None, overwrites=None):
     with open(filename, "r") as f:
         config = yaml.safe_load(f)
 
-    print("AAAAAA ", overwrites)
-    print("BBBBBB ", config)
-
     if overwrites is not None:
         config = merge_dict(config, overwrites)
-
-    print("CCCCCC ", config)
 
     for i, path in enumerate(config["DATA_DIRS"]):
         updated = get_data_loc([this_dir], path)
