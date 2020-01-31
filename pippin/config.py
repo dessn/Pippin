@@ -68,6 +68,8 @@ def get_output_dir():
 
 
 def get_data_loc(data_dirs, path):
+    if not isinstance(data_dirs, list):
+        data_dirs = [data_dirs]
     if "$" in path:
         path = os.path.expandvars(path)
         if "$" in path:
