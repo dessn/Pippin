@@ -29,6 +29,7 @@ def get_config(initial_path=None, overwrites=None):
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
     with open(filename, "r") as f:
         config = yaml.safe_load(f)
+    print("AAA ", config)
 
     if overwrites is not None:
         if overwrites.get("DATA_DIRS") is not None:
@@ -42,6 +43,7 @@ def get_config(initial_path=None, overwrites=None):
             assert updated is not None
         config["DATA_DIRS"][i] = updated
 
+    print("BBB ", config)
     return config
 
 
