@@ -40,6 +40,7 @@ def get_config(initial_path=None, overwrites=None):
         if updated is None:
             logging.error(f"Data dir {path} cannot be resolved!")
             assert updated is not None
+        config["DATA_DIRS"][i] = updated
 
     return config
 
