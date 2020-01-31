@@ -51,25 +51,35 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.create_cov_dep = self.get_dep(CreateCov)
         self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", "False")
         self.output["blind"] = self.blind
+        self.ini_prefix = options.get("INI")
+        self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
 
-        if self.create_cov_dep is not None:
+        if self.create_cov_dep is None:
+            self.ini_files = [f"{self.ini_prefix}.ini"]
+            self.num_walkers = 4
+            self.covopts = ["ALL"]
+            self.covopts_numbers = [0]
+            self.labels = [self.name]
+            self.num_jobs = 1
+            self.output["hubble_plot"] = None
+            self.output["bcor_name"] = None
+        else:
+            self.num_walkers = options.get("NUM_WALKERS", 8)
             avail_cov_opts = self.create_cov_dep.output["covopts"]
             self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
             self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
+
+            self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
+
             self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
             self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
+            self.labels = [self.name + "_" + c for c in self.covopts]
+            self.num_jobs = len(self.covopts) * self.num_walkers
 
-        self.ini_prefix = options.get("INI")
-
-        self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
-        self.num_walkers = options.get("NUM_WALKERS", 8)
-        self.num_jobs = len(self.covopts) * self.num_walkers if not self.static else 1
+        self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
         self.chain_dir = os.path.join(self.output_dir, "chains/")
 
-        self.labels = [self.name + "_" + c for c in self.covopts]
-        self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
-        self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
         self.chain_dict = {
             l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)
         }
@@ -189,7 +199,7 @@ fi
 
             cosmomc_static_loc = get_data_loc(self.data_dirs, self.ini_prefix)
             if cosmomc_static_loc is None:
-                self.logger.error("Seems like we can't find the static chains. At the moment we have cmb_omw, but not cmb_omol.")
+                self.logger.error("Seems like we can't find the static chains...")
                 return False
             else:
 
