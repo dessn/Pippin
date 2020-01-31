@@ -199,14 +199,10 @@ GLOBAL:
 ```
 
 
-*********
-
-**Warning, developer doco below**
-
-*********
+![Developer Documentation Below](doc/developer.jpg)
 
 
-<h2 style="color: red;">Adding a new task</h2>
+## Adding a new task
 
 <details>
   <summary>Click for the gory details</summary>
