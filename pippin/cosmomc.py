@@ -48,13 +48,17 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
-        self.create_cov_dep = self.get_dep(CreateCov)
-        self.blind = self.create_cov_dep.output["blind"]
+        self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", "False")
         self.output["blind"] = self.blind
-        avail_cov_opts = self.create_cov_dep.output["covopts"]
+        self.create_cov_dep = self.get_dep(CreateCov)
 
-        self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
-        self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
+        if self.create_cov_dep is not None:
+            avail_cov_opts = self.create_cov_dep.output["covopts"]
+            self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
+            self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
+            self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
+            self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
+
         self.ini_prefix = options.get("INI")
 
         self.static = self.ini_files in ["cmb_omw", "cmb_omol"]
@@ -75,10 +79,12 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["chain_dict"] = self.chain_dict
         self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
-        self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
-        self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
 
-        self.output["label"] = self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})") + " " + self.create_cov_dep.output["name"]
+        self.output["label"] = (
+            self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})")
+            + " "
+            + (self.create_cov_dep.output["name"] if self.create_cov_dep is not None else "")
+        )
         final = self.ini_prefix.split("_")[-1]
         ps = {"omw": ["omegam", "w"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
         self.output["cosmology_params"] = ps[final]
