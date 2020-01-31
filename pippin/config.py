@@ -19,6 +19,19 @@ def singleton(fn):
     return get
 
 
+def merge_dict(source, dest):
+
+    for key, value in source.items():
+        if isinstance(value, dict):
+            node = dest.setdefault(key, {})
+            merge_dict(value, node)
+        elif isinstance(value, list):
+            dest[key] = value + dest[key]
+        else:
+            dest[key] = value
+    return dest
+
+
 @singleton
 def get_config(initial_path=None, overwrites=None):
     this_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]))
@@ -32,9 +45,7 @@ def get_config(initial_path=None, overwrites=None):
     print("AAA ", config)
 
     if overwrites is not None:
-        if overwrites.get("DATA_DIRS") is not None:
-            overwrites["DATA_DIRS"] = overwrites["DATA_DIRS"] + config["DATA_DIRS"]
-        config.update(overwrites)
+        config = merge_dict(config, overwrites)
 
     for i, path in enumerate(config["DATA_DIRS"]):
         updated = get_data_loc([this_dir], path)
