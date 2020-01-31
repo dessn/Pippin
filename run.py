@@ -50,7 +50,7 @@ if __name__ == "__main__":
     if config.get("GLOBALS") is not None:
         logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
 
-    get_config(initial_path=args.config, overwrites=overwrites)
+    global_config = get_config(initial_path=args.config, overwrites=overwrites)
 
     level = logging.DEBUG if args.verbose else logging.INFO
 
@@ -86,6 +86,9 @@ if __name__ == "__main__":
 
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
+
+    for i, d in enumerate(global_config["DATA_DIRS"]):
+        logging.debug(f"Data directory {i + 1} set as {d}")
 
     manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:
