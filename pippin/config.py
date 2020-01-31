@@ -34,9 +34,9 @@ def merge_dict(original, extra):
 
 @singleton
 def get_config(initial_path=None, overwrites=None):
-    this_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]))
+    this_dir = os.path.abspath(os.path.join(os.path.dirname(inspect.stack()[0][1]), ".."))
     if initial_path is None:
-        filename = os.path.abspath(os.path.join(this_dir, "..", "cfg.yml"))
+        filename = os.path.abspath(os.path.join(this_dir, "cfg.yml"))
     else:
         filename = initial_path
     assert os.path.exists(filename), f"Config location {filename} cannot be found."

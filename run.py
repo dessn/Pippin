@@ -27,39 +27,10 @@ class MessageStore(logging.Handler):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
-if __name__ == "__main__":
-    # Set up command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
-    parser.add_argument("--config", help="Location of global config", default=None, type=str)
-    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
-    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
-    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
-    parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
-
-    args = parser.parse_args()
-
-    # Load YAML config file
-    yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
-    assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
-    with open(yaml_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    overwrites = config.get("GLOBAL")
-    if config.get("GLOBALS") is not None:
-        logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
-
-    get_config(initial_path=args.config, overwrites=overwrites)
-
-    level = logging.DEBUG if args.verbose else logging.INFO
-
-    # Get base filename
-    config_filename = os.path.basename(args.yaml).split(".")[0].upper()
+def setup_logging(config_filename):
     output_dir = get_output_dir()
     logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
-    if not args.check:
-        mkdirs(logging_folder)
+    level = logging.DEBUG if args.verbose else logging.INFO
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
     message_store = MessageStore()
@@ -86,6 +57,42 @@ if __name__ == "__main__":
 
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
+
+    return message_store, logging_folder, logging_filename
+
+
+if __name__ == "__main__":
+    # Set up command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("--config", help="Location of global config", default=None, type=str)
+    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
+    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
+    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
+    parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
+
+    args = parser.parse_args()
+    config_filename = os.path.basename(args.yaml).split(".")[0].upper()
+    message_store, logging_folder, logging_filename = setup_logging(config_filename)
+
+    if not args.check:
+        mkdirs(logging_folder)
+
+    # Load YAML config file
+    yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
+    assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
+    with open(yaml_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    overwrites = config.get("GLOBAL")
+    if config.get("GLOBALS") is not None:
+        logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
+
+    global_config = get_config(initial_path=args.config, overwrites=overwrites)
+
+    for i, d in enumerate(global_config["DATA_DIRS"]):
+        logging.debug(f"Data directory {i + 1} set as {d}")
 
     manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:
