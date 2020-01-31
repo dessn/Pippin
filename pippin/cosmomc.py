@@ -61,7 +61,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.ini_prefix = options.get("INI")
 
-        self.static = self.ini_files in ["cmb_omw", "cmb_omol"]
+        self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
         self.num_walkers = options.get("NUM_WALKERS", 8)
         self.num_jobs = len(self.covopts) * self.num_walkers if not self.static else 1
         self.chain_dir = os.path.join(self.output_dir, "chains/")
