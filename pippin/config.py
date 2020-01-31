@@ -19,17 +19,17 @@ def singleton(fn):
     return get
 
 
-def merge_dict(source, dest):
+def merge_dict(original, extra):
 
-    for key, value in source.items():
+    for key, value in extra.items():
         if isinstance(value, dict):
-            node = dest.setdefault(key, {})
-            merge_dict(value, node)
+            node = original.setdefault(key, {})
+            merge_dict(node, value)
         elif isinstance(value, list):
-            dest[key] = value + dest[key]
+            original[key] = value + original[key]
         else:
-            dest[key] = value
-    return dest
+            original[key] = value
+    return original
 
 
 @singleton
