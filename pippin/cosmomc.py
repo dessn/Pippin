@@ -61,8 +61,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             self.covopts_numbers = [0]
             self.labels = [self.name]
             self.num_jobs = 1
-            self.output["hubble_plot"] = None
-            self.output["bcor_name"] = None
         else:
             self.num_walkers = options.get("NUM_WALKERS", 8)
             avail_cov_opts = self.create_cov_dep.output["covopts"]
