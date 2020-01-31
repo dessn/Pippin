@@ -13,6 +13,7 @@ Pippin - a pipeline for Supernova cosmology analysis
 * [Installing Pippin](#installing-it-fresh)
 * [Contributing to Pippin](#contributing-to-pippin)
 * [Examples](#examples)
+* [FAQ](#faq)
 * [Adding a new Task](#adding-a-new-task)
 * [Adding a new classifier](#adding-a-new-classifier)
 
@@ -161,6 +162,26 @@ If you are finding that your config files contain lots of duplicated sections (f
 almost the same way but with one differnece), consider using YAML anchors. [See this blog post](https://blog.daemonl.com/2016/02/yaml.html)
 for more detail. You can define your anchors in the main config section, or add a new section (like SIM, LCFIT, CLASSIFICATION). So long as it doesn't
 match a Pippin keyword for each stage, you'll be fine. I recommend `ANCHORS:` or `GLOBAL:` or `DEFAULTS:` at the top of the file, all of those will work.
+
+
+## FAQ
+
+**Pippin is crashing on some task and the error message isn't useful**
+
+Feel free to send me the log and stack, and I'll see what I can do turn the exception into something
+more human-readable.
+
+**I want to modify a ton of files but don't want huge yml files, please help**
+
+You can modify input files and put them in a directory you own, and then tell Pippin to look there 
+(in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/Samreay/Pippin/blob/master/examples/global.yml),
+or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
+
+```yaml
+GLOBAL:
+  DATA_DIRS:
+    - /some/new/directory/with/your/files/in/it
+```
 
 
 *********
