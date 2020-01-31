@@ -356,8 +356,8 @@ CLASSIFICATION:
     MODE: predict
     OPTS:
       MODEL: SNIRF_TRAIN
-      FITOPT: some_label  # Optional to fit using a FITOPT. Should match the label in square brackets. Defaults to no FITOPT
-      FEATURES: x1 c zHD x1ERR cERR PKMJDERR  # List of columns to use. Defaults are shown. Check FITRES for options.
+      FITOPT: some_label  # Optional FITOPT to use. Match the label. Defaults to no FITOPT
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR  # Columns to use. Defaults are shown. Check FITRES for options.
 ```
 
 #### Nearest Neighbour Classifier
@@ -373,8 +373,8 @@ CLASSIFICATION:
     MODE: predict
     OPTS:
       MODEL: NN_TRAIN
-      FITOPT: some_label  # Optional to fit using a FITOPT. Should match the label in square brackets. Defaults to no FITOPT
-      FEATURES: zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR  # List of columns to use. Defaults are shown.
+      FITOPT: some_label  # Optional FITOPT to use. Match the label. Defaults to no FITOPT
+      FEATURES: zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR  # Columns to use. Defaults are shown.
 ```
 
 #### Perfect Classifier
