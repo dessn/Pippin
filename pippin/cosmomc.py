@@ -214,6 +214,8 @@ fi
                         df = os.path.join(self.output_dir, done_file)
                         with open(df, "w") as f:
                             f.write("SUCCESS")
+                    self.save_new_hash(new_hash)
+
                 else:
                     self.should_be_done()
                     self.logger.info("Hash check passed, not rerunning")
