@@ -49,8 +49,8 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
         self.create_cov_dep = self.get_dep(CreateCov)
-        self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", "False")
-        self.output["blind"] = self.blind
+        self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", False)
+        assert isinstance(self.blind, bool), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI")
         self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
 
@@ -89,6 +89,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["chain_dict"] = self.chain_dict
         self.output["base_dict"] = self.base_dict
         self.output["covopts"] = self.covopts
+        self.output["blind"] = self.blind
 
         self.output["label"] = (
             self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})")
