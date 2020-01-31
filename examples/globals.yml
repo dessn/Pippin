@@ -1,0 +1,17 @@
+# You can also overwrite the global settings normally found in the cfg.yml file
+# in your individual runs. Here is an example which reduces the number of jobs
+# allowed in the queues and also adds another data path to look in when searching
+# for your include / input files.
+
+
+GLOBALS:
+  QUEUE:
+    max_jobs: 20
+    max_jobs_in_queue: 50
+  DATA_DIRS:
+    - /somepath/to/your/datadir  # If you put this to your user folder for example, you can still have relative paths, theyll be joiend to your user folder
+
+SIM:
+  SOMESIM:
+    IAS:
+      BASE: somefile_in_your_datadir.input

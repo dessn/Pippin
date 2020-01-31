@@ -41,8 +41,9 @@ class SNANASimulation(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
-        self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
-        super().__init__(name, output_dir, self.data_dir + combine, ": ")
+        self.data_dirs = global_config("DATA_DIRS")
+        base_file = get_data_loc(self.data_dirs, combine)
+        super().__init__(name, output_dir, base_file, ": ")
 
         self.genversion = genversion
         if len(genversion) < 30:
@@ -155,9 +156,9 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Copy the base files across
         for f in self.base_ia:
-            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
+            shutil.copy(get_data_loc(self.data_dirs, f), temp_dir)
         for f in self.base_cc:
-            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
+            shutil.copy(get_data_loc(self.data_dirs, f), temp_dir)
 
         # Copy the include input file if there is one
         input_copied = []
@@ -165,27 +166,30 @@ class SNANASimulation(ConfigBasedExecutable):
         for ff in fs:
             if ff not in input_copied:
                 input_copied.append(ff)
-                path = ff if ff.startswith("/") else os.path.join(self.data_dir, ff)
+                path = get_data_loc(self.data_dirs, ff)
                 with open(path, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
                             self.logger.debug(f"Copying included file {include_file}")
-                            if include_file.startswith("/"):
-                                shutil.copy(include_file, temp_dir)
-                            else:
-                                # Dont copy it over, we need to sed it to update the INPUT_FILE_INCLUDE to be relative
-                                # Ah crap, this will only work for a single include.
-                                base = os.path.basename(include_file)
-                                input_file = os.path.join(temp_dir, os.path.basename(ff))
-                                sed_command = f"sed -i -e 's|{include_file}|{base}|g' {input_file}"
+
+                            include_file_path = get_data_loc(self.data_dirs, include_file)
+                            include_file_basename = os.path.basename(include_file_path)
+                            include_file_output = os.path.join(temp_dir, include_file_basename)
+
+                            if include_file_output not in input_copied:
+
+                                # Copy include file into the temp dir
+                                shutil.copy(include_file_path, temp_dir)
+
+                                # Then SED the file to replace the full path with just the basename
+                                sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {include_file_output}"
                                 self.logger.debug(f"Running sed command: {sed_command}")
                                 subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
-                                shutil.copy(self.data_dir + include_file, temp_dir)
-
-                            fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
+                                # And make sure we dont do this file again
+                                fs.append(include_file_output)
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"

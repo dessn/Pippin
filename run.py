@@ -40,8 +40,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Load global config
-    get_config(initial_path=args.config)
+    # Load YAML config file
+    yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
+    assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
+    with open(yaml_path, "r") as f:
+        config = yaml.safe_load(f)
+
+    overwrites = config.get("GLOBAL")
+
+    get_config(initial_path=args.config, overwrites=overwrites)
 
     level = logging.DEBUG if args.verbose else logging.INFO
 
@@ -77,12 +84,6 @@ if __name__ == "__main__":
 
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
-
-    # Load YAML config file
-    yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
-    assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
-    with open(yaml_path, "r") as f:
-        config = yaml.safe_load(f)
 
     manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:

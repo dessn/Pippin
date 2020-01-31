@@ -31,13 +31,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
-        self.data_dir = os.path.dirname(inspect.stack()[0][1]) + "/data_files/"
+        self.data_dirs = global_config("DATA_DIRS")
 
         self.config = config
         self.global_config = global_config
 
         base = config["BASE"]
-        self.base_file = get_data_loc(self.data_dir, base)
+        self.base_file = get_data_loc(self.data_dirs, base)
 
         super().__init__(name, output_dir, self.base_file, " = ", dependencies=[sim_task])
 

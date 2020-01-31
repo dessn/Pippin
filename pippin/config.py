@@ -1,4 +1,4 @@
-import configparser
+import yaml
 import inspect
 import logging
 import hashlib
@@ -20,13 +20,27 @@ def singleton(fn):
 
 
 @singleton
-def get_config(initial_path=None):
+def get_config(initial_path=None, overwrites=None):
+    this_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]))
     if initial_path is None:
-        filename = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../cfg.ini")
+        filename = os.path.abspath(os.path.join(this_dir, "/../cfg.yml"))
     else:
         filename = initial_path
-    config = configparser.ConfigParser()
-    config.read(filename)
+    assert os.path.exists(filename), f"Config location {filename} cannot be found."
+    with open(filename, "r") as f:
+        config = yaml.safe_load(f)
+
+    if overwrites is not None:
+        if overwrites.get("DATA_DIRS") is not None:
+            overwrites["DATA_DIRS"] = overwrites["DATA_DIRS"] + config["DATA_DIRS"]
+        config.update(overwrites)
+
+    for i, path in config["DATA_DIRS"]:
+        updated = get_data_loc([this_dir], path)
+        if updated is None:
+            logging.error(f"Data dir {path} cannot be resolved!")
+            assert updated is not None
+
     return config
 
 
@@ -41,13 +55,25 @@ def get_output_dir():
     return output_dir
 
 
-def get_data_loc(data_dir, path):
+def get_data_loc(data_dirs, path):
     if "$" in path:
         path = os.path.expandvars(path)
+        if "$" in path:
+            logging.error(f"Unable to resolve the variable in {path}, please check to see if it is set in your environment")
+            return None
+        return path
     if path.startswith("/"):
+        if not os.path.exists(path):
+            logging.error(f"Got an absolute path that doesn't exist: {path}")
+            return None
         return path
     else:
-        return os.path.join(data_dir, path)
+        for data_dir in data_dirs:
+            new_path = os.path.join(data_dir, path)
+            if os.path.exists(new_path):
+                return new_path
+        logging.error(f"Unable to find relative path {path} when searching through the data directories: {data_dirs}")
+        return None
 
 
 def get_output_loc(path):
