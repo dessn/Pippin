@@ -8,7 +8,7 @@ Pippin - a pipeline for Supernova cosmology analysis
 
 ## Table of Contents
 
-<img alright="right" height="200" src="meme.jpg">
+<img alrighn="right" height="200" src="meme.jpg">
 
 - [Using Pippin](#using-pippin)
 - [Installing Pippin](#installing-it-fresh)
