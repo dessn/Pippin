@@ -4,7 +4,6 @@ import inspect
 import shutil
 import subprocess
 import time
-import yaml
 
 from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
@@ -21,11 +20,6 @@ from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 
 
-class NoAliasDumper(yaml.Dumper):
-    def ignore_aliases(self, data):
-        return True
-
-
 class Manager:
     task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoMC, AnalyseChains]
     stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
@@ -39,11 +33,11 @@ class Manager:
         self.run_config = config
         self.global_config = get_config()
 
-        self.prefix = self.global_config["GLOBAL"]["prefix"] + "_" + filename
-        self.max_jobs = int(self.global_config["GLOBAL"]["max_jobs"])
-        self.max_jobs_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs"])
-        self.max_jobs_in_queue = int(self.global_config["GLOBAL"]["max_jobs_in_queue"])
-        self.max_jobs_in_queue_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs_in_queue"])
+        self.prefix = self.global_config["QUEUE"]["prefix"] + "_" + filename
+        self.max_jobs = int(self.global_config["QUEUE"]["max_jobs"])
+        self.max_jobs_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs"])
+        self.max_jobs_in_queue = int(self.global_config["QUEUE"]["max_jobs_in_queue"])
+        self.max_jobs_in_queue_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs_in_queue"])
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
@@ -183,15 +177,14 @@ class Manager:
         blocked_tasks = []
         squeue = None
 
-        start_sleep_time = self.global_config["OUTPUT"].getint("ping_frequency")
-        max_sleep_time = self.global_config["OUTPUT"].getint("max_ping_frequency")
+        start_sleep_time = self.global_config["OUTPUT"]["ping_frequency"]
+        max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
         current_sleep_time = start_sleep_time
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         if not check_config and self.filename_path != config_file_output:
             self.logger.info(f"Saving parsed config file from {self.filename_path} to {config_file_output}")
-            with open(config_file_output, "w") as f:
-                yaml.dump(self.run_config, f, default_flow_style=False, Dumper=NoAliasDumper)
+            shutil.copy(self.filename_path, config_file_output)
             chown_file(config_file_output)
 
         # Welcome to the primary loop

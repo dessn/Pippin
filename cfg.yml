@@ -1,0 +1,34 @@
+QUEUE:
+  prefix: PIP
+  max_jobs: 100  # This is how many you can have concurrently running in your queue
+  max_jobs_in_queue: 200  # And this is how many you can have waiting
+  max_gpu_jobs: 10
+  max_gpu_jobs_in_queue: 50
+
+DATA_DIRS:
+  - data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIR: option in your individual config
+
+SNANA:
+  sim_dir: $SCRATCH_SIMDIR
+  group: pi-rkessler
+
+SuperNNova:
+  conda_env: snn_gpu
+  location: $PRODUCTS/classifiers/supernnova
+
+SNIRF:
+  conda_env: snn_gpu
+  location: $PRODUCTS/classifiers/snirf
+
+DataSkimmer:
+  conda_env: snn_gpu
+  location: $PRODUCTS/utilities/dataskim
+
+CosmoMC:
+  location: $PRODUCTS/CosmoMC/v03/CosmoMC-master
+
+OUTPUT:
+  output_dir: $PIPPIN_OUTPUT
+  # output_dir = output
+  ping_frequency: 30
+  max_ping_frequency: 300

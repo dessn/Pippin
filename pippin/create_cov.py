@@ -36,10 +36,10 @@ class CreateCov(ConfigBasedExecutable):
 
     """
 
-    def __init__(self, name, output_dir, options, dependencies=None, index=0):
-        self.data_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/create_cov")
-        self.template_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/cosmomc_templates")
-        base_file = os.path.join(self.data_dir, "input_file.txt")
+    def __init__(self, name, output_dir, options, global_config, dependencies=None, index=0):
+        self.data_dirs = global_config["DATA_DIRS"]
+
+        base_file = get_data_loc(self.data_dirs, "create_cov/input_file.txt")
         super().__init__(name, output_dir, base_file, default_assignment=": ", dependencies=dependencies)
 
         self.options = options
@@ -49,7 +49,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = get_data_loc(self.data_dir, options.get("SYS_SCALE", "sys_scale.LIST"))
+        self.sys_file_in = get_data_loc(self.data_dirs, options.get("SYS_SCALE", "create_cov/sys_scale.LIST"))
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
@@ -94,7 +94,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
 
     def calculate_input(self):
         self.logger.debug(f"Calculating input")
-        self.set_property("COSMOMC_TEMPLATES", self.template_dir)
+        self.set_property("COSMOMC_TEMPLATES", get_data_loc(self.data_dirs, "cosmomc_templates"))
         self.set_property("BASEOUTPUT", self.name)
         self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
@@ -195,7 +195,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                     ii = "" if num == 1 else f"_{i + 1}"
 
                     name = f"{cname}_{btask.name}{ii}"
-                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, [btask], index=i)
+                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, global_config, dependencies=[btask], index=i)
                     Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
                     tasks.append(a)
 

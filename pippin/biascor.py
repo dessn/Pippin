@@ -9,19 +9,17 @@ from scipy.interpolate import interp1d
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, ensure_list
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc
 from pippin.merge import Merger
 from pippin.task import Task
 
 
 class BiasCor(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, dependencies, options, config):
-        self.data_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/")
-        base = config.get("BASE", "surveys/des/bbc/bbc_5yr.input")
-        if "$" in base or base.startswith("/"):
-            base = os.path.expandvars(base)
-        else:
-            base = os.path.join(self.data_dir, base)
+    def __init__(self, name, output_dir, dependencies, options, config, global_config):
+        self.global_config = global_config
+        self.data_dirs = global_config["DATA_DIRS"]
+        base = get_data_loc(self.data_dirs, config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
+
         super().__init__(name, output_dir, base, "=", dependencies=dependencies)
 
         self.options = options
@@ -205,7 +203,7 @@ class BiasCor(ConfigBasedExecutable):
             self.set_property(key, value, assignment=assignment)
 
         if self.blind:
-            self.set_property("blindflag", 1, assignment="=")
+            self.set_property("blindflag", 2, assignment="=")
             self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121 -blind", assignment=": ")
         else:
             self.set_property("blindflag", 0, assignment="=")

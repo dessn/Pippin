@@ -40,9 +40,10 @@ class SNANASimulation(ConfigBasedExecutable):
         blind: bool - whether to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, genversion, config, global_config, combine="/combine.input"):
-        self.data_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../data_files/")
-        super().__init__(name, output_dir, self.data_dir + combine, ": ")
+    def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
+        self.data_dirs = global_config["DATA_DIRS"]
+        base_file = get_data_loc(self.data_dirs, combine)
+        super().__init__(name, output_dir, base_file, ": ")
 
         self.genversion = genversion
         if len(genversion) < 30:
@@ -154,10 +155,10 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir = temp_dir_obj.name
 
         # Copy the base files across
-        for f in self.base_ia:
-            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
-        for f in self.base_cc:
-            shutil.copy(get_data_loc(self.data_dir, f), temp_dir)
+        for f in self.base_ia + self.base_cc:
+            resolved = get_data_loc(self.data_dirs, f)
+            shutil.copy(resolved, temp_dir)
+            self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
 
         # Copy the include input file if there is one
         input_copied = []
@@ -165,7 +166,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for ff in fs:
             if ff not in input_copied:
                 input_copied.append(ff)
-                path = ff if ff.startswith("/") else os.path.join(self.data_dir, ff)
+                path = get_data_loc(self.data_dirs, ff)
                 with open(path, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
@@ -175,15 +176,15 @@ class SNANASimulation(ConfigBasedExecutable):
                             if include_file.startswith("/"):
                                 shutil.copy(include_file, temp_dir)
                             else:
-                                include_file_full = get_data_loc(self.data_dir, include_file)
                                 # Dont copy it over, we need to sed it to update the INPUT_FILE_INCLUDE to be relative
                                 # Ah crap, this will only work for a single include.
-                                base = os.path.basename(include_file_full)
+                                base = os.path.basename(include_file)
                                 input_file = os.path.join(temp_dir, os.path.basename(ff))
-                                shutil.copy(include_file_full, temp_dir)
                                 sed_command = f"sed -i -e 's|{include_file}|{base}|g' {input_file}"
                                 self.logger.debug(f"Running sed command: {sed_command}")
                                 subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+
+                                shutil.copy(self.data_dir + include_file, temp_dir)
 
                             fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
 

@@ -1,0 +1,14 @@
+GLOBAL:
+  QUEUE:
+    max_jobs: 20
+    max_jobs_in_queue: 50
+  DATA_DIRS:  # This must be a list. It'll check what you put down here first, and then check the normal defaults. Specify as many as you want.
+    - /home/samreay/test  # If you put this to your user folder for example, you can still have relative paths, theyll be joiend to your user folder
+
+SIM:
+  SOMESIM:
+    IAS:
+      BASE: sn_ia_salt2_g10_test.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
