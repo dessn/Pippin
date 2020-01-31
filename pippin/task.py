@@ -50,7 +50,7 @@ class Task(ABC):
     def set_stage(self, stage):
         self.stage = stage
 
-    def get_old_hash(self, quiet=False):
+    def get_old_hash(self, quiet=False, required=False):
         if os.path.exists(self.hash_file):
             with open(self.hash_file, "r") as f:
                 old_hash = f.read().strip()
@@ -58,7 +58,10 @@ class Task(ABC):
                     self.logger.debug(f"Previous result found, hash is {old_hash}")
                 return old_hash
         else:
-            self.logger.warning(f"No hash found for {self}")
+            if required:
+                self.logger.error(f"No hash found for {self}")
+            else:
+                self.logger.debug(f"No hash found for {self}")
         return None
 
     def get_hash_from_files(self, output_files):
@@ -70,7 +73,7 @@ class Task(ABC):
         return new_hash
 
     def get_hash_from_string(self, string_to_hash):
-        hashes = sorted([dep.get_old_hash(quiet=True) for dep in self.dependencies])
+        hashes = sorted([dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies])
         string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
