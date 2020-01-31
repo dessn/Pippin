@@ -33,11 +33,11 @@ class Manager:
         self.run_config = config
         self.global_config = get_config()
 
-        self.prefix = self.global_config["GLOBAL"]["prefix"] + "_" + filename
-        self.max_jobs = int(self.global_config["GLOBAL"]["max_jobs"])
-        self.max_jobs_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs"])
-        self.max_jobs_in_queue = int(self.global_config["GLOBAL"]["max_jobs_in_queue"])
-        self.max_jobs_in_queue_gpu = int(self.global_config["GLOBAL"]["max_gpu_jobs_in_queue"])
+        self.prefix = self.global_config["QUEUE"]["prefix"] + "_" + filename
+        self.max_jobs = int(self.global_config["QUEUE"]["max_jobs"])
+        self.max_jobs_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs"])
+        self.max_jobs_in_queue = int(self.global_config["QUEUE"]["max_jobs_in_queue"])
+        self.max_jobs_in_queue_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs_in_queue"])
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
