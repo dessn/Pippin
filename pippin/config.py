@@ -24,7 +24,8 @@ def get_config(initial_path=None, overwrites=None):
     this_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]))
     print("AAA ", this_dir)
     if initial_path is None:
-        filename = os.path.abspath(os.path.join(this_dir, "/../cfg.yml"))
+        filename = os.path.abspath(os.path.join(this_dir, "..", "cfg.yml"))
+        print("BBB ", filename)
     else:
         filename = initial_path
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
