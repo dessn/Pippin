@@ -10,14 +10,13 @@ Pippin - a pipeline for Supernova cosmology analysis
 
 <img alright="right" height="200" src="meme.jpg">
 
-
-* [Using Pippin](#using-pippin)
-* [Installing Pippin](#installing-it-fresh)
-* [Contributing to Pippin](#contributing-to-pippin)
-* [Examples](#examples)
-* [FAQ](#faq)
-* [Adding a new Task](#adding-a-new-task)
-* [Adding a new classifier](#adding-a-new-classifier)
+- [Using Pippin](#using-pippin)
+- [Installing Pippin](#installing-it-fresh)
+- [Contributing to Pippin](#contributing-to-pippin)
+- [Examples](#examples)
+- [FAQ](#faq)
+- [Adding a new Task](#adding-a-new-task)
+- [Adding a new classifier](#adding-a-new-classifier)
 
 
 ## Installing it fresh
