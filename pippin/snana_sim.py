@@ -155,10 +155,10 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir = temp_dir_obj.name
 
         # Copy the base files across
-        for f in self.base_ia:
-            shutil.copy(get_data_loc(self.data_dirs, f), temp_dir)
-        for f in self.base_cc:
-            shutil.copy(get_data_loc(self.data_dirs, f), temp_dir)
+        for f in self.base_ia + self.base_cc:
+            resolved = get_data_loc(self.data_dirs, f)
+            shutil.copy(resolved, temp_dir)
+            self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
 
         # Copy the include input file if there is one
         input_copied = []
@@ -172,9 +172,9 @@ class SNANASimulation(ConfigBasedExecutable):
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
-                            self.logger.debug(f"Copying included file {include_file}")
-
                             include_file_path = get_data_loc(self.data_dirs, include_file)
+                            self.logger.debug(f"Copying INPUT_FILE_INCLUDE file {include_file_path} to {temp_dir}")
+
                             include_file_basename = os.path.basename(include_file_path)
                             include_file_output = os.path.join(temp_dir, include_file_basename)
 
@@ -184,9 +184,10 @@ class SNANASimulation(ConfigBasedExecutable):
                                 shutil.copy(include_file_path, temp_dir)
 
                                 # Then SED the file to replace the full path with just the basename
-                                sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {include_file_output}"
-                                self.logger.debug(f"Running sed command: {sed_command}")
-                                subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+                                if include_file != include_file_basename:
+                                    sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {include_file_output}"
+                                    self.logger.debug(f"Running sed command: {sed_command}")
+                                    subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
                                 # And make sure we dont do this file again
                                 fs.append(include_file_output)
