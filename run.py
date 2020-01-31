@@ -73,11 +73,6 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
 
     args = parser.parse_args()
-    config_filename = os.path.basename(args.yaml).split(".")[0].upper()
-    message_store, logging_folder, logging_filename = setup_logging(config_filename)
-
-    if not args.check:
-        mkdirs(logging_folder)
 
     # Load YAML config file
     yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
@@ -90,6 +85,12 @@ if __name__ == "__main__":
         logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
 
     global_config = get_config(initial_path=args.config, overwrites=overwrites)
+
+    config_filename = os.path.basename(args.yaml).split(".")[0].upper()
+    message_store, logging_folder, logging_filename = setup_logging(config_filename)
+
+    if not args.check:
+        mkdirs(logging_folder)
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
