@@ -82,6 +82,7 @@ def get_data_loc(data_dirs, path):
     else:
         for data_dir in data_dirs:
             new_path = os.path.join(data_dir, path)
+            print("AAA ", new_path, os.path.exists(new_path))
             if os.path.exists(new_path):
                 return new_path
         logging.error(f"Unable to find relative path {path} when searching through the data directories: {data_dirs}")

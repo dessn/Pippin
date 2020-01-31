@@ -220,9 +220,6 @@ fi
             mask_biascor = config.get("MASK_BIASCOR", "")
             histograms = config.get("HISTOGRAM", [])
 
-            print("AAAA ", cosmomc_tasks, cosmomc_tasks[0].name, cosmomc_tasks[0].output)
-            print("BBBB ", cosmomc_tasks[0].output.get("bcor_name"))
-
             deps_cosmomc = [
                 c
                 for c in cosmomc_tasks
