@@ -220,7 +220,7 @@ fi
             mask_biascor = config.get("MASK_BIASCOR", "")
             histograms = config.get("HISTOGRAM", [])
 
-            deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output["bcor_name"]]
+            deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output.get("bcor_name", "")]
             deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
             deps_hist = [l for l in lcfit_tasks if l.name in histograms]
 
