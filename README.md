@@ -3,7 +3,7 @@
 
 Pippin - a pipeline for Supernova cosmology analysis
 
-![Pippin Meme](meme.jpg)
+<img style="width: 100%;" src="meme.jpg">
 
 
 
@@ -64,13 +64,14 @@ finished successfully the last time it was run, the task is not re-executed. You
 
 On top of this, Pippin has a few command line arguments, which you can detail with `pippin.sh -h`, but I'll also detail here:
 
-
-* `-h`: Show the help menu
-* `-v` or `--verbose`: Verbose. Shows debug output. I normally have this option enabled.
-* `-r` or `--refresh`: Refresh/redo - Rerun tasks that completed in a previous run even if the inputs haven't changed.
-* `-c` or `--check`: Check that the input config is valid but don't actually run any tasks.
-* `-s` or `--start`: Start at this task and refresh everything after it. For example, if the underlying SALT2 model has changed (and Pippin wouldn't know about that) and you want to redo all the light curve fitting but not simulating the photometry, you would pass `-s 1` or `-s LCFIT`
-* `-f` or `--finish`: Finish at this stage. For example, you may want to go up to classification but not cosmology, you would pass `-f 3` or `-f CLASSIFY`. Not you finish *including* that stage. 
+```bash
+  -h                 Show the help menu
+  -v, --verbose      Verbose. Shows debug output. I normally have this option enabled.
+  -r, --refresh      Refresh/redo - Rerun tasks that completed in a previous run even if the inputs haven't changed.
+  -c, --check        Check that the input config is valid but don't actually run any tasks.
+  -s, --start        Start at this task and refresh everything after it. Number of string accepted
+  -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including cosmology 
+```
 
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
 you would run
