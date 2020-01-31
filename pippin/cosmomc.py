@@ -76,8 +76,8 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             self.labels = [self.name + "_" + c for c in self.covopts]
             self.num_jobs = len(self.covopts) * self.num_walkers
 
-        self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
         self.chain_dir = os.path.join(self.output_dir, "chains/")
+        self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
 
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
         self.chain_dict = {
