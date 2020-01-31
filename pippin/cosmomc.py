@@ -3,7 +3,7 @@ import subprocess
 import os
 from pathlib import Path
 
-from pippin.config import mkdirs, get_config, get_output_loc
+from pippin.config import mkdirs, get_config, get_output_loc, get_data_loc
 from pippin.create_cov import CreateCov
 from pippin.task import Task
 
@@ -38,6 +38,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
     """
 
     def __init__(self, name, output_dir, options, global_config, dependencies=None):
+        self.data_dirs = global_config["DATA_DIRS"]
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.global_config = global_config
@@ -55,8 +56,10 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
         self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
         self.ini_prefix = options.get("INI")
+
+        self.static = self.ini_files in ["cmb_omw", "cmb_omol"]
         self.num_walkers = options.get("NUM_WALKERS", 8)
-        self.num_jobs = len(self.covopts) * self.num_walkers
+        self.num_jobs = len(self.covopts) * self.num_walkers if not self.static else 1
         self.chain_dir = os.path.join(self.output_dir, "chains/")
 
         self.labels = [self.name + "_" + c for c in self.covopts]
@@ -175,51 +178,71 @@ fi
 
     def _run(self, force_refresh):
 
-        ini_filecontents = self.get_ini_file()
-        if ini_filecontents is None:
-            return False
+        if self.static:
+            self.logger.info("CMB only constraints detected, copying static files")
 
-        format_dict = {
-            "job_name": self.job_name,
-            "log_file": self.logfile,
-            "done_files": " ".join(self.done_files),
-            "path_to_cosmomc": self.path_to_cosmomc,
-            "output_dir": self.output_dir,
-            "ini_files": " ".join(self.ini_files),
-            "num_jobs": len(self.ini_files),
-            "num_walkers": self.num_walkers,
-        }
-        final_slurm = self.slurm.format(**format_dict)
+            cosmomc_static_loc = get_data_loc(self.data_dirs, self.ini_prefix)
+            if cosmomc_static_loc is None:
+                self.logger.error("Seems like we can't find the static chains. At the moment we have cmb_omw, but not cmb_omol.")
+                return False
+            else:
 
-        new_hash = self.get_hash_from_string(final_slurm + " ".join(ini_filecontents))
-        old_hash = self.get_old_hash()
+                new_hash = self.get_hash_from_string(cosmomc_static_loc)
+                old_hash = self.get_old_hash()
 
-        if force_refresh or new_hash != old_hash:
-            self.logger.debug("Regenerating and launching task")
-            shutil.rmtree(self.output_dir, ignore_errors=True)
-            mkdirs(self.output_dir)
-            self.save_new_hash(new_hash)
-            slurm_output_file = os.path.join(self.output_dir, "slurm.job")
-            with open(slurm_output_file, "w") as f:
-                f.write(final_slurm)
-            for file, content in zip(self.ini_files, ini_filecontents):
-                filepath = os.path.join(self.output_dir, file)
-                with open(filepath, "w") as f:
-                    f.write(content)
-            mkdirs(self.chain_dir)
-
-            needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
-            for d in needed_dirs:
-                self.logger.debug(f"Creating symlink to {d} dir")
-                original_data_dir = os.path.join(self.path_to_cosmomc, d)
-                new_data_dir = os.path.join(self.output_dir, d)
-                os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
-
-            self.logger.info(f"Submitting batch job for data prep")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+                if force_refresh or new_hash != old_hash:
+                    self.logger.debug("Regenerating and copying static chains")
+                    mkdirs(self.chain_dir)
+                    shutil.copy(cosmomc_static_loc, self.chain_dir)
+                else:
+                    self.should_be_done()
+                    self.logger.info("Hash check passed, not rerunning")
         else:
-            self.should_be_done()
-            self.logger.info("Hash check passed, not rerunning")
+            ini_filecontents = self.get_ini_file()
+            if ini_filecontents is None:
+                return False
+
+            format_dict = {
+                "job_name": self.job_name,
+                "log_file": self.logfile,
+                "done_files": " ".join(self.done_files),
+                "path_to_cosmomc": self.path_to_cosmomc,
+                "output_dir": self.output_dir,
+                "ini_files": " ".join(self.ini_files),
+                "num_jobs": len(self.ini_files),
+                "num_walkers": self.num_walkers,
+            }
+            final_slurm = self.slurm.format(**format_dict)
+
+            new_hash = self.get_hash_from_string(final_slurm + " ".join(ini_filecontents))
+            old_hash = self.get_old_hash()
+
+            if force_refresh or new_hash != old_hash:
+                self.logger.debug("Regenerating and launching task")
+                shutil.rmtree(self.output_dir, ignore_errors=True)
+                mkdirs(self.output_dir)
+                self.save_new_hash(new_hash)
+                slurm_output_file = os.path.join(self.output_dir, "slurm.job")
+                with open(slurm_output_file, "w") as f:
+                    f.write(final_slurm)
+                for file, content in zip(self.ini_files, ini_filecontents):
+                    filepath = os.path.join(self.output_dir, file)
+                    with open(filepath, "w") as f:
+                        f.write(content)
+                mkdirs(self.chain_dir)
+
+                needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
+                for d in needed_dirs:
+                    self.logger.debug(f"Creating symlink to {d} dir")
+                    original_data_dir = os.path.join(self.path_to_cosmomc, d)
+                    new_data_dir = os.path.join(self.output_dir, d)
+                    os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
+
+                self.logger.info(f"Submitting batch job for data prep")
+                subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            else:
+                self.should_be_done()
+                self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod
@@ -236,15 +259,24 @@ fi
             options = config.get("OPTS", {})
 
             mask = config.get("MASK_CREATE_COV", "")
-            for ctask in create_cov_tasks:
-                if mask not in ctask.name:
-                    continue
-                name = f"{cname}_{ctask.name}"
-                a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), options, global_config, dependencies=[ctask])
-                Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
+
+            # Check if this is static. Could scan the folder, but dont have all the chains yet.
+            # TODO: Update this when I have all the chains
+            if options.get("INI") in ["cmb_omw", "cmb_omol"]:
+                a = CosmoMC(cname, _get_cosmomc_dir(base_output_dir, stage_number, cname), options, global_config)
+                Task.logger.info(f"Creating CosmoMC task {cname} for {a.num_jobs} jobs")
                 tasks.append(a)
 
-            if len(create_cov_tasks) == 0:
-                Task.fail_config(f"CosmoMC task {cname} has no create_cov task to run on!")
+            else:
+                for ctask in create_cov_tasks:
+                    if mask not in ctask.name:
+                        continue
+                    name = f"{cname}_{ctask.name}"
+                    a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), options, global_config, dependencies=[ctask])
+                    Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
+                    tasks.append(a)
+
+                if len(create_cov_tasks) == 0:
+                    Task.fail_config(f"CosmoMC task {cname} has no create_cov task to run on!")
 
         return tasks

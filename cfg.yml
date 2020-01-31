@@ -26,6 +26,7 @@ DataSkimmer:
 
 CosmoMC:
   location: $PRODUCTS/CosmoMC/v03/CosmoMC-master
+  static_loc: cosmomc_static_chains
 
 OUTPUT:
   output_dir: $PIPPIN_OUTPUT

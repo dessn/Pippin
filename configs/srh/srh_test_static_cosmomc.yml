@@ -1,0 +1,8 @@
+COSMOMC:
+  STATIC_TEST:
+    OPTS:
+      INI: cmb_omw
+
+
+ANALYSE:
+  PLEASEWORK:
