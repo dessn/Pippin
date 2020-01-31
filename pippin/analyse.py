@@ -200,7 +200,7 @@ fi
         return True
 
     @staticmethod
-    def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+    def get_tasks(configs, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         cosmomc_tasks = Task.get_task_of_type(prior_tasks, CosmoMC)
         biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
@@ -210,8 +210,8 @@ fi
 
         tasks = []
         key = "ANALYSE"
-        for cname in c.get(key, []):
-            config = c[key].get(cname, {})
+        for cname in configs.get(key, []):
+            config = configs[key].get(cname, {})
             if config is None:
                 config = {}
             options = config.get("OPTS", {})
