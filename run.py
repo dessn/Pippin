@@ -27,7 +27,9 @@ class MessageStore(logging.Handler):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
-def setup_logging():
+def setup_logging(config_filename):
+    output_dir = get_output_dir()
+    logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
     level = logging.DEBUG if args.verbose else logging.INFO
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
@@ -56,7 +58,7 @@ def setup_logging():
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
-    return message_store
+    return message_store, logging_folder, logging_filename
 
 
 if __name__ == "__main__":
@@ -71,13 +73,9 @@ if __name__ == "__main__":
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
 
     args = parser.parse_args()
-
-    message_store = setup_logging()
-
-    # Get base filename
     config_filename = os.path.basename(args.yaml).split(".")[0].upper()
-    output_dir = get_output_dir()
-    logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
+    message_store, logging_folder, logging_filename = setup_logging(config_filename)
+
     if not args.check:
         mkdirs(logging_folder)
 
