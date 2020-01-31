@@ -223,7 +223,11 @@ fi
             print("AAAA ", cosmomc_tasks, cosmomc_tasks[0].name, cosmomc_tasks[0].output)
             print("BBBB ", cosmomc_tasks[0].output.get("bcor_name"))
 
-            deps_cosmomc = [c for c in cosmomc_tasks if mask_cosmomc in c.name and mask_biascor in c.output.get("bcor_name", "")]
+            deps_cosmomc = [
+                c
+                for c in cosmomc_tasks
+                if mask_cosmomc in c.name and (mask_biascor == "" or (c.output.get("bcor_name") is not None and mask_biascor in c.output.get("bcor_name")))
+            ]
             deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
             deps_hist = [l for l in lcfit_tasks if l.name in histograms]
 
