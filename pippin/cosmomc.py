@@ -210,8 +210,9 @@ fi
                     self.logger.debug("Regenerating and copying static chains")
                     shutil.rmtree(self.chain_dir, ignore_errors=True)
                     shutil.copytree(cosmomc_static_loc, self.chain_dir)
-                    for done_file in [self.done_file] + self.done_files:
-                        with open(done_file, "w") as f:
+                    for done_file in self.done_files:
+                        df = os.path.join(self.output_dir, done_file)
+                        with open(df, "w") as f:
                             f.write("SUCCESS")
                 else:
                     self.should_be_done()
