@@ -48,9 +48,9 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
+        self.create_cov_dep = self.get_dep(CreateCov)
         self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", "False")
         self.output["blind"] = self.blind
-        self.create_cov_dep = self.get_dep(CreateCov)
 
         if self.create_cov_dep is not None:
             avail_cov_opts = self.create_cov_dep.output["covopts"]
