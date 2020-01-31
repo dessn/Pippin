@@ -53,6 +53,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         assert isinstance(self.blind, bool), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI")
         self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
+        self.static_path = "cosmomc_static_chains/"
 
         if self.create_cov_dep is None:
             self.ini_files = [f"{self.ini_prefix}.ini"]
@@ -196,7 +197,7 @@ fi
         if self.static:
             self.logger.info("CMB only constraints detected, copying static files")
 
-            cosmomc_static_loc = get_data_loc(self.data_dirs, self.ini_prefix)
+            cosmomc_static_loc = get_data_loc(self.data_dirs, self.static_path + self.ini_prefix)
             if cosmomc_static_loc is None:
                 self.logger.error("Seems like we can't find the static chains...")
                 return False
