@@ -210,6 +210,9 @@ fi
                     self.logger.debug("Regenerating and copying static chains")
                     shutil.rmtree(self.chain_dir, ignore_errors=True)
                     shutil.copytree(cosmomc_static_loc, self.chain_dir)
+                    for done_file in self.done_files:
+                        with open(done_file, "w") as f:
+                            f.write("SUCCESS")
                 else:
                     self.should_be_done()
                     self.logger.info("Hash check passed, not rerunning")
