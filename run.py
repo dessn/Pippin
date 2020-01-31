@@ -47,6 +47,8 @@ if __name__ == "__main__":
         config = yaml.safe_load(f)
 
     overwrites = config.get("GLOBAL")
+    if config.get("GLOBALS") is not None:
+        logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
 
     get_config(initial_path=args.config, overwrites=overwrites)
 

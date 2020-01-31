@@ -4,7 +4,7 @@
 # for your include / input files.
 
 
-GLOBALS:
+GLOBAL:
   QUEUE:
     max_jobs: 20
     max_jobs_in_queue: 50
