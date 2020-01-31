@@ -31,7 +31,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
-        self.data_dirs = global_config("DATA_DIRS")
+        self.data_dirs = global_config["DATA_DIRS"]
 
         self.config = config
         self.global_config = global_config

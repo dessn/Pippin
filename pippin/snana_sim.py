@@ -41,7 +41,7 @@ class SNANASimulation(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
-        self.data_dirs = global_config("DATA_DIRS")
+        self.data_dirs = global_config["DATA_DIRS"]
         base_file = get_data_loc(self.data_dirs, combine)
         super().__init__(name, output_dir, base_file, ": ")
 

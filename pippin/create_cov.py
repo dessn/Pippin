@@ -37,7 +37,7 @@ class CreateCov(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, options, global_config, dependencies=None, index=0):
-        self.data_dirs = global_config("DATA_DIRS")
+        self.data_dirs = global_config["DATA_DIRS"]
 
         base_file = get_data_loc(self.data_dirs, "create_cov/input_file.txt")
         super().__init__(name, output_dir, base_file, default_assignment=": ", dependencies=dependencies)
