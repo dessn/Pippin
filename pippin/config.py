@@ -46,6 +46,8 @@ def get_config(initial_path=None, overwrites=None):
     if overwrites is not None:
         config = merge_dict(config, overwrites)
 
+    print("AAAA ", this_dir)
+
     for i, path in enumerate(config["DATA_DIRS"]):
         updated = get_data_loc([this_dir], path)
         if updated is None:
