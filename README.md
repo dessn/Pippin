@@ -337,12 +337,85 @@ CLASSIFICATION:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     OPTS:
-      VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
       MODEL: SNN_TRAIN  # Havent shown this defined. Or /somepath/to/model.pt
+      VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
       REDSHIFT: True  # Use redshift info when classifying. Defaults to True.
       NORM: global  # How to normalise LCs. Other options are "perfilter" or "cosmo".  
 ```
 
+#### SNIRF Classifier
+
+The [SNIRF classifier](https://github.com/evevkovacs/ML-SN-Classifier) is a random forest running off SALT2 summary
+statistics. You can specify which features it gets to train on, which has a large impact on performance. After training,
+there should be a `model.pkl` in the output directory. You can specify one like so:
+
+```yaml
+CLASSIFICATION:
+  SNIRF_TEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNIRF_TRAIN
+      FITOPT: some_label  # Optional to fit using a FITOPT. Should match the label in square brackets. Defaults to no FITOPT
+      FEATURES: x1 c zHD x1ERR cERR PKMJDERR  # List of columns to use. Defaults are shown. Check FITRES for options.
+```
+
+#### Nearest Neighbour Classifier
+
+Similar to SNIRF, NN trains on SALT2 summary statistics using a basic Nearest Neighbour algorithm from sklearn. 
+It will produce a `model.pkl` file in its output directory when trained. You can configure it as per SNIRF:
+
+
+```yaml
+CLASSIFICATION:
+  NN_TEST:
+    CLASSIFIER: NearestNeighborPyClassifier
+    MODE: predict
+    OPTS:
+      MODEL: NN_TRAIN
+      FITOPT: some_label  # Optional to fit using a FITOPT. Should match the label in square brackets. Defaults to no FITOPT
+      FEATURES: zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR  # List of columns to use. Defaults are shown.
+```
+
+#### Perfect Classifier
+
+Sometimes you want to cheat, and if you have simulations, this is easy. The perfect classifier looks into the sims to 
+get the actual type, and will then assign probabilities as per your configuration. This classifier has no training mode,
+only predict.
+
+```yaml
+CLASSIFICATION:
+  PERFECT:
+    CLASSIFIER: PerfectClassifier
+    MODE: predict
+    OPTS:
+      PROB_IA: 1.0  # Probs to use for Ia events, default 1.0
+      PROB_CC: 0.0  # Probs to use for CC events, default 0.0
+```
+
+#### Unity Classifier
+
+To emulate a spectroscopically confirmed sample, or just to save time, we can assign every event a probability of 1.0
+that it is a type Ia. As it just returns 1.0 for everything, it only has a predict mode
+
+```yaml
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+```
+
+#### FitProb Classifier
+
+Another useful debug test is to just take the SALT2 fit probability calculated from the chi2 fitting and use that
+as our probability. You'd hope that classifiers all improve on this. Again, this classifier only has a predict mode.
+
+```yaml
+CLASSIFICATION:
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+```
 
 ### Aggregation
 
