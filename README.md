@@ -8,7 +8,7 @@ Pippin - a pipeline for Supernova cosmology analysis
 
 ## Table of Contents
 
-<img align="right" height="350" src="meme.jpg">
+<img align="right" height="350" src="doc/meme.jpg">
 
 - [Using Pippin](#using-pippin)
 - [Installing Pippin](#installing-it-fresh)
@@ -61,6 +61,8 @@ front of the file to make it obvious in the shared output directory which folder
 
 If you have `example.yml` as your config file and want pippin to run it, easy:
 `pippin.sh config.yml`
+
+![ConsoleOutput](doc/console.gif)
 
 
 ### What If I change my config file?
