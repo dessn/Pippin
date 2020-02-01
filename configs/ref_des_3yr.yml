@@ -1,0 +1,115 @@
+DATAPREP:
+
+  DATALOWZ:  # lowz combined sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: False
+
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: False
+
+  # Load in the existing bias cor simulations
+  LOWZSIMBIAS:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_LOWZSIMBIAS
+  DESSIMBIAS3YRIA:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS3YRIA
+
+LCFIT:
+
+  # Run the full fitopts again only the data
+  LS:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: DATALOWZ
+    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  DS:
+    BASE: surveys/des/lcfit_nml/des_3yr.nml
+    MASK: DATADES
+    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  # For the biascor sims, fit without fitopt
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+  D:
+    BASE: surveys/des/lcfit_nml/des_3yr.nml
+    MASK: DESSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+
+  3YR:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [DS_DATADES3YR, LS_DATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA, L_LOWZSIMBIAS]
+    CLASSIFIER: UNITY
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+
+
+CREATE_COV:
+  ALL:
+    OPTS:
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+      COVOPTS: [ALL, NOSYS]
+      NUM_WALKERS: 40
+
+  SN_CMB_OMW:
+    OPTS:
+      INI: sn_cmb_omw
+      COVOPTS: [ALL]
+      NUM_WALKERS: 20
+
+  CMB_OMW:
+    OPTS:
+      INI: cmb_omw
+
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW
+
