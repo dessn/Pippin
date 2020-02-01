@@ -27,9 +27,8 @@ class MessageStore(logging.Handler):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
-def setup_logging(config_filename):
-    output_dir = get_output_dir()
-    logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
+def setup_logging(config_filename, logging_folder, only_check):
+
     level = logging.DEBUG if args.verbose else logging.INFO
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
@@ -44,7 +43,7 @@ def setup_logging(config_filename):
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
     handlers = [logging.StreamHandler(), message_store]
-    if not args.check:
+    if not only_check:
         handlers.append(logging.FileHandler(logging_filename))
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
     coloredlogs.install(
@@ -58,7 +57,7 @@ def setup_logging(config_filename):
     logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
-    return message_store, logging_folder, logging_filename
+    return message_store, logging_filename
 
 
 if __name__ == "__main__":
@@ -87,10 +86,13 @@ if __name__ == "__main__":
     global_config = get_config(initial_path=args.config, overwrites=overwrites)
 
     config_filename = os.path.basename(args.yaml).split(".")[0].upper()
-    message_store, logging_folder, logging_filename = setup_logging(config_filename)
+    output_dir = get_output_dir()
+    logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
 
     if not args.check:
         mkdirs(logging_folder)
+
+    message_store, logging_filename = setup_logging(config_filename, logging_folder, args.check)
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
