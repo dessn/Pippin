@@ -155,7 +155,7 @@ debug FITPROB classifier.
 SIM:
   DESSIM:
     IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10_des3yr.input
+      BASE: surveys/des/sim_ia/sn_ia_salt2_g10_des3yr.input
 
 LCFIT:
   BASEDES:
@@ -251,14 +251,14 @@ SIM:
   
     # We specify the Ia component, so it must have IA in its name
     IA_G10: 
-      BASE: sn_ia_salt2_g10.input  # And then we specify the base input file which generates it.
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input  # And then we specify the base input file which generates it.
       
     # Now we can specify as many CC sims to mix in as we want
     II_JONES:
-      BASE: sn_collection_jones.input
+      BASE: surveys/des/sims_cc/sn_collection_jones.input
     
     IAX:
-      BASE: sn_iax.input
+      BASE: surveys/des/sims_cc/sn_iax.input
       DNDZ_ALLSCALE: 3.0  # Note you can add/overwrite keys like so for specific files
 
     # This section will apply to all components of the sim
@@ -281,7 +281,7 @@ LCFIT:
     MASK: DES
       
     # The base nml file used 
-    BASE: des.nml
+    BASE: surveys/des/lcfit_nml/des.nml
       
     # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
     # Normally this would be a single entry like des.fitopts, but you can also pass a list
@@ -463,7 +463,7 @@ Note that I expect this task to have the most teething issues, especially when w
 BIASCOR:
   LABEL:
     # The base input file to utilise
-    BASE: bbc.input
+    BASE: surveys/des/bbc/bbc.input
     
     # The names of the lcfits_data/simulations going in. List format please. Note LcfitLabel_SimLabel format
     DATA: [DESFIT_DESSIM, LOWZFIT_LOWZSIM]
