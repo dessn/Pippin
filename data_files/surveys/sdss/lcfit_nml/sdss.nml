@@ -31,7 +31,7 @@ ROOTFILE_OUT = "bla.root"
 
   cutwin_peakmjd      = 53600.0,  54450.0
   cutwin_Nepoch       = 5
-  cutwin_Nband_thresh = 1
+  !cutwin_Nband_thresh = 1
 	       
   &END
  
