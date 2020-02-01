@@ -167,6 +167,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if ff not in input_copied:
                 input_copied.append(ff)
                 path = get_data_loc(self.data_dirs, ff)
+                copied_path = os.path.join(temp_dir, os.path.basename(path))
                 with open(path, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
@@ -185,7 +186,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
                                 # Then SED the file to replace the full path with just the basename
                                 if include_file != include_file_basename:
-                                    sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {include_file_output}"
+                                    sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {copied_path}"
                                     self.logger.debug(f"Running sed command: {sed_command}")
                                     subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
 
