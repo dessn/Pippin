@@ -7,32 +7,32 @@ SIM:
 
   DESSIM:
     IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10_des3yr.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
 
   CONTAMINATED:
     IA_G10:
-      BASE: sn_ia_salt2_g10.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     II_JONES:
-      BASE: sn_collection_jones.input
+      BASE: surveys/des/sims_cc/sn_collection_jones.input
     IAX:
-      BASE: sn_iax.input
+      BASE: surveys/des/sims_cc/sn_iax.input
       DNDZ_ALLSCALE: 3.0  # You can overwrite keys in the .input file like so
     IA91BG:
-      BASE: sn_ia91bg.input
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
       DNDZ_ALLSCALE: 3.0
     IBC_MOSFIT:
-      BASE: sn_ibc_mosfit.input
+      BASE: surveys/des/sims_cc/sn_ibc_mosfit.input
       DNDZ_ALLSCALE: 0.25
     IBC_TEMPLATES:
-      BASE: sn_ibc_templates.input
+      BASE: surveys/des/sims_cc/sn_ibc_templates.input
       DNDZ_ALLSCALE: 17.0
     II_NMF:
-      BASE: sn_ii_nmf.input
+      BASE: surveys/des/sims_cc/sn_ii_nmf.input
       DNDZ_ALLSCALE: 5.0
 
   LOWZBIASCOR:
     IA_G10_LOWZ:
-      BASE: sn_ia_salt2_g10_lowz.input
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
       GENSIGMA_SALT2ALPHA: 1E8  1E8
       GENRANGE_SALT2ALPHA: 0.12 0.20
       GENGRID_SALT2ALPHA: 2
@@ -45,7 +45,7 @@ SIM:
 
   DESBIASCOR:
     IA_G10_DES3YR:
-      BASE: sn_ia_salt2_g10_des3yr.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
       GENSIGMA_SALT2ALPHA: 1E8  1E8
       GENRANGE_SALT2ALPHA: 0.12 0.20
       GENGRID_SALT2ALPHA: 2
@@ -58,11 +58,11 @@ SIM:
 
   BATCH_INFO_EXAMPLE:
     IA_G10_DES3YR:
-      BASE: djbrout_spec_test/SNIa-SALT2.input
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
     II:
-      BASE: djbrout_spec_test/SNII_Templates.input
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
     Ibc:
-      BASE: djbrout_spec_test/SNIbc_Templates.input
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 10 12345

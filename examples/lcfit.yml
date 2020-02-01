@@ -19,6 +19,6 @@ LCFIT:
         - "[zshift] REDSHIFT_FINAL_SHIFT 0.0001"
 
   BATCH_EXAMPLE:
-    BASE: djbrout_spec_test/lsst.nml
+    BASE: surveys/sdss/lcfit_nml/lsst.nml
     OPTS:  # override the BATCH INFO using the the generic OPTS
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
