@@ -172,21 +172,25 @@ class SNANASimulation(ConfigBasedExecutable):
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
-                            self.logger.debug(f"Copying included file {include_file}")
-                            if include_file.startswith("/"):
-                                shutil.copy(include_file, temp_dir)
-                            else:
-                                # Dont copy it over, we need to sed it to update the INPUT_FILE_INCLUDE to be relative
-                                # Ah crap, this will only work for a single include.
-                                base = os.path.basename(include_file)
-                                input_file = os.path.join(temp_dir, os.path.basename(ff))
-                                sed_command = f"sed -i -e 's|{include_file}|{base}|g' {input_file}"
-                                self.logger.debug(f"Running sed command: {sed_command}")
-                                subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+                            include_file_path = get_data_loc(self.data_dirs, include_file)
+                            self.logger.debug(f"Copying INPUT_FILE_INCLUDE file {include_file_path} to {temp_dir}")
 
-                                shutil.copy(self.data_dir + include_file, temp_dir)
+                            include_file_basename = os.path.basename(include_file_path)
+                            include_file_output = os.path.join(temp_dir, include_file_basename)
 
-                            fs.append(os.path.join(temp_dir, os.path.basename(include_file)))
+                            if include_file_output not in input_copied:
+
+                                # Copy include file into the temp dir
+                                shutil.copy(include_file_path, temp_dir)
+
+                                # Then SED the file to replace the full path with just the basename
+                                if include_file != include_file_basename:
+                                    sed_command = f"sed -i -e 's|{include_file}|{include_file_basename}|g' {include_file_output}"
+                                    self.logger.debug(f"Running sed command: {sed_command}")
+                                    subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+
+                                # And make sure we dont do this file again
+                                fs.append(include_file_output)
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
