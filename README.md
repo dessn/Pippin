@@ -419,17 +419,158 @@ CLASSIFICATION:
 
 ### Aggregation
 
+The aggregation task takes results from one or more classification tasks (that have been run in predict mode
+on the same dataset) and generates comparisons between the classifiers (their correlations, PR curves, ROC curves
+and their calibration plots). Additionally, it merges the results of the classifiers into a single
+csv file, mapping SNID to one column per classifier.
+
+```yaml
+AGGREGATION:
+  SOMELABEL:
+    MASK: mask  # Match sim AND classifier
+    MASK_SIM: mask # Match only sim
+    MASK_CLAS: mask # Match only classifier
+    RECALIBRATION: SIMNAME # Optional, use this simulation to recalibrate probabilities. Default no recal.
+    OPTS:
+      PLOT: True # Default True, make plots
+      PLOT_ALL: False # Default False. Ie if RANSEED_CHANGE gives you 100 sims, make 100 set of plots.
+```
 
 ### Merging
 
+The merging task will take the outputs of the aggregation task, and put the probabilities from each classifier
+into the light curve fit results (FITRES files) using SNID.
+
+```yaml
+MERGE:
+  label:
+    MASK: mask  # partial match on all sim, fit and agg
+    MASK_SIM: mask  # partial match on sim
+    MASK_FIT: mask  # partial match on lcfit
+    MASK_AGG: mask  # partial match on aggregation task
+```
 
 ### Bias Corrections
 
+With all the probability goodness now in the FITRES files, we can move onto calculating bias corrections. 
+For spec-confirmed surveys, you only need a Ia sample for bias corrections. For surveys with contamination, 
+you will also need a CC only simulation/lcfit result. For each survey being used (as we would often combine lowz and highz
+surveys), you can specify inputs like below.
+
+Note that I expect this task to have the most teething issues, especially when we jump into the MUOPTS.
+
+```yaml
+BIASCOR:
+  LABEL:
+    # The base input file to utilise
+    BASE: bbc.input
+    
+    # The names of the lcfits_data/simulations going in. List format please. Note LcfitLabel_SimLabel format
+    DATA: [DESFIT_DESSIM, LOWZFIT_LOWZSIM]
+    
+    # Input Ia bias correction simulations to be concatenated
+    SIMFILE_BIASCOR: [DESFIT_DESBIASCOR, LOWZFIT_LOWZBIASCOR]
+
+    # For surveys that have contamination, add in the cc only simulation under CCPRIOR    
+    SIMFILE_CCPRIOR: DESFIT_DESSIMBIAS5YRCC
+
+    # Which classifier to use. Column name in FITRES will be determined from this property.
+    CLASSIFIER: UNITY
+    
+    # Default False. If multiple sims (RANSEED_CHANGE), make one or all Hubble plots.
+    MAKE_ALL_HUBBLE: False
+    
+    # Defaults to False. Will load in the recalibrated probabilities, and crash and burn if they dont exist.
+    USE_RECALIBRATED: True
+  
+  # We can also specify muopts to add in systematics. They share the structure of the main biascor definition
+  # You can have multiple, use a dict structure, with the muopt name being the key
+  MUOPTS:
+      C11:
+        SIMFILE_BIASCOR: [D_DESBIASSYS_C11, L_LOWZBIASSYS_C11]
+        FITOPT: 0
+        
+  # Generic OPTS that can modify the base file and overwrite properties
+  OTPS:
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+```
+
 ### Create Covariance
+
+Assuming the biascor task hasn't died, its time to prep for CosmoMC. To do this, we invoke a script from Dan originally
+(I think) that essentially creates all the input files and structure needed by CosmoMC. It provides a way of scaling
+systematics, and determining which covariance options to run with.
+
+```yaml
+CREATE_COV:
+  SOMELABEL:
+    OPTS:
+      SYS_SCALE: create_cov/sys_scale.LIST  # Location of systematic scaling file
+      FITOPT_SCALES:  # Optional
+        FITOPT_LABEL: some_scale  # Note this is a partial match, ie SALT2: 1.0 would apply to all SALT2 cal fitopts
+       MUOPT_SCALES:
+        MUOPT_LABEL: some_scale  # This is NOT a partial match, must be exact
+       COVOPTS:  # Optional, and you'll always get an 'ALL' covopt. List format please
+          - "[NOSYS] [=DEFAULT,=DEFAULT]"  # This syntax is explained below
+```
+
+The `COVOPTS` section is a bit odd. In the square brackets first, we have the label that will be assigned and used
+in the plotting output later. The next set of square backets is a two-tuple, and it applies to `[fitopts,muopts]` in 
+that order. For example, to get four contours out of CosmoMC corresponding to all uncertainty, statistics only,
+statistics + calibration uncertainty, and fitopts + C11 uncertainty, we could set:
+
+```yaml
+COVOPTS:
+  - "[NOSYS] [=DEFAULT,=DEFAULT]"
+  - "[CALIBRATION] [+cal,=DEFAULT]"
+  - "[SCATTER] [=DEFAULT,=C11]"
+```
 
 ### CosmoMC
 
+Launching CosmoMC is hopefully fairly simple. There are a list of provided configurations under the `cosmomc_templates`
+directory (inside `data_files`), and the main job of the user is to pick which one they want. 
+
+```yaml
+COSMOMC:
+  SOMELABEL:
+    MASK_CREATE_COV: mask  # partial match
+    OPTS:
+      INI: sn_cmb_omw  # should match the filename of an ini file
+      NUM_WALKERS: 8  # Optional, defaults to eight.
+      
+      # Optional, covopts from CREATE_COV step to run against. If blank, you get them all. Exact matching.
+      COVOPTS: [ALL, NOSYS]
+```
+
 ### Analyse
+
+The final step in the Pippin pipeline is the Analyse task. It creates a final output directory, moves relevant files into it,
+and generates extra plots. It will save out compressed CosmoMC chains and the plotting scripts (so you can download
+the entire directory and customise it without worrying about pointing to external files), it will copy in Hubble diagrams,
+and - depending on if you've told it to, will make histogram comparison plots between data and sim. Oh and also
+redshift evolution plots.
+
+Cosmology contours will be blinded when made by looking at the BLIND flag set on the data. For data, this defaults to
+True.
+
+Note that all the plotting scripts work the same way - Analyse generates a small yaml file pointing to all the 
+resources, and each script uses the same file to make different plots. It is thus super easy to add your own 
+plotting code scripts, let me know if you want yours included. 
+
+```yaml
+ANALYSE:
+  SOMELABEL:
+    MASK_COSMOMC: mask  # partial match
+    MASK_BIASCOR: mask # partial match
+    HISTOGRAMS: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
+    EFFICIENCY: [D_DESSIM, D_DATADES] # Attempts to make histogram efficiency
+    OPTS:
+      COVOPTS: [ALL, NOSYS] # Optional. Covopts to match when making contours. Single or list. Exact match.
+      SHIFT: False  # Defualt False. Shift all the contours on top of each other
+      PRIOR: 0.01  # Default to None. Optional normal prior around Om=0.3 to apply for sims if wanted.
+```
+
 
 ![Developer Documentation Below](doc/developer.jpg)
 
