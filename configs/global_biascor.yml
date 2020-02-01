@@ -34,5 +34,4 @@ SIM:
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria.input
-    GLOBAL:
-      NGEN_UNIT: *nums
+    GLOBAL: *nums
