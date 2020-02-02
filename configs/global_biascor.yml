@@ -21,9 +21,23 @@ SIM:
       <<: *nums
       NGEN_UNIT: 10
 
+  LOWZSIMBIAS_C11:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_c11_lowz.input
+      <<: *grid
+    GLOBAL:
+      <<: *nums
+      NGEN_UNIT: 10
+
   DESSIMBIAS3YRIA:
     IA_G10_DES3YR:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+      <<: *grid
+    GLOBAL: *nums
+
+  DESSIMBIAS3YRIA_C11:
+    IA_G10_DES3YR:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des3yr.input
       <<: *grid
     GLOBAL: *nums
 
@@ -32,6 +46,13 @@ SIM:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       <<: *grid
     GLOBAL: *nums
+
+  DESSIMBIAS5YRIA_C11:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      <<: *grid
+    GLOBAL: *nums
+
 
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
