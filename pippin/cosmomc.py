@@ -51,7 +51,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.create_cov_dep = self.get_dep(CreateCov)
         self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", False)
-        assert isinstance(self.blind, (bool, np.bool)), "Blind should be set to a boolan value!"
+        assert isinstance(self.blind, (bool, np.bool_)), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI")
         self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
         self.static_path = "cosmomc_static_chains/"
