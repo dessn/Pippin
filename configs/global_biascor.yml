@@ -9,7 +9,7 @@ ALIAS:
     GENRANGE_SALT2BETA: 2.6  3.6
     GENGRID_SALT2BETA: 2
   NUMS: &nums
-    NGEN_UNIT: 1
+    NGEN_UNIT: 3
     RANSEED_REPEAT: 20 12345
 
 SIM:
@@ -19,7 +19,7 @@ SIM:
       <<: *grid
     GLOBAL:
       <<: *nums
-      NGEN_UNIT: 5
+      NGEN_UNIT: 10
 
   DESSIMBIAS3YRIA:
     IA_G10_DES3YR:
