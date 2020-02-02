@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import os
 from pathlib import Path
+import numpy as np
 
 from pippin.config import mkdirs, get_config, get_output_loc, get_data_loc
 from pippin.create_cov import CreateCov
@@ -50,8 +51,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
         self.create_cov_dep = self.get_dep(CreateCov)
         self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", False)
-        print("AAA ", self.blind, type(self.blind))
-        assert isinstance(self.blind, bool), "Blind should be set to a boolan value!"
+        assert isinstance(self.blind, (bool, np.bool)), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI")
         self.static = self.ini_prefix in ["cmb_omw", "cmb_omol"]
         self.static_path = "cosmomc_static_chains/"
