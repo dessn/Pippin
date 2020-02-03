@@ -113,6 +113,9 @@ class SNANASimulation(ConfigBasedExecutable):
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
         self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
+        if len(self.data_dirs) > 1:
+            data_dir = self.data_dirs[0]
+            self.set_property("PATH_USER_INPUT", data_dir, assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
             if k.upper() != "GLOBAL":
                 run_config = self.config[k]
