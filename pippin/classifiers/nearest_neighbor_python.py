@@ -39,7 +39,7 @@ class NearestNeighborPyClassifier(Classifier):
         self.global_config = get_config()
         self.num_jobs = 1
 
-        self.conda_env = self.global_config["ArgonneClassifier"]["conda_env"]
+        self.conda_env = self.global_config["SNIRF"]["conda_env"]
 
         self.path_to_classifier = os.path.dirname(inspect.stack()[0][1])
         self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
