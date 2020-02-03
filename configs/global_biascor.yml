@@ -14,7 +14,7 @@ ALIAS:
 
 SIM:
   LOWZSIMBIAS:
-    IA_G10_LOWZ:
+    IA_G10_LOWZ_G10:
       BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
       <<: *grid
     GLOBAL:
@@ -29,7 +29,7 @@ SIM:
       <<: *nums
       NGEN_UNIT: 10
 
-  DESSIMBIAS3YRIA:
+  DESSIMBIAS3YRIA_G10:
     IA_G10_DES3YR:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
       <<: *grid
@@ -41,7 +41,7 @@ SIM:
       <<: *grid
     GLOBAL: *nums
 
-  DESSIMBIAS5YRIA:
+  DESSIMBIAS5YRIA_G10:
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       <<: *grid
