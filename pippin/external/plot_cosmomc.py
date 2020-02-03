@@ -164,8 +164,9 @@ if __name__ == "__main__":
                     b += 1
                 bias_index = biases[key]
 
-                weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
+                linestyle = "-" if name.lower().endswith("all") else "--"
 
+                weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
                 if args.get("PRIOR"):
                     prior = args.get("PRIOR", 0.01)
                     logging.info(f"Applying prior width {prior} around 0.3")
@@ -176,12 +177,13 @@ if __name__ == "__main__":
                     weights *= prior
 
                 do_full = do_full or f
-                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params)
+                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params, linestyle=linestyle)
 
             # Write all our glorious output
             out = args.get("OUTPUT_NAME")
+            c.configure(plot_hists=False)
             c.analysis.get_latex_table(filename=out + "_params.txt")
-            c.plotter.plot(filename=out + ".png", figsize=1.5)
+            c.plotter.plot(filename=out + ".png", figsize=2.0)
             c.plotter.plot_summary(filename=out + "_summary.png", errorbar=True)
             if do_full:
                 c.plotter.plot_walks(filename=out + "_walks.png")
