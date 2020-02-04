@@ -31,13 +31,16 @@ VPEC_ERR:           300  # VPEC_ERR=GENSIGMA --> no correction
 
 RANSEED: 12945       # random number seed
 
+OPT_MWEBV:      3    # 3=Schlaffly 2011
+OPT_MWCOLORLAW: 99   # 99=Fitzpatrick99
+
 # smear flags: 0=off, 1=on
 SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
-SMEARFLAG_ZEROPT:  0  # smear zero-point with zptsig
+SMEARFLAG_ZEROPT:  3  # smear zp. 1=apply To True Err, 2=Report it
 
-OPT_SETPKMJD: 16
-APPLY_SEARCHEFF_OPT:  5
-NEWMJD_DIF: 0.4
+OPT_SETPKMJD: 16  # fmax clump
+APPLY_SEARCHEFF_OPT:  5  # 1=detection pipeline, 4=zHost
+NEWMJD_DIF: 0.4  # second detection trigger at least 0.4 days later
 
 SEARCHEFF_PIPELINE_LOGIC_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_LOGIC.DAT
 SEARCHEFF_PIPELINE_EFF_FILE:   $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_DES.DAT
@@ -46,23 +49,25 @@ SEARCHEFF_SPEC_FILE:   ZERO
 SEARCHEFF_zHOST_FILE:  $DES_ROOT/models/searcheff/SEARCHEFF_zHOST_DIFFIMG.DAT
 LENSING_PROBMAP_FILE:  $SNDATA_ROOT/models/lensing/LENSING_PROBMAP_LogNormal+MICECATv1.DAT
 
-APPLY_CUTWIN_OPT: 1
+# Apply minimal cuts to remove out of season SN
+APPLY_CUTWIN_OPT: 1                 # 1=implement cuts
 CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
 CUTWIN_SNRMAX:   3 griz 2 -20. 60.  # 2 filters with SNRAMX>3
 # CUTWIN_TRESTMIN: -19 3
 # CUTWIN_TRESTMAX: 10 80
 
 # cosmological params for lightcurve generation and redshift distribution
-OMEGA_MATTER:  0.3
-OMEGA_LAMBDA:  0.7
+OMEGA_MATTER:  0.311  # using planck vals from 1807.06209
+OMEGA_LAMBDA:  0.689
 W0_LAMBDA:    -1.00
 H0:           70.0
 
 SIMGEN_DUMP:  37
   CID GENTYPE  SNTYPE  NON1A_INDEX  GENZ GALZTRUE
-  LIBID RA DECL MWEBV MU PEAKMJD
-  MAGT0_g MAGT0_r MAGT0_i MAGT0_z 
-  SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z SNRMAX SNRMAX2 SNRMAX3 
+  LIBID RA DEC MWEBV MU PEAKMJD
+  PEAKMAG_g PEAKMAG_r PEAKMAG_i PEAKMAG_z
+  SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z
+  SNRMAX SNRMAX2 SNRMAX3
   NOBS TRESTMIN TRESTMAX TGAPMAX  
   CUTMASK  SIM_EFFMASK
   HOSTMAG_g HOSTMAG_r HOSTMAG_i HOSTMAG_z

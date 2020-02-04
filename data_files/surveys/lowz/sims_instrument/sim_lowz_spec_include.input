@@ -1,15 +1,13 @@
 # Jan 8 2018: add VPEC_ERR=200 key, and GENSIGMA_VPEC->300
 
 SIMLIB_FILE:     $DES_ROOT/simlibs/DES3YR_LOWZ_COMBINED.SIMLIB
-SIMLIB_NREPEAT:  20  # ==> faster
+SIMLIB_NREPEAT:  1  # ==> faster
 
 
 HOSTLIB_FILE:     $DES_ROOT/simlibs/LOWZ.HOSTLIB
-HOSTLIB_STOREPAR: LOGMASS
+HOSTLIB_STOREPAR: LOGMASS_TRUE
 HOSTLIB_MSKOPT:   256   # no HOSTLIB options for LOW-z
 HOSTLIB_DZTOL:    0.03  0.0  0.
-FUDGEOPT_FLUXERR:  0  # no error fudge for low-z
-
 
 SOLID_ANGLE:  6.0    # roughly half the sky
 
@@ -24,7 +22,7 @@ GENFILTERS:   abcdefghijklmnopqrstuvwxyzA
 KCOR_FILE:  $DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits
 
 GENRANGE_PEAKMJD:  53200.0  55350
-GENSIGMA_SEARCH_PEAKMJD:  1.0       # sigma-smearing for  SEARCH_PEAKMJD
+OPT_SETPKMJD: 16  # fmax clump
 
 GENRANGE_TREST:   -20.0  80.0     # rest epoch relative to peak (days)
 GENRANGE_REDSHIFT:  0.009    0.099
@@ -38,7 +36,9 @@ OPT_MWCOLORLAW: 99   # 99=Fitzpatrick99
 RANSEED:      28473   # random number seed
 
 SMEARFLAG_FLUX:    1   # photo-stat smearing of signal, sky, etc ...
-SMEARFLAG_ZEROPT:  1   # smear zero-point with zptsig
+SMEARFLAG_ZEROPT:  1   # smear zp. deliberately different to DES
+FUDGE_ZPTERR:  0.02    # ad-hoc to match FITPROB distribution
+
 
 APPLY_SEARCHEFF_OPT:  3  # use efficiency file
 SEARCHEFF_SPEC_FILE:  $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_LOWZ.DAT
@@ -53,11 +53,10 @@ CUTWIN_TRESTMAX:   0  40
 CUTWIN_MWEBV:      0  0.30
 
 # cosmological params for lightcurve generation and redshift distribution
-OMEGA_MATTER:  0.3
-OMEGA_LAMBDA:  0.7
+OMEGA_MATTER:  0.311  # using planck vals from 1807.06209
+OMEGA_LAMBDA:  0.689
 W0_LAMBDA:    -1.00
 H0:            70.0
 
-DNDZ: POWERLAW  2.6E-5  1.5  # Dilday 2008
 
 
