@@ -26,4 +26,3 @@ GENRANGE_SALT2x1:   -3.0     2.0       # x1 (stretch) range
 # SALT2 alpha and beta
 GENPEAK_SALT2ALPHA:   0.15
 GENPEAK_SALT2BETA:   3.8
-

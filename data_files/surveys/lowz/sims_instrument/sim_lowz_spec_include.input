@@ -1,6 +1,6 @@
 # Jan 8 2018: add VPEC_ERR=200 key, and GENSIGMA_VPEC->300
 
-SIMLIB_FILE:     $DES_ROOT/simlibs/DES3YR_LOWZ_COMBINED.SIMLIB
+SIMLIB_FILE:  $DES_ROOT/simlibs/DES3YR_LOWZ_COMBINED.SIMLIB
 SIMLIB_NREPEAT:  1  # ==> faster
 
 
@@ -11,15 +11,11 @@ HOSTLIB_DZTOL:    0.03  0.0  0.
 
 SOLID_ANGLE:  6.0    # roughly half the sky
 
-NGENTOT_LC:  100
-GENVERSION: DES3YR_LOWZ_BASE
-GENSOURCE:  RANDOM
-
-USE_SIMLIB_REDSHIFT:  0
-USE_SIMLIB_PEAKMJD:   1
+GENSOURCE:   RANDOM
+RANSEED: 12945       # random number seed
 
 GENFILTERS:   abcdefghijklmnopqrstuvwxyzA
-KCOR_FILE:  $DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits
+KCOR_FILE:   $DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits
 
 GENRANGE_PEAKMJD:  53200.0  55350
 OPT_SETPKMJD: 16  # fmax clump
@@ -28,15 +24,13 @@ GENRANGE_TREST:   -20.0  80.0     # rest epoch relative to peak (days)
 GENRANGE_REDSHIFT:  0.009    0.099
 GENSIGMA_REDSHIFT:  0.0001
 GENSIGMA_VPEC:      300  # peculiar velocity, km/sec
-VPEC_ERR:           250
+VPEC_ERR:           300  # VPEC_ERR=GENSIGMA --> no correction
 
 OPT_MWEBV:      3    # 3=Schlaffly 2011
 OPT_MWCOLORLAW: 99   # 99=Fitzpatrick99
 
-RANSEED:      28473   # random number seed
-
-SMEARFLAG_FLUX:    1   # photo-stat smearing of signal, sky, etc ...
-SMEARFLAG_ZEROPT:  1   # smear zp. deliberately different to DES
+SMEARFLAG_FLUX:    1  # photo-stat smearing of signal, sky, etc ...
+SMEARFLAG_ZEROPT:  1  # smear zp. deliberately different to DES
 FUDGE_ZPTERR:  0.02    # ad-hoc to match FITPROB distribution
 
 
@@ -46,7 +40,11 @@ SEARCHEFF_PIPELINE_LOGIC_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_
 
 NEWMJD_DIF: 0.002
 
-APPLY_CUTWIN_OPT:  1
+USE_SIMLIB_REDSHIFT:  0
+USE_SIMLIB_PEAKMJD:   1
+
+# Apply minimal cuts to remove out of season SN
+APPLY_CUTWIN_OPT: 1                 # 1=implement cuts
 CUTWIN_NEPOCH:   5 -5.              # require 5 epochs (no S/N requirement)
 CUTWIN_TRESTMIN: -20  20
 CUTWIN_TRESTMAX:   0  40
