@@ -7,8 +7,8 @@ GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
 GENMAG_SMEAR_MODELNAME: G10
 
 # Use rate assumption from Housell 2017 (WFIRST sims)
-DNDZ: POWERLAW2 2.6E-5  1.5 0.0 1.0    # from Didlay 2008
-DNDZ: POWERLAW2  7.35E-5 0.0 1.0 2.0   # a0*(1+z)^a1 from a2->a3
+DNDZ: POWERLAW2 2.60E-5  1.5 0.0 1.0    # from Didlay 2008
+DNDZ: POWERLAW2 7.35E-5  0.0 1.0 2.0    # a0*(1+z)^a1 from a2->a3
 
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using G10 High-z row
@@ -23,11 +23,4 @@ GENRANGE_SALT2x1:   -3.0     2.0     # x1 (stretch) range
 
 # SALT2 alpha and beta
 GENPEAK_SALT2ALPHA:   0.14
-GENSIGMA_SALT2ALPHA:  0.0  0.0   # override to 1E8 for 5D biasCor sample
-GENRANGE_SALT2ALPHA:  0.12 0.2   # grid for biasCor sample
-GENGRID_SALT2ALPHA:   2
-
 GENPEAK_SALT2BETA:   3.1
-GENSIGMA_SALT2BETA:  0.0  0.0  # override to 1E8 for 5D biasCor sample
-GENRANGE_SALT2BETA:  2.6  3.6  # grid for COH & G10 0biasCor samples
-GENGRID_SALT2BETA:   2

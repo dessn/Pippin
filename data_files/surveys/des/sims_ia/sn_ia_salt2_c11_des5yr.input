@@ -7,9 +7,10 @@ GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
 GENMAG_SMEAR_MODELNAME: C11
 
 # Use rate assumption from Housell 2017 (WFIRST sims)
-DNDZ: POWERLAW2 2.6E-5  1.5 0.0 1.0    # from Didlay 2008
-# DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 3.0    # high-z extenstion from Lou Needs normalisation to z=1
-DNDZ: POWERLAW2  7.35E-5  0.0 1.0 2.0
+DNDZ: POWERLAW2 2.60E-5  1.5 0.0 1.0    # from Didlay 2008
+DNDZ: POWERLAW2 7.35E-5  0.0 1.0 2.0    # a0*(1+z)^a1 from a2->a3
+
+SEARCHEFF_SPEC_FILE: $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_DES_C11.TXT
 
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using C11 High-z row
@@ -24,11 +25,5 @@ GENRANGE_SALT2x1:   -3.0     2.0       # x1 (stretch) range
 
 # SALT2 alpha and beta
 GENPEAK_SALT2ALPHA:   0.15
-GENSIGMA_SALT2ALPHA:  0.0  0.0   # override to 1E8 for 5D biasCor sample
-GENRANGE_SALT2ALPHA:  0.10 0.24  # grid for biasCor sample
-GENGRID_SALT2ALPHA:   2
-
 GENPEAK_SALT2BETA:   3.8
-GENSIGMA_SALT2BETA:  0.0  0.0  # override to 1E8 for 5D biasCor sample
-GENRANGE_SALT2BETA:  3.3  4.3  # grid for COH & G10 0biasCor samples
-GENGRID_SALT2BETA:   2
+
