@@ -28,7 +28,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
   DESLIKESIM: &deslikesim
     IA_G10:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr_uvir_ext.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
     IA91BG:

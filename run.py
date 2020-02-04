@@ -96,6 +96,7 @@ if __name__ == "__main__":
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
+        assert d is not None, "Data directory is none, which means it failed to resolve. Check the error message above for why."
 
     manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:
