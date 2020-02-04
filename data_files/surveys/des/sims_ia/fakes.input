@@ -1,5 +1,6 @@
 # use new "SIMLIB" model to use SIM_MAGOBS column of SIMLIB
 
+GENTYPE:   1
 NGENTOT_LC:  45043  # Y1-Y4 x1
 
 SIMLIB_FILE:     $DES_ROOT/analysis_photoIa_5yr/simFakes/DES_FAKES.SIMLIB
