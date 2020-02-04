@@ -176,7 +176,7 @@ one for each light curve fit task.
 If you are finding that your config files contain lots of duplicated sections (for example, many simulations configured
 almost the same way but with one differnece), consider using YAML anchors. [See this blog post](https://blog.daemonl.com/2016/02/yaml.html)
 for more detail. You can define your anchors in the main config section, or add a new section (like SIM, LCFIT, CLASSIFICATION). So long as it doesn't
-match a Pippin keyword for each stage, you'll be fine. I recommend `ANCHORS:` or `GLOBAL:` or `DEFAULTS:` at the top of the file, all of those will work.
+match a Pippin keyword for each stage, you'll be fine. I recommend `ANCHORS:` at the top of the file, all of those will work.
 
 
 ## FAQ
