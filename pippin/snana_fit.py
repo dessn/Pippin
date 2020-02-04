@@ -238,7 +238,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             if os.path.exists(file):
                 with open(file, "r") as f:
                     for line in f.read().splitlines():
-                        if ("ABORT ON FATAL ERROR" in line or "QOSMaxSubmitJobPerUserLimit" in line) and not output_error:
+                        if ("FATAL ERROR ABORT" in line or "QOSMaxSubmitJobPerUserLimit" in line) and not output_error:
                             extra = "" if squeue is None else f"Squeue shows you have {len(squeue)} jobs..."
                             self.logger.error(f"Fatal error in light curve fitting. See {file} for details. {extra}")
                             output_error = True
