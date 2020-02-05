@@ -59,7 +59,7 @@ SIM:
   # Simulate just the fakes with no correction
   SIMFAKES_NOCORR:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       FLUXERRMODEL_FILE: NONE
       RANSEED_REPEAT: 1 12345
@@ -69,55 +69,55 @@ SIM:
   # with correlation - both intra- and inter-band. We'll step in 0.2 increments.
   SIMFAKE_2D_CORR_ALL00:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
 
   SIMFAKE_2D_CORR_ALL02:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "griz:0.2"
   SIMFAKE_2D_CORR_ALL04:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "griz:0.4"
   SIMFAKE_2D_CORR_ALL06:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "griz:0.6"
   SIMFAKE_2D_CORR_ALL08:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "griz:0.8"
   SIMFAKE_2D_CORR_INDEP02:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "g:0.2,r:0.2,i:0.2,z:0.2"
   SIMFAKE_2D_CORR_INDEP04:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "g:0.4,r:0.4,i:0.4,z:0.4"
   SIMFAKE_2D_CORR_INDEP06:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "g:0.6,r:0.6,i:0.6,z:0.6"
   SIMFAKE_2D_CORR_INDEP08:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       FLUXERRMODEL_REDCOV: "g:0.8,r:0.8,i:0.8,z:0.8"
@@ -126,7 +126,7 @@ SIM:
   # broken down by deep and shallow fields. Lets simulate this mix
   SIMFAKE_2D_MIX:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       <<: *default_map
       <<: *default_corr
@@ -138,13 +138,13 @@ SIM:
   # Lets also compare the 1D, 2D and 3D maps with the fakes without correlations
   SIMFAKE_1D_CORR_ALL00:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
 
   SIMFAKE_3D_CORR_ALL00:
     IA:
-      BASE: surveys/des/sims_ia/fakes.input
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
 
