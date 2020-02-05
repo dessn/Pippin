@@ -97,8 +97,12 @@ def plot_histograms(data, sims, types, figname):
                 x[0].loc[x[0][c] < -10, c] = -9
 
     ncols = (len(cols) + 3) // 3
-    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2.5 * ncols, 7), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
+    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2.5 * ncols, 8), gridspec_kw={"wspace": 0.13, "hspace": 0.4})
+    for ax in axes.flatten():
+        ax.set_axis_off()
+
     for c, ax in zip(cols, axes.flatten()):
+        ax.set_axis_on()
         u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
         maxv = max([x[0][c].quantile(u) for x in data + sims])
