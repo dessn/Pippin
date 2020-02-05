@@ -220,8 +220,7 @@ class Classifier(Task):
                                 tasks.append(cc)
 
                         else:
-                            Task.logger.error(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
-                            return None
+                            Task.fail_config(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
                     else:
                         for t in tasks:
                             if model == t.name:
