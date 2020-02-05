@@ -17,11 +17,6 @@ DONE_STAMP: FINISHED.DONE
     NFIT_ITERATION = 3
     INTERP_OPT     = 1
 
-    H0_REF   = 70.0
-    OLAM_REF =  0.70
-    OMAT_REF =  0.30
-    W0_REF   = -1.00
-
     SNCID_LIST  = 0
     SNTYPE_LIST = 0,1,101
 
@@ -33,10 +28,10 @@ DONE_STAMP: FINISHED.DONE
     ABORT_ON_DUPLCID  = F
 
     CUTWIN_NEPOCH    =  5
-    cutwin_redshift  =  0.12, 1.4
-    cutwin_redshift_err   =  0.0, 0.01
-    cutwin_Trest     = -20.0,   60.0
-    cutwin_Trestmin  = -20.0,   0.0
+    CUTWIN_REDSHIFT  =  0.12, 1.4
+    CUTWIN_REDSHIFT_ERR   =  0.0, 0.01
+    CUTWIN_TREST     = -20.0,   60.0
+    cutwin_TRESTMIN  = -20.0,   0.0
     CUTWIN_TRESTMAX  =  10.0,  200.0
 
     CUTWIN_SNRMAX       =  5.0, 1.0E8
