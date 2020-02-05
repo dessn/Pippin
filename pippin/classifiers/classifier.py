@@ -34,11 +34,12 @@ class Classifier(Task):
     TRAIN = 0
     PREDICT = 1
 
-    def __init__(self, name, output_dir, dependencies, mode, options, index=0):
+    def __init__(self, name, output_dir, dependencies, mode, options, index=0, model_name=None):
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.index = index
         self.mode = mode
+        self.model_name = model_name
         self.output["prob_column_name"] = self.get_prob_column_name()
         self.output["index"] = index
 
@@ -108,7 +109,10 @@ class Classifier(Task):
     def get_prob_column_name(self):
         m = self.get_model_classifier()
         if m is None:
-            return f"PROB_{self.get_unique_name()}"
+            if self.model_name is not None:
+                return f"PROB_{self.model_name}"
+            else:
+                return f"PROB_{self.get_unique_name()}"
         else:
             return m.output["prob_column_name"]
 
@@ -208,7 +212,7 @@ class Classifier(Task):
                             for i in range(indexes):
                                 num = i + 1 if indexes > 1 else None
                                 clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
-                                cc = cls(clas_name, clas_output_dir, deps, mode, options, index=i)
+                                cc = cls(clas_name, clas_output_dir, deps, mode, options, index=i, model_name=extra)
                                 Task.logger.info(
                                     f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"
                                 )

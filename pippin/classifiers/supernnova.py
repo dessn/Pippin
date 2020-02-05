@@ -37,8 +37,8 @@ class SuperNNovaClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, mode, options, index=0):
-        super().__init__(name, output_dir, dependencies, mode, options, index=index)
+    def __init__(self, name, output_dir, dependencies, mode, options, index=0, model_name=None):
+        super().__init__(name, output_dir, dependencies, mode, options, index=index, model_name=model_name)
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
