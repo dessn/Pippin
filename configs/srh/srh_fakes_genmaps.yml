@@ -3,12 +3,12 @@
 # After that, you can copy the fakes and the sim dumps back and run the compute_maps.py file on them.
 
 DATAPREP:
-  FAKES:
+  FAKESDIFFIMG:
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
 
 SIM:
-  FAKESIMLIB:
+  FAKESIMLIBDIFFIMG:
     IA:
       BASE: surveys/des/sims_ia/fakes_diffimg.input
     GLOBAL:
@@ -17,6 +17,6 @@ SIM:
 
 LCFIT:
   FAKES:
-    BASE: fluxerr/fluxerr_base.nml
+    BASE: surveys/des/lcfit_nml/fakes.nml
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr-lc.TEMPLATE 40
