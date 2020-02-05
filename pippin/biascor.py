@@ -466,6 +466,7 @@ class BiasCor(ConfigBasedExecutable):
 
             def resolve_classifier(name):
                 task = [c for c in classifier_tasks if c.name == name]
+                print("AAA ", name, classifier_tasks, task)
                 if len(task) == 0:
                     Task.logger.info("CLASSIFIER {name} matched no classifiers. Checking prob column names instead.")
                     task = [c for c in classifier_tasks if c.get_prob_column_name() == name]
