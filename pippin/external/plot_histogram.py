@@ -7,6 +7,7 @@ import argparse
 import logging
 import matplotlib.pyplot as plt
 import yaml
+from astropy.cosmology import FlatLambdaCDM
 from scipy.stats import binned_statistic, moment
 
 
@@ -68,9 +69,25 @@ def plot_histograms(data, sims, types, figname):
         "chi2_r",
         "chi2_i",
         "chi2_z",
+        "__MUDIFF",
     ]
     restricted = ["FITCHI2", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
-    logs = ["FITPROB", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
+    logs = [
+        "FITPROB",
+        "SNRMAX1",
+        "SNRMAX2",
+        "SNRMAX3",
+        "SNRMAX_g",
+        "SNRMAX_r",
+        "SNRMAX_i",
+        "SNRMAX_z",
+        "FITCHI2",
+        "chi2_g",
+        "chi2_r",
+        "chi2_i",
+        "chi2_z",
+        "__MUDIFF",
+    ]
 
     cols = [c for c in cols if c in data[0][0].columns]
 
@@ -79,16 +96,14 @@ def plot_histograms(data, sims, types, figname):
             if c in cols:
                 x[0].loc[x[0][c] < -10, c] = -9
 
-    ncols = (len(cols) + 2) // 3
-    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2 * ncols, 7), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
+    ncols = (len(cols) + 3) // 3
+    fig, axes = plt.subplots(3, ncols, figsize=(1 + 2.5 * ncols, 7), gridspec_kw={"wspace": 0.4, "hspace": 0.3})
     for c, ax in zip(cols, axes.flatten()):
         u = 0.95 if c in restricted else 0.99
         minv = min([x[0][c].quantile(0.01) for x in data + sims])
         maxv = max([x[0][c].quantile(u) for x in data + sims])
         bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
-
-        ax.set_yticklabels([])
 
         for i, (d, n) in enumerate(data):
             hist, _ = np.histogram(d[c], bins=bins)
@@ -121,6 +136,9 @@ def plot_histograms(data, sims, types, figname):
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
+
+    for ax in axes.flatten():
+        ax.set_yticklabels([])
 
     fig.legend(handles, labels, loc="upper center", ncol=4, mode="expand", frameon=False, bbox_to_anchor=bb, borderaxespad=0.0, bbox_transform=fig.transFigure)
     # plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
@@ -192,6 +210,14 @@ def plot_redshift_evolution(data, sims, types, figname):
     fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
+def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
+    cosmo = FlatLambdaCDM(h0, om)
+    cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
+    obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] + MB
+    diff = obs_dist_mod - cosmo_dist_mod
+    df["__MUDIFF"] = diff
+
+
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
@@ -209,6 +235,7 @@ if __name__ == "__main__":
 
         for df, n in data_dfs + sim_dfs:
             df.replace(-999, np.nan, inplace=True)
+            add_muref(df)
 
         plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], "hist.png")
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"], "redshift.png")
