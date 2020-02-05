@@ -103,14 +103,18 @@ python SNIRF.py {command_opts}
         if model is None:
             self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")
             return False
-        if not os.path.exists(get_output_loc(model)):
+        potential_path = get_output_loc(model)
+        if os.path.exists(potential_path):
+            self.logger.debug(f"Found existing model file at {potential_path}")
+            model = potential_path
+        else:
+            if "/" in model:
+                self.logger.warning(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
             # If its not a file, it must be a task
             for t in self.dependencies:
                 if model == t.name:
                     self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
                     model = t.output["model_filename"]
-        else:
-            model = get_output_loc(model)
         command = (
             f"--nc 4 "
             f"--nclass 2 "

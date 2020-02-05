@@ -1,5 +1,7 @@
+import os
 from abc import abstractmethod
 
+from pippin.config import get_output_loc
 from pippin.dataprep import DataPrep
 from pippin.task import Task
 from pippin.snana_sim import SNANASimulation
@@ -196,23 +198,44 @@ class Classifier(Task):
                         ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
 
                 if model is not None:
-                    for t in tasks:
-                        if model == t.name:
-                            # deps.append(t)
-                            extra = t.get_unique_name()
+                    if "/" in model or "." in model:
+                        potential_path = get_output_loc(model)
+                        if os.path.exists(potential_path):
+                            extra = os.path.basename(os.path.dirname(potential_path))
 
-                            assert t.__class__ == cls, f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
-
+                            # Nasty duplicate code, TODO fix this
                             indexes = get_num_ranseed(s, l)
                             for i in range(indexes):
                                 num = i + 1 if indexes > 1 else None
                                 clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
-                                cc = cls(clas_name, clas_output_dir, deps + [t], mode, options, index=i)
+                                cc = cls(clas_name, clas_output_dir, deps, mode, options, index=i)
                                 Task.logger.info(
                                     f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"
                                 )
                                 num_gen += 1
                                 tasks.append(cc)
+
+                        else:
+                            Task.logger.error(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
+                            return None
+                    else:
+                        for t in tasks:
+                            if model == t.name:
+                                # deps.append(t)
+                                extra = t.get_unique_name()
+
+                                assert t.__class__ == cls, f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+
+                                indexes = get_num_ranseed(s, l)
+                                for i in range(indexes):
+                                    num = i + 1 if indexes > 1 else None
+                                    clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
+                                    cc = cls(clas_name, clas_output_dir, deps + [t], mode, options, index=i)
+                                    Task.logger.info(
+                                        f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"
+                                    )
+                                    num_gen += 1
+                                    tasks.append(cc)
                 else:
 
                     indexes = get_num_ranseed(s, l)
