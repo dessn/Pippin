@@ -15,7 +15,7 @@ DONE_STAMP: FINISHED.DONE
 
     FLUXERRMODEL_FILE = '$DES_ROOT/simlibs/DES5YR_FAKES_ERRORFUDGES.DAT'
 
-    FUDGE_MAG_ERROR = 'griz .02'  ! For DiffImg only. SMP will change
+    ! FUDGE_MAG_ERROR = 'griz .02'  ! For DiffImg only. SMP will change
 
     NFIT_ITERATION = 3
     INTERP_OPT     = 1
