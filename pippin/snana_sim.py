@@ -162,7 +162,7 @@ class SNANASimulation(ConfigBasedExecutable):
         for f in self.base_ia + self.base_cc:
             resolved = get_data_loc(self.data_dirs, f)
             shutil.copy(resolved, temp_dir)
-            input_paths.append(os.path.join(temp_dir), os.path.basename(f))
+            input_paths.append(os.path.join(temp_dir, os.path.basename(f)))
             self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
 
         self.types = self.get_types(input_paths)
