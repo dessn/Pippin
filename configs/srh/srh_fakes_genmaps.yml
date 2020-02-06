@@ -7,8 +7,9 @@
 #    sim obs dump file -> sim_obs.fitres
 # 3. Use these files to run compute_map.py   in the external code directory
 # 4. Copy the maps it produces into the $DES_ROOT/simlibs/maps directory
-# 5. Using one of the maps (ie the 2D 5sigma map) as a fiducial map, run srh_fakes_getcov.yml to determine the covariance
-# 6. Put those values into the srh_fakes_checkmaps.yml file to verify that it looks good on fakes and data
+# 5. Using the 1D 2D and 3D maps, run a sanity check using srh_fakes_sanitycheck.yml
+# 6. Using one of the maps (ie the 2D 5sigma map) as a fiducial map, run srh_fakes_getcov.yml to determine the covariance
+# 7. Put those values into the srh_fakes_checkmaps.yml file to verify that it looks good on fakes and data
 
 
 DATAPREP:
