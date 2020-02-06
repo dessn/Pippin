@@ -11,10 +11,12 @@
 # Oh btw, I used YAML anchoring and aliasing in here. How good is it. Just adding it here so its easy to see
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
-  DEFAULT_SIM_MAP: &default_map
+  DEFAULT_SIM_MAP3D: &map3d
     FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
     RANSEED_REPEAT: 1 12345
-
+  DEFAULT_SIM_MAP2D: &map2d
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    RANSEED_REPEAT: 1 12345
 
   FAKES_INPUT: &fakesinput
     BASE: surveys/des/sims_ia/fakes_diffimg.input
@@ -23,9 +25,10 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
     APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
-  SNLCINP: &default_mapdata
+  SNLCINP3D: &map3ddata
     FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
-
+  SNLCINP2D: &map2ddata
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_5.DAT
 
 DATAPREP:
   FAKES:
@@ -48,49 +51,92 @@ SIM:
   SIMFAKE_3D_CORR_ALL00:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
   SIMFAKE_3D_CORR_ALL02:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "griz:0.2"
   SIMFAKE_3D_CORR_ALL04:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "griz:0.4"
   SIMFAKE_3D_CORR_ALL06:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "griz:0.6"
   SIMFAKE_3D_CORR_ALL08:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "griz:0.8"
   SIMFAKE_3D_CORR_INDEP02:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "g:0.2,r:0.2,i:0.2,z:0.2"
   SIMFAKE_3D_CORR_INDEP04:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "g:0.4,r:0.4,i:0.4,z:0.4"
   SIMFAKE_3D_CORR_INDEP06:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "g:0.6,r:0.6,i:0.6,z:0.6"
   SIMFAKE_3D_CORR_INDEP08:
     IA: *fakesinput
     GLOBAL:
-      <<: *default_map
+      <<: *map3d
       FLUXERRMODEL_REDCOV: "g:0.8,r:0.8,i:0.8,z:0.8"
 
-
+SIMFAKE_2D_CORR_ALL00:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+  SIMFAKE_2D_CORR_ALL02:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "griz:0.2"
+  SIMFAKE_2D_CORR_ALL04:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "griz:0.4"
+  SIMFAKE_2D_CORR_ALL06:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "griz:0.6"
+  SIMFAKE_2D_CORR_ALL08:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "griz:0.8"
+  SIMFAKE_2D_CORR_INDEP02:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "g:0.2,r:0.2,i:0.2,z:0.2"
+  SIMFAKE_2D_CORR_INDEP04:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "g:0.4,r:0.4,i:0.4,z:0.4"
+  SIMFAKE_2D_CORR_INDEP06:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "g:0.6,r:0.6,i:0.6,z:0.6"
+  SIMFAKE_2D_CORR_INDEP08:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map2d
+      FLUXERRMODEL_REDCOV: "g:0.8,r:0.8,i:0.8,z:0.8"
 
 # Now we have to fit everything. For the SIMFAKES, we'll fit using the fakes.nml
 # For the DES-like sims, we'll fit using surveys/des/lcfit_nml/des_5yr.nml
@@ -104,49 +150,60 @@ LCFIT:
       FLUXERRMODEL_FILE: NONE
     OPTS: *default_fitopts
 
-  F3D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+  F2D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+    BASE: surveys/des/lcfit_nml/fakes.nml
+    MASK: FAKES
+    SNLCINP: *map2ddata
+    OPTS: *default_fitopts
+
+  F3D: # fit fakes using the 3D correction, which only apples to the real fakes, not the sims
     BASE: surveys/des/lcfit_nml/fakes.nml
     MASK: FAKE
-    SNLCINP: *default_mapdata
+    SNLCINP: *map3ddata
     OPTS: *default_fitopts
 
 
 ANALYSE:
 
-  CHECK_INDEP_LOOKS_ALRIGHT:
+  CHECK_INDEP_3D_LOOKS_ALRIGHT:
     HISTOGRAM:
       - F0D_FAKES
       - F3D_FAKES
       - F3D_SIMFAKES_NOCORR
       - F3D_SIMFAKE_3D_CORR_ALL00
+  CHECK_INDEP_2D_LOOKS_ALRIGHT:
+    HISTOGRAM:
+      - F0D_FAKES
+      - F2D_FAKES
+      - F3D_SIMFAKES_NOCORR
+      - F3D_SIMFAKE_2D_CORR_ALL00
 
-  CORR_00:
+  CORR_3D_00:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKE_3D_CORR_ALL00
-  CORR_02:
+  CORR_3D_02:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKE_3D_CORR_ALL02
       - F3D_SIMFAKE_3D_CORR_INDEP02
-  CORR_04:
+  CORR_3D_04:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKE_3D_CORR_ALL04
       - F3D_SIMFAKE_3D_CORR_INDEP04
-  CORR_06:
+  CORR_3D_06:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKE_3D_CORR_ALL06
       - F3D_SIMFAKE_3D_CORR_INDEP06
-  CORR_08:
+  CORR_3D_08:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKE_3D_CORR_ALL08
       - F3D_SIMFAKE_3D_CORR_INDEP08
 
-
-  ALL_CORRELATIONS:
+  ALL_3D_CORRELATIONS:
     HISTOGRAM:
       - F3D_FAKES
       - F3D_SIMFAKES_NOCORR
@@ -160,3 +217,41 @@ ANALYSE:
       - F3D_SIMFAKE_3D_CORR_INDEP06
       - F3D_SIMFAKE_3D_CORR_INDEP08
 
+  CORR_2D_00:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKE_2D_CORR_ALL00
+  CORR_2D_02:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKE_2D_CORR_ALL02
+      - F3D_SIMFAKE_2D_CORR_INDEP02
+  CORR_2D_04:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKE_2D_CORR_ALL04
+      - F3D_SIMFAKE_2D_CORR_INDEP04
+  CORR_2D_06:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKE_2D_CORR_ALL06
+      - F3D_SIMFAKE_2D_CORR_INDEP06
+  CORR_2D_08:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKE_2D_CORR_ALL08
+      - F3D_SIMFAKE_2D_CORR_INDEP08
+
+  ALL_2D_CORRELATIONS:
+    HISTOGRAM:
+      - F2D_FAKES
+      - F3D_SIMFAKES_NOCORR
+      - F3D_SIMFAKE_2D_CORR_ALL00
+      - F3D_SIMFAKE_2D_CORR_ALL02
+      - F3D_SIMFAKE_2D_CORR_ALL04
+      - F3D_SIMFAKE_2D_CORR_ALL06
+      - F3D_SIMFAKE_2D_CORR_ALL08
+      - F3D_SIMFAKE_2D_CORR_INDEP02
+      - F3D_SIMFAKE_2D_CORR_INDEP04
+      - F3D_SIMFAKE_2D_CORR_INDEP06
+      - F3D_SIMFAKE_2D_CORR_INDEP08
