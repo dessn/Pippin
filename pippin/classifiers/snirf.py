@@ -24,6 +24,10 @@ class SnirfClassifier(Classifier):
           FITOPT: someLabel # Exact match to fitopt in a fitopt file. USED FOR TRAINING ONLY
           FEATURES: x1 c zHD  # Columns out of fitres file to use as features
           MODEL: someName # exact name of training classification task
+          N_ESTIMATORS: 100  # Number of trees in forest
+          MIN_SAMPLES_SPLIT: 5  # Min number of samples to split a node on
+          MIN_SAMPLES_LEAF: 1  # Minimuum number samples in leaf node
+          MAX_DEPTH: 0  # Max depth of tree. 0 means auto, which means as deep as it wants.
 
     OUTPUTS:
     ========
@@ -98,6 +102,15 @@ python SNIRF.py {command_opts}
             self.should_be_done()
         return True
 
+    def get_rf_conf(self):
+        leaf_opts = (
+            ("--n_estimators {self.options.get('N_ESTIMATORS')} " if self.options.get("N_ESTIMATORS") is not None else "")
+            + ("--min_samples_split {self.options.get('MIN_SAMPLES_SPLIT')} " if self.options.get("MIN_SAMPLES_SPLIT") is not None else "")
+            + ("--min_samples_leaf {self.options.get('MIN_SAMPLES_LEAF')} " if self.options.get("MIN_SAMPLES_LEAF") is not None else "")
+            + ("--max_depth {self.options.get('MAX_DEPTH')} " if self.options.get("MAX_DEPTH") is not None else "")
+        )
+        return leaf_opts
+
     def predict(self, force_refresh):
         model = self.options.get("MODEL")
         if model is None:
@@ -122,6 +135,7 @@ python SNIRF.py {command_opts}
             f"--restore "
             f"--pklfile {model} "
             f"--pklformat FITRES "
+            f"{self.get_rf_conf()}"
             f"--test {self.fitres_file} "
             f"--filedir {self.output_dir} "
             f"--done_file {self.done_file} "
@@ -138,6 +152,7 @@ python SNIRF.py {command_opts}
             f"--test '' "
             f"--pklfile {self.output_pk_file} "
             f"--pklformat FITRES "
+            f"{self.get_rf_conf()}"
             f"--filedir {self.output_dir} "
             f"--train {self.fitres_file} "
             f"--done_file {self.done_file} "

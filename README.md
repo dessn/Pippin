@@ -358,6 +358,10 @@ CLASSIFICATION:
       MODEL: SNIRF_TRAIN
       FITOPT: some_label  # Optional FITOPT to use. Match the label. Defaults to no FITOPT
       FEATURES: x1 c zHD x1ERR cERR PKMJDERR  # Columns to use. Defaults are shown. Check FITRES for options.
+      N_ESTIMATORS: 100  # Number of trees in forest
+      MIN_SAMPLES_SPLIT: 5  # Min number of samples to split a node on
+      MIN_SAMPLES_LEAF: 1  # Minimuum number samples in leaf node
+      MAX_DEPTH: 0  # Max depth of tree. 0 means auto, which means as deep as it wants.
 ```
 
 #### Nearest Neighbour Classifier
