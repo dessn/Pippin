@@ -1,8 +1,7 @@
 SIM:
   SOMESIM:
     IAS:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
-      GENTYPE:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr_test.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 1 12345
