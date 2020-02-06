@@ -69,7 +69,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
         self.output["blind"] = self.options.get("BLIND", False)
-
+        self.types = None
         self.derived_batch_info = None
         # Try to determine how many jobs will be put in the queue
         try:
@@ -158,10 +158,14 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir = temp_dir_obj.name
 
         # Copy the base files across
+        input_paths = []
         for f in self.base_ia + self.base_cc:
             resolved = get_data_loc(self.data_dirs, f)
             shutil.copy(resolved, temp_dir)
+            input_paths.append(os.path.join(temp_dir), os.path.basename(f))
             self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
+
+        self.types = self.get_types(input_paths)
 
         # Copy the include input file if there is one
         input_copied = []
@@ -318,7 +322,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     self.logger.debug(f"Linking {s} -> {s_end}")
                     os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output.update({"photometry_dirs": s_ends, "types": self.get_types()})
+            self.output.update({"photometry_dirs": s_ends, "types": self.types})
             return Task.FINISHED_SUCCESS
 
         return self.check_for_job(squeue, f"{self.genprefix}_0")
@@ -331,11 +335,11 @@ class SNANASimulation(ConfigBasedExecutable):
         else:
             return "II"
 
-    def get_types(self):
+    def get_types(self, files):
         types = {}
-        for f in [f for f in os.listdir(self.output_dir) if f.endswith(".input")]:
-            path = os.path.join(self.output_dir, f)
-            name = f.split(".")[0]
+        for path in files:
+            name = os.path.basename(path.split(".")[0])
+            found = False
             with open(path, "r") as file:
                 for line in file.readlines():
                     if line.startswith("GENTYPE"):
@@ -344,7 +348,12 @@ class SNANASimulation(ConfigBasedExecutable):
                         n = self.resolve_name_to_type(name)
                         types[number] = n
                         types[str(num)] = n
+                        found = True
                         break
+            if not found:
+                self.logger.error(f"File {name} needs to have GENTYPE defined for ML classification purposes. Please add it.")
+                raise ValueError(f"File {name} needs to have GENTYPE defined for ML classification purposes. Please add it.")
+
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
         types_dict = {"IA": [], "NONIA": []}

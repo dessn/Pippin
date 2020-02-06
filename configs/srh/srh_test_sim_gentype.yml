@@ -1,0 +1,8 @@
+SIM:
+  SOMESIM:
+    IAS:
+      BASE: sn_ia_salt2_g10_test.input
+      GENTYPE:
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
