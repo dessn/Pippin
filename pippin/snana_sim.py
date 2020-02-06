@@ -351,7 +351,6 @@ class SNANASimulation(ConfigBasedExecutable):
                         found = True
                         break
             if not found:
-                self.logger.error(f"File {name} needs to have GENTYPE defined for ML classification purposes. Please add it.")
                 raise ValueError(f"File {name} needs to have GENTYPE defined for ML classification purposes. Please add it.")
 
         sorted_types = collections.OrderedDict(sorted(types.items()))
