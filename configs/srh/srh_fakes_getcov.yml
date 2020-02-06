@@ -12,7 +12,7 @@
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
   DEFAULT_SIM_MAP: &default_map
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_5.DAT
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
     RANSEED_REPEAT: 1 12345
 
 
@@ -24,7 +24,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
   SNLCINP: &default_mapdata
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_5.DAT
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
 
 
 DATAPREP:

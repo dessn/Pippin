@@ -68,54 +68,6 @@ SIM:
       RANSEED_REPEAT: 1 12345
 
 
-  # Compute the correlation values by taking the 2D map as an interim, and creating a set of sims
-  # with correlation - both intra- and inter-band. We'll step in 0.2 increments.
-  SIMFAKE_2D_CORR_ALL00:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-
-  SIMFAKE_2D_CORR_ALL02:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "griz:0.2"
-  SIMFAKE_2D_CORR_ALL04:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "griz:0.4"
-  SIMFAKE_2D_CORR_ALL06:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "griz:0.6"
-  SIMFAKE_2D_CORR_ALL08:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "griz:0.8"
-  SIMFAKE_2D_CORR_INDEP02:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "g:0.2,r:0.2,i:0.2,z:0.2"
-  SIMFAKE_2D_CORR_INDEP04:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "g:0.4,r:0.4,i:0.4,z:0.4"
-  SIMFAKE_2D_CORR_INDEP06:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "g:0.6,r:0.6,i:0.6,z:0.6"
-  SIMFAKE_2D_CORR_INDEP08:
-    IA: *fakesinput
-    GLOBAL:
-      <<: *default_map
-      FLUXERRMODEL_REDCOV: "g:0.8,r:0.8,i:0.8,z:0.8"
-
   # Great, so that should allow a good mix for the correlation to be determined
   # broken down by deep and shallow fields. Lets simulate this mix
   SIMFAKE_2D_MIX:
@@ -130,14 +82,15 @@ SIM:
 
   # Lets also compare the 1D, 2D and 3D maps with the fakes without correlations
   SIMFAKE_1D_CORR_ALL00:
-    IA:
-      BASE: surveys/des/sims_ia/fakes_diffimg.input
+    IA: *fakesinput
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-
+  SIMFAKE_2D_CORR_ALL00:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *default_map
   SIMFAKE_3D_CORR_ALL00:
-    IA:
-      BASE: surveys/des/sims_ia/fakes_diffimg.input
+    IA: *fakesinput
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
 
@@ -272,20 +225,6 @@ ANALYSE:
       - F2D_SIMFAKES_NOCORR
       - F2D_FAKES
       - F2D_SIMFAKE_2D_MIX
-
-  DETERMINE_CORRELATIONS:
-    HISTOGRAM:
-      - F2D_FAKES
-      - F2D_SIMFAKES_NOCORR
-      - F2D_SIMFAKE_2D_CORR_ALL00
-      - F2D_SIMFAKE_2D_CORR_ALL02
-      - F2D_SIMFAKE_2D_CORR_ALL04
-      - F2D_SIMFAKE_2D_CORR_ALL06
-      - F2D_SIMFAKE_2D_CORR_ALL08
-      - F2D_SIMFAKE_2D_CORR_INDEP02
-      - F2D_SIMFAKE_2D_CORR_INDEP04
-      - F2D_SIMFAKE_2D_CORR_INDEP06
-      - F2D_SIMFAKE_2D_CORR_INDEP08
 
   CHECK_3YR_DIST:
     HISTOGRAM:

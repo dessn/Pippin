@@ -15,11 +15,9 @@ def print_drop(mask, name):
 
 def parse_data(filename):
     print(f"Parsing {filename}")
-    filename_b = filename.replace("_obs", "")
-    all_data = pd.read_pickle(filename)
-    fitres = pd.read_pickle(filename_b)
-    fitres = fitres[["CID", "FITPROB"]]
-    all_data = all_data.merge(fitres, on="CID")
+    filename_obs = filename.replace(".pkl", ".fitres")
+    print(f"Reading FITRES dump file {filename_obs}")
+    all_data = pd.read_csv(filename_obs, delim_whitespace=True, comment="#")
 
     # Generate extra columns
     all_data["ERRRATIO"] = all_data["FLUXCAL_DATA_ERR"] / all_data["FLUXERRCALC_SIM"]
@@ -62,8 +60,8 @@ def parse_data(filename):
     all_data = all_data.loc[mask, :]
 
     # all_data = all_data.loc[:, ["CID", "MJD", "FIELD", "IFILTOBS", "LOGSNR", "SBMAG", "PSF", "ERRRATIO", "ERRTEST", "DEVIATION", "DEVIATIONSIM", "FLUXCAL_DATA", "FLUXCAL_SIM", "FLUXCAL_DATA_ERR", "FLUXERRCALC_SIM"]]
-    f2 = filename.replace(".pkl", "2.pkl")
-    all_data.to_pickle(f2)
+    print(f"Saving merged and thresholded data to {filename}")
+    all_data.to_pickle(filename)
 
     # Finally, lets get rid of massive outlier points. 15sigma should be good enough.
 
@@ -115,20 +113,15 @@ def rejmean(x, debug=False):
 
 os.makedirs("maps", exist_ok=True)
 
-if not os.path.exists("fakes_nocorr_obs2.pkl"):
-    parse_data("fakes_nocorr_obs.pkl")
-    parse_data("sim_nocorr_obs.pkl")
-    if os.path.exists("sim_withcorr_obs.pkl"):
-        parse_data("sim_withcorr_obs.pkl")
-    if os.path.exists("fakes_withcorr_obs.pkl"):
-        parse_data("fakes_withcorr_obs.pkl")
+if not os.path.exists("fakes_obs.pkl"):
+    parse_data("fakes_obs.pkl")
+    parse_data("sim_obs.pkl")
     print("Finished parsing")
-assert 1 == 2
 
 for cut in cuts:
     print("Loading data")
-    df_f = get_data("fakes_nocorr_obs2.pkl", cut)
-    df_s = get_data("sim_nocorr_obs2.pkl", cut)
+    df_f = get_data("fakes_obs.pkl", cut)
+    df_s = get_data("sim_obs.pkl", cut)
 
     data = [
         [("LOGSNR", np.arange(0, 3.1, 1)), ("SBMAG", np.arange(20, 30, 2)), ("PSF", np.array([1, 3, 5]))],
