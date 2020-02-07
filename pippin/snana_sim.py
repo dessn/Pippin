@@ -327,12 +327,15 @@ class SNANASimulation(ConfigBasedExecutable):
 
         return self.check_for_job(squeue, f"{self.genprefix}_0")
 
-    def resolve_name_to_type(self, name):
+    def resolve_name_to_type(self, name, file_contents):
         """ I know this is wrong, but its just for Supernnova to split Ia and everything else """
         name = name.upper()
         if "SNIA_" in name or "SALT2" in name or "SN_IA_" in name:
             return "Ia"
         else:
+            for line in file_contents:
+                if "GENMODEL" in line.upper() and "SALT2" in line.upper():
+                    return "Ia"
             return "II"
 
     def get_types(self, files):
@@ -341,11 +344,12 @@ class SNANASimulation(ConfigBasedExecutable):
             name = os.path.basename(path.split(".")[0])
             found = False
             with open(path, "r") as file:
-                for line in file.readlines():
+                lines = file.readlines()
+                for line in lines:
                     if line.startswith("GENTYPE"):
                         num = int(line.split(":")[1].strip())
                         number = "1" + "%02d" % num
-                        n = self.resolve_name_to_type(name)
+                        n = self.resolve_name_to_type(name, lines)
                         types[number] = n
                         types[str(num)] = n
                         found = True
