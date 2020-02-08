@@ -1,0 +1,70 @@
+# Check the difference in old vs new maps is whats causing the slant
+
+ANCHORS:
+  FAKES_INPUT: &fakesinput
+    BASE: surveys/des/sims_ia/fakes_diffimg.input
+  FITOPTS: &default_fitopts
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+    APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+
+DATAPREP:
+  DATAFAKES:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_fake_snana_fits
+
+
+SIM:
+  SIMFAKE_NOMAP:
+    IA:
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
+    GLOBAL:
+      FLUXERRMODEL_FILE: NONE
+      RANSEED_REPEAT: 1 12345
+
+  SIMFAKE_NEWMAP:
+    IA: *fakesinput
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 1 12345
+
+  SIMFAKE_OLDMAP:
+    IA: *fakesinput
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps_old/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 1 12345
+
+
+LCFIT:
+
+  F0D:
+    BASE: surveys/des/lcfit_nml/fakes.nml
+    MASK: DATAFAKES
+    SNLCINP:
+      FLUXERRMODEL_FILE: NONE
+    OPTS: *default_fitopts
+
+  F1DN:
+    BASE: surveys/des/lcfit_nml/fakes.nml
+    MASK: [DATAFAKES, SIMFAKE_NEWMAP]
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    OPTS: *default_fitopts
+
+  F1DO:
+    BASE: surveys/des/lcfit_nml/fakes.nml
+    MASK: [DATAFAKES, SIMFAKE_OLDMAP]
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps_old/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    OPTS: *default_fitopts
+
+ANALYSE:
+
+  COMPARE_OLD_NEW_MAPS:
+    HISTOGRAM:
+      - F0D_DATAFAKES
+      - F0D_SIMFAKE_NOMAP
+      - F1DN_DATAFAKES
+      - F1DN_SIMFAKE_NEWMAP
+      - F1DO_DATAFAKES
+      - F1DO_SIMFAKE_OLDMAP
