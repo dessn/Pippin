@@ -17,7 +17,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
   DEFAULT_CORR: &default_corr
     FLUXERRMODEL_REDCOV(DEEP): "griz:0.6"
-    FLUXERRMODEL_REDCOV(SHALLOW): "g:0.2,r:0.2,i:0.2,z:0.0"
+    FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.0"
 
   FAKES_INPUT: &fakesinput
     BASE: surveys/des/sims_ia/fakes_diffimg.input
