@@ -183,7 +183,7 @@ for cut in cuts:
 
                     deviation_f = df_f3["DEVIATIONSIM"]
                     deviation_s = df_s3["DEVIATIONSIM"]
-                    errratio = df_f["ERRRATIO"]
+                    errratio = df_f3["ERRRATIO"]
 
                     numerator[index] = rejstd(deviation_f)
                     denom_rms[index] = rejstd(deviation_s)
