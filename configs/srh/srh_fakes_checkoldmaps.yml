@@ -4,7 +4,7 @@ ANCHORS:
   FAKES_INPUT: &fakesinput
     BASE: surveys/des/sims_ia/fakes_diffimg.input
   FITOPTS: &default_fitopts
-    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
     APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
 
@@ -39,7 +39,7 @@ LCFIT:
 
   F0D:
     BASE: surveys/des/lcfit_nml/fakes.nml
-    MASK: DATAFAKES
+    MASK: [DATAFAKES, SIMFAKE_NOMAP]
     SNLCINP:
       FLUXERRMODEL_FILE: NONE
     OPTS: *default_fitopts
