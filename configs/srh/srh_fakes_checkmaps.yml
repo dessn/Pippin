@@ -16,8 +16,8 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     RANSEED_REPEAT: 1 12345
 
   DEFAULT_CORR: &default_corr
-    FLUXERRMODEL_REDCOV(DEEP): "griz:0.6"
-    FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.0"
+    FLUXERRMODEL_REDCOV(DEEP): "griz:0.0"
+    FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.2"
 
   FAKES_INPUT: &fakesinput
     BASE: surveys/des/sims_ia/fakes_diffimg.input
