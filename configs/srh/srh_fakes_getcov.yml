@@ -63,6 +63,11 @@ SIM:
     GLOBAL:
       <<: *map3d
       FLUXERRMODEL_REDCOV: "griz:0.2"
+  SIMFAKE_3D_CORR_ALL03:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map3d
+      FLUXERRMODEL_REDCOV: "griz:0.3"
   SIMFAKE_3D_CORR_ALL04:
     IA: *fakesinput
     GLOBAL:
