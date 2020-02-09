@@ -23,7 +23,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     BASE: surveys/des/sims_ia/fakes_diffimg.input
 
   FITOPTS: &default_fitopts
-    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
     APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
   SNLCINP: &default_mapdata
@@ -136,12 +136,35 @@ SIM:
       <<: *default_map
       NGEN_UNIT: 1
       RANSEED_REPEAT: 5 12345
-  SIMDES5YR_2D_NOCOR:
+
+  SIMDES5YR_1D_REDCOV:
     <<: *deslikesim
     GLOBAL:
-      NGEN_UNIT: 1
-      FLUXERRMODEL_FILE: NONE
+      <<: *default_corr
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 1
+  SIMDES5YR_1D_INDCOV:
+    <<: *deslikesim
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 1
+
+  SIMDES5YR_3D_REDCOV:
+    <<: *deslikesim
+    GLOBAL:
+      <<: *default_corr
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 1
+  SIMDES5YR_3D_INDCOV:
+    <<: *deslikesim
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 1
+
 
 # Now we have to fit everything. For the SIMFAKES, we'll fit using the fakes.nml
 # For the DES-like sims, we'll fit using surveys/des/lcfit_nml/des_5yr.nml
@@ -154,23 +177,14 @@ LCFIT:
     SNLCINP:
       FLUXERRMODEL_FILE: NONE
     OPTS: *default_fitopts
-  F1D:
-    BASE: surveys/des/lcfit_nml/fakes.nml
-    MASK: FAKES
-    SNLCINP:
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-    OPTS: *default_fitopts
+
   F2D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: surveys/des/lcfit_nml/fakes.nml
     MASK: FAKE
     SNLCINP: *default_mapdata
     OPTS: *default_fitopts
-  F3D:
-    BASE: surveys/des/lcfit_nml/fakes.nml
-    MASK: FAKES
-    SNLCINP:
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
-    OPTS: *default_fitopts
+
+
 
   # Fit the DES sims
   D0D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
@@ -180,6 +194,15 @@ LCFIT:
       FLUXERRMODEL_FILE: NONE
       ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
+
+  D1D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DATADES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      ROOTFILE_OUT: FIT.ROOT
+    OPTS: *default_fitopts
+
   D2D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DES
@@ -188,31 +211,14 @@ LCFIT:
       ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
 
-
+  D3D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DATADES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+      ROOTFILE_OUT: FIT.ROOT
+    OPTS: *default_fitopts
 ANALYSE:
-  CHECK_DIMENSIONALITY:
-    HISTOGRAM:
-      - F0D_FAKES
-      - F1D_FAKES
-      - F2D_FAKES
-      - F3D_FAKES
-      - F2D_SIMFAKES_NOCORR
-      - F2D_SIMFAKE_1D_CORR_ALL00
-      - F2D_SIMFAKE_2D_CORR_ALL00
-      - F2D_SIMFAKE_3D_CORR_ALL00
-
-  CHECK_DIMENSIONALITY_1D:
-    HISTOGRAM:
-      - F1D_FAKES
-      - F2D_SIMFAKE_1D_CORR_ALL00
-  CHECK_DIMENSIONALITY_2D:
-    HISTOGRAM:
-      - F2D_FAKES
-      - F2D_SIMFAKE_2D_CORR_ALL00
-  CHECK_DIMENSIONALITY_3D:
-    HISTOGRAM:
-      - F3D_FAKES
-      - F2D_SIMFAKE_3D_CORR_ALL00
 
   CHECK_FAKES:
     HISTOGRAM:
@@ -233,24 +239,20 @@ ANALYSE:
       - D2D_SIMDES3YR_2D_INDCOV
       - D2D_SIMDES3YR_2D_NOCOR
 
-  CHECK_5YR_DIST:
+  CHECK_5YR_DIST_1D:
+    HISTOGRAM:
+      - D1D_DATADES5YR
+      - D2D_SIMDES5YR_1D_REDCOV
+      - D2D_SIMDES5YR_1D_INDCOV
+
+  CHECK_5YR_DIST_2D:
     HISTOGRAM:
       - D2D_DATADES5YR
       - D2D_SIMDES5YR_2D_REDCOV
       - D2D_SIMDES5YR_2D_INDCOV
-      - D2D_SIMDES5YR_2D_NOCOR
 
-  CHECK_5YR_DIST_INDCOV:
+  CHECK_5YR_DIST_3D:
     HISTOGRAM:
-      - D2D_DATADES5YR
-      - D2D_SIMDES5YR_2D_INDCOV
-
-  CHECK_5YR_DIST_REDCOV:
-    HISTOGRAM:
-      - D2D_DATADES5YR
-      - D2D_SIMDES5YR_2D_REDCOV
-
-  CHECK_5YR_DIST_NOCOR:
-    HISTOGRAM:
-      - D2D_DATADES5YR
-      - D2D_SIMDES5YR_2D_NOCOR
+      - D3D_DATADES5YR
+      - D2D_SIMDES5YR_3D_REDCOV
+      - D2D_SIMDES5YR_3D_INDCOV
