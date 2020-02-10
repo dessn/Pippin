@@ -217,7 +217,7 @@ def plot_redshift_evolution(data, sims, types, figname):
 def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
     cosmo = FlatLambdaCDM(h0, om)
     cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
-    obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] + MB
+    obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] - MB
     diff = obs_dist_mod - cosmo_dist_mod
     df["__MUDIFF"] = diff
 
@@ -267,7 +267,7 @@ if __name__ == "__main__":
             # except Exception as e:
             #     logging.warning("Not all plots made. Do you have the SNRMAX_g r i z columns extracted from the ROOT file?")
 
-        zbins = [0, 0.2, 0.6, 2]
+        zbins = [0.2, 0.4, 0.6, 2]
         for i, z1 in enumerate(zbins[:-1]):
             z2 = zbins[i + 1]
             data_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in data_dfs]
@@ -277,11 +277,11 @@ if __name__ == "__main__":
             masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
             plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{z1:0.1f}_{z2:0.1f}.png")
 
-        data_masks = [d["FITPROB"] > 0.01 for d, _ in data_dfs]
-        sim_masks = [d["FITPROB"] > 0.01 for d, _ in sim_dfs]
+        data_masks = [d["FITPROB"] > 0.05 for d, _ in data_dfs]
+        sim_masks = [d["FITPROB"] > 0.05 for d, _ in sim_dfs]
         masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
         masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-        plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_fitprob_g0.01.png")
+        plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_fitprob_g0.05.png")
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:
