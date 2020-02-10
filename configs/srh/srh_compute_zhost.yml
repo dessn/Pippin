@@ -1,0 +1,41 @@
+# Compute the hostgal efficiency using data / sim ratio
+
+DATAPREP:
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+SIM:
+  DESSIMCC:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: NONE
+      APPLY_SEARCHEFF_OPT: 1
+      NGEN_UNIT: 0.4
+      RANSEED_REPEAT: 25 12345
+
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+    SNLCINP:
+      ROOTFILE_OUT: "'FIT.ROOT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
+      APPEND_TABLE_TEXT: HOST_MAG_i HOST_MAG_r HOST_MAG_g
+
+
+ANALYSE:
+  HIST:
+    HISTOGRAM: [D_DESSIMCC, D_DATADES5YR]
