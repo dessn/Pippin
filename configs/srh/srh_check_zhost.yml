@@ -1,0 +1,52 @@
+# Plot hjistograms comparing data to sims
+
+ANCHORS:
+  DESLIKESIM: &deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      NGEN_UNIT: 0.5
+      RANSEED_REPEAT: 20 12345
+
+DATAPREP:
+  DATA:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+SIM:
+  MAGI:
+    <<: *deslikesim
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
+  MAGR:
+    <<: *deslikesim
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_r.dat
+  ZHD:
+    <<: *deslikesim
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
+  BASE:
+    <<: *deslikesim
+
+LCFIT:
+  D:
+    BASE: des.nml
+    SNLCINP:
+      ROOTFILE_OUT: "'FIT.ROOT'"
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
+      APPEND_FITRES: MWEBV HOST_MAG_i HOST_MAG_r HOST_MAG_g SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z
+
+ANALYSE:
+  HIST:
+    HISTOGRAM: [D_DATA, D_BASE, D_MAGI, D_MAGR, D_ZHD]
