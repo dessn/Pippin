@@ -10,9 +10,10 @@ ANCHORS:
       BASE: surveys/des/sims_cc/sn_ia91bg.input
     CC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
-    GLOBAL:
-      NGEN_UNIT: 0.5
-      RANSEED_REPEAT: 20 12345
+  GLOBAL: &globals
+    NGEN_UNIT: 0.5
+    RANSEED_REPEAT: 20 12345
+
 
 DATAPREP:
   DATA:  # 5 yr photometry sample
@@ -26,17 +27,21 @@ SIM:
   MAGI:
     <<: *deslikesim
     GLOBAL:
+      <<: *globals
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i.dat
   MAGR:
     <<: *deslikesim
     GLOBAL:
+      <<: *globals
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_r.dat
   ZHD:
     <<: *deslikesim
     GLOBAL:
+      <<: *globals
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD.dat
   BASE:
     <<: *deslikesim
+    GLOBAL: *globals
 
 LCFIT:
   D:
