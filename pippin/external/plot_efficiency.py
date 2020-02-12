@@ -66,6 +66,13 @@ def plot_efficiency(data_all, sims, types, fields):
             s = sim[np.isin(sim["FIELD"], field)]
 
             for c, ax in zip(cols, row):
+
+                bins = None
+                if c == "zHD":
+                    bins = np.arange(0, 2.0, 0.2)
+                else:
+                    bins = np.arange(15.5, 30.5, 1)
+
                 title = " ".join(field)
                 if len(title) > 20:
                     title = title[:20] + "..."
@@ -73,7 +80,6 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 minv = min([x[c].quantile(0.01) for x in [data, s]])
                 maxv = max([x[c].quantile(0.99) for x in [data, s]])
-                bins = np.linspace(minv, maxv, 15)  # Keep binning uniform.
                 bins2 = np.linspace(minv, maxv, 200)  # Keep binning uniform.
                 bc = 0.5 * (bins[1:] + bins[:-1])
                 bc2 = 0.5 * (bins2[1:] + bins2[:-1])
@@ -118,13 +124,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 ax.set_ylim(0, 1.1)
                 ax.set_xlabel(c)
 
-                x = None
-                if c == "zHD":
-                    x = np.arange(0, 2.0, 0.1)
-                else:
-                    x = np.arange(15, 30, 0.25)
-                y = interp1d(bc3, smoothed_ratio, fill_value=(smoothed_ratio[0], smoothed_ratio[-1]), bounds_error=False)(x)
-                y = y / y.max()
+                y = ratio.coy()
                 y[y < 0.02] = 0
 
                 if field_eff.get(c) is None:
@@ -135,7 +135,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 # yy = sigmoid(x, *popt)
 
                 # ax.plot(x, yy, c="c", lw=2)
-                field_eff[c].append((x, y))
+                field_eff[c].append((bc, y))
 
         save_efficiency_file(field_eff, fields)
 
