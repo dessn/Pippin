@@ -32,8 +32,7 @@ into CosmoMC [@cosmomc]. The MCMC outputs are then analysed in ChainConsumer [@C
 Additonal plots are performed via the matplotlib library [@matplotlib], and 
 makes use of various numpy [@numpy], scipy [@scipy] and pandas [@pandas] functions. 
 
-Code archives can be found on Zenodo at [@zenodo] and any
-bugs or feature requests can be opened as issues on the Github
+Any bugs or feature requests can be opened as issues on the Github
 development page [@github].
 
 # References
