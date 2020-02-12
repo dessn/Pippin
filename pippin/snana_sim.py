@@ -32,7 +32,7 @@ class SNANASimulation(ConfigBasedExecutable):
     ========
         name : name given in the yml
         output_dir: top level output directory
-        genversion: genverison of sim
+        genversion: genversion of sim
         types_dict: dict map from IA or NONIA to numeric gentypes
         types: dict map from numeric gentype to string (Ia, II, etc)
         photometry_dirs: location of fits files with photometry. is a list.
