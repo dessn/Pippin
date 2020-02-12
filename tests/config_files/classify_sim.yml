@@ -8,15 +8,13 @@ SIM:
       BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
     GLOBAL:
       NGEN_UNIT: 1
-      RANSEED_CHANGE: 10 12345
+      RANSEED_REPEAT: 10 12345
       SOLID_ANGLE: 10
 
-LCFIT:
-  DIFFERENT_SN:
-    MASK: SIM
-    BASE: surveys/des/lcfit_nml/des_5yr.nml
-    FITINP:
-      FILTLIST_FIT: 'gri'
-    SNLCINP:
-        CUTWIN_SNRMAX:  3.0, 1.0E8
-        CUTWIN_NFILT_SNRMAX:  3.0, 99.
+CLASSIFICATION:
+  PERFECT:
+    CLASSIFIER: PerfectClassifier
+    MODE: predict
+    OPTS:
+      PROB_IA: 1.0
+      PROB_CC: 0.0

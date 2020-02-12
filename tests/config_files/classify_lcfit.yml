@@ -1,5 +1,5 @@
 SIM:
-  EXAMPLESIM:
+  ASIM:
     IA_G10_DES3YR:
       BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
     II:
@@ -8,15 +8,14 @@ SIM:
       BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
     GLOBAL:
       NGEN_UNIT: 1
-      RANSEED_CHANGE: 10 12345
+      RANSEED_REPEAT: 10 12345
       SOLID_ANGLE: 10
 
 LCFIT:
-  DIFFERENT_SN:
-    MASK: SIM
+  D:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
-    FITINP:
-      FILTLIST_FIT: 'gri'
-    SNLCINP:
-        CUTWIN_SNRMAX:  3.0, 1.0E8
-        CUTWIN_NFILT_SNRMAX:  3.0, 99.
+
+CLASSIFICATION:
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
