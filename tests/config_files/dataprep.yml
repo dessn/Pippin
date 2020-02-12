@@ -1,0 +1,6 @@
+DATAPREP:
+  LABEL:
+    OPTS:
+      RAW_DIR: somedir
+      BLIND: False
+      SIM: True

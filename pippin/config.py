@@ -142,7 +142,10 @@ def copytree(src, dst, symlinks=False, ignore=None):
 
 
 def chown_file(path):
-    import grp
+    try:
+        import grp
+    except ModuleNotFoundError:
+        return None
 
     global_config = get_config()
     logger = get_logger()
@@ -155,7 +158,10 @@ def chown_file(path):
 
 
 def chown_dir(directory):
-    import grp
+    try:
+        import grp
+    except ModuleNotFoundError:
+        return None
 
     global_config = get_config()
     logger = get_logger()

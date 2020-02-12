@@ -1,0 +1,38 @@
+SIM:
+  EXAMPLESIM:
+    IA_G10_DES3YR:
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
+    II:
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
+    Ibc:
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
+      SOLID_ANGLE: 10
+
+  EXAMPLESIM2:
+    IA_G10_DES3YR:
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
+    II:
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
+    Ibc:
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
+      SOLID_ANGLE: 10
+
+LCFIT:
+  DIFFERENT_SN:
+    MASK: SIM
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    FITINP:
+      FILTLIST_FIT: 'gri'
+    SNLCINP:
+        CUTWIN_SNRMAX:  3.0, 1.0E8
+        CUTWIN_NFILT_SNRMAX:  3.0, 99.
+
+  MASKTEST:
+    MASK: SIM2
+    BASE: surveys/des/lcfit_nml/des_5yr.nml

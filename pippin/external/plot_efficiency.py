@@ -253,12 +253,12 @@ if __name__ == "__main__":
             logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
         else:
 
-            assert len(data_dfs) == 1, "Please specify only one data file"
-
-            for d in data_dfs + sim_dfs:
-                d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
-            plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
-            # plot_efficiency2d(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+            if len(data_dfs) > 1:
+                logging.info("Please specify only one data file if you want to calculate efficiency")
+            else:
+                for d in data_dfs + sim_dfs:
+                    d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
+                plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:

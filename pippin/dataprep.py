@@ -23,6 +23,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         types_dict: dict mapping IA and NONIA to types
         types: dict mapping numbers to types, used by Supernnova
         blind: bool - whether or not to blind cosmo results
+        is_sim: bool - whether or not the input is a simulation
     """
 
     def __init__(self, name, output_dir, options, dependencies=None):
