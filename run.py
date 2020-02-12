@@ -27,7 +27,7 @@ class MessageStore(logging.Handler):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
-def setup_logging(config_filename, logging_folder, only_check):
+def setup_logging(config_filename, logging_folder, args):
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging_filename = f"{logging_folder}/{config_filename}.log"
@@ -43,7 +43,7 @@ def setup_logging(config_filename, logging_folder, only_check):
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
     handlers = [logging.StreamHandler(), message_store]
-    if not only_check:
+    if not args.check:
         handlers.append(logging.FileHandler(logging_filename))
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
     coloredlogs.install(
@@ -60,19 +60,7 @@ def setup_logging(config_filename, logging_folder, only_check):
     return message_store, logging_filename
 
 
-if __name__ == "__main__":
-    # Set up command line arguments
-    parser = argparse.ArgumentParser()
-    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
-    parser.add_argument("--config", help="Location of global config", default=None, type=str)
-    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
-    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
-    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
-    parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
-
-    args = parser.parse_args()
-
+def run(args):
     # Load YAML config file
     yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
     assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
@@ -92,7 +80,7 @@ if __name__ == "__main__":
     if not args.check:
         mkdirs(logging_folder)
 
-    message_store, logging_filename = setup_logging(config_filename, logging_folder, args.check)
+    message_store, logging_filename = setup_logging(config_filename, logging_folder, args)
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
@@ -106,3 +94,23 @@ if __name__ == "__main__":
     manager.set_force_refresh(args.refresh)
     manager.execute(args.check)
     chown_file(logging_filename)
+    return manager
+
+
+def get_args():
+    # Set up command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("--config", help="Location of global config", default=None, type=str)
+    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
+    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
+    parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
+    parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
+
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    args = get_args()
+    run(args)

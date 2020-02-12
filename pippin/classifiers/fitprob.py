@@ -64,7 +64,7 @@ class FitProbClassifier(Classifier):
                 self.passed = False
                 return False
 
-            df = pd.read_csv(fitres_file, sep="\s+", comment="#", compression="infer")
+            df = pd.read_csv(fitres_file, delim_whitespace=True, comment="#")
             df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
 
             self.logger.info(f"Saving probabilities to {self.output_file}")
