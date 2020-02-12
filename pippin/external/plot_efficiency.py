@@ -69,7 +69,7 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 bins = None
                 if c == "zHD":
-                    bins = np.arange(0, 2.0, 0.2)
+                    bins = np.arange(0.15, 1.55, 0.1)
                 else:
                     bins = np.arange(15.5, 30.5, 1)
 
@@ -85,6 +85,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 bc2 = 0.5 * (bins2[1:] + bins2[:-1])
 
                 hist_data, _ = np.histogram(data[c], bins=bins)
+                hist_data[hist_data < 5] = 0
                 hist_data2, _ = np.histogram(data[c], bins=bins2)
                 err_data = np.sqrt(hist_data)
 
@@ -124,7 +125,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 ax.set_ylim(0, 1.1)
                 ax.set_xlabel(c)
 
-                y = ratio.coy()
+                y = ratio.copy()
                 y[y < 0.02] = 0
 
                 if field_eff.get(c) is None:
