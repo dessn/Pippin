@@ -35,6 +35,7 @@ def setup_logging(config_filename, logging_folder, args):
     logging_filename = f"{logging_folder}/{config_filename}.log"
 
     message_store = MessageStore()
+    message_store.setLevel(logging.WARNING)
     NOTICE_LEVELV_NUM = 25
     logging.addLevelName(NOTICE_LEVELV_NUM, "NOTICE")
 
@@ -45,8 +46,10 @@ def setup_logging(config_filename, logging_folder, args):
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
     handlers = [logging.StreamHandler(), message_store]
+    handlers[0].setLevel(level)
     if not args.check:
         handlers.append(logging.FileHandler(logging_filename))
+        handlers[-1].setLevel(logging.DEBUG)
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
     print(handlers)
     coloredlogs.install(

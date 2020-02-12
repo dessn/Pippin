@@ -1,6 +1,6 @@
 # Compute the hostgal efficiency using data / sim ratio
 
-GLOBALS:
+ANCHORS:
   DES: &des
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
