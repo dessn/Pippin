@@ -8,7 +8,7 @@ tags:
 authors:
   - name: Samuel Hinton
     orcid: 0000-0003-2071-9349
-    affiliations: 1
+    affiliation: 1
 affiliations:
   - name: University of Queensland
     index: 1
