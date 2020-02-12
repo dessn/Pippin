@@ -60,7 +60,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["sim_name"] = sim_task.output["name"]
         self.output["blind"] = sim_task.output["blind"]
         self.output["lc_output_dir"] = self.lc_output_dir
-        self.str_pattern = re.compile("[A-EG-SU-Za-eg-su-z]")
+        self.str_pattern = re.compile("[A-DG-SU-Za-dg-su-z]")
 
         is_data = False
         for d in self.dependencies:
