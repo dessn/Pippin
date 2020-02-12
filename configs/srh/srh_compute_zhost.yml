@@ -4,12 +4,12 @@ GLOBALS:
   DES: &des
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
-      IAX:
-        BASE: surveys/des/sims_cc/sn_iax_dust.input
-      IA91BG:
-        BASE: surveys/des/sims_cc/sn_ia91bg.input
-      CC_TEMPLATES:
-        BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
 
 DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
