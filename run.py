@@ -15,11 +15,11 @@ class MessageStore(logging.Handler):
         self.store = {}
 
     def emit(self, record):
+        print(self.store)
         l = record.levelname
         if l not in self.store:
             self.store[l] = []
         self.store[l].append(record)
-        print(self.store)
 
     def get_warnings(self):
         return self.store.get("WARNING", []) + []
@@ -48,6 +48,7 @@ def setup_logging(config_filename, logging_folder, args):
     if not args.check:
         handlers.append(logging.FileHandler(logging_filename))
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
+    print(handlers)
     coloredlogs.install(
         level=level,
         fmt=fmt,
