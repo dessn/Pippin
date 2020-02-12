@@ -24,6 +24,7 @@ class MessageStore(logging.Handler):
         return self.store.get("WARNING", []) + []
 
     def get_errors(self):
+        print(self.store)
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
