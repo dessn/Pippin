@@ -44,12 +44,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
-        self.lc_output_dir = f"{self.output_dir}/output"
+        self.lc_output_dir = os.path.join(self.output_dir, "output")
+        self.lc_log_dir = os.path.join(self.lc_output_dir, "SPLIT_JOBS_LCFIT")
         self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
-        secondary_log = f"{self.lc_output_dir}/SPLIT_JOBS_LCFIT/MERGELOGS/MERGE2.LOG"
+        secondary_log = os.path.join(self.lc_log_dir, "MERGELOGS/MERGE2.LOG")
 
         self.log_files = [self.logging_file, secondary_log]
         self.num_empty_threshold = 25  # Damn that tarball creation can be so slow
@@ -257,7 +258,25 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
-            return Task.FINISHED_SUCCESS
+
+            with open(self.done_file) as f:
+                if "SUCCESS" in f.read():
+                    return Task.FINISHED_SUCCESS
+                else:
+                    self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
+                    for file in os.listdir(self.lc_log_dir):
+                        output_error = False
+                        path = os.path.join(self.lc_log_dir, file)
+                        if "LOG" in file and os.path.isfile(path):
+                            with open(path) as f:
+                                for line in f.read().splitlines():
+                                    if "FATAL ERROR ABORT" in line or "QOSMax" in line:
+                                        output_error = True
+                                        self.logger.error(f"Fatal error in light curve fitting. See {path} for details.")
+                                    if output_error:
+                                        self.logger.error(f"Excerpt: {line}")
+                            if output_error:
+                                return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, os.path.basename(self.config_path)[:-4])
 
     @staticmethod
