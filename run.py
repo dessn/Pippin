@@ -15,7 +15,6 @@ class MessageStore(logging.Handler):
         self.store = {}
 
     def emit(self, record):
-        print(self.store)
         l = record.levelname
         if l not in self.store:
             self.store[l] = []
@@ -25,7 +24,6 @@ class MessageStore(logging.Handler):
         return self.store.get("WARNING", []) + []
 
     def get_errors(self):
-        print(self.store)
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
