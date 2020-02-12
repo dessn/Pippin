@@ -29,7 +29,7 @@ class MessageStore(logging.Handler):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
 
 
-def setup_logging(config_filename, logging_folder, only_check):
+def setup_logging(config_filename, logging_folder, args):
 
     level = logging.DEBUG if args.verbose else logging.INFO
     logging_filename = f"{logging_folder}/{config_filename}.log"
@@ -45,7 +45,7 @@ def setup_logging(config_filename, logging_folder, only_check):
     logging.Logger.notice = notice
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
     handlers = [logging.StreamHandler(), message_store]
-    if not only_check:
+    if not args.check:
         handlers.append(logging.FileHandler(logging_filename))
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
     coloredlogs.install(
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     if not args.check:
         mkdirs(logging_folder)
 
-    message_store, logging_filename = setup_logging(config_filename, logging_folder, args.check)
+    message_store, logging_filename = setup_logging(config_filename, logging_folder, args)
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
