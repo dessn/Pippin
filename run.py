@@ -19,6 +19,7 @@ class MessageStore(logging.Handler):
         if l not in self.store:
             self.store[l] = []
         self.store[l].append(record)
+        print(self.store)
 
     def get_warnings(self):
         return self.store.get("WARNING", []) + []
