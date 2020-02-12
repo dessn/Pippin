@@ -1,5 +1,16 @@
 # Compute the hostgal efficiency using data / sim ratio
 
+GLOBALS:
+  DES: &des
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      IAX:
+        BASE: surveys/des/sims_cc/sn_iax_dust.input
+      IA91BG:
+        BASE: surveys/des/sims_cc/sn_ia91bg.input
+      CC_TEMPLATES:
+        BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+
 DATAPREP:
   DATADES5YR:  # 5 yr photometry sample
     OPTS:
@@ -9,33 +20,52 @@ DATAPREP:
         NONIA: [120, 130, 20, 30]
 
 SIM:
-  DESSIMCC:
-    IA_G10:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
-    IAX:
-      BASE: surveys/des/sims_cc/sn_iax_dust.input
-    IA91BG:
-      BASE: surveys/des/sims_cc/sn_ia91bg.input
-    CC_TEMPLATES:
-      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+  DESSIM_SVA:
+    <<: *des
     GLOBAL:
       SEARCHEFF_zHOST_FILE: NONE
       APPLY_SEARCHEFF_OPT: 1
       NGEN_UNIT: 0.4
       RANSEED_REPEAT: 25 12345
 
+  DESSIM_DEEPX1:
+    <<: *des
+    GLOBAL:
+      SEARCHEFF_zHOST_FILE: NONE
+      HOSTLIB_FILE:    $DES_ROOT/simlibs/DES_5YR.HOSTLIB
+      APPLY_SEARCHEFF_OPT: 1
+      NGEN_UNIT: 0.4
+      RANSEED_REPEAT: 25 12345
 
 LCFIT:
-  D:
+  DSPEC:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DES
     SNLCINP:
-      ROOTFILE_OUT: "'FIT.ROOT'"
+      ROOTFILE_OUT: FIT.ROOT
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
       APPEND_TABLE_TEXT: HOST_MAG_i HOST_MAG_r HOST_MAG_g
 
+  DPHOTO:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+    SNLCINP:
+      ROOTFILE_OUT: FIT.ROOT
+      DOFIT_PHOTOZ: T
+      OPT_PHOTOZ: 1
+      PRIOR_ZERRSCALE: 1.0E6
+      PHOTOZ_BOUND:  0.00, 1.5
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
+      APPEND_TABLE_TEXT: HOST_MAG_i HOST_MAG_r HOST_MAG_g
 
 ANALYSE:
-  HIST:
-    HISTOGRAM: [D_DESSIMCC, D_DATADES5YR]
+  COMPUTE_EFF_SVA_SPEC:
+    HISTOGRAM: [DSPEC_DESSIM_SVA, DSPEC_DATADES5YR]
+  COMPUTE_EFF_DX1_SPEC:
+    HISTOGRAM: [DSPEC_DESSIM_DEEPX1, DSPEC_DATADES5YR]
+  COMPUTE_EFF_SVA_PHOT:
+    HISTOGRAM: [DPHOTO_DESSIM_SVA, DPHOTO_DATADES5YR]
+  COMPUTE_EFF_DX1_PHOT:
+    HISTOGRAM: [DPHOTO_DESSIM_DEEPX1, DPHOTO_DATADES5YR]
