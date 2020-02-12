@@ -74,7 +74,7 @@ def plot_efficiency(data_all, sims, types, fields):
                 minv = min([x[c].quantile(0.01) for x in [data, s]])
                 maxv = max([x[c].quantile(0.99) for x in [data, s]])
                 bins = np.linspace(minv, maxv, 15)  # Keep binning uniform.
-                bins2 = np.linspace(minv, maxv, 100)  # Keep binning uniform.
+                bins2 = np.linspace(minv, maxv, 200)  # Keep binning uniform.
                 bc = 0.5 * (bins[1:] + bins[:-1])
                 bc2 = 0.5 * (bins2[1:] + bins2[:-1])
 
@@ -99,7 +99,7 @@ def plot_efficiency(data_all, sims, types, fields):
 
                 ratio3 = np.concatenate((ratio2, np.zeros(100)))
                 bc3 = interp1d(np.arange(bc2.size), bc2, bounds_error=False, fill_value="extrapolate")(np.arange(bc2.size + 20))
-                smoothed_ratio = gaussian_filter(ratio3, sigma=12, mode="nearest")[:-80]
+                smoothed_ratio = gaussian_filter(ratio3, sigma=4, mode="nearest")[:-80]
                 smoothed_ratio = smoothed_ratio / smoothed_ratio.max()
 
                 err = np.sqrt((err_data / hist_data) ** 2 + (err_sim / hist_sim) ** 2) * ratio
