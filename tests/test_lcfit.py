@@ -2,7 +2,7 @@ from pippin.snana_sim import SNANASimulation
 from tests.utils import get_manager
 
 
-def test_sim_config_valid():
+def test_lcfit_config_valid():
 
     # This shouldn't raise an error
     manager = get_manager(yaml="config_files/sim.yml", check=True)
@@ -14,7 +14,7 @@ def test_sim_config_valid():
     assert isinstance(task, SNANASimulation)
 
 
-def test_sim_outputs_set():
+def test_lcfit_outputs_set():
     manager = get_manager(yaml="config_files/sim.yml", check=True)
     tasks = manager.tasks
     task = tasks[0]
