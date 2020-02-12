@@ -267,23 +267,23 @@ class SNANASimulation(ConfigBasedExecutable):
             self.logger.warn(f"Simulation {self.name} logging file does not exist: {self.logging_file}")
         if os.path.exists(self.sim_log_dir):
             for file in os.listdir(self.sim_log_dir):
-                if not file.startswith("TMP") or not file.endswith(".LOG"):
-                    continue
-                try:
-                    with open(self.sim_log_dir + "/" + file, "r") as f:
-                        for line in f.read().splitlines():
-                            if "FATAL ERROR ABORT" in line and not output_error:
-                                output_error = True
-                                self.logger.error(f"Fatal error in simulation. See {self.sim_log_dir}/{file} for details.")
-                            if output_error:
-                                self.logger.info(f"Excerpt: {line}")
-                    if output_error:
-                        self.logger.debug("Removing hash on failure")
-                        os.remove(self.hash_file)
-                        chown_dir(self.output_dir)
-                        return Task.FINISHED_FAILURE
-                except FileNotFoundError:
-                    self.logger.warning("Cannot find log file in process of reading it in (maybe it just got zipped up): {self.sim_log_dir + '/' + file}")
+                if file.startswith("TMP") or file.endswith(".LOG"):
+                    path = os.path.join(self.sim_log_dir, file)
+                    try:
+                        with open(path) as f:
+                            for line in f.read().splitlines():
+                                if "FATAL ERROR ABORT" in line and not output_error:
+                                    output_error = True
+                                    self.logger.error(f"Fatal error in simulation. See {path} for details.")
+                                if output_error:
+                                    self.logger.info(f"Excerpt: {line}")
+                        if output_error:
+                            self.logger.debug("Removing hash on failure")
+                            os.remove(self.hash_file)
+                            chown_dir(self.output_dir)
+                            return Task.FINISHED_FAILURE
+                    except FileNotFoundError:
+                        self.logger.warning(f"Cannot find log file in process of reading it in (maybe it just got zipped up): {path}")
         else:
             self.logger.error(f"Sim log dir doesn't exist at {self.sim_log_dir}. Warning, there might be orphaned jobs from this.")
             return Task.FINISHED_FAILURE
