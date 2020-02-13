@@ -235,7 +235,7 @@ DATAPREP:
         IA: [101, 1]
         NONIA: [20, 30, 120, 130]
 
-     # Blind the data. Defaults to True if SIM:True not set
+      # Blind the data. Defaults to True if SIM:True not set
       BLIND: False
       
       # Defaults to False. Important to set this flag if analysing a sim in the same way as data, as there
