@@ -234,7 +234,7 @@ class Aggregator(Task):
                 if not headers:
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
 
-                    cmd = "grep TYPE * | awk -F ':' '{print $1 $3}'"
+                    cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir)
                     output = process.stdout

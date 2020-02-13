@@ -1,5 +1,6 @@
 import os
 import shutil
+import subprocess
 
 import pandas as pd
 from astropy.io import fits
@@ -71,8 +72,18 @@ class UnityClassifier(Classifier):
                 phot_dir = s.output["photometry_dirs"][self.index]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
                 print("AAA ", headers)
-                if not headers:
-                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
+                if len(headers) == 0:
+                    self.logger.warning(f"No HEAD fits files found in {phot_dir}! Going to do it manually, this may not work.")
+
+                    cmd = "grep --exclude-dir=* SNID: * | awk -F ':' '{print $3}'"
+                    self.logger.debug(f"Running command   {cmd}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir)
+                    output = process.stdout
+
+                    snid = [x.strip() for x in output]
+                    df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})
+                    df.drop_duplicates(subset=cid, inplace=True)
+
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
