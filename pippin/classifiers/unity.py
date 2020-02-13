@@ -74,6 +74,7 @@ class UnityClassifier(Classifier):
                     self.logger.error(f"No HEAD fits files found in {phot_dir}!")
                 else:
                     for h in headers:
+                        print("AAAA ", h)
                         with fits.open(h) as hdul:
                             data = hdul[1].data
                             snid = np.array(data.field("SNID"))
