@@ -119,7 +119,6 @@ class Aggregator(Task):
 
     def load_prediction_file(self, filename):
         df = pd.read_csv(filename, comment="#")
-        print("DDDD ", df)
         columns = df.columns
         if len(columns) == 1 and "VARNAME" in columns[0]:
             df = pd.read_csv(filename, comment="#", delim_whitespace=True)
@@ -217,7 +216,6 @@ class Aggregator(Task):
                     dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                     dataframe[self.id] = dataframe[self.id].apply(str)
                     dataframe[self.id] = dataframe[self.id].str.strip()
-                    print("CCCCC ", dataframe)
                     if need_to_rename and l is not None:
                         lcname = l["name"]
                         self.logger.debug(f"Renaming column {d.get_prob_column_name()} to include LCFIT name {lcname}")
@@ -266,11 +264,10 @@ class Aggregator(Task):
                     self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
                 if type_df is not None:
-                    print("AAA ", df, type_df, self.id)
                     df = pd.merge(df, type_df, on=self.id, how="left")
+                    print("AAAA ", type_df.columns, type_df, df)
 
                 types = self.get_underlying_sim_task().output["types_dict"]
-                print("BBBB ", types)
                 self.logger.debug(f"Input types are {types}")
                 ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
@@ -283,7 +280,6 @@ class Aggregator(Task):
                 if self.recal_aggtask:
                     df = self.recalibrate(df)
 
-                print(df.info())
                 df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
 
                 for l in self.lcfit_names:
