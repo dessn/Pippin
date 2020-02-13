@@ -216,6 +216,7 @@ class Aggregator(Task):
                     dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                     dataframe[self.id] = dataframe[self.id].apply(str)
                     dataframe[self.id] = dataframe[self.id].str.strip()
+                    print("CCCCC ", dataframe)
                     if need_to_rename and l is not None:
                         lcname = l["name"]
                         self.logger.debug(f"Renaming column {d.get_prob_column_name()} to include LCFIT name {lcname}")
