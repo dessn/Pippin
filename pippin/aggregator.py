@@ -266,7 +266,6 @@ class Aggregator(Task):
 
                 if type_df is not None:
                     df = pd.merge(df, type_df, on=self.id, how="left")
-                    print("AAAA ", type_df.columns, type_df, df)
 
                 types = self.get_underlying_sim_task().output["types_dict"]
                 self.logger.debug(f"Input types are {types}")
