@@ -47,7 +47,7 @@ def get_config(initial_path=None, overwrites=None):
         config = merge_dict(config, overwrites)
 
     for i, path in enumerate(config["DATA_DIRS"]):
-        updated = get_data_loc([this_dir], path)
+        updated = get_data_loc(path, extra=this_dir)
         if updated is None:
             logging.error(f"Data dir {path} cannot be resolved!")
             assert updated is not None
@@ -67,9 +67,13 @@ def get_output_dir():
     return output_dir
 
 
-def get_data_loc(data_dirs, path):
-    if not isinstance(data_dirs, list):
-        data_dirs = [data_dirs]
+def get_data_loc(path, extra=None):
+    if extra is None:
+        data_dirs = get_config()["DATA_DIRS"]
+        if not isinstance(data_dirs, list):
+            data_dirs = [data_dirs]
+    else:
+        data_dirs = [extra]
     if "$" in path:
         path = os.path.expandvars(path)
         if "$" in path:

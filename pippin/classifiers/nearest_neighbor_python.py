@@ -57,6 +57,7 @@ class NearestNeighborPyClassifier(Classifier):
 
         self.output["predictions_filename"] = self.predictions_filename
         self.output["model_filename"] = self.output_pk_file
+        self.validate_model()
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}

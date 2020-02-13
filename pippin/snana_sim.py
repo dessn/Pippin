@@ -42,7 +42,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
     def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
         self.data_dirs = global_config["DATA_DIRS"]
-        base_file = get_data_loc(self.data_dirs, combine)
+        base_file = get_data_loc(combine)
         super().__init__(name, output_dir, base_file, ": ")
 
         self.genversion = genversion
@@ -76,7 +76,7 @@ class SNANASimulation(ConfigBasedExecutable):
         if len(self.base_ia + self.base_cc) == 0:
             Task.fail_config("Your sim has no components specified! Please add something to simulate!")
         for file in self.base_ia + self.base_cc:
-            if get_data_loc(self.data_dirs, file) is None:
+            if get_data_loc(file) is None:
                 Task.fail_config(f"Cannot find file {file} specified in simulation {self.name}")
 
         # Try to determine how many jobs will be put in the queue
@@ -168,7 +168,7 @@ class SNANASimulation(ConfigBasedExecutable):
         # Copy the base files across
         input_paths = []
         for f in self.base_ia + self.base_cc:
-            resolved = get_data_loc(self.data_dirs, f)
+            resolved = get_data_loc(f)
             shutil.copy(resolved, temp_dir)
             input_paths.append(os.path.join(temp_dir, os.path.basename(f)))
             self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
@@ -181,14 +181,14 @@ class SNANASimulation(ConfigBasedExecutable):
         for ff in fs:
             if ff not in input_copied:
                 input_copied.append(ff)
-                path = get_data_loc(self.data_dirs, ff)
+                path = get_data_loc(ff)
                 copied_path = os.path.join(temp_dir, os.path.basename(path))
                 with open(path, "r") as f:
                     for line in f.readlines():
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
-                            include_file_path = get_data_loc(self.data_dirs, include_file)
+                            include_file_path = get_data_loc(include_file)
                             self.logger.debug(f"Copying INPUT_FILE_INCLUDE file {include_file_path} to {temp_dir}")
 
                             include_file_basename = os.path.basename(include_file_path)

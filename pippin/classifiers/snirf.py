@@ -47,7 +47,8 @@ class SnirfClassifier(Classifier):
         self.path_to_classifier = get_output_loc(self.global_config["SNIRF"]["location"])
         self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
         self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
-        # self.model_pk_file = self.get_unique_name() + ".pkl"
+        self.validate_model()
+
         self.model_pk_file = "model.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
         self.fitopt = options.get("FITOPT", "DEFAULT")

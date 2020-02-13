@@ -1,0 +1,23 @@
+SIM:
+  ASIM:
+    IA_G10_DES3YR:
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
+    II:
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
+    Ibc:
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+      SOLID_ANGLE: 10
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+
+CLASSIFICATION:
+  NNTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: nothing

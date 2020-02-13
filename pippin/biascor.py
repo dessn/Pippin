@@ -1,5 +1,4 @@
 import copy
-import inspect
 import shutil
 import subprocess
 import os
@@ -16,9 +15,7 @@ from pippin.task import Task
 
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, dependencies, options, config, global_config):
-        self.global_config = global_config
-        self.data_dirs = global_config["DATA_DIRS"]
-        base = get_data_loc(self.data_dirs, config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
+        base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
 
         super().__init__(name, output_dir, base, "=", dependencies=dependencies)
 

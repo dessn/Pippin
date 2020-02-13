@@ -49,6 +49,8 @@ class SuperNNovaClassifier(Classifier):
         self.variant = options.get("VARIANT", "vanilla").lower()
         self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
         self.norm = options.get("NORM", "global")
+        self.validate_model()
+
         assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash

@@ -1,7 +1,7 @@
 import os
 from abc import abstractmethod
 
-from pippin.config import get_output_loc
+from pippin.config import get_output_loc, get_data_loc
 from pippin.dataprep import DataPrep
 from pippin.task import Task
 from pippin.snana_sim import SNANASimulation
@@ -85,6 +85,19 @@ class Classifier(Task):
                 return t
         return None
 
+    def validate_model(self):
+        if self.mode == Classifier.PREDICT:
+            model = self.options.get("MODEL")
+            if model is None:
+                Task.fail_config(f"Classifier {self.name} is in predict mode but does not have a model specified")
+            model_classifier = self.get_model_classifier()
+            if model_classifier is not None and model_classifier.name == model:
+                return True
+            path = get_data_loc(model)
+            if not os.path.exists(path):
+                Task.fail_config(f"Classifier {self.name} does not have a classifier dependency and model is not a serialised file path")
+        return True
+
     def get_model_classifier(self):
         for t in self.dependencies:
             if isinstance(t, Classifier):
@@ -142,6 +155,8 @@ class Classifier(Task):
             name = config["CLASSIFIER"]
             cls = ClassifierFactory.get(name)
             options = config.get("OPTS", {})
+            if "MODE" not in config:
+                Task.fail_config(f"Classifier task {clas_name} needs to specify MODE as train or predict")
             mode = config["MODE"].lower()
             assert mode in ["train", "predict"], "MODE should be either train or predict"
             if mode == "train":
@@ -166,6 +181,7 @@ class Classifier(Task):
             mask_sim = config.get("MASK_SIM", "")
             mask_fit = config.get("MASK_FIT", "")
             for s, l in runs:
+
                 sim_name = s.name if s is not None else None
                 fit_name = l.name if l is not None else None
                 matched_sim = True
@@ -200,7 +216,6 @@ class Classifier(Task):
                         assert (
                             len(folders) == 1
                         ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
-
                 if model is not None:
                     if "/" in model or "." in model:
                         potential_path = get_output_loc(model)
@@ -253,6 +268,5 @@ class Classifier(Task):
                         tasks.append(cc)
 
             if num_gen == 0:
-                Task.logger.error(f"Classifier {clas_name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
-                return None  # This should cause pippin to crash, which is probably what we want
+                Task.fail_config(f"Classifier {clas_name} with masks |{mask}|{mask_sim}|{mask_fit}| matched no combination of sims and fits")
         return tasks

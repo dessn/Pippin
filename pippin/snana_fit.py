@@ -1,4 +1,3 @@
-import inspect
 import os
 import shutil
 import subprocess
@@ -31,7 +30,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
-        self.data_dirs = global_config["DATA_DIRS"]
 
         self.config = config
         self.global_config = global_config
@@ -39,7 +37,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         base = config.get("BASE")
         if base is None:
             Task.fail_config(f"You have not specified a BASE nml file for task {name}")
-        self.base_file = get_data_loc(self.data_dirs, base)
+        self.base_file = get_data_loc(base)
         if self.base_file is None:
             Task.fail_config(f"Base file {base} cannot be found for task {name}")
 
@@ -80,7 +78,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.logger.debug("Loading fitopts")
         self.fitopts = []
         for f in fitopts:
-            potential_path = get_data_loc(self.data_dirs, f)
+            potential_path = get_data_loc(f)
             if os.path.exists(potential_path):
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 with open(potential_path) as f:
@@ -205,8 +203,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         # We want to do our hashing check here
         string_to_hash = self.fitopts + self.base
-        # with open(os.path.abspath(inspect.stack()[0][1]), "r") as f:
-        #     string_to_hash += f.read()
         new_hash = self.get_hash_from_string("".join(string_to_hash))
         old_hash = self.get_old_hash()
         regenerate = force_refresh or (old_hash is None or old_hash != new_hash)

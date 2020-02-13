@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import numpy as np
 
-from pippin.config import mkdirs, get_config, get_output_loc, get_data_loc
+from pippin.config import mkdirs, get_output_loc, get_data_loc
 from pippin.create_cov import CreateCov
 from pippin.task import Task
 
@@ -39,7 +39,6 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
     """
 
     def __init__(self, name, output_dir, options, global_config, dependencies=None):
-        self.data_dirs = global_config["DATA_DIRS"]
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.global_config = global_config
@@ -198,7 +197,7 @@ fi
         if self.static:
             self.logger.info("CMB only constraints detected, copying static files")
 
-            cosmomc_static_loc = get_data_loc(self.data_dirs, self.static_path + self.ini_prefix)
+            cosmomc_static_loc = get_data_loc(self.static_path + self.ini_prefix)
             if cosmomc_static_loc is None:
                 self.logger.error("Seems like we can't find the static chains...")
                 return False

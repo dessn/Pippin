@@ -27,7 +27,6 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
     """
 
     def __init__(self, name, output_dir, options, global_config, dependencies=None):
-        self.data_dirs = global_config["DATA_DIRS"]
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
@@ -36,7 +35,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = output_dir
 
-        self.raw_dir = get_data_loc(self.data_dirs, self.options.get("RAW_DIR"))
+        self.raw_dir = get_data_loc(self.options.get("RAW_DIR"))
         if self.raw_dir is None:
             Task.fail_config(f"Unable to find {self.options.get('RAW_DIR')}")
 
