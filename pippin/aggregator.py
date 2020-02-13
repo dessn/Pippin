@@ -236,7 +236,7 @@ class Aggregator(Task):
 
                     cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}")
-                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir)
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout
 
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]

@@ -77,7 +77,7 @@ class UnityClassifier(Classifier):
 
                     cmd = "grep --exclude-dir=* SNID: * | awk -F ':' '{print $3}'"
                     self.logger.debug(f"Running command   {cmd}")
-                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir)
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout
 
                     snid = [x.strip() for x in output]
