@@ -79,8 +79,10 @@ class UnityClassifier(Classifier):
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout
                     print(output)
+                    print(output.decode("ascii"))
+                    print(output.decode("ascii").split("\n"))
 
-                    snid = [x.strip() for x in output]
+                    snid = [x.strip() for x in output.decode("ascii").split("\n")]
                     df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})
                     df.drop_duplicates(subset=cid, inplace=True)
 
