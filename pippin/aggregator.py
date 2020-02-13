@@ -232,7 +232,18 @@ class Aggregator(Task):
                 phot_dir = s.output["photometry_dirs"][index]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
                 if not headers:
-                    self.logger.error(f"No HEAD fits files found in {phot_dir}!")
+                    self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
+
+                    cmd = "grep TYPE * | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command   {cmd}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir)
+                    output = process.stdout
+
+                    snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
+                    sntype = [x.split()[1].strip() for x in output]
+                    type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                    type_df.drop_duplicates(subset=self.id, inplace=True)
+
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
@@ -250,7 +261,7 @@ class Aggregator(Task):
                         type_df.drop_duplicates(subset=self.id, inplace=True)
                     self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
-                df = pd.merge(df, type_df, on=self.id, how="left")
+                    df = pd.merge(df, type_df, on=self.id, how="left")
 
                 types = self.get_underlying_sim_task().output["types_dict"]
                 self.logger.debug(f"Input types are {types}")
