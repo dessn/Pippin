@@ -77,12 +77,9 @@ class UnityClassifier(Classifier):
                     cmd = "grep --exclude-dir=* SNID: * | awk -F ':' '{print $3}'"
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
-                    output = process.stdout
-                    print(output)
-                    print(output.decode("ascii"))
-                    print(output.decode("ascii").split("\n"))
+                    output = process.stdout.decode("ascii").split("\n")
 
-                    snid = [x.strip() for x in output.decode("ascii").split("\n")]
+                    snid = [x.strip() for x in output]
                     df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})
                     df.drop_duplicates(subset=cid, inplace=True)
 
