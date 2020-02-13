@@ -244,7 +244,8 @@ class Aggregator(Task):
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
                     type_df.drop_duplicates(subset=self.id, inplace=True)
-
+                    print(type_df.info())
+                    print(type_df)
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
