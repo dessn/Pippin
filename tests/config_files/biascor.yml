@@ -1,0 +1,50 @@
+DATAPREP:
+
+  DATADES3YR:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True
+
+SIM:
+  ASIM:
+    IA_G10_DES3YR:
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
+    II:
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
+    Ibc:
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+      SOLID_ANGLE: 10
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+
+CLASSIFICATION:
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+  PERFECT:
+    CLASSIFIER: PerfectClassifier
+    MODE: predict
+    OPTS:
+      PROB_IA: 1.0
+      PROB_CC: 0.0
+
+AGGREGATION:
+  AGGLABEL:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  BCOR:
+    BASE: surveys/des/bbc/bbc_5yr.input
+    DATA: [D_DATADES3YR]
+    SIMFILE_BIASCOR: [D_ASIM]
+    CLASSIFIER: PERFECT
