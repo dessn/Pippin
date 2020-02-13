@@ -70,11 +70,11 @@ class UnityClassifier(Classifier):
                 df = None
                 phot_dir = s.output["photometry_dirs"][self.index]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                print("AAA ", headers)
                 if not headers:
                     self.logger.error(f"No HEAD fits files found in {phot_dir}!")
                 else:
                     for h in headers:
-                        print("AAAA ", h)
                         with fits.open(h) as hdul:
                             data = hdul[1].data
                             snid = np.array(data.field("SNID"))
