@@ -1,0 +1,7 @@
+SIM:
+  EXAMPLESIM: # No sim components
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
+      SOLID_ANGLE: 10
+

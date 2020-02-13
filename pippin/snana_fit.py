@@ -36,8 +36,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.config = config
         self.global_config = global_config
 
-        base = config["BASE"]
+        base = config.get("BASE")
+        if base is None:
+            Task.fail_config(f"You have not specified a BASE nml file for task {name}")
         self.base_file = get_data_loc(self.data_dirs, base)
+        if self.base_file is None:
+            Task.fail_config(f"Base file {base} cannot be found for task {name}")
 
         super().__init__(name, output_dir, self.base_file, " = ", dependencies=[sim_task])
 
@@ -298,5 +302,5 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
                     tasks.append(f)
             if num_matches == 0:
-                Task.logger.warning(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in sim_tasks]}")
+                Task.fail_config(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in sim_tasks]}")
         return tasks

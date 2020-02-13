@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict
 from pathlib import Path
 
-from pippin.config import mkdirs, get_output_loc, get_config
+from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc
 from pippin.task import Task
 
 
@@ -26,7 +26,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         is_sim: bool - whether or not the input is a simulation
     """
 
-    def __init__(self, name, output_dir, options, dependencies=None):
+    def __init__(self, name, output_dir, options, global_config, dependencies=None):
+        self.data_dirs = global_config["DATA_DIRS"]
         super().__init__(name, output_dir, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
@@ -35,7 +36,10 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = output_dir
 
-        self.raw_dir = self.options.get("RAW_DIR")
+        self.raw_dir = get_data_loc(self.data_dirs, self.options.get("RAW_DIR"))
+        if self.raw_dir is None:
+            Task.fail_config(f"Unable to find {self.options.get('RAW_DIR')}")
+
         self.genversion = os.path.basename(self.raw_dir)
         self.data_path = os.path.dirname(self.raw_dir)
         if self.data_path == "$SCRATCH_SIMDIR":
@@ -160,7 +164,10 @@ fi
         tasks = []
         for name in config.get("DATAPREP", []):
             output_dir = f"{base_output_dir}/{stage_number}_DATAPREP/{name}"
-            s = DataPrep(name, output_dir, config["DATAPREP"][name]["OPTS"])
+            options = config["DATAPREP"][name].get("OPTS")
+            if options is None:
+                Task.fail_config(f"DATAPREP task {name} needs to specify OPTS!")
+            s = DataPrep(name, output_dir, options, global_config)
             Task.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
             tasks.append(s)
         return tasks

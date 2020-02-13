@@ -2,7 +2,7 @@ DATAPREP:
 
   DATADES3YR:
     OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      RAW_DIR: surveys
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
@@ -54,10 +54,3 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-
-COSMOMC:
-  SN_OMW:
-    OPTS:
-      INI: sn_omw
-      COVOPTS: [ALL, NOSYS]
-      NUM_WALKERS: 40

@@ -2,7 +2,7 @@ DATAPREP:
 
   DATADES3YR:
     OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      RAW_DIR: surveys
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]

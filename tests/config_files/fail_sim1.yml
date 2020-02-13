@@ -1,0 +1,9 @@
+SIM:
+  EXAMPLESIM:
+    IA_G10_DES3YR:
+      BASE: surveys/doesnt/exist
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 10 12345
+      SOLID_ANGLE: 10
+

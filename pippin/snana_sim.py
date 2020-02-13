@@ -71,6 +71,14 @@ class SNANASimulation(ConfigBasedExecutable):
         self.output["blind"] = self.options.get("BLIND", False)
         self.types = None
         self.derived_batch_info = None
+
+        # Determine if all the top level input files exist
+        if len(self.base_ia + self.base_cc) == 0:
+            Task.fail_config("Your sim has no components specified! Please add something to simulate!")
+        for file in self.base_ia + self.base_cc:
+            if get_data_loc(self.data_dirs, file) is None:
+                Task.fail_config(f"Cannot find file {file} specified in simulation {self.name}")
+
         # Try to determine how many jobs will be put in the queue
         try:
             # If BATCH_INFO is set, we'll use that

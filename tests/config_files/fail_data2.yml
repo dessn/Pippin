@@ -1,0 +1,5 @@
+DATAPREP:
+  DATA1:
+    OPTS:
+      RAW_DIR: somepath/doesnt/exist
+      # Fail when its misspecified as well

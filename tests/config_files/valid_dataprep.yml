@@ -1,6 +1,6 @@
 DATAPREP:
   LABEL:
     OPTS:
-      RAW_DIR: somedir
+      RAW_DIR: surveys
       BLIND: False
       SIM: True

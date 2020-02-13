@@ -1,0 +1,4 @@
+DATAPREP:
+  DATA1:
+    OPTS:
+      # No RAW_DIR, no success
