@@ -241,6 +241,7 @@ class Aggregator(Task):
                     output = [x for x in output if x]
 
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
+                    snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
                     type_df[self.id] = type_df[self.id].apply(str)
