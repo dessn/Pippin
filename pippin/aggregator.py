@@ -277,6 +277,8 @@ class Aggregator(Task):
                 self.save_calibration_curve(df, self.output_cals[index])
                 if self.recal_aggtask:
                     df = self.recalibrate(df)
+
+                print(df.info())
                 df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
 
                 for l in self.lcfit_names:

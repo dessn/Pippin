@@ -49,7 +49,7 @@ def setup_logging(config_filename, logging_folder, args):
         handlers.append(logging.FileHandler(logging_filename))
         handlers[-1].setLevel(logging.DEBUG)
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
-    print(handlers)
+
     coloredlogs.install(
         level=level,
         fmt=fmt,
