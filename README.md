@@ -1,5 +1,8 @@
 # Pippin
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.366608-blue)](https://zenodo.org/badge/latestdoi/162215291)
+[![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/Samreay/Pippin/blob/master/LICENSE)
+[![Github Version](https://img.shields.io/github/v/release/Samreay/Pippin)](https://github.com/Samreay/Pippin/releases)
 
 Pippin - a pipeline for Supernova cosmology analysis
 
@@ -37,7 +40,7 @@ If you're using a pre-installed version of Pippin - like the one on Midway, igno
 If you're not, installing Pippin is simple.
 
 1. Checkout Pippin
-2. Ensure you have the dependencies install (`pip install -r requirements.txt`)
+2. Ensure you have the dependencies install (`pip install -r requirements.txt`) and that your python version is 3.7+.
 3. Celebrate
 
 Now, Pippin also interfaces with other tasks: SNANA and machine learning classifiers mostly.
