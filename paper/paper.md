@@ -33,6 +33,13 @@ light curve fitting tasks, machine learning classification of transients,
 computing the required bias corrections and feeding the results
 into CosmoMC [@cosmomc]. The MCMC outputs are then analysed in ChainConsumer [@ChainConsumer].
 
+This functionality allows Pippin to run end-to-end, taking telescope data as input and producing cosmological
+constraints in under a day, with no input required from the user past the initial configuration file. It is 
+currently in use in multiple projects, including investigating the impact of classifiers on cosmology, determining
+template tuning of the supernova core-collapse rate, assessing the impact of spectral features on classification, 
+and determining the reduction in cosmological bias from improved calibration of the SALT2 supernova model.
+
+
 Additonal plots are performed via the matplotlib library [@matplotlib], and 
 makes use of various numpy [@numpy], scipy [@scipy] and pandas [@pandas] functions. Several 
 machine learning functions make use of scikit-learn [@sklearn].
