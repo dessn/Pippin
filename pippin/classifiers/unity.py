@@ -78,6 +78,7 @@ class UnityClassifier(Classifier):
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout.decode("ascii").split("\n")
+                    output = [x for x in output if x]
 
                     snid = [x.strip() for x in output]
                     df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})

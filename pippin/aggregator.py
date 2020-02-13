@@ -238,7 +238,8 @@ class Aggregator(Task):
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout.decode("ascii").split("\n")
-                    print(output)
+                    output = [x for x in output if x]
+
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
