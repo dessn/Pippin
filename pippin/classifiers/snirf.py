@@ -104,10 +104,10 @@ python SNIRF.py {command_opts}
 
     def get_rf_conf(self):
         leaf_opts = (
-            ("--n_estimators {self.options.get('N_ESTIMATORS')} " if self.options.get("N_ESTIMATORS") is not None else "")
-            + ("--min_samples_split {self.options.get('MIN_SAMPLES_SPLIT')} " if self.options.get("MIN_SAMPLES_SPLIT") is not None else "")
-            + ("--min_samples_leaf {self.options.get('MIN_SAMPLES_LEAF')} " if self.options.get("MIN_SAMPLES_LEAF") is not None else "")
-            + ("--max_depth {self.options.get('MAX_DEPTH')} " if self.options.get("MAX_DEPTH") is not None else "")
+            (f"--n_estimators {self.options.get('N_ESTIMATORS')} " if self.options.get("N_ESTIMATORS") is not None else "")
+            + (f"--min_samples_split {self.options.get('MIN_SAMPLES_SPLIT')} " if self.options.get("MIN_SAMPLES_SPLIT") is not None else "")
+            + (f"--min_samples_leaf {self.options.get('MIN_SAMPLES_LEAF')} " if self.options.get("MIN_SAMPLES_LEAF") is not None else "")
+            + (f"--max_depth {self.options.get('MAX_DEPTH')} " if self.options.get("MAX_DEPTH") is not None else "")
         )
         return leaf_opts
 
