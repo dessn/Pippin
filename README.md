@@ -579,6 +579,18 @@ ANALYSE:
 
 ![Developer Documentation Below](doc/developer.jpg)
 
+## Testing valid config in Pippin
+
+To ensure we don't break things when pushing out new code, the tests directory contains a set of 
+tests progressively increasing in pipeline complexity, designed to ensure that existing config files
+act consistently regardless of code changes. Any failure in the tests means a break in backwards compatibility
+and should be discussed before being incorporated into a release.
+
+To run the tests, in the top level directory, simply run:
+
+`pytest -v .`
+
+
 
 ## Adding a new task
 
