@@ -50,7 +50,8 @@ I won't cover installing SNANA here, hopefully you already have it. But to insta
 3. Activate environment and install natsort: `conda activate snn_gpu` and `conda install --yes natsort`
 
 Then, in the Pippin config file `cfg.yml` in the top level directory, ensure that the SNN path in Pippin is
-pointing to where you just cloned SNN into.
+pointing to where you just cloned SNN into. You will need to install the other external software packages
+if you want to use them, and you do not need to install any package you do not explicitly request in a config file.
 
 ## Using Pippin
 
