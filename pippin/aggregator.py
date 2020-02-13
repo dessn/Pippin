@@ -243,9 +243,9 @@ class Aggregator(Task):
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                    type_df[self.id] = type_df[self.id].apply(str)
+                    type_df[self.id] = type_df[self.id].str.strip()
                     type_df.drop_duplicates(subset=self.id, inplace=True)
-                    print(type_df.info())
-                    print(type_df)
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
@@ -264,9 +264,11 @@ class Aggregator(Task):
                     self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
                 if type_df is not None:
+                    print("AAA ", df, type_df, self.id)
                     df = pd.merge(df, type_df, on=self.id, how="left")
 
                 types = self.get_underlying_sim_task().output["types_dict"]
+                print("BBBB ", types)
                 self.logger.debug(f"Input types are {types}")
                 ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
