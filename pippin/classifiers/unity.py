@@ -71,7 +71,6 @@ class UnityClassifier(Classifier):
                 df = None
                 phot_dir = s.output["photometry_dirs"][self.index]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
-                print("AAA ", headers)
                 if len(headers) == 0:
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}! Going to do it manually, this may not work.")
 
@@ -79,6 +78,7 @@ class UnityClassifier(Classifier):
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout
+                    print(output)
 
                     snid = [x.strip() for x in output]
                     df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})

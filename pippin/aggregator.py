@@ -231,14 +231,13 @@ class Aggregator(Task):
                 type_df = None
                 phot_dir = s.output["photometry_dirs"][index]
                 headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
-                if not headers:
+                if len(headers) == 0:
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
 
                     cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout
-
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
