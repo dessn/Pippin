@@ -169,9 +169,9 @@ def chown_dir(directory):
 
     global_config = get_config()
     logger = get_logger()
-    groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
-    group_id = groupinfo.gr_gid
     try:
+        groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
+        group_id = groupinfo.gr_gid
         shutil.chown(directory, group=global_config["SNANA"]["group"])
         os.chmod(directory, 0o770)
     except Exception as e:
