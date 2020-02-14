@@ -1,14 +1,6 @@
 
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
-
-  FITOPTS: &default_fitopts
-    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
-    APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
-
-  SNLCINP: &default_mapdata
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-
   DESLIKESIM: &deslikesim
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
@@ -18,10 +10,12 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-      RANSEED_REPEAT: 1 12345
+      RANSEED_REPEAT: 5 12345
       FLUXERRMODEL_REDCOV(DEEP): "g:0.1,r:0.1,i:0.1,z:0.1"
       FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.2"
       NGEN_UNIT: 1
+
+
 
 DATAPREP:
   DATADES5YR:
@@ -33,8 +27,6 @@ DATAPREP:
 
 
 SIM:
-
-
 
   SIMDES5YR_NOPHASE:
     <<: *deslikesim
@@ -67,7 +59,11 @@ SIM:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.02 6
 
-
+  SIMDES5YR_02_10:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.02 10
 
 
 
@@ -100,7 +96,11 @@ SIM:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.03 6
 
-
+  SIMDES5YR_03_10:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.03 10
 
 
 
@@ -131,8 +131,42 @@ SIM:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.04 6
 
+  SIMDES5YR_04_10:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.04 10
 
 
+  SIMDES5YR_05_0:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.05 0.001
+
+  SIMDES5YR_05_1:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.05 1
+
+  SIMDES5YR_05_3:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.05 3
+
+  SIMDES5YR_05_6:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.05 6
+
+  SIMDES5YR_05_10:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.05 10
 
 LCFIT:
 
@@ -140,29 +174,14 @@ LCFIT:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DES
     SNLCINP:
-      <<: *default_mapdata
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       ROOTFILE_OUT: FIT.ROOT
-    OPTS: *default_fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
 
 ANALYSE:
-
-  CHECK_5YR_ALL:
-    HISTOGRAM:
-      - D1D_DATADES5YR
-      - D1D_SIMDES5YR_NOPHASE
-      - D1D_SIMDES5YR_02_0
-      - D1D_SIMDES5YR_02_1
-      - D1D_SIMDES5YR_02_3
-      - D1D_SIMDES5YR_02_6
-      - D1D_SIMDES5YR_03_0
-      - D1D_SIMDES5YR_03_1
-      - D1D_SIMDES5YR_03_3
-      - D1D_SIMDES5YR_03_6
-      - D1D_SIMDES5YR_04_0
-      - D1D_SIMDES5YR_04_1
-      - D1D_SIMDES5YR_04_3
-      - D1D_SIMDES5YR_04_6
 
   CHECK_5YR_02:
     HISTOGRAM:
@@ -172,6 +191,7 @@ ANALYSE:
       - D1D_SIMDES5YR_02_1
       - D1D_SIMDES5YR_02_3
       - D1D_SIMDES5YR_02_6
+      - D1D_SIMDES5YR_02_10
 
   CHECK_5YR_03:
     HISTOGRAM:
@@ -181,6 +201,7 @@ ANALYSE:
       - D1D_SIMDES5YR_03_1
       - D1D_SIMDES5YR_03_3
       - D1D_SIMDES5YR_03_6
+      - D1D_SIMDES5YR_03_10
 
   CHECK_5YR_04:
     HISTOGRAM:
@@ -190,3 +211,14 @@ ANALYSE:
       - D1D_SIMDES5YR_04_1
       - D1D_SIMDES5YR_04_3
       - D1D_SIMDES5YR_04_6
+      - D1D_SIMDES5YR_04_10
+
+  CHECK_5YR_05:
+    HISTOGRAM:
+      - D1D_DATADES5YR
+      - D1D_SIMDES5YR_NOPHASE
+      - D1D_SIMDES5YR_05_0
+      - D1D_SIMDES5YR_05_1
+      - D1D_SIMDES5YR_05_3
+      - D1D_SIMDES5YR_05_6
+      - D1D_SIMDES5YR_05_10
