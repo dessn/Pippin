@@ -1,8 +1,6 @@
 
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
-  DEFAULT_SIM_MAP: &default_map
-
 
   FITOPTS: &default_fitopts
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
@@ -23,7 +21,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
       RANSEED_REPEAT: 1 12345
       FLUXERRMODEL_REDCOV(DEEP): "g:0.1,r:0.1,i:0.1,z:0.1"
       FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.2"
-      NEGEN_UNIT: 1
+      NGEN_UNIT: 1
 
 DATAPREP:
   DATADES5YR:
