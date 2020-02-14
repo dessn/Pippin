@@ -153,9 +153,9 @@ def chown_file(path):
 
     global_config = get_config()
     logger = get_logger()
-    groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
-    group_id = groupinfo.gr_gid
     try:
+        groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
+        group_id = groupinfo.gr_gid
         os.chown(path, -1, group=group_id, follow_symlinks=False)
     except Exception:
         logger.debug(f"Did not chown {path}")
