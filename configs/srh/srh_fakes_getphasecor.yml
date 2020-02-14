@@ -2,10 +2,7 @@
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
   DEFAULT_SIM_MAP: &default_map
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-    RANSEED_REPEAT: 1 12345
-    FLUXERRMODEL_REDCOV(DEEP): "g:0.1,r:0.1,i:0.1,z:0.1"
-    FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.2"
+
 
   FITOPTS: &default_fitopts
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
@@ -15,15 +12,18 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
 
   DESLIKESIM: &deslikesim
-    IA_G10:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
     IA91BG:
       BASE: surveys/des/sims_cc/sn_ia91bg.input
     CC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
-
+    GLOBAL:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      RANSEED_REPEAT: 1 12345
+      FLUXERRMODEL_REDCOV(DEEP): "g:0.1,r:0.1,i:0.1,z:0.1"
+      FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.2"
+      NEGEN_UNIT: 1
 
 DATAPREP:
   DATADES5YR:
@@ -36,110 +36,103 @@ DATAPREP:
 
 SIM:
 
+
+
   SIMDES5YR_NOPHASE:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0 0
+
 
   SIMDES5YR_02_0:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.02 0
 
   SIMDES5YR_02_1:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.02 1
 
   SIMDES5YR_02_3:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.02 3
 
   SIMDES5YR_02_6:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.02 6
+
+
+
+
+
+
+
 
 
 
   SIMDES5YR_03_0:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.03 0
 
   SIMDES5YR_03_1:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.03 1
 
   SIMDES5YR_03_3:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.03 3
 
   SIMDES5YR_03_6:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.03 6
+
+
+
+
+
+
+
 
   SIMDES5YR_04_0:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.04 0
 
   SIMDES5YR_04_1:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.04 1
 
   SIMDES5YR_04_3:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.04 3
 
   SIMDES5YR_04_6:
     <<: *deslikesim
-    GLOBAL:
-      <<: *default_map
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0.04 6
+
 
 
 
