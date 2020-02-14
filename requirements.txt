@@ -7,4 +7,3 @@ astropy
 coloredlogs
 chainconsumer
 sklearn
-pytest
