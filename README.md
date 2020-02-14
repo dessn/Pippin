@@ -1,4 +1,3 @@
-# Pippin
 
 [![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.366608-blue)](https://zenodo.org/badge/latestdoi/162215291)
 [![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/Samreay/Pippin/blob/master/LICENSE)
@@ -6,6 +5,9 @@
 [![Github Issues](https://img.shields.io/github/issues/Samreay/Pippin)](https://github.com/Samreay/Pippin/issues)
 ![Python Version](https://img.shields.io/badge/Python-3.7%2B-red)
 [![Travis Build](https://travis-ci.com/Samreay/Pippin.svg?branch=master)](https://travis-ci.com/Samreay/Pippin)
+
+# Pippin
+
 
 Pippin - a pipeline for Supernova cosmology analysis
 
