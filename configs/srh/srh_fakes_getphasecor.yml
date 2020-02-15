@@ -1,3 +1,6 @@
+# To get light curves for data and sim, use
+# sntable_dump.pl FITOPT000.ROOT FITRES --V CID zHD FIELD PKMJD x1 c FITPROB MJD FLUXCAL_DATA FLUXCAL_DATA_ERR FLUXCAL_MODEL FLUXCAL_MODEL_ERR
+
 
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
@@ -183,7 +186,7 @@ LCFIT:
 
   D1DOBS: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: surveys/des/lcfit_nml/des_5yr.nml
-    MASK: [DATADES5YR, SIMDES5YR_05_1]
+    MASK: [DATADES5YR, SIMDES5YR_05_1, SIMDES5YR_NOPHASE]
     SNLCINP:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       ROOTFILE_OUT: FIT.ROOT
