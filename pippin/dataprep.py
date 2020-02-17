@@ -43,6 +43,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.genversion = os.path.basename(self.raw_dir)
         self.data_path = os.path.dirname(self.raw_dir)
         if self.unparsed_raw == "$SCRATCH_SIMDIR" or "SNDATA_ROOT/SIM" in self.raw_dir:
+            self.logger.debug("Removing PRIVATE_DATA_PATH from NML file")
             self.data_path = ""
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
 
