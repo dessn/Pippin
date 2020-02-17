@@ -106,7 +106,7 @@ fi
      TEXTFILE_PREFIX = '{genversion}'
 
      ! data
-     ! PRIVATE_DATA_PATH = '{data_path}'
+     PRIVATE_DATA_PATH = '{data_path}'
      VERSION_PHOTOMETRY = '{genversion}'
 
      PHOTFLAG_MSKREJ   = 1016 !PHOTFLAG eliminate epoch that has errors, not LC 
@@ -132,6 +132,9 @@ fi
     def _run(self, force_refresh):
 
         command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path)
+
+        if self.data_path == "/scratch/midway2/rkessler/SNDATA_ROOT/SIM":
+            command_string.replace("PRIVATE_DATA_PATH", "! PRIVATE_DATA_PATH")
 
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
