@@ -35,13 +35,14 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.conda_env = self.global_config["DataSkimmer"]["conda_env"]
         self.path_to_task = output_dir
 
-        self.raw_dir = get_data_loc(self.options.get("RAW_DIR"))
+        self.unparsed_raw = self.options.get("RAW_DIR")
+        self.raw_dir = get_data_loc(self.unparsed_raw)
         if self.raw_dir is None:
             Task.fail_config(f"Unable to find {self.options.get('RAW_DIR')}")
 
         self.genversion = os.path.basename(self.raw_dir)
         self.data_path = os.path.dirname(self.raw_dir)
-        if self.data_path == "$SCRATCH_SIMDIR":
+        if self.unparsed_raw == "$SCRATCH_SIMDIR" or "SNDATA_ROOT/SIM" in self.raw_dir:
             self.data_path = ""
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
 
@@ -132,10 +133,6 @@ fi
     def _run(self, force_refresh):
 
         command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path)
-
-        if "lcmerge" not in self.data_path:
-            command_string.replace("PRIVATE_DATA_PATH", "! PRIVATE_DATA_PATH")
-
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
