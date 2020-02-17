@@ -106,7 +106,7 @@ fi
      TEXTFILE_PREFIX = '{genversion}'
 
      ! data
-     PRIVATE_DATA_PATH = '{data_path}'
+     ! PRIVATE_DATA_PATH = '{data_path}'
      VERSION_PHOTOMETRY = '{genversion}'
 
      PHOTFLAG_MSKREJ   = 1016 !PHOTFLAG eliminate epoch that has errors, not LC 
