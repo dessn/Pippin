@@ -44,7 +44,7 @@ SEARCHEFF_PIPELINE_LOGIC_FILE: $SNDATA_ROOT/models/searcheff/SEARCHEFF_PIPELINE_
 NEWMJD_DIF: 0.4  # second detection trigger at least 0.4 days later
 
 SEARCHEFF_SPEC_FILE:   ZERO
-SEARCHEFF_zHOST_FILE:  $DES_ROOT/models/searcheff/SEARCHEFF_zHOST_DIFFIMG.DAT
+SEARCHEFF_zHOST_FILE:  $DES_ROOT/models/searcheff/SEARCHEFF_zHOST_DIFFIMG_5YR_G10.DAT
 LENSING_PROBMAP_FILE:  $SNDATA_ROOT/models/lensing/LENSING_PROBMAP_LogNormal+MICECATv1.DAT
 
 # Apply minimal cuts to remove out of season SN
