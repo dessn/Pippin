@@ -175,15 +175,22 @@ def plot_redshift_evolution(data, sims, types, figname):
 
         minv = min([x[0]["zHD"].min() for x in data + sims])
         maxv = max([x[0]["zHD"].max() for x in data + sims])
+        if not np.isfinite(minv) or not np.isfinite(maxv):
+            continue
+
         bins = np.linspace(minv, maxv, 10)  # Keep binning uniform.
         bc = 0.5 * (bins[1:] + bins[:-1])
         lim = (bc[0] - 0.02 * (bc[-1] - bc[0]), bc[-1] + 0.02 * (bc[-1] - bc[0]))
         for d, n in data:
+            if d.shape[0] == 0:
+                continue
             means, err, std, std_err = get_means_and_errors(d["zHD"], d[c], bins=bins)
             ax0.errorbar(bc, means, yerr=err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
             ax1.errorbar(bc, std, yerr=std_err, fmt="o", ms=2, elinewidth=0.75, zorder=20, label=n)
 
         for sim, n in sims:
+            if sim.shape[0] == 0:
+                continue
             mask = np.isin(sim["TYPE"], types)
             ia = sim[mask]
             nonia = sim[~mask]

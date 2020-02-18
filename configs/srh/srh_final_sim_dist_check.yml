@@ -25,7 +25,7 @@ SIM:
 
   LOWZ_C11:
     IA_G10_LOWZ:
-      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_c11_lowz.input
     GLOBAL:
       NGEN_UNIT: 2
       RANSEED_CHANGE: 10 12345
