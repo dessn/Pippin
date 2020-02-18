@@ -1,0 +1,90 @@
+DATAPREP:
+  DATADES5YR:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+  DATALOWZ:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+
+
+SIM:
+  LOWZ_G10:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
+
+  LOWZ_C11:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
+
+  DES_G10_CC:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
+
+  DES_C11_CC:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      NGEN_UNIT: 2
+      RANSEED_CHANGE: 10 12345
+
+
+
+LCFIT:
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZ
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+      APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
+
+
+
+ANALYSE:
+  CHECK_LOWZ:
+    HISTOGRAM:
+      - L_DATALOWZ
+      - L_LOWZ_G10
+      - L_LOWZ_C11
+
+  CHECK_DES:
+    HISTOGRAM:
+      - D_DATADES5YR
+      - D_DES_G10_CC
+      - D_DES_C11_CC
