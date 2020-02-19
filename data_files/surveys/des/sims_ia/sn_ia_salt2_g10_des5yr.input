@@ -14,12 +14,12 @@ DNDZ: POWERLAW2 7.35E-5  0.0 1.0 2.0    # a0*(1+z)^a1 from a2->a3
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using G10 High-z row
 
-GENPEAK_SALT2c:    -0.024
-GENSIGMA_SALT2c:    0.043  0.101     # bifurcated sigmas
+GENPEAK_SALT2c:    -0.03
+GENSIGMA_SALT2c:    0.043  0.12     # bifurcated sigmas
 GENRANGE_SALT2c:   -0.300  0.500     # color range
 
 GENPEAK_SALT2x1:     0.673           # tuned to match DES with OzDES zSPEC
-GENSIGMA_SALT2x1:    1.472   0.222   # bifurcated sigmas
+GENSIGMA_SALT2x1:    1.45   0.222   # bifurcated sigmas
 GENRANGE_SALT2x1:   -3.0     2.0     # x1 (stretch) range
 
 # SALT2 alpha and beta
