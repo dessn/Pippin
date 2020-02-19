@@ -16,7 +16,7 @@ SEARCHEFF_SPEC_FILE: $DES_ROOT/models/searcheff/SEARCHEFF_SPEC_DES_C11.TXT
 # --------------------------------------------------
 # define SALT2 params from Scolnic et al 2016, using C11 High-z row
 
-GENPEAK_SALT2c:    -0.07
+GENPEAK_SALT2c:    -0.08
 GENSIGMA_SALT2c:    0.003  0.15
 GENRANGE_SALT2c:   -0.200  0.500     # color range
 
