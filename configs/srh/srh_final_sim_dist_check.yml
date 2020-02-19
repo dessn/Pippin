@@ -40,7 +40,7 @@ SIM:
     CC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
     GLOBAL:
-      NGEN_UNIT: 2
+      NGEN_UNIT: 1
       RANSEED_CHANGE: 10 12345
 
   DES_C11_CC:
@@ -53,7 +53,7 @@ SIM:
     CC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
     GLOBAL:
-      NGEN_UNIT: 2
+      NGEN_UNIT: 1
       RANSEED_CHANGE: 10 12345
 
 
@@ -72,7 +72,7 @@ LCFIT:
     SNLCINP:
       ROOTFILE_OUT: FIT.ROOT
     OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 30
       APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
 
