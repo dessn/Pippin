@@ -66,6 +66,7 @@ SIM:
     GLOBAL:
       FLUXERRMODEL_FILE: NONE
       RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
 
   # Great, so that should allow a good mix for the correlation to be determined
@@ -75,6 +76,7 @@ SIM:
     GLOBAL:
       <<: *default_map
       <<: *default_corr
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
 
 
@@ -85,42 +87,23 @@ SIM:
     IA: *fakesinput
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
+
   SIMFAKE_2D_CORR_ALL00:
     IA: *fakesinput
     GLOBAL:
       <<: *default_map
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
+
   SIMFAKE_3D_CORR_ALL00:
     IA: *fakesinput
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
 
 
 
-  # So now that we have the correlations, lets apply them to the 3yr data and then the 5yr data,
-  # with and without the correlations, and also with no fudges at all
-
-  # 3yr sims
-  SIMDES3YR_2D_REDCOV:
-      IA_G10:
-        BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
-      GLOBAL:
-        <<: *default_map
-        <<: *default_corr
-        NGEN_UNIT: 10.0
-  SIMDES3YR_2D_INDCOV:
-      IA_G10:
-        BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
-      GLOBAL:
-        <<: *default_map
-        NGEN_UNIT: 10.0
-  SIMDES3YR_2D_NOCOR:
-    IA_G10:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
-    GLOBAL:
-      FLUXERRMODEL_FILE: NONE
-      NGEN_UNIT: 10.0
-      RANSEED_REPEAT: 1 12345
 
   # 5yr sims
   SIMDES5YR_2D_REDCOV:
@@ -130,12 +113,15 @@ SIM:
       <<: *default_corr
       NGEN_UNIT: 1
       RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
   SIMDES5YR_2D_INDCOV:
     <<: *deslikesim
     GLOBAL:
       <<: *default_map
       NGEN_UNIT: 1
       RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   SIMDES5YR_1D_REDCOV:
     <<: *deslikesim
@@ -144,12 +130,15 @@ SIM:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       RANSEED_REPEAT: 5 12345
       NGEN_UNIT: 1
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
   SIMDES5YR_1D_INDCOV:
     <<: *deslikesim
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
       RANSEED_REPEAT: 5 12345
       NGEN_UNIT: 1
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   SIMDES5YR_3D_REDCOV:
     <<: *deslikesim
@@ -158,12 +147,16 @@ SIM:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
       RANSEED_REPEAT: 5 12345
       NGEN_UNIT: 1
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
   SIMDES5YR_3D_INDCOV:
     <<: *deslikesim
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_LOGSNR_SBMAG_PSF_5.DAT
       RANSEED_REPEAT: 5 12345
       NGEN_UNIT: 1
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
 
 
 # Now we have to fit everything. For the SIMFAKES, we'll fit using the fakes.nml
