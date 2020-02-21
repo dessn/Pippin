@@ -248,6 +248,11 @@ if __name__ == "__main__":
             df.replace(-999, np.nan, inplace=True)
             add_muref(df)
 
+        data_masks = [d["FITPROB"] > 0.05 for d, _ in data_dfs]
+        sim_masks = [d["FITPROB"] > 0.05 for d, _ in sim_dfs]
+        data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+        sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+
         plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], "hist.png")
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"], "redshift.png")
 
@@ -274,21 +279,15 @@ if __name__ == "__main__":
             # except Exception as e:
             #     logging.warning("Not all plots made. Do you have the SNRMAX_g r i z columns extracted from the ROOT file?")
 
-        zbins = [0.2, 0.4, 0.6, 2]
-        for i, z1 in enumerate(zbins[:-1]):
-            z2 = zbins[i + 1]
-            data_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in data_dfs]
-            sim_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in sim_dfs]
-
-            masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
-            masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-            plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{z1:0.1f}_{z2:0.1f}.png")
-
-        data_masks = [d["FITPROB"] > 0.05 for d, _ in data_dfs]
-        sim_masks = [d["FITPROB"] > 0.05 for d, _ in sim_dfs]
-        masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
-        masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-        plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_fitprob_g0.05.png")
+        # zbins = [0.2, 0.4, 0.6, 2]
+        # for i, z1 in enumerate(zbins[:-1]):
+        #     z2 = zbins[i + 1]
+        #     data_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in data_dfs]
+        #     sim_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in sim_dfs]
+        #
+        #     masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+        #     masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+        #     plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{z1:0.1f}_{z2:0.1f}.png")
 
         logging.info(f"Writing success to {args['donefile']}")
         with open(args["donefile"], "w") as f:
