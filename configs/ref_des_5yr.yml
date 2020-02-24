@@ -1,0 +1,87 @@
+DATAPREP:
+  DATADES5YR:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True
+
+  DESSIMBIAS5YRIA_C11:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRIA_C11
+  DESSIMBIAS5YRIA_G10:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRIA_G10
+  DESSIMBIAS5YRCC:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRCC
+
+LCFIT:
+  DS:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DATADES
+    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  # For the biascor sims, fit without fitopt
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DESSIM
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+
+CLASSIFICATION:
+  # Load the existing SNN classifier from GLOBAL_ML
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: $PIPPIN_OUTPUT/GLOBAL_ML/3_CLAS/SNNTRAIN_TRAININGSIM/model.pt
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: $PIPPIN_OUTPUT/GLOBAL_ML/3_CLAS/SNIRFTRAIN_TESTFIT_TRAININGSIM/model.pkl
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+  5YR:
+    DATA: [DS_DATADES5YR]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA]
+    SIMFILE_CCPRIOR: D_DESSIMBIAS5YRCC
+    CLASSIFIER: SNNTEST
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
+CREATE_COV:
+  ALL:
+    OPTS:
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
+      COVOPTS: [ALL, NOSYS]
+      NUM_WALKERS: 40
+
+
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW
+    OPTS:
+      BLIND: w
+      SHIFT: True
