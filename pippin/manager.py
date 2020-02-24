@@ -109,6 +109,8 @@ class Manager:
     def get_task_to_run(self, tasks_to_run, done_tasks):
         for t in tasks_to_run:
             can_run = True
+            if isinstance(t, CosmoMC):
+                print("DDDD ", t.dependencies, [d in done_tasks for d in t.dependencies])
             for dep in t.dependencies:
                 if dep not in done_tasks:
                     can_run = False
@@ -195,6 +197,7 @@ class Manager:
             for t in running_tasks:
                 try:
                     completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                    print(f"AAAAAAAAAAAAA Task {t} completed")
                     small_wait = small_wait or completed
                 except Exception as e:
                     self.logger.exception(e, exc_info=True)
@@ -202,7 +205,10 @@ class Manager:
 
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
+                print(f"BBBBBBBBB Looking for more jobs please")
+
                 t = self.get_task_to_run(self.tasks, done_tasks)
+                print(f"CCCCCCCC Got task to run {t}")
                 if t is not None:
                     self.logger.info("")
                     self.tasks.remove(t)
