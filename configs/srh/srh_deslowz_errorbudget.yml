@@ -8,6 +8,12 @@ DATAPREP:
   DESSIMBIAS5YRCC:
     OPTS:
       RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRCC
+  LOWZSIMBIAS_G10:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_LOWZSIMBIAS
+  LOWZSIMBIAS_C11:
+    OPTS:
+      RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_LOWZSIMBIAS_C11
 
 SIM:
   SIMDATADES5YR:
@@ -23,6 +29,15 @@ SIM:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 10 12345
 
+  SIMDATALOWZ:
+    IA_G10:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 10 12345
+
+
+
 LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
@@ -37,6 +52,23 @@ LCFIT:
     MASK: DESSIM
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
+
+  LS:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: DATALOWZ
+    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
+
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZSIM
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CLASSIFICATION:
   # Load the existing SNN classifier from GLOBAL_ML
@@ -63,13 +95,13 @@ MERGE:
 
 BIASCOR:
   5YR:
-    DATA: [DS_SIMDATADES5YR]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA_G10]
+    DATA: [DS_SIMDATADES5YR, LS_SIMDATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA_G10, L_LOWZSIMBIAS_G10]
     SIMFILE_CCPRIOR: D_DESSIMBIAS5YRCC
     CLASSIFIER: SNNTEST
     MUOPTS:
       SCATTER_C11:
-        SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA_C11]
+        SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA_C11, L_LOWZSIMBIAS_C11]
         FITOPT: 0
       CLAS_SNIRF:
         CLASSIFIER: SNIRFTEST
@@ -82,14 +114,20 @@ BIASCOR:
         OPTS:
           CUTWIN_PROB_IA: 0.8 1.0
         FITOPT: 0
+      CHI2MAX_12:
+        OPTS:
+          chi2max: 12.25
+        FITOPT: 0
       CHI2MAX_100:
         OPTS:
           chi2max: 100
         FITOPT: 0
       CCPRIORBINS:
-
+        OPTS:
+          nzbin_ccprior: 6
+        FITOPT: 0
     OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CREATE_COV:
   ALL:
@@ -104,6 +142,11 @@ CREATE_COV:
         - "[ZSHIFT] [+zshift,=DEFAULT]"
         - "[VPEC] [+VPEC,=DEFAULT]"
         - "[HSTCAL] [+HST_cal,=DEFAULT]"
+        - "[PROBCUT05] [=DEFAULT,=PROB_CUT_05]"
+        - "[PROBCUT08] [=DEFAULT,=PROB_CUT_08]"
+        - "[CHI2MAX_12] [=DEFAULT,=CHI2MAX_12]"
+        - "[CHI2MAX_100] [=DEFAULT,=CHI2MAX_100]"
+        - "[CCPRIORBINS] [=DEFAULT,=CCPRIORBINS]"
 
 
 COSMOMC:
