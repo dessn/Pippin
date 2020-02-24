@@ -164,18 +164,21 @@ if __name__ == "__main__":
                     dfkey = bcor+'_'+p
                     df = pd.DataFrame(columns=['Covopt','Shift','Tot Error','Sys Error'])
                     statonlyName = bcor+' NOSYS'
-                    statonlyChain = chainfiles[bcormuopts==statonlyName][0]
-                    statonlyVal, statonlyErr = getParamAndErr(statonlyName,p,statonlyChain)
-                    for name,chain in zip(bcormuopts,chainfiles):
-                        if bcor == ' '.join(name.split()[:-1]):
-                            covopt = name.split()[-1]
-                            Val, totalErr = getParamAndErr(name,p,chain)
-                            syserr = (totalErr**2-statonlyErr**2)**.5
-                            shift = Val-statonlyVal
-                            df=df.append({'Covopt':covopt,'Shift':shift, 'Tot Error':totalErr,'Sys Error':syserr},ignore_index=True)
-                    fout = open(bcor.replace(' ','_').replace('(','').replace(')','')+'_'+p+'_budget.txt','w')    
-                    fout.write(df.to_latex())
-                    fout.close()
+                    try:
+                        statonlyChain = chainfiles[bcormuopts==statonlyName][0]
+                        statonlyVal, statonlyErr = getParamAndErr(statonlyName,p,statonlyChain)
+                        for name,chain in zip(bcormuopts,chainfiles):
+                            if bcor == ' '.join(name.split()[:-1]):
+                                covopt = name.split()[-1]
+                                Val, totalErr = getParamAndErr(name,p,chain)
+                                syserr = (totalErr**2-statonlyErr**2)**.5
+                                shift = Val-statonlyVal
+                                df=df.append({'Covopt':covopt,'Shift':shift, 'Tot Error':totalErr,'Sys Error':syserr},ignore_index=True)
+                        fout = open(bcor.replace(' ','_').replace('(','').replace(')','')+'_'+p+'_budget.txt','w')    
+                        fout.write(df.to_latex())
+                        fout.close()
+                    except:
+                        logging.info('No COVOPTS or could not find NOSYS... exiting gracefully')
     except Exception as e:
         logging.exception(str(e))
         raise e
