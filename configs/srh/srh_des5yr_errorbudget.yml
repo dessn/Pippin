@@ -10,7 +10,7 @@ DATAPREP:
       RAW_DIR: $SCRATCH_SIMDIR/PIP_GLOBAL_BIASCOR_DESSIMBIAS5YRCC
 
 SIM:
-  DATADES5YR:
+  SIMDATADES5YR:
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
     IAX:
