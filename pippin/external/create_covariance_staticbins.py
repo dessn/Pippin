@@ -664,7 +664,7 @@ def makeini(outputdir, baseoutput, basedir, datasetnum=0):
     # dvin_nosn_ocmb_omol.ini
     print("we are making ini files!")
     svec = ["omw", "wwa", "omol"]
-    gvec = ["sn_", "sn_bao_", "sn_cmb_", "sn_cmb_bao_", "cmb_"]
+    gvec = ["sn_", "sn_bao_", "sn_cmb_", "sn_cmb_bao_", "sn_prior_", "cmb_"]
     for ss in svec:
         for gg in gvec:
             if os.path.isfile(basedir + "/" + gg + ss + ".ini"):
