@@ -95,6 +95,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             + " "
             + (self.create_cov_dep.output["name"] if self.create_cov_dep is not None else "")
         )
+        # TODO: Better logic here please
         final = self.ini_prefix.split("_")[-1]
         ps = {"omw": ["omegam", "w"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
         self.output["cosmology_params"] = ps[final]
