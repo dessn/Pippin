@@ -74,7 +74,7 @@ CREATE_COV:
 COSMOMC:
   SN_OMW:
     OPTS:
-      INI: sn_omw
+      INI: sn_omw_prior
       COVOPTS: [ALL, NOSYS]
 
 
