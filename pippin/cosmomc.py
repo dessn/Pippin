@@ -73,7 +73,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
             self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
             self.labels = [self.name + "_" + c for c in self.covopts]
-            self.num_jobs = len(self.covopts) * self.num_walkers
+            self.num_jobs = len(self.covopts)
 
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
