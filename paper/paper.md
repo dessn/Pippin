@@ -9,9 +9,17 @@ authors:
   - name: Samuel Hinton
     orcid: 0000-0003-2071-9349
     affiliation: 1
+  - name: Dillon Brout
+    orcid: 0000-0001-5201-8374
+    affiliation: "2, 3"
 affiliations:
   - name: University of Queensland
     index: 1
+  - name: University of Pennsylvania
+    index: 2
+  - name: NASA Einstein Fellow
+    index: 3
+  
 date: 12 Feb 2020
 bibliography: paper.bib
 ---
