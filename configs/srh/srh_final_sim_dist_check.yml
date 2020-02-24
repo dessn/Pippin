@@ -89,3 +89,9 @@ ANALYSE:
       - D_DATADES5YR
       - D_DES_G10_CC
       - D_DES_C11_CC
+
+  CHECK_DES_G10:
+    HISTOGRAM:
+      - D_DATADES5YR
+      - D_DES_G10_CC
+
