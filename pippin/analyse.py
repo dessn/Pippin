@@ -77,6 +77,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         if self.cosmomc_deps:
             self.add_plot_script_to_run("plot_cosmomc.py")
+            self.add_plot_script_to_run("errbudget.py")
         if self.biascor_deps:
             self.add_plot_script_to_run("plot_biascor.py")
         if self.lcfit_deps:
