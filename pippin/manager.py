@@ -114,11 +114,15 @@ class Manager:
             for dep in t.dependencies:
                 if dep not in done_tasks:
                     can_run = False
-
+                    print("ZZZZZZZZZZZ", dep)
+            print("EEEEEE ", can_run)
             if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
                 can_run = False
+            print("FFFFFF ", can_run)
+
             if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
                 can_run = False
+            print("GGGGGG ", can_run)
 
             if can_run:
                 return t
