@@ -71,7 +71,6 @@ def plot_histograms(data, sims, types, figname):
     ]
     restricted = ["FITCHI2", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
     logs = [
-        # "FITPROB",
         "SNRMAX1",
         "SNRMAX2",
         "SNRMAX3",
@@ -133,8 +132,28 @@ def plot_histograms(data, sims, types, figname):
         if c in logs:
             ax.set_yscale("log")
 
-        if c == "FITPROB" and "FITPROB" in logs:
-            ax.set_ylim(0.1, 10)
+        # Add the reduced chi2 value if there are only one data and one sim
+        if len(sims) == 1 and len(data) == 1:
+            data_col = data[0][0][c]
+            sim_col = sims[0][0][c]
+
+            data_hist, _ = np.histogram(data_col, bins=bins)
+            sim_hist, _ = np.histogram(sim_col, bins=bins)
+
+            data_err = 1 / np.sqrt(data_hist)
+            sim_err = 1 / np.sqrt(data_hist)
+
+            data_dist, _ = np.histogram(data_col, bins=bins, density=True)
+            sim_dist, _ = np.histogram(sim_col, bins=bins, density=True)
+
+            dist_error = np.sqrt((data_dist * data_err)**2 + (sim_dist * sim_err)**2)
+            dist_diff = data_dist - sim_dist
+
+            chi2 = ((dist_diff / dist_error)**2).sum()
+            ndof = len(bc)
+            red_chi2 = chi2 / ndof
+
+            ax.text(0.05, 0.99, f"{chi2:0.1f}/{ndof:d} = {red_chi2:0.2f}", horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
