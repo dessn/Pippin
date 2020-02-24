@@ -22,12 +22,10 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="plot_biascor.done")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config["donefile"] = args.donefile
     config.update(config["BIASCOR"])
 
     return config
@@ -179,7 +177,6 @@ def plot_scatter_comp(df_all):
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
-    donefile = args.get("donefile")
     try:
         wfit_files = args.get("WFIT_SUMMARY")
         if wfit_files:
@@ -192,11 +189,7 @@ if __name__ == "__main__":
             plot_all_files(df_all)
             plot_scatter_comp(df_all)
 
-        logging.info(f"Writing success to {donefile}")
-        with open(donefile, "w") as f:
-            f.write("SUCCESS")
+        logging.info(f"Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
-        logging.error(f"Writing failure to file {donefile}")
-        with open(donefile, "w") as f:
-            f.write("FAILURE")
+        raise e

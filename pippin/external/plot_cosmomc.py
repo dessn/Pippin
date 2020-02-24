@@ -75,12 +75,10 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("-d", "--donefile", help="Path of done file", type=str, default="plot_cosmomc.done")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config["donefile"] = args.donefile
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
@@ -188,9 +186,7 @@ if __name__ == "__main__":
             if do_full:
                 c.plotter.plot_walks(filename=out + "_walks.png")
 
-        with open(args["donefile"], "w") as f:
-            f.write("SUCCESS")
+        logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
-        with open(args["donefile"], "w") as f:
-            f.write("FAILURE")
+        raise e

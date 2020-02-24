@@ -4,3 +4,4 @@ ANALYSE:
     OPTS:
       COVOPTS: ALL  # Optional. Covopts to match. Single or list. Exact match. Dont set to get everything
       SHIFT: True  # Optional. Shifts om, w, ol contours to 0.3, 1.0 and 0.7 respectively.
+      ADDITIONAL_SCRIPTS: /somepath/to/your/script.py # String or list. should take the input.yml generated as a command line argument.

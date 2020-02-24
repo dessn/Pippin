@@ -568,8 +568,9 @@ Cosmology contours will be blinded when made by looking at the BLIND flag set on
 True.
 
 Note that all the plotting scripts work the same way - Analyse generates a small yaml file pointing to all the 
-resources, and each script uses the same file to make different plots. It is thus super easy to add your own 
-plotting code scripts, let me know if you want yours included. 
+resources called `input.yml`, and each script uses the same file to make different plots. It is thus super easy to add your own 
+plotting code scripts, and you can specify arbitrary code to execute using the `ADDITIONAL_SCRIPTS` keyword in opts.
+Just make sure your code takes `input.yml` as an argument.
 
 ```yaml
 ANALYSE:
@@ -582,6 +583,7 @@ ANALYSE:
       COVOPTS: [ALL, NOSYS] # Optional. Covopts to match when making contours. Single or list. Exact match.
       SHIFT: False  # Defualt False. Shift all the contours on top of each other
       PRIOR: 0.01  # Default to None. Optional normal prior around Om=0.3 to apply for sims if wanted.
+      ADDITIONAL_SCRIPTS: /somepath/to/your/script.py  # Should take the input.yml as an argument
 ```
 
 

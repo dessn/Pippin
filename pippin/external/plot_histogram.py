@@ -23,12 +23,10 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("--donefile", help="Path of done file", type=str, default="plot_histogram.done")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config["donefile"] = args.donefile
     config.update(config["HISTOGRAM"])
     return config
 
@@ -222,6 +220,7 @@ def plot_redshift_evolution(data, sims, types, figname):
 
 
 def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
+    # TODO: FInd alpha beta om, h0 better
     cosmo = FlatLambdaCDM(h0, om)
     cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
     obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] - MB
@@ -266,34 +265,8 @@ if __name__ == "__main__":
             plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
             plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
 
-            # try:
-            #     for b in ["g", "r", "i", "z"]:
-            #         data_masks = [np.isin(d["FIELD"], f) & (d[f"SNRMAX_{b}"] > 5) for d, _ in data_dfs]
-            #         sim_masks = [np.isin(s["FIELD"], f) & (s[f"SNRMAX_{b}"] > 5) for s, _ in sim_dfs]
-            #
-            #         masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
-            #         masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-            #         plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}_{b}.png")
-            #         plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}_{b}.png")
-            #
-            # except Exception as e:
-            #     logging.warning("Not all plots made. Do you have the SNRMAX_g r i z columns extracted from the ROOT file?")
+        logging.info(f"Finishing gracefully")
 
-        # zbins = [0.2, 0.4, 0.6, 2]
-        # for i, z1 in enumerate(zbins[:-1]):
-        #     z2 = zbins[i + 1]
-        #     data_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in data_dfs]
-        #     sim_masks = [(d["zHD"] > z1) & (d["zHD"] < z2) for d, _ in sim_dfs]
-        #
-        #     masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
-        #     masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-        #     plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{z1:0.1f}_{z2:0.1f}.png")
-
-        logging.info(f"Writing success to {args['donefile']}")
-        with open(args["donefile"], "w") as f:
-            f.write("SUCCESS")
     except Exception as e:
         logging.exception(str(e))
-        logging.error(f"Writing failure to file {args['donefile']}")
-        with open(args["donefile"], "w") as f:
-            f.write("FAILURE")
+        raise e

@@ -28,12 +28,10 @@ def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input_file", help="Input yml file", type=str)
-    parser.add_argument("--donefile", help="Path of done file", type=str, default="plot_efficiency.done")
     args = parser.parse_args()
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config["donefile"] = args.donefile
     config.update(config["HISTOGRAM"])
     if config.get("FIELDS") is None:
         config["FIELDS"] = [["X3", "C3"], ["E1", "E2", "C1", "C2", "S1", "S2", "X1", "X2"]]
@@ -261,11 +259,8 @@ if __name__ == "__main__":
                     d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
                 plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
 
-        logging.info(f"Writing success to {args['donefile']}")
-        with open(args["donefile"], "w") as f:
-            f.write("SUCCESS")
+        logging.info(f"Finishing gracefully")
+
     except Exception as e:
         logging.exception(str(e))
-        logging.error(f"Writing failure to file {args['donefile']}")
-        with open(args["donefile"], "w") as f:
-            f.write("FAILURE")
+        raise e

@@ -28,6 +28,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             OPTS:
                 BLIND: [omegam, w]  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
                 COVOPTS: [ALL, NOSYS] # Optional. Covopts to match. Single or list. Exact match.
+                ADDITIONAL_SCRIPTS:
+                  - path/to/your/script.py
+                  - anotherscript.py
 
     OUTPUTS
     =======
@@ -80,6 +83,11 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             self.add_plot_script_to_run("plot_histogram.py")
             self.add_plot_script_to_run("plot_efficiency.py")
 
+        if self.options.get("ADDITIONAL_SCRIPTS") is not None:
+            vals = ensure_list(self.options.get("ADDITIONAL_SCRIPTS"))
+            for v in vals:
+                self.add_plot_script_to_run(v)
+
         self.done_file = self.done_files[-1]
 
         for c in self.cosmomc_deps:
@@ -114,9 +122,11 @@ cd {output_dir}
     def get_slurm_raw(self):
         base = self.slurm
         template = """
-python {path} {{input_yml}} --donefile {donefile}
+python {path} {{input_yml}}
 if [ $? -ne 0 ]; then
     echo FAILURE > {donefile}
+else
+    echo SUCCESS > {donefile}
 fi
 """
         for path, donefile in zip(self.path_to_codes, self.done_files):
@@ -125,6 +135,10 @@ fi
 
     def add_plot_script_to_run(self, script_name):
         script_path = get_data_loc(script_name, extra=self.plot_code_dir)
+        if script_path is None:
+            self.fail_config(f"Cannot resolve script {script_name} relative to {self.plot_code_dir}. Please use a variable or abs path.")
+        else:
+            self.logger.debug(f"Adding script path {script_path} to plotting code.")
         self.path_to_codes.append(script_path)
         self.done_files.append(os.path.join(self.output_dir, os.path.basename(script_name).split(".")[0] + ".done"))
 
