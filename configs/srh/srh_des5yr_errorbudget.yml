@@ -82,8 +82,14 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[SALT] [+SALT,=DEFAULT]"
+        - "[CAL] [+survcal,=DEFAULT]"
         - "[SCATTER] [=DEFAULT,+SCATTER]"
+        - "[DUST] [=MWEBV,=DEFAULT]"
         - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
+        - "[ZSHIFT] [+zshift,=DEFAULT]"
+        - "[VPEC] [+VPEC,=DEFAULT]"
+        - "[HSTCAL] [+HST_cal,=DEFAULT]"
 
 
 COSMOMC:
