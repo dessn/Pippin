@@ -96,7 +96,7 @@ COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_prior_omw
-      WALKERS: 20
+      NUM_WALKERS: 20
 
 
 ANALYSE:
