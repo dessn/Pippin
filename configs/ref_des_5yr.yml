@@ -76,7 +76,6 @@ COSMOMC:
     OPTS:
       INI: sn_omw
       COVOPTS: [ALL, NOSYS]
-      NUM_WALKERS: 40
 
 
 ANALYSE:
