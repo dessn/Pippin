@@ -154,7 +154,7 @@ def plot_histograms(data, sims, types, figname):
                 ndof = len(bc)
                 red_chi2 = chi2 / ndof
 
-                ax.text(0.05, 1 - 0.1 * i, f"{chi2:0.1f}/{ndof:d} = {red_chi2:0.2f}", horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, color=cs[i])
+                ax.text(0.05, 0.99 - 0.1 * i, f"{chi2:0.1f}/{ndof:d} = {red_chi2:0.2f}", horizontalalignment='left', verticalalignment='top', transform=ax.transAxes, color=cs[i], fontsize=10)
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
