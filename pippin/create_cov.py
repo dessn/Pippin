@@ -48,7 +48,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "create_cov/sys_scale.LIST"))
+        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/des/bbc/scale_5yr.list"))
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")

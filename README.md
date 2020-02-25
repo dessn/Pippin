@@ -30,7 +30,7 @@ Pippin - a pipeline for Supernova cosmology analysis
     - [Classification](#classification)
     - [Aggregation](#aggregation)
     - [Merging](#merging)
-    - [Bias Corrections](#biar-corrections)
+    - [Bias Corrections](#bias-corrections)
     - [Create Covariance](#create-covariance)
     - [CosmoMC](#cosmomc)
     - [Analyse](#analyse)

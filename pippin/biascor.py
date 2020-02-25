@@ -77,6 +77,7 @@ class BiasCor(ConfigBasedExecutable):
         ]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
+        self.logger.debug(f"Making {len(self.output_plots)} plots")
 
         self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
         self.output["hubble_plot"] = self.output_plots
