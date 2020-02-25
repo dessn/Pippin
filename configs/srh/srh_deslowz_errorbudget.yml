@@ -154,7 +154,7 @@ BIASCOR:
 CREATE_COV:
   ALL:
     MASK: 5YR
-    OPTS
+    OPTS:
       SYS_LIST: surveys/des/bbc/scale_5yr_small.list
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
