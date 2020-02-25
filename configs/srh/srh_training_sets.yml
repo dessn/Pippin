@@ -77,7 +77,6 @@ CLASSIFICATION:
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
     MODE: train
-    MASK_SIM: TRAINING
 
   SNIRFTEST:
     CLASSIFIER: SnirfClassifier
