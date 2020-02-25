@@ -148,6 +148,7 @@ BIASCOR:
     OPTS:
       u5: 1  # Vary and fit mass step at all
       u7: 1  # Vary and fit step location
+      p8: 0.01  # logmass tau
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CREATE_COV:
