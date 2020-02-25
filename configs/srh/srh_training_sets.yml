@@ -1,0 +1,82 @@
+SIM:
+  G10_SPLITA:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    CC:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+
+  C11_SPLITB:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+    CC:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+
+  C11_WFIRSTH17_DUSTCC:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      GENMODEL: SALT2.WFIRST-H17
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+
+  C11_P18UV2IR_DUSTCC:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      GENMODEL: SALT2.P18_UV2IR
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+
+LCFIT:
+  TESTFIT:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+
+CLASSIFICATION:
+
+  NNTRAIN:
+    CLASSIFIER: NearestNeighborPyClassifier
+    MODE: train
+
+  NNTEST:
+    CLASSIFIER: NearestNeighborPyClassifier
+    MODE: predict
+    OPTS:
+        MODEL: NNTRAIN
+
+  SNIRFTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAINING
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNIRFTRAIN
+
+AGGREGATION:
+  AGG:
+    OPTS:
+      INCLUDE_TYPE: True
+      PLOT: True
+
+MERGE:
+  MERGE:

@@ -28,6 +28,9 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 10 12345
+      HOSTLIB_FILE: DES-NEWMASS-v3.HOSTLIB
+      HOSTLIB_WGTMAP_FILE: OG_WGTMAP.DAT
+      HOSTLIB_MSKOPT: 326
 
   SIMDATALOWZ:
     IA_G10:
@@ -125,9 +128,16 @@ BIASCOR:
         FITOPT: 0
       CCPRIORBINS:
         OPTS:
-          nzbin_ccprior: 6
+          nzbin_ccprior: 8
+        FITOPT: 0
+      HOSTMASS_DBETA:
+        OPTS:
+          u16: 1  # p16 = betaHost (dbeta/dlogmass)
+          u7: 0  # p7 = logmass_cen (fix location of logmass step)
         FITOPT: 0
     OPTS:
+      u5: 1  # Vary and fit mass step at all
+      u7: 1  # Vary and fit step location
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
 
 CREATE_COV:
@@ -148,6 +158,7 @@ CREATE_COV:
         - "[CHI2MAX_12] [=DEFAULT,=CHI2MAX_12]"
         - "[CHI2MAX_100] [=DEFAULT,=CHI2MAX_100]"
         - "[CCPRIORBINS] [=DEFAULT,=CCPRIORBINS]"
+        - "[HOSTMASS_DBETA] [=DEFAULT,=HOSTMASS_DBETA]"
 
 
 COSMOMC:
