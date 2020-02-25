@@ -117,7 +117,13 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.done_file) as f:
                 failed = False
                 if "FAIL" in f.read():
-                    self.logger.error(f"Done file reporting failure! Check log in {self.logging_file}")
+                    self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
+
+                    log_files = [self.logging_file]
+
+                    for dir in self.output["subdirs"]:
+                        log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
+                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")
                     return Task.FINISHED_FAILURE
 
                 if not os.path.exists(self.w_summary):
@@ -151,17 +157,6 @@ class BiasCor(ConfigBasedExecutable):
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return Task.FINISHED_SUCCESS
-        if os.path.exists(self.logging_file):
-            with open(self.logging_file) as f:
-                output_error = False
-                for line in f.read().splitlines():
-                    if "ABORT ON FATAL ERROR" in line or "** ABORT **" in line:
-                        self.logger.error(f"Output log showing abort: {self.logging_file}")
-                        output_error = True
-                    if output_error:
-                        self.logger.error(line)
-                if output_error:
-                    return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
     def write_input(self, force_refresh):

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pippin.config import get_logger, get_hash
 import os
 import datetime
-
+import numpy as np
 
 class Task(ABC):
     FINISHED_SUCCESS = -1
@@ -93,6 +93,33 @@ class Task(ABC):
 
     def run(self, force_refresh):
         return self._run(force_refresh)
+
+    def scan_file_for_error(self, path, *error_match, max_lines=10):
+        assert len(error_match) >= 1, "You need to specify what string to search for. I have nothing."
+        found = False
+        if not os.path.exists(path):
+            self.logger.warning(f"Note, expect log path {path} does not exist")
+            return False
+
+        with open(path) as f:
+            for i, line in enumerate(f.read().splitlines()):
+                error_found = np.any([e in line for e in error_match])
+                index = i
+                if error_found:
+                    found = True
+                    self.logger.error(f"Found error in file {path}, excerpt below")
+                if found and i - index <= max_lines:
+                    self.logger.error(f"Excerpt:    {line}")
+        return found
+
+    def scan_files_for_error(self, paths, *error_match, max_lines=10, max_erroring_files=3):
+        num_errors = 0
+        for path in paths:
+            if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
+                num_errors += 1
+            if num_errors >= max_erroring_files:
+                break
+        return num_errors > 0
 
     @abstractmethod
     def _run(self, force_refresh):

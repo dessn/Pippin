@@ -256,50 +256,22 @@ class SNANASimulation(ConfigBasedExecutable):
         return True
 
     def _check_completion(self, squeue):
-        # Check log for errors and if found, print the rest of the log so you dont have to look up the file
-        output_error = False
-        if self.logging_file is not None and os.path.exists(self.logging_file):
-            with open(self.logging_file, "r") as f:
-                for line in f.read().splitlines():
-                    if "FATAL ERROR ABORT" in line:
-                        self.logger.error(f"Fatal error in simulation. See {self.logging_file} for details.")
-                        output_error = True
-                    if output_error:
-                        self.logger.error(f"Excerpt: {line}")
-            if output_error:
-                self.logger.debug("Removing hash on failure")
-                os.remove(self.hash_file)
-                chown_dir(self.output_dir)
-                return Task.FINISHED_FAILURE
-        else:
-            self.logger.warn(f"Simulation {self.name} logging file does not exist: {self.logging_file}")
-        if os.path.exists(self.sim_log_dir):
-            for file in os.listdir(self.sim_log_dir):
-                if file.startswith("TMP") or file.endswith(".LOG"):
-                    path = os.path.join(self.sim_log_dir, file)
-                    try:
-                        with open(path) as f:
-                            for line in f.read().splitlines():
-                                if "FATAL ERROR ABORT" in line and not output_error:
-                                    output_error = True
-                                    self.logger.error(f"Fatal error in simulation. See {path} for details.")
-                                if output_error:
-                                    self.logger.error(f"Excerpt: {line}")
-                        if output_error:
-                            self.logger.debug("Removing hash on failure")
-                            os.remove(self.hash_file)
-                            chown_dir(self.output_dir)
-                            return Task.FINISHED_FAILURE
-                    except FileNotFoundError:
-                        self.logger.warning(f"Cannot find log file in process of reading it in (maybe it just got zipped up): {path}")
-        else:
-            self.logger.error(f"Sim log dir doesn't exist at {self.sim_log_dir}. Warning, there might be orphaned jobs from this.")
-            return Task.FINISHED_FAILURE
-
-        # Check to see if the done file exists
 
         if os.path.exists(self.done_file):
             self.logger.info(f"Simulation {self.name} found done file!")
+
+            with open(self.done_file) as f:
+                if "FAILURE" in f.read():
+                    self.logger.error(f"Done file {self.done_file} reporting failure")
+
+                    log_files = [self.logging_file]
+                    if os.path.exists(self.sim_log_dir):
+                        log_files += [f for f in self.sim_log_dir if f.upper().endswith(".LOG")]
+                    else:
+                        self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
+                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")
+                    return Task.FINISHED_FAILURE
+
             if os.path.exists(self.total_summary):
                 with open(self.total_summary) as f:
                     key, count = None, None
@@ -317,11 +289,6 @@ class SNANASimulation(ConfigBasedExecutable):
                         return Task.FINISHED_FAILURE
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
-
-            with open(self.done_file) as f:
-                if "FAILURE" in f.read():
-                    self.logger.error(f"Done file {self.done_file} reporting failure")
-                    return Task.FINISHED_FAILURE
 
             self.logger.info("Done file found, creating symlinks")
             s_ends = [os.path.join(self.output_dir, os.path.basename(s)) for s in self.sim_folders]

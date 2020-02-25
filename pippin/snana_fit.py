@@ -233,21 +233,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return True
 
     def _check_completion(self, squeue):
-        # Check for errors
-        output_error = False
-        for file in self.log_files:
-            if os.path.exists(file):
-                with open(file, "r") as f:
-                    for line in f.read().splitlines():
-                        if ("FATAL ERROR ABORT" in line or "QOSMaxSubmitJobPerUserLimit" in line) and not output_error:
-                            extra = "" if squeue is None else f"Squeue shows you have {len(squeue)} jobs..."
-                            self.logger.error(f"Fatal error in light curve fitting. See {file} for details. {extra}")
-                            output_error = True
-                        if output_error:
-                            self.logger.error(f"Excerpt: {line}")
-
-        if output_error:
-            return Task.FINISHED_FAILURE
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
@@ -264,19 +249,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     return Task.FINISHED_SUCCESS
                 else:
                     self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
-                    for file in os.listdir(self.lc_log_dir):
-                        output_error = False
-                        path = os.path.join(self.lc_log_dir, file)
-                        if "LOG" in file and os.path.isfile(path):
-                            with open(path) as f:
-                                for line in f.read().splitlines():
-                                    if "FATAL ERROR ABORT" in line or "QOSMax" in line:
-                                        output_error = True
-                                        self.logger.error(f"Fatal error in light curve fitting. See {path} for details.")
-                                    if output_error:
-                                        self.logger.error(f"Excerpt: {line}")
-                            if output_error:
-                                return Task.FINISHED_FAILURE
+
+                    log_files = [] + self.log_files
+                    log_files += [f for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
+
+                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")
+                    return Task.FINISHED_FAILURE
+
         return self.check_for_job(squeue, os.path.basename(self.config_path)[:-4])
 
     @staticmethod
