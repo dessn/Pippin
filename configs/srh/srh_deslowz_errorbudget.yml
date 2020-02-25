@@ -145,7 +145,8 @@ CREATE_COV:
   ALL:
     MASK: 5YR
     OPTS:
-      SYS_LIST: surveys/des/bbc/scale_5yr_small.list
+      FITOPT_SCALES:
+        SALT2: 0.03
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
         - "[SALT] [+SALT,=DEFAULT]"

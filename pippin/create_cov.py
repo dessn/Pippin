@@ -112,6 +112,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
 
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords
+        self.logger.debug(f"Leading sys scaling from {self.sys_file_in}")
         with open(self.sys_file_in) as f:
             sys_scale = f.read().splitlines()
 
