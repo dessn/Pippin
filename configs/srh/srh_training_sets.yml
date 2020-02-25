@@ -95,10 +95,15 @@ CLASSIFICATION:
       MODEL: SNIRFTRAIN
 
 AGGREGATION:
-  AGG:
+  AGG_SNIRF:
+    MASK_CLAS: SNIRF
     OPTS:
       INCLUDE_TYPE: True
       PLOT: True
-
+  AGG_NN:
+    MASK_CLAS: NN
+    OPTS:
+      INCLUDE_TYPE: True
+      PLOT: True
 MERGE:
   MERGE:
