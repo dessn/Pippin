@@ -129,7 +129,10 @@ def plot_histograms(data, sims, types, figname):
                 ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
                 ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
-        ax.set_xlabel(c)
+        if "MUDIFF" in c:
+            ax.set_xlabel("FAKE MUDIFF")
+        else:
+            ax.set_xlabel(c)
         if c in logs:
             ax.set_yscale("log")
 
