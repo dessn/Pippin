@@ -54,14 +54,6 @@ class BiasCor(ConfigBasedExecutable):
             self.probability_column_name = new_name
         self.output["fit_output_dir"] = self.fit_output_dir
 
-        # calculate genversion the hard way
-        # Ricks 14Sep2019 update broke this
-        # a_genversion = self.merged_data[0].output["genversion"]
-        # for n in self.sim_names:
-        #     a_genversion = a_genversion.replace(n, "")
-        # while a_genversion.endswith("_"):
-        #     a_genversion = a_genversion[:-1]
-
         num_dirs = self.num_verions[0]
         if num_dirs == 1:
             self.output["subdirs"] = ["SALT2mu_FITJOBS"]
