@@ -28,17 +28,17 @@ SIM:
     <<: *deslikesim
     GLOBAL:
       <<: *globals
-      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_i_G10.dat
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_HOST_MAG_i_G10.dat
   MAGR:
     <<: *deslikesim
     GLOBAL:
       <<: *globals
-      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_HOST_MAG_r_G10.dat
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_HOST_MAG_r_G10.dat
   ZHD:
     <<: *deslikesim
     GLOBAL:
       <<: *globals
-      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD_G10.dat
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_zHD_G10.dat
   BASE:
     <<: *deslikesim
     GLOBAL: *globals
