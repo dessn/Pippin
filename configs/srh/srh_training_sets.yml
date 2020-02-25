@@ -58,6 +58,16 @@ SIM:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 10 12345
 
+  G10_JONES:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_jones.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+
+
 LCFIT:
   TESTFIT:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
