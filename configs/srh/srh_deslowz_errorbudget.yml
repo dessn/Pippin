@@ -19,6 +19,9 @@ SIM:
   SIMDATADES5YR:
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      HOSTLIB_FILE: $DES_ROOT/simlibs/DES-NEWMASS-v3.HOSTLIB
+      HOSTLIB_WGTMAP_FILE: $DES_ROOT/simlibs/OG_WGTMAP.DAT
+      HOSTLIB_MSKOPT: 326
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
     IA91BG:
@@ -28,9 +31,6 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_REPEAT: 10 12345
-      HOSTLIB_FILE: $DES_ROOT/simlibs/DES-NEWMASS-v3.HOSTLIB
-      HOSTLIB_WGTMAP_FILE: $DES_ROOT/simlibs/OG_WGTMAP.DAT
-      HOSTLIB_MSKOPT: 326
 
   SIMDATALOWZ:
     IA_G10:
