@@ -70,12 +70,12 @@ module load cuda
 echo `which python`
 cd {path_to_classifier}
 echo "#################TIMING  Starting here:   `date`"
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train} {norm}
+python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {test_or_train}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 fi
 echo "#################TIMING  Database done now, starting classifier:   `date`"
-python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {command}
+python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
 if [ $? -eq 0 ]; then
     rm -rf {dump_dir}/processed
     echo SUCCESS > {done_file2}
