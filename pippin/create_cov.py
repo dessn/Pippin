@@ -123,6 +123,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                     comps = line.split()
                     if label in comps[1]:
                         sys_scale[i] = " ".join(comps[:-1] + [f"{overwrite}"])
+                        self.logger.debug(f"FITOPT_SCALES: Setting {' '.join(comps)} to {sys_scale[i]}")
 
             # Set the muopts scales
             muopt_scales = self.options.get("MUOPT_SCALES", {})
