@@ -1,0 +1,66 @@
+# Plot hjistograms comparing data to sims
+
+ANCHORS:
+  DESLIKESIM: &deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+  GLOBAL: &globals
+    NGEN_UNIT: 0.3
+    RANSEED_REPEAT: 20 12345
+
+
+DATAPREP:
+  DATA:  # 5 yr photometry sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+
+SIM:
+  MAGI:
+    <<: *deslikesim
+    GLOBAL:
+      <<: *globals
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_HOST_MAG_i_G10.dat
+      FLUXERRMODEL_FILE: NONE
+
+  MAGR:
+    <<: *deslikesim
+    GLOBAL:
+      <<: *globals
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_HOST_MAG_r_G10.dat
+      FLUXERRMODEL_FILE: NONE
+
+  ZHD:
+    <<: *deslikesim
+    GLOBAL:
+      <<: *globals
+      SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/5yr/efficiency_zHD_G10.dat
+      FLUXERRMODEL_FILE: NONE
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    SNLCINP:
+      FLUXERRMODEL_FILE: NONE
+      ROOTFILE_OUT: FIT.ROOT
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 50
+      APPEND_TABLE_TEXT: HOST_MAG_i HOST_MAG_r HOST_MAG_g SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z
+
+ANALYSE:
+  HIST_COMPARISON_ALL:
+    HISTOGRAM: [D_DATA, D_MAGI, D_MAGR, D_ZHD]
+  HIST_ZS_OLD_NEW:
+    HISTOGRAM: [D_DATA, D_ZHD]
+  HIST_MAGI_OLD_NEW:
+    HISTOGRAM: [D_DATA, D_MAGI]
+  HIST_MAGR_OLD_NEW:
+    HISTOGRAM: [D_DATA, D_MAGR]
