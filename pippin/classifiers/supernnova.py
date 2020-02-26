@@ -48,7 +48,7 @@ class SuperNNovaClassifier(Classifier):
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
         self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
-        self.norm = options.get("NORM", "global")
+        self.norm = options.get("NORM", "cosmo")
         self.validate_model()
 
         assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
@@ -264,9 +264,7 @@ echo "#################TIMING  Classifier finished:   `date`"
                         dataframe = pickle.load(f)
                         if self.variant in ["variational", "bayesian"]:
                             final_dataframe = dataframe[["SNID", "all_class0_median", "all_class0_std"]]
-                            final_dataframe = final_dataframe.rename(
-                                columns={"all_class0_median": self.get_prob_column_name(), "all_class0_std": self.get_prob_column_name() + "_ERR"}
-                            )
+                            final_dataframe = final_dataframe.rename(columns={"all_class0_median": self.get_prob_column_name(), "all_class0_std": self.get_prob_column_name() + "_ERR"})
                         else:
                             final_dataframe = dataframe[["SNID", "all_class0"]]
                             final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
