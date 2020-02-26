@@ -61,7 +61,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         if isinstance(self.covopts, str):
             self.covopts = [self.covopts]
 
-        self.files = []
+        self.cosmomc_input_files = []
+        self.cosmomc_output_files = []
         self.names = []
         self.params = []
 
@@ -76,11 +77,14 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 
         if self.cosmomc_deps:
+            self.add_plot_script_to_run("parse_cosmomc.py")
             self.add_plot_script_to_run("plot_cosmomc.py")
-            self.add_plot_script_to_run("errbudget.py")
+            self.add_plot_script_to_run("plot_errbudget.py")
         if self.biascor_deps:
+            self.add_plot_script_to_run("parse_biascor.py")
             self.add_plot_script_to_run("plot_biascor.py")
         if self.lcfit_deps:
+            self.add_plot_script_to_run("parse_lcfit.py")
             self.add_plot_script_to_run("plot_histogram.py")
             self.add_plot_script_to_run("plot_efficiency.py")
 
@@ -94,15 +98,46 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
-                    self.files.append(c.output["base_dict"][covopt])
+                    self.cosmomc_input_files.append(c.output["base_dict"][covopt])
+                    self.cosmomc_output_files.append(c.output["label"] + covopt + ".csv.gz")
                     self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
                     for p in c.output["cosmology_params"]:
                         if p not in self.params:
                             self.params.append(p)
-            self.logger.debug(f"Analyse task will create CosmoMC plots with {len(self.files)} covopts/plots")
+            self.logger.debug(f"Analyse task will create CosmoMC plots with {len(self.cosmomc_input_files)} covopts/plots")
 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
 
+        # Get the fitres and m0diff files we'd want to parse for Hubble diagram plotting
+        self.biascor_fitres_input_files = [os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_fitres_output_files = [b.name + m.replace("SALT2mu_FITJOBS", 1) + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+
+        # Get the m0diff files for everything
+        self.biascor_m0diffs = []
+        for b in self.biascor_deps:
+            for m in b.output["m0dif_dirs"]:
+                sim_number = 1
+                if os.path.basename(m).isdigit():
+                    sim_number = int(os.path.basename(m))
+                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIFF")]
+                for f in files:
+                    muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
+                    fitopt_num = int(f.split("FITOPT")[-1].split("_")[0])
+                    if muopt_num == 0:
+                        muopt = "DEFAULT"
+                    else:
+                        muopt = b.output["muopts"][muopt_num - 1]  # Because 0 is default
+
+                    if fitopt_num == 0:
+                        fitopt = "DEFAULT"
+                    else:
+                        fitopt = b.output["fitopt_index"][fitopt_num - 1]
+
+                    self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
+        self.biascor_m0diff_output = "all_biascor_m0diffs.csv"
+
+        # Create a list of all the m0diff files for parsing
         self.hubble_plots = list(set([a for c in self.biascor_deps + self.cosmomc_deps for a in c.output.get("hubble_plot", [])]))
 
         self.slurm = """#!/bin/bash
@@ -172,13 +207,22 @@ fi
         input_yml_file = "input.yml"
         output_dict = {
             "COSMOMC": {
-                "FILES": self.files,
+                "INPUT_FILES": self.cosmomc_input_files,
+                "PARSED_FILES": self.cosmomc_output_files,
                 "PARAMS": self.params,
                 "SHIFT": self.options.get("SHIFT", False),
                 "PRIOR": self.options.get("PRIOR"),
                 "NAMES": self.names,
             },
-            "BIASCOR": {"WFIT_SUMMARY": self.wsummary_files},
+            "BIASCOR": {
+                "WFIT_SUMMARY_INPUT": self.wsummary_files,
+                "WFIT_SUMMARY_OUTPUT": "all_biascor.csv",
+                "FITRES_INPUT": self.biascor_fitres_input_files,
+                "FITRES_PROB_COLS": self.biascor_prob_col_names,
+                "FIIRES_PARSED": self.biascor_fitres_output_files,
+                "M0DIFF_INPUTS": self.biascor_m0diffs,
+                "M0DIFF_PARSED": self.biascor_m0diff_output,
+            },
             "OUTPUT_NAME": self.name,
             "BLIND": self.blind_params,
             "HISTOGRAM": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
@@ -217,10 +261,6 @@ fi
 
     @staticmethod
     def get_tasks(configs, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-        cosmomc_tasks = Task.get_task_of_type(prior_tasks, CosmoMC)
-        biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
-        lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
-
         def _get_analyse_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
 
@@ -232,28 +272,18 @@ fi
                 config = {}
             options = config.get("OPTS", {})
 
-            mask_cosmomc = config.get("MASK_COSMOMC", "")
-            mask_biascor = config.get("MASK_BIASCOR", "")
-            histograms = config.get("HISTOGRAM", [])
+            mask_cosmomc = config.get("MASK_COSMOMC")
+            mask_biascor = config.get("MASK_BIASCOR")
+            if config.get("HISTOGRAM") is not None:
+                Task.fail_config("Sorry to do this, but please change HISTOGRAM into MASK_LCFIT to bring it into line with others.")
+            mask_lcfit = config.get("MASK_LCFIT")
+            # TODO: Add aggregation to compile all the plots here
 
-            deps_cosmomc = [
-                c
-                for c in cosmomc_tasks
-                if mask_cosmomc in c.name and (mask_biascor == "" or (c.output.get("bcor_name") is not None and mask_biascor in c.output.get("bcor_name")))
-            ]
-            deps_biascor = [b for b in biascor_tasks if mask_biascor in b.name]
-            deps_hist = [l for l in lcfit_tasks if l.name in histograms]
+            deps_cosmomc = Task.match_tasks_of_type(mask_cosmomc, prior_tasks, CosmoMC)
+            deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor)
+            deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit)
 
-            num_missing = 0
-            if len(histograms) != len(deps_hist):
-                for h in histograms:
-                    missing = len([l for l in lcfit_tasks if l.name == h]) == 0
-                    if missing:
-                        num_missing += 1
-                        Task.logger.error(f"The histogram dependency {h} could not be found in any LCFIT task. Please check for typos.")
-                Task.fail_config(f"Couldn't match {num_missing} histogram tasts. These are your options:\n\n {[l.name for l in lcfit_tasks]}")
-
-            deps = deps_cosmomc + deps_biascor + deps_hist
+            deps = deps_cosmomc + deps_biascor + deps_lcfit
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no dependencies!")
 

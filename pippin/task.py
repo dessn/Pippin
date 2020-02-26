@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash
+from pippin.config import get_logger, get_hash, ensure_list
 import os
 import datetime
 import numpy as np
+
 
 class Task(ABC):
     FINISHED_SUCCESS = -1
@@ -120,6 +121,28 @@ class Task(ABC):
             if num_errors >= max_erroring_files:
                 break
         return num_errors > 0
+
+    @staticmethod
+    def match_tasks(mask, deps, match_none=True):
+        if match_none and mask is None:
+            mask = ""
+        if isinstance(mask, str):
+            if mask == "*":
+                mask = ""
+        mask = ensure_list(mask)
+
+        matching_deps = [d for d in deps if any(x in d.name for x in mask)]
+
+        for m in mask:
+            specific_match = [d for d in matching_deps if m in d.name]
+            if len(specific_match) == 0:
+                Task.fail_config(f"Mask '{m}' does not match any deps. Probably a typo. Available options are {deps}")
+
+        return matching_deps
+
+    @staticmethod
+    def match_tasks_of_type(mask, deps, *cls, match_none=True):
+        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=True)
 
     @abstractmethod
     def _run(self, force_refresh):

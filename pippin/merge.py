@@ -59,6 +59,7 @@ class Merger(Task):
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
+        self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
         self.output["blind"] = self.lc_fit["blind"]
 
@@ -124,12 +125,8 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            fitres_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
-            ]
-            symlink_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
-            ]
+            fitres_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+            symlink_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
         new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()

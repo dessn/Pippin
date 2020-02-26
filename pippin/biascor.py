@@ -63,15 +63,14 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [
-            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
-            for m in self.output["m0dif_dirs"]
-        ]
+        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
 
-        self.output["muopts"] = self.config.get("MUOPTS", {}).keys()
+        self.muopts = self.config.get("MUOPTS", {})
+        self.muopt_order = list(self.muopts.keys())
+        self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
 
     def generate_w_summary(self):
@@ -120,9 +119,7 @@ class BiasCor(ConfigBasedExecutable):
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                    m0files = [
-                        os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu_F") and f.endswith(".M0DIF")
-                    ]
+                    m0files = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu_F") and f.endswith(".M0DIF")]
                     for path in wfiles:
                         with open(path) as f2:
                             if "ERROR:" in f2.read():
@@ -134,17 +131,11 @@ class BiasCor(ConfigBasedExecutable):
                                 if "WARNING(SEVERE):" in line:
                                     self.logger.warning(f"File {path} reporting severe warning: {line}")
                                     self.logger.warning("You wont see this warning on a rerun, so look into it now!")
-                    plots_completed = self.make_hubble_plot()
-                    if failed:
-                        return Task.FINISHED_FAILURE
 
-                    self.generate_w_summary()
-                    if plots_completed:
+                    if self.generate_w_summary():
                         return Task.FINISHED_SUCCESS
                     else:
-                        self.logger.error(
-                            f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}"
-                        )
+                        self.logger.error(f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}")
                         return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
@@ -160,12 +151,10 @@ class BiasCor(ConfigBasedExecutable):
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         self.bias_cor_fits = ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_iasim])
-        self.cc_prior_fits = (
-            None
-            if self.merged_ccsim is None
-            else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_ccsim])
-        )
+        self.cc_prior_fits = None if self.merged_ccsim is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_ccsim])
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
+
+        self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
 
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
@@ -203,7 +192,8 @@ class BiasCor(ConfigBasedExecutable):
 
         # Set MUOPTS at top of file
         mu_str = ""
-        for label, value in self.config.get("MUOPTS", {}).items():
+        for label in self.muopt_order:
+            value = self.muopts[label]
             if mu_str != "":
                 mu_str += "\nMUOPT: "
             mu_str += f"[{label}] "
@@ -248,169 +238,6 @@ class BiasCor(ConfigBasedExecutable):
         else:
             self.logger.debug("Hash check passed, not rerunning")
             return False
-
-    def make_hubble_plot(self):
-        error = False
-        if os.path.exists(self.output_plots[0]):
-            self.logger.debug("Output plot exists")
-        else:
-            self.logger.info("Making output Hubble diagrams")
-            for m, o in zip(self.output["m0dif_dirs"], self.output_plots):
-                try:
-
-                    from astropy.cosmology import FlatwCDM
-                    import numpy as np
-                    import matplotlib.pyplot as plt
-
-                    fitres_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES")
-                    m0dif_file = os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.M0DIF")
-                    prob_col_name = self.probability_column_name
-
-                    blind = False
-                    with open(fitres_file) as f:
-                        for line in f.readlines():
-                            if "RESULTS ARE BLINDED" in line:
-                                blind = True
-                                break
-
-                    df = pd.read_csv(fitres_file, comment="#", sep=r"\s+", skiprows=5)
-                    dfm = pd.read_csv(m0dif_file, comment="#", sep=r"\s+", skiprows=10)
-                    df.sort_values(by="zHD", inplace=True)
-                    dfm.sort_values(by="z", inplace=True)
-                    dfm = dfm[dfm["MUDIFERR"] < 10]
-
-                    ol = 0.7
-                    w = -1
-                    alpha = 0
-                    beta = 0
-                    sigint = 0
-                    gamma = r"$\gamma = 0$"
-                    scalepcc = "NA"
-                    num_sn_fit = df.shape[0]
-                    contam_data, contam_true = "", ""
-                    with open(m0dif_file) as f:
-                        for line in f.read().splitlines():
-                            if "Omega_DE(ref)" in line:
-                                ol = float(line.strip().split()[-1])
-                            if "w_DE(ref)" in line:
-                                w = float(line.strip().split()[-1])
-                    with open(fitres_file) as f:
-                        for line in f.read().splitlines():
-                            if "NSNFIT" in line:
-                                v = int(line.split("=", 1)[1].strip())
-                                num_sn_fit = v
-                                num_sn = f"$N_{{SN}} = {v}$"
-                            if "alpha0" in line and "=" in line and "+-" in line:
-                                alpha = r"$\alpha = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                            if "beta0" in line and "=" in line and "+-" in line:
-                                beta = r"$\beta = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                            if "sigint" in line and "iteration" in line:
-                                sigint = r"$\sigma_{\rm int} = " + line.split()[3] + "$"
-                            if "gamma" in line and "=" in line and "+-" in line:
-                                gamma = r"$\gamma = " + line.split("=")[-1].replace("+-", r"\pm") + "$"
-                            if "CONTAM_TRUE" in line:
-                                v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
-                                n = v * num_sn_fit
-                                contam_true = f"$R_{{CC, true}} = {v:0.4f} (\\approx {int(n)} SN)$"
-                            if "CONTAM_DATA" in line:
-                                v = max(0.0, float(line.split("=", 1)[1].split("#")[0].strip()))
-                                n = v * num_sn_fit
-                                contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
-                            if "scalePCC" in line and "+-" in line:
-                                scalepcc = "scalePCC = $" + line.split("=")[-1].strip().replace("+-", r"\pm") + "$"
-                    prob_label = prob_col_name.replace("PROB_", "").replace("_", " ")
-                    label = "\n".join([num_sn, alpha, beta, sigint, gamma, scalepcc, contam_true, contam_data, f"Classifier = {prob_label}"])
-                    label = label.replace("\n\n", "\n").replace("\n\n", "\n")
-                    dfz = df["zHD"]
-                    zs = np.linspace(dfz.min(), dfz.max(), 500)
-                    distmod = FlatwCDM(70, 1 - ol, w).distmod(zs).value
-
-                    n_trans = 1000
-                    n_thresh = 0.05
-                    n_space = 0.3
-                    subsec = True
-                    if zs.min() > n_thresh:
-                        n_space = 0.01
-                        subsec = False
-                    z_a = np.logspace(np.log10(min(0.01, zs.min() * 0.9)), np.log10(n_thresh), int(n_space * n_trans))
-                    z_b = np.linspace(n_thresh, zs.max() * 1.01, 1 + int((1 - n_space) * n_trans))[1:]
-                    z_trans = np.concatenate((z_a, z_b))
-                    z_scale = np.arange(n_trans)
-
-                    def tranz(zs):
-                        return interp1d(z_trans, z_scale)(zs)
-
-                    if subsec:
-                        x_ticks = np.array([0.01, 0.02, 0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
-                        x_ticks_m = np.array([0.03, 0.04, 0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
-                    else:
-                        x_ticks = np.array([0.05, 0.2, 0.4, 0.6, 0.8, 1.0])
-                        x_ticks_m = np.array([0.1, 0.3, 0.5, 0.6, 0.7, 0.9])
-                    mask = (x_ticks > z_trans.min()) & (x_ticks < z_trans.max())
-                    mask_m = (x_ticks_m > z_trans.min()) & (x_ticks_m < z_trans.max())
-                    x_ticks = x_ticks[mask]
-                    x_ticks_m = x_ticks_m[mask_m]
-                    x_tick_t = tranz(x_ticks)
-                    x_ticks_mt = tranz(x_ticks_m)
-
-                    fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [1.5, 1], "hspace": 0})
-
-                    for resid, ax in enumerate(axes):
-                        ax.tick_params(which="major", direction="inout", length=4)
-                        ax.tick_params(which="minor", direction="inout", length=3)
-                        if resid:
-                            sub = df["MUMODEL"]
-                            sub2 = 0
-                            sub3 = distmod
-                            ax.set_ylabel(r"$\Delta \mu$")
-                            ax.tick_params(top=True, which="both")
-                        else:
-                            sub = 0
-                            sub2 = -dfm["MUREF"]
-                            sub3 = 0
-                            ax.set_ylabel(r"$\mu$")
-                            ax.annotate(label, (0.98, 0.02), xycoords="axes fraction", horizontalalignment="right", verticalalignment="bottom", fontsize=8)
-
-                        ax.set_xlabel("$z$")
-                        if subsec:
-                            ax.axvline(tranz(n_thresh), c="#888888", alpha=0.4, zorder=0, lw=0.7, ls="--")
-
-                        ax.errorbar(tranz(dfz), df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5)
-                        if df[prob_col_name].min() >= 1.0:
-                            cc = df["IDSURVEY"]
-                            vmax = None
-                            color_prob = False
-                            cmap = "rainbow"
-                        else:
-                            cc = df[prob_col_name]
-                            vmax = 1.05
-                            color_prob = True
-                            cmap = "inferno"
-                        h = ax.scatter(tranz(dfz), df["MU"] - sub, c=cc, s=1, zorder=2, alpha=1, vmax=vmax, cmap=cmap)
-                        if not blind:
-                            ax.plot(tranz(zs), distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
-                            ax.errorbar(tranz(dfm["z"]), dfm["MUDIF"] - sub2, yerr=dfm["MUDIFERR"], fmt="o", mew=0.5, capsize=3, elinewidth=0.5, c="k", ms=4)
-                        ax.set_xticks(x_tick_t)
-                        ax.set_xticks(x_ticks_mt, minor=True)
-                        ax.set_xticklabels(x_ticks)
-                        ax.set_xlim(z_scale.min(), z_scale.max())
-
-                        if blind:
-                            ax.set_yticklabels([])
-                            ax.set_yticks([])
-                    if color_prob:
-                        cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
-                        cbar.set_label("Prob Ia")
-
-                    fp = o
-                    self.logger.debug(f"Saving Hubble plot to {fp}")
-                    fig.savefig(fp, dpi=300, transparent=True, bbox_inches="tight")
-                    plt.close(fig)
-                except Exception as e:
-                    self.logger.error(f"Error making plots for {fitres_file}")
-                    self.logger.exception(e, exc_info=True)
-                    error = True
-        return not error
 
     def _run(self, force_refresh):
         if self.blind:
