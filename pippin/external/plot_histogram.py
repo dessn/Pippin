@@ -27,23 +27,14 @@ def get_arguments():
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config.update(config["HISTOGRAM"])
+    config.update(config["LCFIT"])
     return config
 
 
 def load_file(file):
     name = file.split("/")[-4]
-    newfile = name + ".csv.gz"
-    if os.path.exists(newfile):
-        logging.info(f"Loading existing csv.gz file: {newfile}")
-        return pd.read_csv(newfile), name
-    else:
-        logging.info(f"Attempting to load in original file {file}")
-        df = pd.read_csv(file, delim_whitespace=True, comment="#")
-        # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
-        df.to_csv(newfile, index=False, float_format="%0.5f")
-        logging.info(f"Saved dataframe from {file} to {newfile}")
-        return df, name
+    logging.info(f"Loading existing csv.gz file: {file}")
+    return pd.read_csv(file), name
 
 
 def plot_histograms(data, sims, types, figname):
@@ -86,7 +77,19 @@ def plot_histograms(data, sims, types, figname):
         "__MUDIFF",
     ]
 
-    cs = ["#1976D2", "#FB8C00", "#8BC34A", "#E53935", "#4FC3F7", "#43A047", "#F2D026", "#673AB7", "#FFB300", "#E91E63", "#F2D026",]
+    cs = [
+        "#1976D2",
+        "#FB8C00",
+        "#8BC34A",
+        "#E53935",
+        "#4FC3F7",
+        "#43A047",
+        "#F2D026",
+        "#673AB7",
+        "#FFB300",
+        "#E91E63",
+        "#F2D026",
+    ]
     cols = [c for c in cols if c in data[0][0].columns]
 
     for c in restricted:
@@ -150,14 +153,14 @@ def plot_histograms(data, sims, types, figname):
                 sim_err = 1 / np.sqrt(data_hist)
                 sim_dist, _ = np.histogram(sim_col, bins=bins, density=True)
 
-                dist_error = np.sqrt((data_dist * data_err)**2 + (sim_dist * sim_err)**2)
+                dist_error = np.sqrt((data_dist * data_err) ** 2 + (sim_dist * sim_err) ** 2)
                 dist_diff = data_dist - sim_dist
 
-                chi2 = ((dist_diff / dist_error)**2).sum()
+                chi2 = ((dist_diff / dist_error) ** 2).sum()
                 ndof = len(bc)
                 red_chi2 = chi2 / ndof
 
-                ax.text(0.99, 0.99 - 0.1 * i, f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}", horizontalalignment='right', verticalalignment='top', transform=ax.transAxes, color=cs[i], fontsize=10)
+                ax.text(0.99, 0.99 - 0.1 * i, f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}", horizontalalignment="right", verticalalignment="top", transform=ax.transAxes, color=cs[i], fontsize=10)
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
@@ -177,12 +180,7 @@ def get_means_and_errors(x, y, bins):
 
     std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
     std_err, *_ = binned_statistic(
-        x,
-        y,
-        bins=bins,
-        statistic=lambda x: np.nan
-        if x.size < 20
-        else np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
+        x, y, bins=bins, statistic=lambda x: np.nan if x.size < 20 else np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
     )
     return means, err, std, std_err
 
@@ -242,15 +240,6 @@ def plot_redshift_evolution(data, sims, types, figname):
     fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
-def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
-    # TODO: FInd alpha beta om, h0 better
-    cosmo = FlatLambdaCDM(h0, om)
-    cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
-    obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] - MB
-    diff = obs_dist_mod - cosmo_dist_mod
-    df["__MUDIFF"] = diff
-
-
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
@@ -263,12 +252,8 @@ if __name__ == "__main__":
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
 
-        data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
-        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
-
-        for df, n in data_dfs + sim_dfs:
-            df.replace(-999, np.nan, inplace=True)
-            add_muref(df)
+        data_dfs = [load_file(f) for f in args.get("DATA_FITRES_PARSED", [])]
+        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES_PARSED", [])]
 
         data_masks = [d["FITPROB"] > 0.05 for d, _ in data_dfs]
         sim_masks = [d["FITPROB"] > 0.05 for d, _ in sim_dfs]

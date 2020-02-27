@@ -202,7 +202,9 @@ fi
 
     def _run(self, force_refresh):
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
+        data_fitres_output = [d.replace(".fitres", ".csv.gz") for d in data_fitres_files]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
+        sim_fitres_output = [d.replace(".fitres", ".csv.gz") for d in sim_fitres_files]
         types = list(set([a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]))
         input_yml_file = "input.yml"
         output_dict = {
@@ -225,7 +227,13 @@ fi
             },
             "OUTPUT_NAME": self.name,
             "BLIND": self.blind_params,
-            "HISTOGRAM": {"DATA_FITRES": data_fitres_files, "SIM_FITRES": sim_fitres_files, "IA_TYPES": types},
+            "LCFIT": {
+                "DATA_FITRES_INPUT": data_fitres_files,
+                "SIM_FITRES_INPUT": sim_fitres_files,
+                "DATA_FITRES_PARSED": data_fitres_output,
+                "SIM_FITRES_PARSED": sim_fitres_output,
+                "IA_TYPES": types,
+            },
         }
 
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "output_dir": self.output_dir, "input_yml": input_yml_file}
