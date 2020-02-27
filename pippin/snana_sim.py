@@ -61,7 +61,8 @@ class SNANASimulation(ConfigBasedExecutable):
         keys = [k for k in config.keys() if k != "GLOBAL" and k != "OPTS"]
         self.base_ia = []
         self.base_cc = []
-        model_types = {}
+        types = {}
+        types_dict = {"IA": [], "NONIA": []}
         for k in keys:
             d = config[k]
             base_file = d.get("BASE")
@@ -89,22 +90,21 @@ class SNANASimulation(ConfigBasedExecutable):
             type2 = "1" + f"{int(gentype):02d}"
             if "SALT2" in genmodel:
                 self.base_ia.append(base_file)
-                model_types[gentype] = "Ia"
-                model_types[type2] = "Ia"
+                types[gentype] = "Ia"
+                types[type2] = "Ia"
+                types_dict["IA"].append(gentype)
+                types_dict["IA"].append(type2)
             else:
                 self.base_cc.append(base_file)
-                model_types[gentype] = "II"
-                model_types[type2] = "II"
+                types[gentype] = "II"
+                types[type2] = "II"
+                types_dict["NONIA"].append(gentype)
+                types_dict["NONIA"].append(type2)
 
-        sorted_types = collections.OrderedDict(sorted(model_types.items()))
+        sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
-        types_dict = {"IA": [], "NONIA": []}
-        for key, value in sorted_types.items():
-            if value.upper() == "IA":
-                types_dict["IA"].append(int(key))
-            else:
-                types_dict["NONIA"].append(int(key))
-        self.output["types"] = types_dict
+        self.output["types_dict"] = types_dict
+        self.output["types"] = types
         self.global_config = global_config
 
         rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
