@@ -111,34 +111,10 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         # Get the fitres and m0diff files we'd want to parse for Hubble diagram plotting
         self.biascor_fitres_input_files = [os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
-        self.biascor_fitres_output_files = [b.name + m.replace("SALT2mu_FITJOBS", 1) + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_fitres_output_files = [b.name + "_" + m.replace("SALT2mu_FITJOBS", "1") + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
 
-        # Get the m0diff files for everything
         self.biascor_m0diffs = []
-        for b in self.biascor_deps:
-            for m in b.output["m0dif_dirs"]:
-                sim_number = 1
-                if os.path.basename(m).isdigit():
-                    sim_number = int(os.path.basename(m))
-                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIFF")]
-                for f in files:
-                    muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
-                    fitopt_num = int(f.split("FITOPT")[-1].split("_")[0])
-                    if muopt_num == 0:
-                        muopt = "DEFAULT"
-                    else:
-                        muopt = b.output["muopts"][muopt_num - 1]  # Because 0 is default
-
-                    if fitopt_num == 0:
-                        fitopt = "DEFAULT"
-                    else:
-                        fitopt = b.output["fitopt_index"][fitopt_num - 1]
-
-                    self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
         self.biascor_m0diff_output = "all_biascor_m0diffs.csv"
-
-        # Create a list of all the m0diff files for parsing
-        self.hubble_plots = list(set([a for c in self.biascor_deps + self.cosmomc_deps for a in c.output.get("hubble_plot", [])]))
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -201,6 +177,29 @@ fi
         return self.check_for_job(squeue, self.job_name)
 
     def _run(self, force_refresh):
+
+        # Get the m0diff files for everything
+        for b in self.biascor_deps:
+            for m in b.output["m0dif_dirs"]:
+                sim_number = 1
+                if os.path.basename(m).isdigit():
+                    sim_number = int(os.path.basename(m))
+                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIFF")]
+                for f in files:
+                    muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
+                    fitopt_num = int(f.split("FITOPT")[-1].split("_")[0])
+                    if muopt_num == 0:
+                        muopt = "DEFAULT"
+                    else:
+                        muopt = b.output["muopts"][muopt_num - 1]  # Because 0 is default
+
+                    if fitopt_num == 0:
+                        fitopt = "DEFAULT"
+                    else:
+                        fitopt = b.output["fitopt_index"][fitopt_num - 1]
+
+                    self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
+
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
         data_fitres_output = [d.replace(".fitres", ".csv.gz") for d in data_fitres_files]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
@@ -287,9 +286,9 @@ fi
             mask_lcfit = config.get("MASK_LCFIT")
             # TODO: Add aggregation to compile all the plots here
 
-            deps_cosmomc = Task.match_tasks_of_type(mask_cosmomc, prior_tasks, CosmoMC)
-            deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor)
-            deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit)
+            deps_cosmomc = Task.match_tasks_of_type(mask_cosmomc, prior_tasks, CosmoMC, match_none=False)
+            deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor, match_none=False)
+            deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit, match_none=False)
 
             deps = deps_cosmomc + deps_biascor + deps_lcfit
             if len(deps) == 0:

@@ -577,8 +577,7 @@ ANALYSE:
   SOMELABEL:
     MASK_COSMOMC: mask  # partial match
     MASK_BIASCOR: mask # partial match
-    HISTOGRAMS: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
-    EFFICIENCY: [D_DESSIM, D_DATADES] # Attempts to make histogram efficiency
+    MASK_LCFIT: [D_DESSIM, D_DATADES] # Creates histograms and efficiency based off the input LCFIT_SIMNAME matches. Optional
     OPTS:
       COVOPTS: [ALL, NOSYS] # Optional. Covopts to match when making contours. Single or list. Exact match.
       SHIFT: False  # Defualt False. Shift all the contours on top of each other

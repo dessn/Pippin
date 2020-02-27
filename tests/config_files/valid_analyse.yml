@@ -65,4 +65,5 @@ COSMOMC:
 
 ANALYSE:
   ALL_OMW:
-
+    MASK_COSMOMC: "*"
+    MASK_BIASCOR: "*"

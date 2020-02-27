@@ -124,8 +124,11 @@ class Task(ABC):
 
     @staticmethod
     def match_tasks(mask, deps, match_none=True):
-        if match_none and mask is None:
-            mask = ""
+        if mask is None:
+            if match_none:
+                mask = ""
+            else:
+                return []
         if isinstance(mask, str):
             if mask == "*":
                 mask = ""
@@ -142,7 +145,7 @@ class Task(ABC):
 
     @staticmethod
     def match_tasks_of_type(mask, deps, *cls, match_none=True):
-        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=True)
+        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=match_none)
 
     @abstractmethod
     def _run(self, force_refresh):

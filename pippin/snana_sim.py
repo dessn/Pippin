@@ -58,7 +58,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
 
         # Deterime the type of each component
-        keys = [config[k] for k in config.keys() if k != "GLOBAL"]
+        keys = [k for k in config.keys() if k != "GLOBAL" and k != "OPTS"]
         self.base_ia = []
         self.base_cc = []
         model_types = {}
@@ -75,9 +75,9 @@ class SNANASimulation(ConfigBasedExecutable):
             with open(base_path) as f:
                 for line in f.read().splitlines():
                     if line.upper().strip().startswith("GENTYPE"):
-                        gentype = line.upper().split()[":"][1].strip()
+                        gentype = line.upper().split(":")[1].strip()
                     if line.upper().strip().startswith("GENMODEL"):
-                        genmodel = line.upper().split()[":"][1].strip()
+                        genmodel = line.upper().split(":")[1].strip()
             gentype = gentype or d.get("GENTYPE")
             genmodel = genmodel or d.get("GENMODEL")
 
@@ -86,7 +86,7 @@ class SNANASimulation(ConfigBasedExecutable):
             if not genmodel:
                 Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
 
-            type2 = "1" + f"{int(gentype):%02d}"
+            type2 = "1" + f"{int(gentype):02d}"
             if "SALT2" in genmodel:
                 self.base_ia.append(base_file)
                 model_types[gentype] = "Ia"
