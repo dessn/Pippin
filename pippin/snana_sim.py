@@ -56,8 +56,55 @@ class SNANASimulation(ConfigBasedExecutable):
         self.options = config.get("OPTS", {})
         self.reserved_keywords = ["BASE"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
-        self.base_ia = [config[k]["BASE"] for k in config.keys() if k.startswith("IA_") or k == "IA"]
-        self.base_cc = [config[k]["BASE"] for k in config.keys() if not k.startswith("IA_") and k != "IA" and k != "GLOBAL"]
+
+        # Deterime the type of each component
+        keys = [config[k] for k in config.keys() if k != "GLOBAL"]
+        self.base_ia = []
+        self.base_cc = []
+        model_types = {}
+        for k in keys:
+            d = config[k]
+            base_file = d.get("BASE")
+            if base_file is None:
+                Task.fail_config(f"Your simulation component {k} needs to specify a BASE input file")
+            base_path = get_data_loc(base_file)
+            if base_path is None:
+                Task.fail_config(f"Cannot find sim component {k} base file at {base_path}")
+
+            gentype, genmodel = None, None
+            with open(base_path) as f:
+                for line in f.read().splitlines():
+                    if line.upper().strip().startswith("GENTYPE"):
+                        gentype = line.upper().split()[":"][1].strip()
+                    if line.upper().strip().startswith("GENMODEL"):
+                        genmodel = line.upper().split()[":"][1].strip()
+            gentype = gentype or d.get("GENTYPE")
+            genmodel = genmodel or d.get("GENMODEL")
+
+            if not gentype:
+                Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}")
+            if not genmodel:
+                Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
+
+            type2 = "1" + f"{int(gentype):%02d}"
+            if "SALT2" in genmodel:
+                self.base_ia.append(base_file)
+                model_types[gentype] = "Ia"
+                model_types[type2] = "Ia"
+            else:
+                self.base_cc.append(base_file)
+                model_types[gentype] = "II"
+                model_types[type2] = "II"
+
+        sorted_types = collections.OrderedDict(sorted(model_types.items()))
+        self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
+        types_dict = {"IA": [], "NONIA": []}
+        for key, value in sorted_types.items():
+            if value.upper() == "IA":
+                types_dict["IA"].append(int(key))
+            else:
+                types_dict["NONIA"].append(int(key))
+        self.output["types_dict"] = types_dict
         self.global_config = global_config
 
         rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
@@ -75,9 +122,6 @@ class SNANASimulation(ConfigBasedExecutable):
         # Determine if all the top level input files exist
         if len(self.base_ia + self.base_cc) == 0:
             Task.fail_config("Your sim has no components specified! Please add something to simulate!")
-        for file in self.base_ia + self.base_cc:
-            if get_data_loc(file) is None:
-                Task.fail_config(f"Cannot find file {file} specified in simulation {self.name}")
 
         # Try to determine how many jobs will be put in the queue
         try:
@@ -301,47 +345,6 @@ class SNANASimulation(ConfigBasedExecutable):
             return Task.FINISHED_SUCCESS
 
         return self.check_for_job(squeue, f"{self.genprefix}_0")
-
-    def resolve_name_to_type(self, name, file_contents):
-        """ I know this is wrong, but its just for Supernnova to split Ia and everything else """
-        name = name.upper()
-        if "SNIA_" in name or "SALT2" in name or "SN_IA_" in name:
-            return "Ia"
-        else:
-            for line in file_contents:
-                if "GENMODEL" in line.upper() and "SALT2" in line.upper():
-                    return "Ia"
-            return "II"
-
-    def get_types(self, files):
-        types = {}
-        for path in files:
-            name = os.path.basename(path.split(".")[0])
-            found = False
-            with open(path, "r") as file:
-                lines = file.readlines()
-                for line in lines:
-                    if line.startswith("GENTYPE"):
-                        num = int(line.split(":")[1].strip())
-                        number = "1" + "%02d" % num
-                        n = self.resolve_name_to_type(name, lines)
-                        types[number] = n
-                        types[str(num)] = n
-                        found = True
-                        break
-            if not found:
-                raise ValueError(f"File {name} needs to have GENTYPE defined for ML classification purposes. Please add it.")
-
-        sorted_types = collections.OrderedDict(sorted(types.items()))
-        self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
-        types_dict = {"IA": [], "NONIA": []}
-        for key, value in sorted_types.items():
-            if value.upper() == "IA":
-                types_dict["IA"].append(int(key))
-            else:
-                types_dict["NONIA"].append(int(key))
-        self.output["types_dict"] = types_dict
-        return sorted_types
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):

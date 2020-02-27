@@ -47,6 +47,7 @@ class BiasCor(ConfigBasedExecutable):
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
         self.probability_column_name = self.classifier.output["prob_column_name"]
+        self.output["prob_column_name"] = self.probability_column_name
 
         if self.use_recalibrated:
             new_name = self.probability_column_name.replace("PROB_", "CPROB_")
@@ -192,6 +193,7 @@ class BiasCor(ConfigBasedExecutable):
 
         # Set MUOPTS at top of file
         mu_str = ""
+        muopt_prob_cols = {"DEFAULT": self.probability_column_name}
         for label in self.muopt_order:
             value = self.muopts[label]
             if mu_str != "":
@@ -202,7 +204,11 @@ class BiasCor(ConfigBasedExecutable):
             if value.get("SIMFILE_CCPRIOR"):
                 mu_str += f"simfile_ccprior={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_CCPRIOR')])} "
             if value.get("CLASSIFIER"):
-                mu_str += f"varname_pIa={value.get('CLASSIFIER').output['prob_column_name']} "
+                cname = value.get("CLASSIFIER").output["prob_column_name"]
+                muopt_prob_cols[label] = cname
+                mu_str += f"varname_pIa={cname} "
+            else:
+                muopt_prob_cols[label] = self.probability_column_name
             if value.get("FITOPT") is not None:
                 mu_str += f"FITOPT={value.get('FITOPT')} "
             for opt, opt_value in value.get("OPTS", {}).items():
@@ -218,6 +224,7 @@ class BiasCor(ConfigBasedExecutable):
         if mu_str:
             self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
 
+        self.output["muopt_prob_cols"] = muopt_prob_cols
         final_output = "\n".join(self.base)
 
         new_hash = self.get_hash_from_string(final_output)
