@@ -18,7 +18,7 @@ def load_params(file):
             names.append(n.replace("*", ""))
             labels.append(l)
     return names, labels
-    
+
 
 def load_chains(files, all_cols, use_cols=None):
     header = ["weights", "likelihood"] + all_cols
@@ -35,13 +35,15 @@ def load_chains(files, all_cols, use_cols=None):
     chain = combined[use_cols].values
     return weights, likelihood, chain
 
-def getParamAndErr(name,param,chainfilebase):
+
+def getParamAndErr(name, param, chainfilebase):
     logging.info("Loading in data from original CosmoMC files")
     param_file = os.path.join(chainfilebase) + ".paramnames"
     names, labels = load_params(param_file)
     chain_files = get_chain_files(chainfilebase)
     weights, likelihood, chain = load_chains(chain_files, names, use_cols=param)
-    return chain.mean(),chain.std()
+    return chain.mean(), chain.std()
+
 
 def fail(msg, condition=True):
     if condition:
@@ -144,39 +146,37 @@ def load_output(basename):
         return None
 
 
-
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
         if args.get("FILES"):
             logging.info("Making Error Budgets")
-            params = args.get("PARAMS") # we want to make a budget for each param
-            bcormuopts = np.array(args.get("NAMES")) # we want to make a budget for each biascor
+            params = args.get("PARAMS")  # we want to make a budget for each param
+            bcormuopts = np.array(args.get("NAMES"))  # we want to make a budget for each biascor
             chainfiles = np.array(args.get("FILES"))
             bcors = []
             for bm in bcormuopts:
-                if ' '.join(bm.split()[:-1]) != '':
-                    bcors.append(' '.join(bm.split()[:-1]))
+                if " ".join(bm.split()[:-1]) != "":
+                    bcors.append(" ".join(bm.split()[:-1]))
             bcors = np.unique(bcors)
             for p in params:
                 for bcor in bcors:
-                    dfkey = bcor+'_'+p
-                    df = pd.DataFrame(columns=['Covopt','Shift','Tot Error','Sys Error'])
-                    statonlyName = bcor+' NOSYS'
-                    statonlyChain = chainfiles[bcormuopts==statonlyName][0]
-                    statonlyVal, statonlyErr = getParamAndErr(statonlyName,p,statonlyChain)
-                    for name,chain in zip(bcormuopts,chainfiles):
-                        if bcor == ' '.join(name.split()[:-1]):
+                    dfkey = bcor + "_" + p
+                    df = pd.DataFrame(columns=["Covopt", "Shift", "Tot Error", "Sys Error"])
+                    statonlyName = bcor + " NOSYS"
+                    statonlyChain = chainfiles[bcormuopts == statonlyName][0]
+                    statonlyVal, statonlyErr = getParamAndErr(statonlyName, p, statonlyChain)
+                    for name, chain in zip(bcormuopts, chainfiles):
+                        if bcor == " ".join(name.split()[:-1]):
                             covopt = name.split()[-1]
-                            Val, totalErr = getParamAndErr(name,p,chain)
-                            syserr = (totalErr**2-statonlyErr**2)**.5
-                            shift = Val-statonlyVal
-                            df=df.append({'Covopt':covopt,'Shift':shift, 'Tot Error':totalErr,'Sys Error':syserr},ignore_index=True)
-                    fout = open(bcor.replace(' ','_').replace('(','').replace(')','')+'_'+p+'_budget.txt','w')    
+                            Val, totalErr = getParamAndErr(name, p, chain)
+                            syserr = (totalErr ** 2 - statonlyErr ** 2) ** 0.5
+                            shift = Val - statonlyVal
+                            df = df.append({"Covopt": covopt, "Shift": shift, "Tot Error": totalErr, "Sys Error": syserr}, ignore_index=True)
+                    fout = open(bcor.replace(" ", "_").replace("(", "").replace(")", "") + "_" + p + "_budget.txt", "w")
                     fout.write(df.to_latex())
                     fout.close()
     except Exception as e:
         logging.exception(str(e))
         raise e
-
