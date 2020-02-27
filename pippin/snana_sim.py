@@ -104,7 +104,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 types_dict["IA"].append(int(key))
             else:
                 types_dict["NONIA"].append(int(key))
-        self.output["types_dict"] = types_dict
+        self.output["types"] = types_dict
         self.global_config = global_config
 
         rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
@@ -116,7 +116,6 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
         self.output["blind"] = self.options.get("BLIND", False)
-        self.types = None
         self.derived_batch_info = None
 
         # Determine if all the top level input files exist
@@ -216,8 +215,6 @@ class SNANASimulation(ConfigBasedExecutable):
             shutil.copy(resolved, temp_dir)
             input_paths.append(os.path.join(temp_dir, os.path.basename(f)))
             self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
-
-        self.types = self.get_types(input_paths)
 
         # Copy the include input file if there is one
         input_copied = []
@@ -341,7 +338,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     self.logger.debug(f"Linking {s} -> {s_end}")
                     os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output.update({"photometry_dirs": s_ends, "types": self.types})
+            self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
 
         return self.check_for_job(squeue, f"{self.genprefix}_0")
