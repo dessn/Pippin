@@ -82,7 +82,9 @@ def get_arguments():
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
-        assert len(config["NAMES"]) == len(config["FILES"]), "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        assert len(config["NAMES"]) == len(config["INPUT_FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        )
     return config
 
 
@@ -97,7 +99,12 @@ def parse_chains(basename, outname, args, index):
     weights, likelihood, chain = load_chains(chain_files, names, params)
     if blind_params:
         blind(chain, params or names, blind_params, index=index)
-    labels = [f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$" for u in params for l, n in zip(labels, names) if n == u]
+    labels = [
+        f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$"
+        for u in params
+        for l, n in zip(labels, names)
+        if n == u
+    ]
 
     # Turn into new df
     output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=["_weight", "_likelihood"] + labels)
