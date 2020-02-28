@@ -127,7 +127,7 @@ if __name__ == "__main__":
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
             shift_params = truth if args.get("SHIFT") else None
 
-            for index, basename, outname in enumerate(zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))):
+            for index, (basename, outname) in enumerate(zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))):
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
                 else:
