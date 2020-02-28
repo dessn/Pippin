@@ -77,7 +77,7 @@ if __name__ == "__main__":
 
                 linestyle = "-" if name.lower().endswith("all") else "--"
 
-                weights, likelihood, labels, chain, f = load_output(basename)
+                weights, likelihood, chain, labels = load_output(basename)
                 if args.get("PRIOR"):
                     prior = args.get("PRIOR", 0.01)
                     logging.info(f"Applying prior width {prior} around 0.3")
@@ -87,7 +87,6 @@ if __name__ == "__main__":
                     prior = norm.pdf(chain[:, om_index], loc=0.3, scale=prior)
                     weights *= prior
 
-                do_full = do_full or f
                 c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params, linestyle=linestyle)
 
             # Write all our glorious output

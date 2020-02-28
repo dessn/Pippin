@@ -5,10 +5,8 @@ import pandas as pd
 import sys
 import argparse
 import logging
-import matplotlib.pyplot as plt
 import yaml
 from astropy.cosmology import FlatLambdaCDM
-from scipy.stats import binned_statistic, moment
 
 
 def setup_logging():
@@ -64,8 +62,8 @@ if __name__ == "__main__":
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
 
-        data_dfs = [load_file(f) for f in zip(args.get("DATA_FITRES_INPUT", []), args.get("DATA_FITRES_PARSED", []))]
-        sim_dfs = [load_file(f) for f in zip(args.get("SIM_FITRES_INPUT", []), args.get("SIM_FITRES_PARSED", []))]
+        data_dfs = [load_file(f, fo) for f, fo in zip(args.get("DATA_FITRES_INPUT", []), args.get("DATA_FITRES_PARSED", []))]
+        sim_dfs = [load_file(f, fo) for f, fo in zip(args.get("SIM_FITRES_INPUT", []), args.get("SIM_FITRES_PARSED", []))]
 
         logging.info(f"Finishing gracefully")
 
