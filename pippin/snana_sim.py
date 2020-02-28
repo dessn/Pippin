@@ -75,9 +75,9 @@ class SNANASimulation(ConfigBasedExecutable):
             gentype, genmodel = None, None
             with open(base_path) as f:
                 for line in f.read().splitlines():
-                    if line.upper().strip().startswith("GENTYPE"):
+                    if line.upper().strip().startswith("GENTYPE:"):
                         gentype = line.upper().split(":")[1].strip()
-                    if line.upper().strip().startswith("GENMODEL"):
+                    if line.upper().strip().startswith("GENMODEL:"):
                         genmodel = line.upper().split(":")[1].strip()
             gentype = gentype or d.get("GENTYPE")
             genmodel = genmodel or d.get("GENMODEL")
