@@ -254,11 +254,7 @@ fi
             with open(input_yml_path, "w") as f:
                 json.dump(output_dict, f, indent=2)
                 self.logger.debug(f"Input yml file written out to {input_yml_path}")
-            for f in self.hubble_plots:
-                self.logger.debug(f"Searching for Hubble plot {f}")
-                if f is not None and os.path.exists(f):
-                    self.logger.debug(f"Copying Hubble plot {f} to {self.output_dir}")
-                    shutil.copy(f, os.path.join(self.output_dir, os.path.basename(f)))
+
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)
