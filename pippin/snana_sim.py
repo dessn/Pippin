@@ -104,7 +104,7 @@ class SNANASimulation(ConfigBasedExecutable):
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
         self.output["types_dict"] = types_dict
-        self.output["types"] = types
+        self.output["types"] = sorted_types
         self.global_config = global_config
 
         rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
