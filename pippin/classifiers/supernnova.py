@@ -73,14 +73,15 @@ echo "#################TIMING  Starting here:   `date`"
 python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {test_or_train}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
-fi
-echo "#################TIMING  Database done now, starting classifier:   `date`"
-python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
-if [ $? -eq 0 ]; then
-    rm -rf {dump_dir}/processed
-    echo SUCCESS > {done_file2}
 else
-    echo FAILURE > {done_file2}
+    echo "#################TIMING  Database done now, starting classifier:   `date`"
+    python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
+    if [ $? -eq 0 ]; then
+        rm -rf {dump_dir}/processed
+        echo SUCCESS > {done_file2}
+    else
+        echo FAILURE > {done_file2}
+    fi
 fi
 echo "#################TIMING  Classifier finished:   `date`"
         """
@@ -159,6 +160,7 @@ echo "#################TIMING  Classifier finished:   `date`"
         else:
             has_ia = False
             has_cc = False
+            self.logger.debug(f"Input types set to {types}")
             for key, value in types.items():
                 if value.upper() == "IA":
                     has_ia = True
@@ -264,7 +266,9 @@ echo "#################TIMING  Classifier finished:   `date`"
                         dataframe = pickle.load(f)
                         if self.variant in ["variational", "bayesian"]:
                             final_dataframe = dataframe[["SNID", "all_class0_median", "all_class0_std"]]
-                            final_dataframe = final_dataframe.rename(columns={"all_class0_median": self.get_prob_column_name(), "all_class0_std": self.get_prob_column_name() + "_ERR"})
+                            final_dataframe = final_dataframe.rename(
+                                columns={"all_class0_median": self.get_prob_column_name(), "all_class0_std": self.get_prob_column_name() + "_ERR"}
+                            )
                         else:
                             final_dataframe = dataframe[["SNID", "all_class0"]]
                             final_dataframe = final_dataframe.rename(columns={"all_class0": self.get_prob_column_name()})
