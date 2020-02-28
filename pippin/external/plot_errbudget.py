@@ -57,7 +57,7 @@ def weighted_avg_and_std(values, weights):
 def get_entry(name, syst, filename):
     w, l, chain, cols = load_output(filename)
     means, stds = weighted_avg_and_std(chain, w)
-    d = dict([(l + " delta", [x]) for l, x in zip(cols, means)])
+    d = dict([(l + " avg", [x]) for l, x in zip(cols, means)])
     d.update(dict([(l + " std", [x]) for l, x in zip(cols, stds)]))
     d["name"] = [" ".join([n for n in name.split()[:-1]])]
     d["covopt"] = [syst]
@@ -90,11 +90,12 @@ if __name__ == "__main__":
             for name, df in dfg:
                 output_filename = f"errbudget_{name}.txt"
 
-                avg_cols = [c for c in df.columns if c.endswith(" delta")]
+                avg_cols = [c for c in df.columns if c.endswith(" avg")]
                 std_cols = [c for c in df.columns if c.endswith(" std")]
+                delta_cols = [c.replace(" avg", " delta") for c in df.columns if c.endswith(" avg")]
                 contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
 
-                df.loc[:, avg_cols] -= df.loc[:, avg_cols].iloc[0, :]
+                df[delta_cols] = df.loc[:, avg_cols] - df.loc[:, avg_cols].iloc[0, :]
                 df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - df.loc[:, std_cols].iloc[0, :] ** 2)
 
                 df = df.reindex(sorted(df.columns)[::-1], axis=1)
