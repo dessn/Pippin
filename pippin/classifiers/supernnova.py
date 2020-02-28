@@ -182,6 +182,8 @@ echo "#################TIMING  Classifier finished:   `date`"
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] else ""
         variant = f"--model {self.variant}"
+        if self.variant == "bayesian":
+            variant += " --num_inference_samples 20"
 
         clump = sim_dep.output.get("clump_file")
         if clump is None:
