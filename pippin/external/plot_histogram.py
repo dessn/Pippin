@@ -232,9 +232,9 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if not args.get("DATA_FITRES"):
+        if not args.get("DATA_FITRES_PARSED"):
             logging.warning("Warning, no data files specified")
-        if not args.get("SIM_FITRES"):
+        if not args.get("SIM_FITRES_PARSED"):
             logging.warning("Warning, no sim files specified")
         if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
