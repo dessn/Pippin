@@ -32,7 +32,9 @@ def get_arguments():
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
-        assert len(config["NAMES"]) == len(config["FILES"]), "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        assert len(config["NAMES"]) == len(config["PARSED_FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['PARSED_FILES'])} base names and {len(config['NAMES'])} names"
+        )
     return config
 
 
@@ -58,7 +60,7 @@ if __name__ == "__main__":
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
             shift_params = truth if args.get("SHIFT") else None
 
-            for index, basename in enumerate(args.get("FILES")):
+            for index, basename in enumerate(args.get("PARSED_FILES")):
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
                 else:
@@ -75,7 +77,7 @@ if __name__ == "__main__":
 
                 linestyle = "-" if name.lower().endswith("all") else "--"
 
-                weights, likelihood, labels, chain, f = get_output(basename, args, bias_index, name)
+                weights, likelihood, labels, chain, f = load_output(basename)
                 if args.get("PRIOR"):
                     prior = args.get("PRIOR", 0.01)
                     logging.info(f"Applying prior width {prior} around 0.3")
