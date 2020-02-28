@@ -29,8 +29,12 @@ def get_arguments():
     return config
 
 
-def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
+def add_muref(df, filename, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
     # TODO: FInd alpha beta om, h0 better
+    cols = ["zHD", "x1", "mB", "c"]
+    for c in cols:
+        if c not in df.columns:
+            logging.exception(f"Filename {filename} has no column {c}, has {df.columns}")
     cosmo = FlatLambdaCDM(h0, om)
     cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
     obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] - MB
@@ -44,7 +48,7 @@ def load_file(infile, outfile):
     df = pd.read_csv(infile, delim_whitespace=True, comment="#")
 
     df.replace(-999, np.nan, inplace=True)
-    add_muref(df)
+    add_muref(df, infile)
     df.to_csv(outfile, index=False, float_format="%0.5f")
     logging.info(f"Saved dataframe from {infile} to {outfile}")
     return df
