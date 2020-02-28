@@ -119,7 +119,7 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if args.get("FILES"):
+        if args.get("INPUT_FILES"):
             logging.info("Creating chain consumer object")
 
             biases = {}

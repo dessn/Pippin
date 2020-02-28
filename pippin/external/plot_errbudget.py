@@ -94,8 +94,8 @@ def get_arguments():
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
-        assert len(config["NAMES"]) == len(config["FILES"]), (
-            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        assert len(config["NAMES"]) == len(config["PARSED_FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['PARSED_FILES'])} base names and {len(config['NAMES'])} names"
         )
     return config
 
@@ -154,7 +154,7 @@ if __name__ == "__main__":
             logging.info("Making Error Budgets")
             params = args.get("PARAMS")  # we want to make a budget for each param
             bcormuopts = np.array(args.get("NAMES"))  # we want to make a budget for each biascor
-            chainfiles = np.array(args.get("FILES"))
+            chainfiles = np.array(args.get("PARSED_FILES"))
             bcors = []
             for bm in bcormuopts:
                 if " ".join(bm.split()[:-1]) != "":
