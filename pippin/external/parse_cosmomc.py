@@ -142,7 +142,7 @@ if __name__ == "__main__":
                     biases[key] = b
                     b += 1
                 bias_index = biases[key]
-                parse_chains(basename, outname, args, bias_index, name)
+                parse_chains(basename, outname, args, bias_index)
 
         logging.info("Finishing gracefully")
     except Exception as e:
