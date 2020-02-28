@@ -204,9 +204,9 @@ fi
                     self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
 
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
-        data_fitres_output = [os.path.basename(d).replace(".FITRES", ".csv.gz") for d in data_fitres_files]
+        data_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in data_fitres_files]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
-        sim_fitres_output = [os.path.basename(d).replace(".FITRES", ".csv.gz") for d in sim_fitres_files]
+        sim_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in sim_fitres_files]
         types = list(set([a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]))
         input_yml_file = "input.yml"
         output_dict = {
