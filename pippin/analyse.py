@@ -99,7 +99,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
                     self.cosmomc_input_files.append(c.output["base_dict"][covopt])
-                    self.cosmomc_output_files.append(c.output["label"] + covopt + ".csv.gz")
+                    self.cosmomc_output_files.append(c.output["label"] + "_" + covopt + ".csv.gz")
                     self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
                     for p in c.output["cosmology_params"]:
                         if p not in self.params:
@@ -136,6 +136,7 @@ cd {output_dir}
     def get_slurm_raw(self):
         base = self.slurm
         template = """
+echo "Executing {path}"
 python {path} {{input_yml}}
 if [ $? -ne 0 ]; then
     echo FAILURE > {donefile}
