@@ -57,7 +57,7 @@ def weighted_avg_and_std(values, weights):
 def get_entry(name, syst, filename):
     w, l, chain, cols = load_output(filename)
     means, stds = weighted_avg_and_std(chain, w)
-    d = dict([(l + " avg", [x]) for l, x in zip(cols, means)])
+    d = dict([(l + " delta", [x]) for l, x in zip(cols, means)])
     d.update(dict([(l + " std", [x]) for l, x in zip(cols, stds)]))
     d["name"] = [" ".join([n for n in name.split()[:-1]])]
     d["covopt"] = [syst]
@@ -69,21 +69,20 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if args.get("PARSED_FILES"):
-            files = args.get("PARSED_FILES")
+        files = args.get("PARSED_FILES")
+        names = args.get("NAMES")
+        if files:
             logging.info("Making Error Budgets")
 
-            params = args.get("PARAMS")  # we want to make a budget for each param
-
-            budget_labels = [n.split()[-1] for n in args.get("NAMES")]
+            budget_labels = [n.split()[-1] for n in names]
             base, base_index = [(b, i) for i, b in enumerate(budget_labels) if b in ["NOSYS", "STAT", "STATONLY"]][0]
-
-            data = [get_entry(n, b, f) for n, b, f in zip(args.get("NAMES"), budget_labels, files)]
+            data = [get_entry(n, b, f) for n, b, f in zip(names, budget_labels, files)]
             others = [d for i, d in enumerate(data) if i != base_index]
 
             base_df = data[base_index]
             df_all = pd.concat([base_df] + others).reset_index()
 
+            # Save out all the means + stds to file unchanged.
             df_all.to_csv("errbudget_all_uncertainties.csv", index=False, float_format="%0.4f")
 
             # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
@@ -91,7 +90,7 @@ if __name__ == "__main__":
             for name, df in dfg:
                 output_filename = f"errbudget_{name}.txt"
 
-                avg_cols = [c for c in df.columns if c.endswith(" avg")]
+                avg_cols = [c for c in df.columns if c.endswith(" delta")]
                 std_cols = [c for c in df.columns if c.endswith(" std")]
                 contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
 
