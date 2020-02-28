@@ -32,7 +32,7 @@ def get_arguments():
 
 
 def load_file(file):
-    name = file.split("/")[-4]
+    name = file.split(".")[0]
     logging.info(f"Loading existing csv.gz file: {file}")
     return pd.read_csv(file), name
 

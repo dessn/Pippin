@@ -12,7 +12,7 @@ from astropy.cosmology import FlatLambdaCDM
 def setup_logging():
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_biascor.log")])
+    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("parse_lcfit.log")])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
     logging.getLogger("chainconsumer").setLevel(logging.WARNING)
 
