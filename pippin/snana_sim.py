@@ -61,7 +61,8 @@ class SNANASimulation(ConfigBasedExecutable):
         keys = [k for k in config.keys() if k != "GLOBAL" and k != "OPTS"]
         self.base_ia = []
         self.base_cc = []
-        model_types = {}
+        types = {}
+        types_dict = {"IA": [], "NONIA": []}
         for k in keys:
             d = config[k]
             base_file = d.get("BASE")
@@ -74,9 +75,9 @@ class SNANASimulation(ConfigBasedExecutable):
             gentype, genmodel = None, None
             with open(base_path) as f:
                 for line in f.read().splitlines():
-                    if line.upper().strip().startswith("GENTYPE"):
+                    if line.upper().strip().startswith("GENTYPE:"):
                         gentype = line.upper().split(":")[1].strip()
-                    if line.upper().strip().startswith("GENMODEL"):
+                    if line.upper().strip().startswith("GENMODEL:"):
                         genmodel = line.upper().split(":")[1].strip()
             gentype = gentype or d.get("GENTYPE")
             genmodel = genmodel or d.get("GENMODEL")
@@ -89,22 +90,21 @@ class SNANASimulation(ConfigBasedExecutable):
             type2 = "1" + f"{int(gentype):02d}"
             if "SALT2" in genmodel:
                 self.base_ia.append(base_file)
-                model_types[gentype] = "Ia"
-                model_types[type2] = "Ia"
+                types[gentype] = "Ia"
+                types[type2] = "Ia"
+                types_dict["IA"].append(gentype)
+                types_dict["IA"].append(type2)
             else:
                 self.base_cc.append(base_file)
-                model_types[gentype] = "II"
-                model_types[type2] = "II"
+                types[gentype] = "II"
+                types[type2] = "II"
+                types_dict["NONIA"].append(gentype)
+                types_dict["NONIA"].append(type2)
 
-        sorted_types = collections.OrderedDict(sorted(model_types.items()))
+        sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
-        types_dict = {"IA": [], "NONIA": []}
-        for key, value in sorted_types.items():
-            if value.upper() == "IA":
-                types_dict["IA"].append(int(key))
-            else:
-                types_dict["NONIA"].append(int(key))
         self.output["types_dict"] = types_dict
+        self.output["types"] = sorted_types
         self.global_config = global_config
 
         rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
@@ -116,7 +116,6 @@ class SNANASimulation(ConfigBasedExecutable):
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".input_log")
         self.output["blind"] = self.options.get("BLIND", False)
-        self.types = None
         self.derived_batch_info = None
 
         # Determine if all the top level input files exist
@@ -216,8 +215,6 @@ class SNANASimulation(ConfigBasedExecutable):
             shutil.copy(resolved, temp_dir)
             input_paths.append(os.path.join(temp_dir, os.path.basename(f)))
             self.logger.debug(f"Copying input file {resolved} to {temp_dir}")
-
-        self.types = self.get_types(input_paths)
 
         # Copy the include input file if there is one
         input_copied = []
@@ -341,7 +338,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     self.logger.debug(f"Linking {s} -> {s_end}")
                     os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
-            self.output.update({"photometry_dirs": s_ends, "types": self.types})
+            self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
 
         return self.check_for_job(squeue, f"{self.genprefix}_0")

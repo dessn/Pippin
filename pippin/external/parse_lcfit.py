@@ -5,16 +5,14 @@ import pandas as pd
 import sys
 import argparse
 import logging
-import matplotlib.pyplot as plt
 import yaml
 from astropy.cosmology import FlatLambdaCDM
-from scipy.stats import binned_statistic, moment
 
 
 def setup_logging():
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_biascor.log")])
+    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("parse_lcfit.log")])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
     logging.getLogger("chainconsumer").setLevel(logging.WARNING)
 
@@ -31,8 +29,12 @@ def get_arguments():
     return config
 
 
-def add_muref(df, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
+def add_muref(df, filename, alpha=0.14, beta=3.1, om=0.311, h0=70, MB=-19.361):
     # TODO: FInd alpha beta om, h0 better
+    cols = ["zHD", "x1", "mB", "c"]
+    for c in cols:
+        if c not in df.columns:
+            logging.exception(f"Filename {filename} has no column {c}, has {df.columns}")
     cosmo = FlatLambdaCDM(h0, om)
     cosmo_dist_mod = cosmo.distmod(df["zHD"]).value
     obs_dist_mod = df["mB"] + alpha * df["x1"] - beta * df["c"] - MB
@@ -46,7 +48,7 @@ def load_file(infile, outfile):
     df = pd.read_csv(infile, delim_whitespace=True, comment="#")
 
     df.replace(-999, np.nan, inplace=True)
-    add_muref(df)
+    add_muref(df, infile)
     df.to_csv(outfile, index=False, float_format="%0.5f")
     logging.info(f"Saved dataframe from {infile} to {outfile}")
     return df
@@ -64,8 +66,8 @@ if __name__ == "__main__":
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
             args["IA_TYPES"] = [1, 101]
 
-        data_dfs = [load_file(f) for f in zip(args.get("DATA_FITRES_INPUT", []), args.get("DATA_FITRES_PARSED", []))]
-        sim_dfs = [load_file(f) for f in zip(args.get("SIM_FITRES_INPUT", []), args.get("SIM_FITRES_PARSED", []))]
+        data_dfs = [load_file(f, fo) for f, fo in zip(args.get("DATA_FITRES_INPUT", []), args.get("DATA_FITRES_PARSED", []))]
+        sim_dfs = [load_file(f, fo) for f, fo in zip(args.get("SIM_FITRES_INPUT", []), args.get("SIM_FITRES_PARSED", []))]
 
         logging.info(f"Finishing gracefully")
 

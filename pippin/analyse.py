@@ -99,7 +99,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
             for covopt in c.output["covopts"]:
                 if self.covopts is None or covopt in self.covopts:
                     self.cosmomc_input_files.append(c.output["base_dict"][covopt])
-                    self.cosmomc_output_files.append(c.output["label"] + covopt + ".csv.gz")
+                    self.cosmomc_output_files.append(c.output["label"] + "_" + covopt + ".csv.gz")
                     self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
                     for p in c.output["cosmology_params"]:
                         if p not in self.params:
@@ -111,7 +111,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         # Get the fitres and m0diff files we'd want to parse for Hubble diagram plotting
         self.biascor_fitres_input_files = [os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
-        self.biascor_fitres_output_files = [b.name + "_" + m.replace("SALT2mu_FITJOBS", "1") + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_fitres_output_files = [
+            b.name + "_" + m.replace("SALT2mu_FITJOBS", "1") + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]
+        ]
 
         self.biascor_m0diffs = []
         self.biascor_m0diff_output = "all_biascor_m0diffs.csv"
@@ -134,6 +136,7 @@ cd {output_dir}
     def get_slurm_raw(self):
         base = self.slurm
         template = """
+echo "Executing {path}"
 python {path} {{input_yml}}
 if [ $? -ne 0 ]; then
     echo FAILURE > {donefile}
@@ -201,9 +204,9 @@ fi
                     self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
 
         data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
-        data_fitres_output = [d.replace(".fitres", ".csv.gz") for d in data_fitres_files]
+        data_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in data_fitres_files]
         sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
-        sim_fitres_output = [d.replace(".fitres", ".csv.gz") for d in sim_fitres_files]
+        sim_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in sim_fitres_files]
         types = list(set([a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]))
         input_yml_file = "input.yml"
         output_dict = {
@@ -252,11 +255,7 @@ fi
             with open(input_yml_path, "w") as f:
                 json.dump(output_dict, f, indent=2)
                 self.logger.debug(f"Input yml file written out to {input_yml_path}")
-            for f in self.hubble_plots:
-                self.logger.debug(f"Searching for Hubble plot {f}")
-                if f is not None and os.path.exists(f):
-                    self.logger.debug(f"Copying Hubble plot {f} to {self.output_dir}")
-                    shutil.copy(f, os.path.join(self.output_dir, os.path.basename(f)))
+
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)

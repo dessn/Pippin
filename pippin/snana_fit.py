@@ -117,7 +117,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return None
 
     def print_stats(self):
-        folders = [f for f in os.listdir(self.lc_output_dir) if f.startswith("PIP_") and os.path.isdir(self.lc_output_dir + "/" + f)]
+        folders = [f for f in os.listdir(self.lc_output_dir) if os.path.isdir(self.lc_output_dir + "/" + f)]
         if len(folders) > 5:
             self.logger.debug(f"Have {len(folders)} folders, only showing first five!")
             folders = folders[:5]
@@ -240,9 +240,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
         if os.path.exists(self.done_file):
             self.logger.info("Light curve done file found")
-            logging_file2 = self.logging_file.replace("_log", "_log2")
-            if not os.path.exists(logging_file2):
-                self.logger.info(f"{logging_file2} not found, checking FITOPT existence")
+            if not os.path.exists(self.logging_file):
+                self.logger.info(f"{self.logging_file} not found, checking FITOPT existence")
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE

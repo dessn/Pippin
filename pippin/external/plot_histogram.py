@@ -32,7 +32,7 @@ def get_arguments():
 
 
 def load_file(file):
-    name = file.split("/")[-4]
+    name = file.split(".")[0]
     logging.info(f"Loading existing csv.gz file: {file}")
     return pd.read_csv(file), name
 
@@ -61,35 +61,9 @@ def plot_histograms(data, sims, types, figname):
         "__MUDIFF",
     ]
     restricted = ["FITCHI2", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
-    logs = [
-        "SNRMAX1",
-        "SNRMAX2",
-        "SNRMAX3",
-        "SNRMAX_g",
-        "SNRMAX_r",
-        "SNRMAX_i",
-        "SNRMAX_z",
-        "FITCHI2",
-        "chi2_g",
-        "chi2_r",
-        "chi2_i",
-        "chi2_z",
-        "__MUDIFF",
-    ]
+    logs = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z", "__MUDIFF"]
 
-    cs = [
-        "#1976D2",
-        "#FB8C00",
-        "#8BC34A",
-        "#E53935",
-        "#4FC3F7",
-        "#43A047",
-        "#F2D026",
-        "#673AB7",
-        "#FFB300",
-        "#E91E63",
-        "#F2D026",
-    ]
+    cs = ["#1976D2", "#FB8C00", "#8BC34A", "#E53935", "#4FC3F7", "#43A047", "#F2D026", "#673AB7", "#FFB300", "#E91E63", "#F2D026"]
     cols = [c for c in cols if c in data[0][0].columns]
 
     for c in restricted:
@@ -160,7 +134,16 @@ def plot_histograms(data, sims, types, figname):
                 ndof = len(bc)
                 red_chi2 = chi2 / ndof
 
-                ax.text(0.99, 0.99 - 0.1 * i, f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}", horizontalalignment="right", verticalalignment="top", transform=ax.transAxes, color=cs[i], fontsize=10)
+                ax.text(
+                    0.99,
+                    0.99 - 0.1 * i,
+                    f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}",
+                    horizontalalignment="right",
+                    verticalalignment="top",
+                    transform=ax.transAxes,
+                    color=cs[i],
+                    fontsize=10,
+                )
 
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
@@ -180,7 +163,12 @@ def get_means_and_errors(x, y, bins):
 
     std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
     std_err, *_ = binned_statistic(
-        x, y, bins=bins, statistic=lambda x: np.nan if x.size < 20 else np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
+        x,
+        y,
+        bins=bins,
+        statistic=lambda x: np.nan
+        if x.size < 20
+        else np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
     )
     return means, err, std, std_err
 
@@ -244,9 +232,9 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if not args.get("DATA_FITRES"):
+        if not args.get("DATA_FITRES_PARSED"):
             logging.warning("Warning, no data files specified")
-        if not args.get("SIM_FITRES"):
+        if not args.get("SIM_FITRES_PARSED"):
             logging.warning("Warning, no sim files specified")
         if not args.get("IA_TYPES"):
             logging.warning("Warning, no Ia types specified, assuming 1 and 101.")

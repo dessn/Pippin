@@ -8,8 +8,6 @@ import yaml
 from scipy.stats import binned_statistic, moment
 from scipy.ndimage import gaussian_filter
 from scipy.interpolate import interp1d
-import os
-from scipy.optimize import curve_fit
 
 
 def setup_logging():
@@ -20,10 +18,6 @@ def setup_logging():
     logging.getLogger("chainconsumer").setLevel(logging.WARNING)
 
 
-def sigmoid(x, a, b, c):
-    return c * np.exp(-a * (x - b))
-
-
 def get_arguments():
     # Set up command line arguments
     parser = argparse.ArgumentParser()
@@ -32,27 +26,18 @@ def get_arguments():
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config.update(config["HISTOGRAM"])
+    config.update(config["LCFIT"])
     if config.get("FIELDS") is None:
         config["FIELDS"] = [["X3", "C3"], ["E1", "E2", "C1", "C2", "S1", "S2", "X1", "X2"]]
     return config
 
 
 def load_file(file):
-    name = file.split("/")[-4]
-    newfile = name + ".csv.gz"
-    if os.path.exists(newfile):
-        logging.info(f"Loading existing csv.gz file: {newfile}")
-        return pd.read_csv(newfile)
-    else:
-        df = pd.read_csv(file, delim_whitespace=True, comment="#")
-        # df2 = df[["x1", "c", "zHD", "FITPROB", "SNRMAX1", "cERR", "x1ERR", "PKMJDERR", "TYPE"]]
-        df.to_csv(newfile, index=False, float_format="%0.5f")
-        logging.info(f"Saved dataframe from {file} to {newfile}")
-        return df
+    logging.info(f"Loading existing csv.gz file: {file}")
+    return pd.read_csv(file)
 
 
-def plot_efficiency(data_all, sims, types, fields):
+def plot_efficiency(data_all, sims, fields):
 
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False)
@@ -65,7 +50,6 @@ def plot_efficiency(data_all, sims, types, fields):
 
             for c, ax in zip(cols, row):
 
-                bins = None
                 if c == "zHD":
                     bins = np.arange(0.15, 1.55, 0.1)
                 else:
@@ -129,11 +113,6 @@ def plot_efficiency(data_all, sims, types, fields):
                 if field_eff.get(c) is None:
                     field_eff[c] = []
 
-                # popt, pcov = curve_fit(sigmoid, x, y, p0=[1,1,1])
-                # print(c, popt)
-                # yy = sigmoid(x, *popt)
-
-                # ax.plot(x, yy, c="c", lw=2)
                 field_eff[c].append((bc, y))
 
         save_efficiency_file(field_eff, fields)
@@ -160,10 +139,8 @@ VARNAMES: {name_map[c]} HOSTEFF
                 f.write("ENDMAP:\n\n")
 
 
-def plot_efficiency2d(data_all, sims, types, fields):
+def plot_efficiency2d(data_all, sims, fields):
     from mpl_toolkits.axes_grid1 import make_axes_locatable
-
-    all_fields = data_all["FIELD"].unique().tolist()
 
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(3, len(fields), figsize=(15, 8), squeeze=False)
@@ -237,16 +214,13 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if not args.get("DATA_FITRES"):
+        if not args.get("DATA_FITRES_PARSED"):
             logging.warning("Warning, no data files specified")
-        if not args.get("SIM_FITRES"):
+        if not args.get("SIM_FITRES_PARSED"):
             logging.warning("Warning, no sim files specified")
-        if not args.get("IA_TYPES"):
-            logging.warning("Warning, no Ia types specified, assuming 1 and 101.")
-            args["IA_TYPES"] = [1, 101]
 
-        data_dfs = [load_file(f) for f in args.get("DATA_FITRES", [])]
-        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES", [])]
+        data_dfs = [load_file(f) for f in args.get("DATA_FITRES_PARSED", [])]
+        sim_dfs = [load_file(f) for f in args.get("SIM_FITRES_PARSED", [])]
 
         if "HOST_MAG_i" not in sim_dfs[0].columns:
             logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
@@ -257,10 +231,10 @@ if __name__ == "__main__":
             else:
                 for d in data_dfs + sim_dfs:
                     d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
-                plot_efficiency(data_dfs[0], sim_dfs, args["IA_TYPES"], args["FIELDS"])
+                plot_efficiency(data_dfs[0], sim_dfs, args["FIELDS"])
 
         logging.info(f"Finishing gracefully")
 
     except Exception as e:
-        logging.exception(str(e))
+        logging.exception(e, exc_info=True)
         raise e

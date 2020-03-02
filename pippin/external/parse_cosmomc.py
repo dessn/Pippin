@@ -82,7 +82,9 @@ def get_arguments():
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
-        assert len(config["NAMES"]) == len(config["FILES"]), "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        assert len(config["NAMES"]) == len(config["INPUT_FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        )
     return config
 
 
@@ -97,7 +99,12 @@ def parse_chains(basename, outname, args, index):
     weights, likelihood, chain = load_chains(chain_files, names, params)
     if blind_params:
         blind(chain, params or names, blind_params, index=index)
-    labels = [f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$" for u in params for l, n in zip(labels, names) if n == u]
+    labels = [
+        f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$"
+        for u in params
+        for l, n in zip(labels, names)
+        if n == u
+    ]
 
     # Turn into new df
     output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=["_weight", "_likelihood"] + labels)
@@ -112,7 +119,7 @@ if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if args.get("FILES"):
+        if args.get("INPUT_FILES"):
             logging.info("Creating chain consumer object")
 
             biases = {}
@@ -120,7 +127,7 @@ if __name__ == "__main__":
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
             shift_params = truth if args.get("SHIFT") else None
 
-            for index, basename, outname in enumerate(zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))):
+            for index, (basename, outname) in enumerate(zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))):
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
                 else:
@@ -135,7 +142,7 @@ if __name__ == "__main__":
                     biases[key] = b
                     b += 1
                 bias_index = biases[key]
-                parse_chains(basename, outname, args, bias_index, name)
+                parse_chains(basename, outname, args, bias_index)
 
         logging.info("Finishing gracefully")
     except Exception as e:

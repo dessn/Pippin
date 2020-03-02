@@ -5,78 +5,19 @@ import sys
 import argparse
 import os
 import logging
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-
-def load_params(file):
-    assert os.path.exists(file), f"Paramnames file {file} does not exist"
-    names, labels = [], []
-    with open(file) as f:
-        for line in f.read().splitlines():
-            n, l = line.split(maxsplit=1)
-            names.append(n.replace("*", ""))
-            labels.append(l)
-    return names, labels
-    
-
-def load_chains(files, all_cols, use_cols=None):
-    header = ["weights", "likelihood"] + all_cols
-    data = [pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files]
-
-    # Remove burn in by cutting off first 30%
-    data = [d.iloc[int(d.shape[0] * 0.3) :, :] for d in data]
-
-    combined = pd.concat(data)
-    if use_cols is None:
-        use_cols = all_cols
-    weights = combined["weights"].values
-    likelihood = combined["likelihood"].values
-    chain = combined[use_cols].values
-    return weights, likelihood, chain
-
-def getParamAndErr(name,param,chainfilebase):
-    logging.info("Loading in data from original CosmoMC files")
-    param_file = os.path.join(chainfilebase) + ".paramnames"
-    names, labels = load_params(param_file)
-    chain_files = get_chain_files(chainfilebase)
-    weights, likelihood, chain = load_chains(chain_files, names, use_cols=param)
-    return chain.mean(),chain.std()
-
-def fail(msg, condition=True):
-    if condition:
-        logging.error(msg)
-        raise ValueError(msg)
-
-
-def get_chain_files(basename):
-    folder = os.path.dirname(basename)
-    logging.info(f"Looking for chains in folder {folder}")
-    base = os.path.basename(basename)
-    files = [os.path.join(folder, f) for f in sorted(os.listdir(folder)) if base in f and f.endswith(".txt")]
-    fail(f"No chain files found for {os.path.join(folder, basename)}", condition=len(files) == 0)
-    logging.info(f"{len(files)} chains found for basename {basename}")
-    return files
 
 
 def setup_logging():
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_cosmomc.log")])
+    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_errbudget.log")])
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
-def blind(chain, names, columns_to_blind, index=0):
-    np.random.seed(123)
-    for i, c in enumerate(columns_to_blind):
-        logging.info(f"Blinding column {c}")
-        try:
-            ii = names.index(c)
-            scale = np.random.normal(loc=1, scale=0.0, size=1000)[321 + i]
-            offset = np.random.normal(loc=0, scale=0.2, size=1000)[343 + i + (index + 10)]
-            chain[:, ii] = chain[:, ii] * scale + np.std(chain[:, ii]) * offset
-        except ValueError as e:
-            logging.warning(f"Cannot find blinding column {c} in list of names {names}")
+def fail(msg, condition=True):
+    if condition:
+        logging.error(msg)
+        raise ValueError(msg)
 
 
 def get_arguments():
@@ -88,95 +29,78 @@ def get_arguments():
 
     with open(args.input_file, "r") as f:
         config = yaml.safe_load(f)
-    config["donefile"] = args.donefile
     config.update(config["COSMOMC"])
 
     if config.get("NAMES") is not None:
-        assert len(config["NAMES"]) == len(config["FILES"]), (
-            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+        assert len(config["NAMES"]) == len(config["PARSED_FILES"]), (
+            "You should specify one name per base file you pass in." + f" Have {len(config['PARSED_FILES'])} base names and {len(config['NAMES'])} names"
         )
     return config
 
 
-def get_output_name(args, name):
-    path = args["OUTPUT_NAME"] + "___" + name + ".csv.gz"
-    basename = os.path.basename(path)
-    return path, basename
-
-
-def get_output(basename, args, index, name):
-    output_path, b = get_output_name(args, name)
-    res = load_output(b)
-    if res is None:
-        full = True
-        logging.info("Loading in data from original CosmoMC files")
-        param_file = os.path.join(basename) + ".paramnames"
-        chain_files = get_chain_files(basename)
-        names, labels = load_params(param_file)
-        blind_params = args.get("BLIND")
-        params = args.get("PARAMS")
-        weights, likelihood, chain = load_chains(chain_files, names, params)
-        if blind_params:
-            blind(chain, params or names, blind_params, index=index)
-        labels = [
-            f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$"
-            for u in params
-            for l, n in zip(labels, names)
-            if n == u
-        ]
-        # Turn into new df
-        output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=["_weight", "_likelihood"] + labels)
-        output_df.to_csv(output_path, float_format="%0.5f", index=False)
-    else:
-        full = False
-        weights, likelihood, chain, labels = res
-    logging.info(f"Chain for {basename} has shape {chain.shape}")
-    logging.info(f"Labels for {basename} are {labels}")
-    return weights, likelihood, labels, chain, full
-
-
 def load_output(basename):
     if os.path.exists(basename):
-        logging.warning("Loading in pre-saved CSV file. Be warned.")
+        logging.info(f"Loading in pre-saved CSV file from {basename}")
         df = pd.read_csv(basename)
-        return df["_weight"].values, df["_likelihood"].values, df.iloc[:, 2:].values, list(df.columns[2:])
+        return df["_weight"].values, df["_likelihood"].values, df.iloc[:, 2:].to_numpy(), list(df.columns[2:])
     else:
+        fail(f"Cannot find file {basename}")
         return None
 
+
+def weighted_avg_and_std(values, weights):
+    average = np.average(values, weights=weights, axis=0)
+    variance = np.average((values - average) ** 2, weights=weights, axis=0)
+    return average, np.sqrt(variance)
+
+
+def get_entry(name, syst, filename):
+    w, l, chain, cols = load_output(filename)
+    means, stds = weighted_avg_and_std(chain, w)
+    d = dict([(l + " avg", [x]) for l, x in zip(cols, means)])
+    d.update(dict([(l + " std", [x]) for l, x in zip(cols, stds)]))
+    d["name"] = [" ".join([n for n in name.split()[:-1]])]
+    d["covopt"] = [syst]
+    df = pd.DataFrame(d)
+    return df
 
 
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
     try:
-        if args.get("FILES"):
+        files = args.get("PARSED_FILES")
+        names = args.get("NAMES")
+        if files:
             logging.info("Making Error Budgets")
-            params = args.get("PARAMS") # we want to make a budget for each param
-            bcormuopts = np.array(args.get("NAMES")) # we want to make a budget for each biascor
-            chainfiles = np.array(args.get("FILES"))
-            bcors = []
-            for bm in bcormuopts:
-                if ' '.join(bm.split()[:-1]) != '':
-                    bcors.append(' '.join(bm.split()[:-1]))
-            bcors = np.unique(bcors)
-            for p in params:
-                for bcor in bcors:
-                    dfkey = bcor+'_'+p
-                    df = pd.DataFrame(columns=['Covopt','Shift','Tot Error','Sys Error'])
-                    statonlyName = bcor+' NOSYS'
-                    statonlyChain = chainfiles[bcormuopts==statonlyName][0]
-                    statonlyVal, statonlyErr = getParamAndErr(statonlyName,p,statonlyChain)
-                    for name,chain in zip(bcormuopts,chainfiles):
-                        if bcor == ' '.join(name.split()[:-1]):
-                            covopt = name.split()[-1]
-                            Val, totalErr = getParamAndErr(name,p,chain)
-                            syserr = (totalErr**2-statonlyErr**2)**.5
-                            shift = Val-statonlyVal
-                            df=df.append({'Covopt':covopt,'Shift':shift, 'Tot Error':totalErr,'Sys Error':syserr},ignore_index=True)
-                    fout = open(bcor.replace(' ','_').replace('(','').replace(')','')+'_'+p+'_budget.txt','w')    
-                    fout.write(df.to_latex())
-                    fout.close()
-    except Exception as e:
-        logging.exception(str(e))
-        raise e
 
+            budget_labels = [n.split()[-1] for n in names]
+            base, base_index = [(b, i) for i, b in enumerate(budget_labels) if b in ["NOSYS", "STAT", "STATONLY"]][0]
+            data = [get_entry(n, b, f) for n, b, f in zip(names, budget_labels, files)]
+            others = [d for i, d in enumerate(data) if i != base_index]
+
+            base_df = data[base_index]
+            df_all = pd.concat([base_df] + others).reset_index()
+
+            # Save out all the means + stds to file unchanged.
+            df_all.to_csv("errbudget_all_uncertainties.csv", index=False, float_format="%0.4f")
+
+            # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
+            dfg = df_all.groupby("name")
+            for name, df in dfg:
+                output_filename = f"errbudget_{name}.txt".replace(" ", "_")
+
+                avg_cols = [c for c in df.columns if c.endswith(" avg")]
+                std_cols = [c for c in df.columns if c.endswith(" std")]
+                delta_cols = [c.replace(" avg", " delta") for c in df.columns if c.endswith(" avg")]
+                contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
+
+                df[delta_cols] = df.loc[:, avg_cols] - df.loc[:, avg_cols].iloc[0, :]
+                df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - df.loc[:, std_cols].iloc[0, :] ** 2)
+
+                df = df.reindex(sorted(df.columns)[::-1], axis=1)
+                df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
+
+    except Exception as e:
+        logging.exception(e, exc_info=True)
+        raise e
