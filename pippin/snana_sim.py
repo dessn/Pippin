@@ -67,10 +67,10 @@ class SNANASimulation(ConfigBasedExecutable):
             d = config[k]
             base_file = d.get("BASE")
             if base_file is None:
-                Task.fail_config(f"Your simulation component {k} needs to specify a BASE input file")
+                Task.fail_config(f"Your simulation component {k} for sim name {self.name} needs to specify a BASE input file")
             base_path = get_data_loc(base_file)
             if base_path is None:
-                Task.fail_config(f"Cannot find sim component {k} base file at {base_path}")
+                Task.fail_config(f"Cannot find sim component {k} base file at {base_path} for sim name {self.name}")
 
             gentype, genmodel = None, None
             with open(base_path) as f:

@@ -80,10 +80,10 @@ SIM:
 
   SIMFAKE_1D_MIX_1:
     IA:
+      BASE: surveys/des/sims_ia/fakes_diffimg.input
+    GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5_1.DAT
       RANSEED_REPEAT: 1 12345
-    GLOBAL:
-      <<: *default_map
       <<: *default_corr
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
