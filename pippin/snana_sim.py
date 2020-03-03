@@ -303,7 +303,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.logger.info(f"Simulation {self.name} found done file!")
 
             with open(self.done_file) as f:
-                if "FAILURE" in f.read():
+                if "FAIL" in f.read():
                     self.logger.error(f"Done file {self.done_file} reporting failure")
 
                     log_files = [self.logging_file]
