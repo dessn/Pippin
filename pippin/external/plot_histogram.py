@@ -112,6 +112,9 @@ def plot_histograms(data, sims, types, figname):
             ax.set_xlabel(c)
         if c in logs:
             ax.set_yscale("log")
+            ax.tick_params(axis="y", which="both", labelsize=2)
+            labels = ["" for item in ax.get_yticklabels()]
+            ax.set_yticklabels(labels)
 
         # Add the reduced chi2 value if there are only one data and one sim
         if len(sims) < 3 and len(data) == 1:
