@@ -164,9 +164,6 @@ class SNANASimulation(ConfigBasedExecutable):
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
         self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
-        if len(self.data_dirs) > 1:
-            data_dir = self.data_dirs[0]
-            self.set_property("PATH_USER_INPUT", data_dir, assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
             if k.upper() != "GLOBAL":
                 run_config = self.config[k]
@@ -182,6 +179,10 @@ class SNANASimulation(ConfigBasedExecutable):
                         val = [val]
                     for v in val:
                         self.set_property(f"GENOPT({match})", f"{key} {v}", section_end="ENDLIST_GENVERSION", only_add=True)
+
+        if len(self.data_dirs) > 1:
+            data_dir = self.data_dirs[0]
+            self.set_property("PATH_USER_INPUT", data_dir, assignment=": ")
 
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":

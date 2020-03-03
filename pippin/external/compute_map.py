@@ -173,7 +173,7 @@ for cut in cuts:
 
                     # For each element in the list, do the math
                     for index, x in np.ndenumerate(numerator):
-                        print(index)
+                        # print(index)
                         mask_s = np.ones(df_s2.shape[0], dtype=bool)
                         mask_f = np.ones(df_f2.shape[0], dtype=bool)
                         for i, ind_f, ind_s in zip(index, indices_f2, indices_s2):
@@ -203,7 +203,6 @@ for cut in cuts:
 
                         x2 = xx[non_nan]
                         ind2 = ind[:, non_nan]
-                        print(ind2.shape, x2.shape, ind.shape)
                         x = griddata(ind2.T, x2, ind.T, method="nearest").T.flatten().reshape((x.shape))
 
                         # Save to output
@@ -227,9 +226,8 @@ for cut in cuts:
                             bc = [f"{bc[i]:0.2f}" for bc, i in zip(bcs, inds)]
                             # Add on the data value
                             value = d[tuple(inds)]
-                            print(inds, d.shape, value)
                             bc.append(f"{value:0.3f}")
                             output_string.append("ROW: " + "  ".join(bc))
                         output_string.append("ENDMAP:\n")
-                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}_{cut}_{int(cut_fitprob)}.DAT", "w") as ff:
+                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}_{cut}_{int(100 * cut_fitprob)}.DAT", "w") as ff:
                     ff.write("\n".join(output_string))
