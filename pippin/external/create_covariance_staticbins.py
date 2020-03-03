@@ -389,6 +389,7 @@ def sysmat(
         return 0
 
     if os.path.isfile(base_output + ".list"):
+        print("##### I AM OPENING THIS FILE FOR READ: " + base_output + ".list")
         file_lines = open(base_output + ".list", "r").readlines()
     if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
