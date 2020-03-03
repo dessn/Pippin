@@ -12,7 +12,7 @@
 ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
 
   DEFAULT_SIM_MAP: &default_map
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5_0.DAT
     RANSEED_REPEAT: 1 12345
 
   DEFAULT_CORR: &default_corr
@@ -27,7 +27,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
     APPEND_TABLE_TEXT: SNRMAX_g SNRMAX_r SNRMAX_i SNRMAX_z chi2_g chi2_r chi2_i chi2_z
 
   SNLCINP: &default_mapdata
-    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+    FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5_0.DAT
 
   DESLIKESIM: &deslikesim
     IA_G10:
@@ -71,14 +71,21 @@ SIM:
 
   # Great, so that should allow a good mix for the correlation to be determined
   # broken down by deep and shallow fields. Lets simulate this mix
-  SIMFAKE_1D_MIX:
+  SIMFAKE_1D_MIX_0:
     IA: *fakesinput
     GLOBAL:
       <<: *default_map
       <<: *default_corr
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
-
+  SIMFAKE_1D_MIX_1:
+    IA:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5_1.DAT
+      RANSEED_REPEAT: 1 12345
+    GLOBAL:
+      <<: *default_map
+      <<: *default_corr
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
 
 
@@ -177,6 +184,12 @@ LCFIT:
     SNLCINP: *default_mapdata
     OPTS: *default_fitopts
 
+  F1D1: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+    BASE: surveys/des/lcfit_nml/fakes.nml
+    MASK: FAKES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5_1.DAT
+    OPTS: *default_fitopts
 
 
   # Fit the DES sims
@@ -188,11 +201,19 @@ LCFIT:
       ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
 
-  D1D: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+  D1D0: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DATADES
     SNLCINP:
-      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5_0.DAT
+      ROOTFILE_OUT: FIT.ROOT
+    OPTS: *default_fitopts
+
+  D1D1: # fit fakes using the 2D correction, which only apples to the real fakes, not the sims
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DATADES
+    SNLCINP:
+      FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_FAKES_ERRORFUDGES_DIFFIMG_SBMAG_5_1.DAT
       ROOTFILE_OUT: FIT.ROOT
     OPTS: *default_fitopts
 
@@ -216,7 +237,9 @@ ANALYSE:
   CHECK_FAKES:
     HISTOGRAM:
       - F1D_FAKES
-      - F1D_SIMFAKE_1D_MIX
+      - F1D1_FAKES
+      - F1D_SIMFAKE_1D_MIX_0
+      - F1D_SIMFAKE_1D_MIX_1
 
   CHECK_FAKES_BEFORE_AFTER:
     HISTOGRAM:
@@ -227,7 +250,8 @@ ANALYSE:
 
   CHECK_5YR_DIST_1D:
     HISTOGRAM:
-      - D1D_DATADES5YR
+      - D1D0_DATADES5YR
+      - D1D1_DATADES5YR
       - D2D_SIMDES5YR_1D_REDCOV
       - D2D_SIMDES5YR_1D_INDCOV
 
