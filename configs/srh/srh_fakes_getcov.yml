@@ -177,7 +177,16 @@ SIM:
     GLOBAL:
       <<: *map1d
       FLUXERRMODEL_REDCOV: "griz:0.4"
-
+  SIMFAKE_1D_CORR_ALL05:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map1d
+      FLUXERRMODEL_REDCOV: "griz:0.5"
+  SIMFAKE_1D_CORR_ALL06:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map1d
+      FLUXERRMODEL_REDCOV: "griz:0.6"
   SIMFAKE_1D_CORR_INDEP01:
     IA: *fakesinput
     GLOBAL:
@@ -198,6 +207,16 @@ SIM:
     GLOBAL:
       <<: *map1d
       FLUXERRMODEL_REDCOV: "g:0.4,r:0.4,i:0.4,z:0.4"
+  SIMFAKE_1D_CORR_INDEP05:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map1d
+      FLUXERRMODEL_REDCOV: "g:0.5,r:0.5,i:0.5,z:0.5"
+  SIMFAKE_1D_CORR_INDEP06:
+    IA: *fakesinput
+    GLOBAL:
+      <<: *map1d
+      FLUXERRMODEL_REDCOV: "g:0.6,r:0.6,i:0.6,z:0.6"
 # Now we have to fit everything. For the SIMFAKES, we'll fit using the fakes.nml
 # For the DES-like sims, we'll fit using surveys/des/lcfit_nml/des_5yr.nml
 LCFIT:
@@ -274,6 +293,16 @@ ANALYSE:
       - F1D_FAKES
       - F3D_SIMFAKE_1D_CORR_ALL04
       - F3D_SIMFAKE_1D_CORR_INDEP04
+  CORR_1D_05:
+    MASK_LCFIT:
+      - F1D_FAKES
+      - F3D_SIMFAKE_1D_CORR_ALL04
+      - F3D_SIMFAKE_1D_CORR_INDEP04
+  CORR_1D_06:
+    MASK_LCFIT:
+      - F1D_FAKES
+      - F3D_SIMFAKE_1D_CORR_ALL04
+      - F3D_SIMFAKE_1D_CORR_INDEP04
 
   ALL_1D_CORRELATIONS:
     MASK_LCFIT:
@@ -283,9 +312,13 @@ ANALYSE:
       - F3D_SIMFAKE_1D_CORR_ALL01
       - F3D_SIMFAKE_1D_CORR_ALL02
       - F3D_SIMFAKE_1D_CORR_ALL03
+      - F3D_SIMFAKE_1D_CORR_ALL04
+      - F3D_SIMFAKE_1D_CORR_ALL05
       - F3D_SIMFAKE_1D_CORR_INDEP01
       - F3D_SIMFAKE_1D_CORR_INDEP02
       - F3D_SIMFAKE_1D_CORR_INDEP03
+      - F3D_SIMFAKE_1D_CORR_INDEP04
+      - F3D_SIMFAKE_1D_CORR_INDEP05
 
   CORR_3D_00:
     MASK_LCFIT:
