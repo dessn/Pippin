@@ -117,7 +117,7 @@ class Task(ABC):
         num_errors = 0
         self.logger.debug(f"Found {len(paths)} to scan")
         for path in paths:
-            self.logger.debug(f"Scanning {path} for error")
+            # self.logger.debug(f"Scanning {path} for error")
             if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
                 num_errors += 1
             if num_errors >= max_erroring_files:
