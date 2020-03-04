@@ -253,7 +253,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
 
                     log_files = [] + self.log_files
-                    log_files += [f for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
+                    log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
 
                     self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")
                     return Task.FINISHED_FAILURE

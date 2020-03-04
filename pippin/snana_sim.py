@@ -308,7 +308,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
                     log_files = [self.logging_file]
                     if os.path.exists(self.sim_log_dir):
-                        log_files += [f for f in self.sim_log_dir if f.upper().endswith(".LOG")]
+                        log_files += [os.path.join(self.sim_log_dir, f) for f in self.sim_log_dir if f.upper().endswith(".LOG")]
                     else:
                         self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
                     self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")

@@ -108,24 +108,24 @@ SIM:
     <<: *deslikesim
     GLOBAL:
       <<: *default_corr_1d
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.01
+      RANSEED_REPEAT: 1 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
   SIMDES5YR_2D:
     <<: *deslikesim
     GLOBAL:
       <<: *default_corr_2d
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.01
+      RANSEED_REPEAT: 1 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
   SIMDES5YR_3D:
     <<: *deslikesim
     GLOBAL:
       <<: *default_corr_3d
-      NGEN_UNIT: 1
-      RANSEED_REPEAT: 5 12345
+      NGEN_UNIT: 0.01
+      RANSEED_REPEAT: 1 12345
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
 
 
