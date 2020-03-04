@@ -6,7 +6,7 @@ import os
 
 field_names = ["SHALLOW", "DEEP"]
 bands = ["g", "r", "i", "z"]
-cuts = [4, 5, 6]
+cuts = [5]
 
 
 def print_drop(mask, name):
