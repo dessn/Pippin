@@ -99,7 +99,7 @@ class Task(ABC):
         assert len(error_match) >= 1, "You need to specify what string to search for. I have nothing."
         found = False
         if not os.path.exists(path):
-            self.logger.warning(f"Note, expect log path {path} does not exist")
+            self.logger.warning(f"Note, expected log path {path} does not exist")
             return False
 
         with open(path) as f:
@@ -116,6 +116,7 @@ class Task(ABC):
     def scan_files_for_error(self, paths, *error_match, max_lines=10, max_erroring_files=3):
         num_errors = 0
         for path in paths:
+            self.logger.debug(f"Scanning {path} for error")
             if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
                 num_errors += 1
             if num_errors >= max_erroring_files:
