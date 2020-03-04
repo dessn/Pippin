@@ -119,7 +119,7 @@ if not os.path.exists("fakes_obs.pkl"):
     print("Finished parsing")
 
 for cut in cuts:
-    for cut_fitprob in [0.00, 0.01]:
+    for cut_fitprob in [0.00]:  # , 0.01]:
         print("Loading data")
         df_f = get_data("fakes_obs.pkl", cut, cut_fitprob=cut_fitprob)
         df_s = get_data("sim_obs.pkl", cut, cut_fitprob=cut_fitprob)
@@ -229,5 +229,5 @@ for cut in cuts:
                             bc.append(f"{value:0.3f}")
                             output_string.append("ROW: " + "  ".join(bc))
                         output_string.append("ENDMAP:\n")
-                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}_{cut}_{int(100 * cut_fitprob)}.DAT", "w") as ff:
+                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}_{cut}.DAT", "w") as ff:
                     ff.write("\n".join(output_string))
