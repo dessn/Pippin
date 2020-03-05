@@ -13,7 +13,7 @@ ANCHORS:  # The name of this doesnt actually matter, its all about the & and *
       BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
     GLOBAL:
       FLUXERRMODEL_FILE: $DES_ROOT/simlibs/maps/DES5YR_SIM_ERRORFUDGES_DIFFIMG_SBMAG_5.DAT
-      RANSEED_REPEcT: 5 12345
+      RANSEED_REPEAT: 5 12345
       FLUXERRMODEL_REDCOV(DEEP): "g:0.2,r:0.2,i:0.2,z:0.2"
       FLUXERRMODEL_REDCOV(SHALLOW): "griz:0.45"
       SEARCHEFF_zHOST_FILE: $DES_ROOT/models/searcheff/samtest/efficiency_zHD_G10.dat
