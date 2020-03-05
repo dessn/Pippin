@@ -263,21 +263,20 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         tasks = []
-        sim_tasks = Task.get_task_of_type(prior_tasks, DataPrep, SNANASimulation)
+
+        all_deps = Task.match_tasks_of_type(None, prior_tasks, DataPrep, SNANASimulation)
         for fit_name in config.get("LCFIT", []):
             num_matches = 0
             fit_config = config["LCFIT"][fit_name]
             mask = fit_config.get("MASK", "")
-            if isinstance(mask, (str, int)):
-                mask = [mask]
+
+            sim_tasks = Task.match_tasks_of_type(mask, prior_tasks, DataPrep, SNANASimulation)
             for sim in sim_tasks:
-                matches = np.any([m in sim.name for m in mask])
-                if matches:
-                    num_matches += 1
-                    fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
-                    f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)
-                    Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
-                    tasks.append(f)
+                num_matches += 1
+                fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
+                f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)
+                Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
+                tasks.append(f)
             if num_matches == 0:
-                Task.fail_config(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in sim_tasks]}")
+                Task.fail_config(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in all_deps]}")
         return tasks
