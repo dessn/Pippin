@@ -6,7 +6,7 @@ import os
 
 field_names = ["SHALLOW", "DEEP"]
 bands = ["g", "r", "i", "z"]
-cuts = [5]
+cuts = [30]
 
 
 def print_drop(mask, name):
@@ -229,5 +229,5 @@ for cut in cuts:
                             bc.append(f"{value:0.3f}")
                             output_string.append("ROW: " + "  ".join(bc))
                         output_string.append("ENDMAP:\n")
-                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}_{cut}.DAT", "w") as ff:
+                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}.DAT", "w") as ff:
                     ff.write("\n".join(output_string))
