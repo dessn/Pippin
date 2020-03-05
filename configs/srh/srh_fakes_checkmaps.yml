@@ -81,24 +81,24 @@ SIM:
     IA: *fakesinput
     GLOBAL:
       <<: *default_corr_1d
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
-      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      RANSEED_REPEAT: 5 12345
 
 
   SIMFAKE_2D_MIX:
     IA: *fakesinput
     GLOBAL:
       <<: *default_corr_2d
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
-      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      RANSEED_REPEAT: 5 12345
 
 
   SIMFAKE_3D_MIX:
     IA: *fakesinput
     GLOBAL:
       <<: *default_corr_3d
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
-      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      RANSEED_REPEAT: 5 12345
 
 
 
@@ -109,24 +109,24 @@ SIM:
     GLOBAL:
       <<: *default_corr_1d
       NGEN_UNIT: 1
-      RANSEED_REPEAT: 1 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   SIMDES5YR_2D:
     <<: *deslikesim
     GLOBAL:
       <<: *default_corr_2d
       NGEN_UNIT: 1
-      RANSEED_REPEAT: 1 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
   SIMDES5YR_3D:
     <<: *deslikesim
     GLOBAL:
       <<: *default_corr_3d
       NGEN_UNIT: 1
-      RANSEED_REPEAT: 1 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 1
+      RANSEED_REPEAT: 5 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
 
 
 
