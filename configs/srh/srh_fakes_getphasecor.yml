@@ -36,6 +36,37 @@ SIM:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMAG_SMEAR_ADDPHASECOR: 0 0.001
 
+  SIMDES5YR_01_0:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.01 0.001
+
+  SIMDES5YR_01_1:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.01 1
+
+  SIMDES5YR_01_3:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.01 3
+
+  SIMDES5YR_01_6:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.01 6
+
+  SIMDES5YR_01_10:
+    <<: *deslikesim
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMAG_SMEAR_ADDPHASECOR: 0.01 10
+
+
 
   SIMDES5YR_02_0:
     <<: *deslikesim
@@ -196,6 +227,16 @@ LCFIT:
 
 
 ANALYSE:
+
+  CHECK_5YR_01:
+    MASK_LCFIT:
+      - D1D_DATADES5YR
+      - D1D_SIMDES5YR_NOPHASE
+      - D1D_SIMDES5YR_01_0
+      - D1D_SIMDES5YR_01_1
+      - D1D_SIMDES5YR_01_3
+      - D1D_SIMDES5YR_01_6
+      - D1D_SIMDES5YR_01_10
 
   CHECK_5YR_02:
     MASK_LCFIT:
