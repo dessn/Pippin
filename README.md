@@ -141,9 +141,9 @@ function dirusage {
 }
 ```
 
-## Contributing to Pippin
+## Issues and Contributing to Pippin
 
-Contributing to Pippin is easy. Here are some ways you can do it, in order of preference:
+Contributing to Pippin or raising issues is easy. Here are some ways you can do it, in order of preference:
 
 1. Submit an [issue on Github](https://github.com/samreay/Pippin), and then submit a pull request to fix that issue.
 2. Submit an [issue on Github](https://github.com/samreay/Pippin), and then wait until I have time to look at it. Hopefully thats quickly, but no guarantees.
