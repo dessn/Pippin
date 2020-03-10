@@ -21,7 +21,7 @@ when running end-to-end supernova cosmology analyses.
 
 - [Using Pippin](#using-pippin)
 - [Installing Pippin](#installing-it-fresh)
-- [Contributing to Pippin](#contributing-to-pippin)
+- [Contributing to Pippin](#issues-and-contributing-to-pippin)
 - [Examples](#examples)
 - [FAQ](#faq)
 - [Tasks](#tasks)

@@ -1,0 +1,13 @@
+GLOBAL:
+  OUTPUT:
+    output_dir: OUTPUT_LOCATION  # Relative to the Pippin install directory
+
+SIM:
+  DESSIM:
+    IA_G10_DES3YR:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 1 12345
+      # May need to point to a batch template for the queuing system
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 40
