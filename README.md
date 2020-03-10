@@ -9,7 +9,8 @@
 # Pippin
 
 
-Pippin - a pipeline for Supernova cosmology analysis
+Pippin - a pipeline designed to streamline and remove as much hassle as we can
+when running end-to-end supernova cosmology analyses.
 
 
 
@@ -249,7 +250,7 @@ DATAPREP:
 
 ### Simulation
 
-The simulation task does exactly what you'd think it does. It invokes SNANA to run some similation as per your configuration. 
+The simulation task does exactly what you'd think it does. It invokes [SNANA](https://github.com/RickKessler/SNANA) to run some similation as per your configuration. 
 If something goes wrong, Pippin tries to dig through the log files to give you a useful error message, but sometimes this
 is difficult (i.e. the logs have been zipped up). With the current version of SNANA, each simulation can have at most one Ia component, 
 and an arbitrary number of CC components. The specification for the simulation task config is as follows:
