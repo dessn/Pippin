@@ -72,6 +72,10 @@ front of the file to make it obvious in the shared output directory which folder
 If you have `example.yml` as your config file and want pippin to run it, easy:
 `pippin.sh config.yml`
 
+Remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be
+installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location,
+so please either set said variable or change the associated line in the `cfg.yml`.
+
 ![ConsoleOutput](doc/console.gif)
 
 
