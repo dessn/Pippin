@@ -1,3 +1,7 @@
+# Note that these examples are for the specific task only, and you cannot run this file (as there are no dependent tasks).
+# Use these files to see how you can configure your tasks, and the configs directory contains full analyses showing
+# all the tasks and how they relate to each other
+
 AGGREGATION:
   AGG:
     MASK: TEST  # MASK applies on both the sim/data and classifier name. MASK_CLAS and MASK_SIM are available to split it out

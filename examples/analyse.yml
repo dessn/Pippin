@@ -1,3 +1,7 @@
+# Note that these examples are for the specific task only, and you cannot run this file (as there are no dependent tasks).
+# Use these files to see how you can configure your tasks, and the configs directory contains full analyses showing
+# all the tasks and how they relate to each other
+
 ANALYSE:
   ALL_OMW:
     MASK_COSMOMC: OMW  # Partial match to cosmomc name. Used in this case to plot contours for everything fitting OMW cosmology
