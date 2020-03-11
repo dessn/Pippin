@@ -74,7 +74,8 @@ If you have `example.yml` as your config file and want pippin to run it, easy:
 
 Remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be
 installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location,
-so please either set said variable or change the associated line in the `cfg.yml`.
+so please either set said variable or change the associated line in the `cfg.yml`. [For the morbidly curious, here
+is a very small demo video of using Pippin in the Midway environment](https://www.youtube.com/watch?v=pCaPvzFCZ-Y).
 
 ![ConsoleOutput](doc/console.gif)
 
