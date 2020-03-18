@@ -30,6 +30,6 @@ CosmoMC:
 
 OUTPUT:
   output_dir: $PIPPIN_OUTPUT
-  # output_dir = output
+#  output_dir: output
   ping_frequency: 30
   max_ping_frequency: 300

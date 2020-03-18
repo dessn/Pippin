@@ -144,7 +144,7 @@ class Classifier(Task):
             if sim_task is not None:
                 return len(sim_task.output["sim_folders"])
             if lcfit_task is not None:
-                return len(sim_task.output["fitres_dirs"])
+                return len(lcfit_task.output["fitres_dirs"])
             raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
 
         tasks = []
