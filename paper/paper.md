@@ -52,7 +52,7 @@ Additonal plots are performed via the matplotlib library [@matplotlib], and
 makes use of various numpy [@numpy], scipy [@scipy] and pandas [@pandas] functions. Several 
 machine learning functions make use of scikit-learn [@sklearn].
 
-Any bugs or feature requests can be opened as issues on the Github
-development page [@github].
+Any bugs or feature requests can be opened as issues on the GitHub
+[development page](https://github.com/Samreay/Pippin/issues) [@github].
 
 # References
