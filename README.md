@@ -1,5 +1,5 @@
-
-[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.366608-blue)](https://zenodo.org/badge/latestdoi/162215291)
+[![JOSS](https://joss.theoj.org/papers/10.21105/joss.02122/status.svg)](https://doi.org/10.21105/joss.02122)
+[![Zenodo](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.366608-blue)](https://zenodo.org/badge/latestdoi/162215291)
 [![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/Samreay/Pippin/blob/master/LICENSE)
 [![Github Version](https://img.shields.io/github/v/release/Samreay/Pippin)](https://github.com/Samreay/Pippin/releases)
 [![Github Issues](https://img.shields.io/github/issues/Samreay/Pippin)](https://github.com/Samreay/Pippin/issues)
