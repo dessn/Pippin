@@ -1,5 +1,5 @@
 ---
-title: 'Pippin'
+title: 'Pippin: A pipeline for supernova cosmology'
 tags:
   - Python
   - pipeline
