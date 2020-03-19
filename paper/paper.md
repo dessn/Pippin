@@ -31,7 +31,7 @@ a user to specify a cosmological analysis via a configuration file, and then
 run that analysis, start to finish, in a single execution. Whilst other tools exist to perform
 various aspects of supernova cosmology analyses independently, connecting the required tasks has so far been 
 a manual process. For the DES-3YR analysis [@des3yr], we implemented a basic bash pipeline to reduce 
-manual labour. For the DES-5YR analysis, which greatly increases complexity, I implement this pipeline to increase
+manual labour. For the DES-5YR analysis, which greatly increases complexity, we implement this pipeline to increase
 researcher productivity.
 
 To this end, Pippin interfaces 
