@@ -15,7 +15,7 @@ GENSOURCE:   RANDOM
 RANSEED: 12945       # random number seed
 
 GENFILTERS:   abcdefghijklmnopqrstuvwxyzA
-KCOR_FILE:   $DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits
+KCOR_FILE:   $SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_LOWZ.fits
 
 GENRANGE_PEAKMJD:  53200.0  55350
 OPT_SETPKMJD: 16  # fmax clump
