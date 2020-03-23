@@ -11,7 +11,7 @@ DONE_STAMP: FINISHED.DONE
     SNTABLE_LIST      = 'FITRES'
     TEXTFILE_PREFIX   = 'DES5YR_DES_CHANGEME'
 
-    KCOR_FILE        = '$DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED.fits'
+    KCOR_FILE        = '$SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_LOWZ.fits'
 
     FLUXERRMODEL_FILE = ''  ! No error fudge map
 
