@@ -92,14 +92,14 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.base_ia.append(base_file)
                 types[gentype] = "Ia"
                 types[type2] = "Ia"
-                types_dict["IA"].append(gentype)
-                types_dict["IA"].append(type2)
+                types_dict["IA"].append(int(gentype))
+                types_dict["IA"].append(int(type2))
             else:
                 self.base_cc.append(base_file)
                 types[gentype] = "II"
                 types[type2] = "II"
-                types_dict["NONIA"].append(gentype)
-                types_dict["NONIA"].append(type2)
+                types_dict["NONIA"].append(int(gentype))
+                types_dict["NONIA"].append(int(type2))
 
         sorted_types = collections.OrderedDict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
