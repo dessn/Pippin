@@ -86,8 +86,6 @@ class PerfectClassifier(Classifier):
                             data = hdul[1].data
                             snid = np.array(data.field("SNID"))
                             sntype = np.array(data.field("SNTYPE")).astype(np.int64)
-                            self.logger.debug(f"Found SNTYPE {sntype}")
-
                             is_ia = np.isin(sntype, types["IA"])
                             prob = (is_ia * self.prob_ia) + (~is_ia * self.prob_cc)
 
