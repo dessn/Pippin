@@ -64,7 +64,10 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
+        self.output_plots = [
+            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
+            for m in self.output["m0dif_dirs"]
+        ]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -115,12 +118,14 @@ class BiasCor(ConfigBasedExecutable):
 
                     for dir in self.output["subdirs"]:
                         log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit")
+                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
                     return Task.FINISHED_FAILURE
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                    m0files = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu_F") and f.endswith(".M0DIF")]
+                    m0files = [
+                        os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu_F") and f.endswith(".M0DIF")
+                    ]
                     for path in wfiles:
                         with open(path) as f2:
                             if "ERROR:" in f2.read():
@@ -136,7 +141,9 @@ class BiasCor(ConfigBasedExecutable):
                     if self.generate_w_summary():
                         return Task.FINISHED_SUCCESS
                     else:
-                        self.logger.error(f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}")
+                        self.logger.error(
+                            f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}"
+                        )
                         return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
@@ -152,7 +159,11 @@ class BiasCor(ConfigBasedExecutable):
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         self.bias_cor_fits = ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_iasim])
-        self.cc_prior_fits = None if self.merged_ccsim is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_ccsim])
+        self.cc_prior_fits = (
+            None
+            if self.merged_ccsim is None
+            else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_ccsim])
+        )
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
 
         self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
