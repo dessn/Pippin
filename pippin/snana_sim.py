@@ -114,7 +114,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.sim_log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
-        self.logging_file = self.config_path.replace(".input", ".input_log")
+        self.logging_file = self.config_path.replace(".input", ".LOG")
         self.output["blind"] = self.options.get("BLIND", False)
         self.derived_batch_info = None
 
