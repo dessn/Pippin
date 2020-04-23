@@ -269,6 +269,7 @@ class Aggregator(Task):
 
                 types = self.get_underlying_sim_task().output["types_dict"]
                 has_nonia = len(types.get("NONIA", [])) > 0
+                has_ia = len(types.get("IA", [])) > 0
                 self.logger.debug(f"Input types are {types}")
                 ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
@@ -277,7 +278,7 @@ class Aggregator(Task):
                 df = df.reindex(sorted_columns, axis=1)
                 self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
 
-                if has_nonia:
+                if has_nonia and has_ia:
                     self.save_calibration_curve(df, self.output_cals[index])
                     if self.recal_aggtask:
                         df = self.recalibrate(df)
