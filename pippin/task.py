@@ -28,6 +28,7 @@ class Task(ABC):
         self.fresh_run = True
         self.num_empty = 0
         self.num_empty_threshold = 10
+        self.display_threshold = 0
         self.gpu = False
 
     def check_for_job(self, squeue, match):
@@ -40,7 +41,7 @@ class Task(ABC):
             if self.num_empty >= self.num_empty_threshold:
                 self.logger.error(f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}")
                 return Task.FINISHED_FAILURE
-            elif self.num_empty > 1:
+            elif self.num_empty > 1 and self.num_empty > self.display_threshold:
                 self.logger.warning(f"Task {str(self)} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}")
             return 0
         return num_jobs
