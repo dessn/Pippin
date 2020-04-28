@@ -147,8 +147,10 @@ class Aggregator(Task):
 
             if data.isnull().sum() or truth.isnull().sum():
                 self.logger.error("Unable to create calibration curves")
-                self.logger.error(f"prob column {c} is {data}")
-                self.logger.error(f"truth values are {truth}")
+                if data.isnull().sum():
+                    self.logger.error(f"prob column {c} is {data}")
+                if truth.isnull().sum():
+                    self.logger.error(f"truth values are {truth}")
                 continue
 
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=bins, statistic="mean")
