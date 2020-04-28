@@ -145,7 +145,7 @@ class Aggregator(Task):
         for c in cols:
             data = df[c]
 
-            if np.any(np.isnan(data)) or np.any(np.isnan(truth)):
+            if data.isnull().sum() or truth.isnull().sum():
                 self.logger.error("Unable to create calibration curves")
                 self.logger.error(f"prob column {c} is {data}")
                 self.logger.error(f"truth values are {truth}")
