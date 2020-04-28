@@ -121,7 +121,7 @@ fi
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug(f"Done file found at f{self.done_file}")
+            self.logger.debug(f"Done file found at {self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
                     self.logger.info(f"Done file reported failure. Check output log {self.logfile}")

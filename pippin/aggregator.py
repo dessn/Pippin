@@ -145,6 +145,12 @@ class Aggregator(Task):
         for c in cols:
             data = df[c]
 
+            if np.any(np.isnan(data)) or np.any(np.isnan(truth)):
+                self.logger.error("Unable to create calibration curves")
+                self.logger.error(f"prob column {c} is {data}")
+                self.logger.error(f"truth values are {truth}")
+                continue
+
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=bins, statistic="mean")
             m = np.isfinite(actual_prob)  # All the -1 to 0 and 1 to 2 probs will be NaN
 
@@ -392,7 +398,7 @@ class Aggregator(Task):
                 else:
                     if recalibration and sim_task != recal_simtask:
                         if recal_aggtask is None:
-                            Task.fail_config("The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
+                            Task.fail_config(f"The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
                         else:
                             deps.append(recal_aggtask)
                     a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options, recal_aggtask)
