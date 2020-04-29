@@ -12,7 +12,7 @@ INPDIR+: _
 WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
 
 surveygroup_biascor='CFA3+CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
-idsurvey_list_probcc0=CSP,CSP3,CFA3,CFA3S,CFA3K,CFA4,CFA4p1,CFA4p2,CFA4p3
+idsurvey_list_probcc0=CSP,CFA3,CFA3S,CFA3K,CFA4,CFA4p1,CFA4p2,CFA4p3
 prefix=None
 file=None
 chi2max=16
