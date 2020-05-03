@@ -140,7 +140,6 @@ class Aggregator(Task):
         bc4 = np.concatenate(([0], bc3, [1.0]))  # For them bounds
 
         truth = df["IA"]
-        print(type(truth), truth)
         truth_mask = np.isfinite(truth)
         cols = [c for c in df.columns if c.startswith("PROB_")]
         result = {"bins": bc4}
@@ -296,8 +295,10 @@ class Aggregator(Task):
                 has_nonia = len(types.get("NONIA", [])) > 0
                 has_ia = len(types.get("IA", [])) > 0
                 self.logger.debug(f"Input types are {types}")
-                ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
+                ia = df["SNTYPE"].apply(lambda y: 1.0 if y in types["IA"] else (0.0 if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
+
+                print(df["IA"].dtype)
 
                 num_ia = (ia == True).sum()
                 num_cc = (ia == False).sum()
