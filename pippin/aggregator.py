@@ -298,8 +298,6 @@ class Aggregator(Task):
                 ia = df["SNTYPE"].apply(lambda y: 1.0 if y in types["IA"] else (0.0 if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
 
-                print(df["IA"].dtype)
-
                 num_ia = (ia == True).sum()
                 num_cc = (ia == False).sum()
                 num_nan = ia.isnull().sum()
