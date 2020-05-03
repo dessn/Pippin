@@ -145,12 +145,14 @@ class Aggregator(Task):
         for c in cols:
             data = df[c]
 
-            if data.isnull().sum() or truth.isnull().sum():
-                self.logger.error("Unable to create calibration curves")
-                if data.isnull().sum():
-                    self.logger.error(f"prob column {c} is {data}")
-                if truth.isnull().sum():
-                    self.logger.error(f"truth values are {truth}")
+            if data.isnull().sum() == data.size or truth.isnull().sum() == truth.size:
+                self.logger.warning(
+                    "Unable to create calibration curves. This is expected if the calibration source is data (unknown types) or a sim of only Ia or CC (where you have only one type)."
+                )
+                if data.isnull().sum() == data.size:
+                    self.logger.error(f"prob column {c} is all NaN")
+                if truth.isnull().sum() == truth.size:
+                    self.logger.error(f"truth values are all NaN")
                 continue
 
             actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=bins, statistic="mean")
@@ -281,6 +283,12 @@ class Aggregator(Task):
                 self.logger.debug(f"Input types are {types}")
                 ia = df["SNTYPE"].apply(lambda y: True if y in types["IA"] else (False if y in types["NONIA"] else np.nan))
                 df["IA"] = ia
+
+                num_ia = (ia == True).sum()
+                num_cc = (ia == False).sum()
+                num_nan = np.isnan(ia).sum()
+
+                self.logger.info(f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns")
 
                 sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
                 df = df.reindex(sorted_columns, axis=1)
