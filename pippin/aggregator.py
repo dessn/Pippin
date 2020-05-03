@@ -140,6 +140,7 @@ class Aggregator(Task):
         bc4 = np.concatenate(([0], bc3, [1.0]))  # For them bounds
 
         truth = df["IA"]
+        print(type(truth), truth)
         truth_mask = np.isfinite(truth)
         cols = [c for c in df.columns if c.startswith("PROB_")]
         result = {"bins": bc4}
