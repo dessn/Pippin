@@ -140,6 +140,7 @@ class Aggregator(Task):
         bc4 = np.concatenate(([0], bc3, [1.0]))  # For them bounds
 
         truth = df["IA"]
+        truth_mask = np.isfinite(truth)
         cols = [c for c in df.columns if c.startswith("PROB_")]
         result = {"bins": bc4}
         for c in cols:
@@ -155,7 +156,20 @@ class Aggregator(Task):
                     self.logger.error(f"truth values are all NaN")
                 continue
 
-            actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=bins, statistic="mean")
+            # Remove NaNs
+            data_mask = np.isfinite(data)
+            combined_mask = truth_mask & data_mask
+            if combined_mask.sum() < 100:
+                if combined_mask.sum() == 0:
+                    self.logger.warning("There are no events which have both a prob and a known Ia/CC flag")
+                else:
+                    self.logger.warning("There are too few events with both a prob and known Ia/CC flag")
+                continue
+
+            data2 = data[combined_mask]
+            truth2 = truth[combined_mask].astype(np.float)
+
+            actual_prob, _, _ = binned_statistic(data2, truth2, bins=bins, statistic="mean")
             m = np.isfinite(actual_prob)  # All the -1 to 0 and 1 to 2 probs will be NaN
 
             # Sets a 1:1 line outside of 0 to 1
