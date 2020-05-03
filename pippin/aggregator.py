@@ -286,7 +286,7 @@ class Aggregator(Task):
 
                 num_ia = (ia == True).sum()
                 num_cc = (ia == False).sum()
-                num_nan = np.isnan(ia).sum()
+                num_nan = ia.isnull().sum()
 
                 self.logger.info(f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns")
 
