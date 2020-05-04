@@ -5,6 +5,7 @@
 ANALYSE:
   ALL_OMW:
     MASK_COSMOMC: OMW  # Partial match to cosmomc name. Used in this case to plot contours for everything fitting OMW cosmology
+    MASK_BIASCOR: some_match # Partial match again
     OPTS:
       COVOPTS: ALL  # Optional. Covopts to match. Single or list. Exact match. Dont set to get everything
       SHIFT: True  # Optional. Shifts om, w, ol contours to 0.3, 1.0 and 0.7 respectively.
