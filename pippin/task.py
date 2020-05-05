@@ -35,9 +35,10 @@ class Task(ABC):
             logging.debug(f"External config file path resolved to {self.external}")
             with open(self.external, "r") as f:
                 external_config = yaml.safe_load(f)
-                self.config = external_config.get("CONFIG", {}).update(self.config)
-                print("AAA ", self.config)
-                print("BBB ", external_config.get("CONFIG", {}))
+                print("AAA ", external_config.get("CONFIG", {}))
+                external_config.get("CONFIG", {}).update(self.config)
+                self.config = external_config
+                print("BBB ", self.config)
                 self.logger.debug("Loaded external config successfully")
 
         self.hash = None
