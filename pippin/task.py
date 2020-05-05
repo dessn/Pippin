@@ -147,7 +147,7 @@ class Task(ABC):
                 self.logger.info("Not copying external site, output_dir already exists")
             else:
                 self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
-                shutil.copytree(os.path.dirname(self.external), self.output_dir)
+                shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
             return True
         return self._run(force_refresh)
 
