@@ -351,7 +351,8 @@ class SNANASimulation(ConfigBasedExecutable):
         tasks = []
         for sim_name in config.get("SIM", []):
             task_config = config["SIM"][sim_name]
-            task_config["GENVERSION"] = f"{prefix}_{sim_name}"
+            if "EXTERNAL" not in task_config.keys():
+                task_config["GENVERSION"] = f"{prefix}_{sim_name}"
             sim_output_dir = f"{base_output_dir}/{stage_number}_SIM/{sim_name}"
             s = SNANASimulation(sim_name, sim_output_dir, task_config, global_config)
             Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
