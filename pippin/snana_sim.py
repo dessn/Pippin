@@ -55,10 +55,11 @@ class SNANASimulation(ConfigBasedExecutable):
         self.options = self.config.get("OPTS", {})
 
         self.reserved_keywords = ["BASE"]
+        self.reserved_top = ["GENVERSION", "GLOBAL", "OPTS"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
 
         # Deterime the type of each component
-        keys = [k for k in self.config.keys() if k not in ["GENVERSION", "GLOBAL", "OPTS"]]
+        keys = [k for k in self.config.keys() if k not in self.reserved_top]
         self.base_ia = []
         self.base_cc = []
         types = {}
@@ -166,7 +167,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
         self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
-            if k.upper() != "GLOBAL":
+            if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
                 run_config_keys = list(run_config.keys())
                 assert "BASE" in run_config_keys, "You must specify a base file for each option"
