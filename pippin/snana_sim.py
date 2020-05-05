@@ -87,7 +87,7 @@ class SNANASimulation(ConfigBasedExecutable):
                             gentype = line.upper().split(":")[1].strip()
                         if line.upper().strip().startswith("GENMODEL:"):
                             genmodel = line.upper().split(":")[1].strip()
-                gentype = gentype or d.get("GENTYPE")
+                gentype = int(gentype or d.get("GENTYPE"))
                 genmodel = genmodel or d.get("GENMODEL")
 
                 if not gentype:
@@ -95,19 +95,19 @@ class SNANASimulation(ConfigBasedExecutable):
                 if not genmodel:
                     Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
 
-                type2 = "1" + f"{int(gentype):02d}"
+                type2 = 100 + gentype
                 if "SALT2" in genmodel:
                     self.base_ia.append(base_file)
                     types[gentype] = "Ia"
                     types[type2] = "Ia"
-                    types_dict["IA"].append(int(gentype))
-                    types_dict["IA"].append(int(type2))
+                    types_dict["IA"].append(gentype)
+                    types_dict["IA"].append(type2)
                 else:
                     self.base_cc.append(base_file)
                     types[gentype] = "II"
                     types[type2] = "II"
-                    types_dict["NONIA"].append(int(gentype))
-                    types_dict["NONIA"].append(int(type2))
+                    types_dict["NONIA"].append(gentype)
+                    types_dict["NONIA"].append(type2)
 
             sorted_types = dict(sorted(types.items()))
             self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
