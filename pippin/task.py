@@ -36,8 +36,9 @@ class Task(ABC):
             with open(self.external, "r") as f:
                 external_config = yaml.safe_load(f)
                 print("AAA ", external_config.get("CONFIG", {}))
-                external_config.get("CONFIG", {}).update(self.config)
-                self.config = external_config
+                conf = external_config.get("CONFIG", {})
+                conf.update(self.config)
+                self.config = conf
                 print("BBB ", self.config)
                 self.logger.debug("Loaded external config successfully")
 
