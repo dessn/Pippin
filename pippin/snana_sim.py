@@ -102,7 +102,7 @@ class SNANASimulation(ConfigBasedExecutable):
                 types_dict["NONIA"].append(int(gentype))
                 types_dict["NONIA"].append(int(type2))
 
-        sorted_types = collections.OrderedDict(sorted(types.items()))
+        sorted_types = dict(sorted(types.items()))
         self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
         self.output["types_dict"] = types_dict
         self.output["types"] = sorted_types
