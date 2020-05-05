@@ -66,6 +66,15 @@ class Task(ABC):
             content = yaml.safe_load(f)
             return content
 
+    def clear_config(self):
+        if os.path.exists(self.config_file):
+            os.remove(self.config_file)
+
+    def clear_hash(self):
+        if os.path.exists(self.hash_file):
+            os.remove(self.hash_file)
+        self.clear_config()
+
     def check_for_job(self, squeue, match):
         if squeue is None:
             return self.num_jobs
@@ -236,16 +245,15 @@ class Task(ABC):
                 if self.end_time is not None and self.start_time is not None:
                     self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
                     self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
-            if result == Task.FINISHED_FAILURE and os.path.exists(self.hash_file):
-                os.remove(self.hash_file)
+            if result == Task.FINISHED_FAILURE:
+                self.clear_hash()
         elif not self.fresh_run:
             self.logger.error("Hash check had passed, so the task should be done, but it said it wasn't!")
             self.logger.error(f"This means it probably crashed, have a look in {self.output_dir}")
             self.logger.error(f"Removing hash from {self.hash_file}")
-            if os.path.exists(self.hash_file):
-                os.remove(self.hash_file)
+            self.clear_hash()
             return Task.FINISHED_FAILURE
-        if self.external is None and result == Task.FINISHED_SUCCESS:
+        if self.external is None and result == Task.FINISHED_SUCCESS and not os.path.exists(self.config_file):
             self.write_config()
         return result
 
