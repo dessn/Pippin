@@ -1,4 +1,5 @@
 import logging
+import shutil
 from abc import ABC, abstractmethod
 from pippin.config import get_logger, get_hash, ensure_list, get_data_loc
 import os
@@ -128,6 +129,13 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self, force_refresh):
+        if self.external is not None:
+            if os.path.exists(self.output_dir) and not force_refresh:
+                self.logger.info("Not copying external site, output_dir already exists")
+            else:
+                self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
+                shutil.copytree(os.path.dirname(self.external), self.output_dir)
+            return True
         return self._run(force_refresh)
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
