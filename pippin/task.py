@@ -56,8 +56,8 @@ class Task(ABC):
         self.output = {"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file}
         self.config_file = os.path.join(output_dir, "config.yml")
 
-    def write_config(self, config, output):
-        content = {"CONFIG": config, "OUTPUT": output}
+    def write_config(self):
+        content = {"CONFIG": self.config, "OUTPUT": self.output}
         with open(self.config_file, "w") as f:
             yaml.dump(content, f)
 
@@ -245,6 +245,8 @@ class Task(ABC):
             if os.path.exists(self.hash_file):
                 os.remove(self.hash_file)
             return Task.FINISHED_FAILURE
+        if self.external is None and result == Task.FINISHED_SUCCESS:
+            self.write_config()
         return result
 
     @abstractmethod
