@@ -24,6 +24,7 @@ class Task(ABC):
         if config is None:
             config = {}
         self.config = config
+        self.output = {}
 
         # Determine if this is an external (already done) job or not
         self.external = config.get("EXTERNAL")
@@ -35,12 +36,10 @@ class Task(ABC):
             logging.debug(f"External config file path resolved to {self.external}")
             with open(self.external, "r") as f:
                 external_config = yaml.safe_load(f)
-                print("AAA ", self.config)
-                print("BBB ", external_config.get("CONFIG", {}))
                 conf = external_config.get("CONFIG", {})
                 conf.update(self.config)
                 self.config = conf
-                print("CCC ", self.config)
+                self.output = external_config.get("OUTPUT", {})
                 self.logger.debug("Loaded external config successfully")
 
         self.hash = None
@@ -58,7 +57,7 @@ class Task(ABC):
         self.display_threshold = 0
         self.gpu = False
 
-        self.output = {"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file}
+        self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
         self.config_file = os.path.join(output_dir, "config.yml")
 
     def write_config(self):
