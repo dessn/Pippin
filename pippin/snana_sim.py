@@ -40,31 +40,31 @@ class SNANASimulation(ConfigBasedExecutable):
         blind: bool - whether to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
+    def __init__(self, name, output_dir, config, global_config, combine="combine.input"):
         self.data_dirs = global_config["DATA_DIRS"]
         base_file = get_data_loc(combine)
-        super().__init__(name, output_dir, base_file, ": ")
+        super().__init__(name, output_dir, config, base_file, ": ")
 
-        self.genversion = genversion
-        if len(genversion) < 30:
+        self.genversion = self.config["GENVERSION"]
+        if len(self.genversion) < 30:
             self.genprefix = self.genversion
         else:
             hash = get_hash(self.genversion)[:5]
             self.genprefix = self.genversion[:25] + hash
 
-        self.config = config
-        self.options = config.get("OPTS", {})
+        self.options = self.config.get("OPTS", {})
+
         self.reserved_keywords = ["BASE"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
 
         # Deterime the type of each component
-        keys = [k for k in config.keys() if k != "GLOBAL" and k != "OPTS"]
+        keys = [k for k in self.config.keys() if k not in ["GENVERSION", "GLOBAL", "OPTS"]]
         self.base_ia = []
         self.base_cc = []
         types = {}
         types_dict = {"IA": [], "NONIA": []}
         for k in keys:
-            d = config[k]
+            d = self.config[k]
             base_file = d.get("BASE")
             if base_file is None:
                 Task.fail_config(f"Your simulation component {k} for sim name {self.name} needs to specify a BASE input file")
@@ -107,8 +107,8 @@ class SNANASimulation(ConfigBasedExecutable):
         self.output["types"] = sorted_types
         self.global_config = global_config
 
-        rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
-        value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
+        rankeys = [r for r in self.config["GLOBAL"].keys() if r.startswith("RANSEED_")]
+        value = int(self.config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
         self.set_num_jobs(2 * value)
 
         self.sim_log_dir = f"{self.output_dir}/LOGS"
@@ -349,8 +349,10 @@ class SNANASimulation(ConfigBasedExecutable):
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         tasks = []
         for sim_name in config.get("SIM", []):
+            task_config = config["SIM"][sim_name]
+            task_config["GENVERSION"] = f"{prefix}_{sim_name}"
             sim_output_dir = f"{base_output_dir}/{stage_number}_SIM/{sim_name}"
-            s = SNANASimulation(sim_name, sim_output_dir, f"{prefix}_{sim_name}", config["SIM"][sim_name], global_config)
+            s = SNANASimulation(sim_name, sim_output_dir, task_config, global_config)
             Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
             tasks.append(s)
         return tasks

@@ -1,8 +1,10 @@
+import logging
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash, ensure_list
+from pippin.config import get_logger, get_hash, ensure_list, get_data_loc
 import os
 import datetime
 import numpy as np
+import yaml
 
 
 class Task(ABC):
@@ -10,17 +12,36 @@ class Task(ABC):
     FINISHED_FAILURE = -9
     logger = get_logger()
 
-    def __init__(self, name, output_dir, dependencies=None):
+    def __init__(self, name, output_dir, dependencies=None, config=None, done_file="done.txt"):
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
         if dependencies is None:
             dependencies = []
         self.dependencies = dependencies
+
+        if config is None:
+            config = {}
+        self.config = config
+
+        # Determine if this is an external (already done) job or not
+        self.external = config.get("EXTERNAL")
+        if self.external is not None:
+            logging.debug(f"External config stated to be {self.external}")
+            self.external = get_data_loc(self.external)
+            if os.path.isdir(self.external):
+                self.external = os.path.join(self.external, "config.yml")
+            logging.debug(f"External config file path resolved to {self.external}")
+            with open(self.external, "r") as f:
+                external_config = yaml.safe_load(f)
+                self.config = external_config.get("CONFIG", {}).update(self.config)
+                self.logger.debug("Loaded external config successfully")
+
         self.hash = None
-        self.output = {"name": name, "output_dir": output_dir}
         self.hash_file = os.path.join(self.output_dir, "hash.txt")
-        self.done_file = os.path.join(self.output_dir, "done.txt")
+        self.done_file = os.path.join(self.output_dir, done_file)
+
+        # Info about the job run
         self.start_time = None
         self.end_time = None
         self.wall_time = None
@@ -30,6 +51,19 @@ class Task(ABC):
         self.num_empty_threshold = 10
         self.display_threshold = 0
         self.gpu = False
+
+        self.output = {"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file}
+        self.config_file = os.path.join(output_dir, "config.yml")
+
+    def write_config(self, config, output):
+        content = {"CONFIG": config, "OUTPUT": output}
+        with open(self.config_file, "w") as f:
+            yaml.dump(content, f)
+
+    def load_config(self):
+        with open(self.config_file, "r") as f:
+            content = yaml.safe_load(f)
+            return content
 
     def check_for_job(self, squeue, match):
         if squeue is None:
