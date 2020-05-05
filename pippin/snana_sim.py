@@ -164,6 +164,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 self.sim_folders = [base]
             self.output["ranseed_change"] = ranseed_change is not None
             self.output["sim_folders"] = self.sim_folders
+        else:
+            self.sim_folders = self.output["sim_folders"]
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
