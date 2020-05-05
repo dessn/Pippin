@@ -35,8 +35,8 @@ class PerfectClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
+        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.

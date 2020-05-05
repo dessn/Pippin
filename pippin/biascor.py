@@ -14,10 +14,10 @@ from pippin.task import Task
 
 
 class BiasCor(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, dependencies, options, config, global_config):
+    def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
 
-        super().__init__(name, output_dir, base, "=", dependencies=dependencies)
+        super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
         self.config = config
@@ -384,7 +384,7 @@ class BiasCor(ConfigBasedExecutable):
             for label, mu_conf in muopts.items():
                 deps += resolve_conf(mu_conf, default=config)
 
-            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), deps, options, config, global_config)
+            task = BiasCor(name, _get_biascor_output_dir(base_output_dir, stage_number, name), config, deps, options, global_config)
             Task.logger.info(f"Creating aggregation task {name} with {task.num_jobs}")
             tasks.append(task)
 

@@ -38,8 +38,8 @@ class Merger(Task):
         blind: bool - whether or not to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, dependencies, options):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, dependencies, options):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -125,8 +125,12 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            fitres_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
-            symlink_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
+            fitres_files += [
+                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
+            ]
+            symlink_files += [
+                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
+            ]
 
         new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
@@ -211,7 +215,7 @@ class Merger(Task):
                     num_gen += 1
 
                     merge_name2 = f"{name}_{lcfit.name}"
-                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
+                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), config, [lcfit, agg], options)
                     Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
                     tasks.append(task)
             if num_gen == 0:

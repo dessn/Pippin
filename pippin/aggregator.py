@@ -49,8 +49,8 @@ class Aggregator(Task):
         calibration_files: list[str] - all the calibration files. Hopefully only one will be made if you havent done something weird with the config
     """
 
-    def __init__(self, name, output_dir, dependencies, options, recal_aggtask):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.lcfit_deps = [c.get_fit_dependency(output=False) for c in self.classifiers]
@@ -425,7 +425,7 @@ class Aggregator(Task):
                             Task.fail_config(f"The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
                         else:
                             deps.append(recal_aggtask)
-                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options, recal_aggtask)
+                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), config, deps, options, recal_aggtask)
                     if sim_task == recal_simtask:
                         recal_aggtask = a
                     Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")

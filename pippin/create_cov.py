@@ -36,10 +36,10 @@ class CreateCov(ConfigBasedExecutable):
 
     """
 
-    def __init__(self, name, output_dir, options, global_config, dependencies=None, index=0):
+    def __init__(self, name, output_dir, config, options, global_config, dependencies=None, index=0):
 
         base_file = get_data_loc("create_cov/input_file.txt")
-        super().__init__(name, output_dir, base_file, default_assignment=": ", dependencies=dependencies)
+        super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
 
         self.options = options
         self.global_config = get_config()
@@ -196,7 +196,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
                     ii = "" if num == 1 else f"_{i + 1}"
 
                     name = f"{cname}_{btask.name}{ii}"
-                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), options, global_config, dependencies=[btask], index=i)
+                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), config, options, global_config, dependencies=[btask], index=i)
                     Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
                     tasks.append(a)
 
