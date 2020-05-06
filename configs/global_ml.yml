@@ -28,15 +28,12 @@ CLASSIFICATION:
     CLASSIFIER: SuperNNovaClassifier
     MODE: train
     MASK_SIM: TRAINING
-    OPTS:
-      NORM: cosmo
 
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
     OPTS:
       MODEL: SNNTRAIN
-      NORM: cosmo
 
   SNNVARTRAIN:
     CLASSIFIER: SuperNNovaClassifier
@@ -44,7 +41,6 @@ CLASSIFICATION:
     MASK_SIM: TRAINING
     OPTS:
       VARIANT: variational
-      NORM: cosmo
 
   SNNVARTEST:
     CLASSIFIER: SuperNNovaClassifier
@@ -52,7 +48,6 @@ CLASSIFICATION:
     OPTS:
       MODEL: SNNVARTRAIN
       VARIANT: variational
-      NORM: cosmo
 
   SNNBAYTRAIN:
     CLASSIFIER: SuperNNovaClassifier
@@ -60,7 +55,6 @@ CLASSIFICATION:
     MASK_SIM: TRAINING
     OPTS:
       VARIANT: bayesian
-      NORM: cosmo
 
   SNNBAYTEST:
     CLASSIFIER: SuperNNovaClassifier
@@ -68,7 +62,6 @@ CLASSIFICATION:
     OPTS:
       MODEL: SNNBAYTRAIN
       VARIANT: bayesian
-      NORM: cosmo
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
