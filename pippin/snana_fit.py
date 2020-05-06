@@ -100,7 +100,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
             mapped2[i] = label
         self.output["fitopt_map"] = mapped
-        self.output["fitopt_index"] = mapped
+        self.output["fitopt_index"] = mapped2
         self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
 
         self.options = self.config.get("OPTS", {})
