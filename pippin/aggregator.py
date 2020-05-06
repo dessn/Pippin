@@ -338,6 +338,7 @@ class Aggregator(Task):
                     self.logger.debug("Plot not set, skipping plotting section")
 
             # Write the done file
+            self.logger.debug(f"Writing done file to {self.done_file}")
             with open(self.done_file, "w") as f:
                 f.write("SUCCESS")
 
