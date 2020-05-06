@@ -31,3 +31,14 @@ LCFIT:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+CLASSIFICATION:
+  UNITY:
+    CLASSIFIER: UnityClassifier
+    MODE: predict
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
