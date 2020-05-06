@@ -186,6 +186,7 @@ fi
         # Get the m0diff files for everything
         for b in self.biascor_deps:
             for m in b.output["m0dif_dirs"]:
+                self.logger.info(f"Looking at M0diff dir {m}")
                 sim_number = 1
                 if os.path.basename(m).isdigit():
                     sim_number = int(os.path.basename(m))
