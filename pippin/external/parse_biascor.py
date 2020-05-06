@@ -67,6 +67,8 @@ def make_summary_file(wfit_files, args):
 def parse_fitres_files(args):
     fitres_input = args.get("FITRES_INPUT")
     fitres_output = args.get("FITRES_PARSED")
+    logging.debug(f"FITRES_INPUT is {fitres_input}")
+    logging.debug(f"FITRES_PARSED is {fitres_output}")
 
     for fin, fout in zip(fitres_input, fitres_output):
         logging.info(f"Parsing fitres file {fin} into {fout}")
@@ -76,6 +78,9 @@ def parse_fitres_files(args):
 def parse_m0diffs(args):
     m0diffs = args.get("M0DIFF_INPUTS")
     m0diff_out = args.get("M0DIFF_PARSED")
+
+    logging.debug(f"M0DIFF_INPUTS is {m0diffs}")
+    logging.debug(f"M0DIFF_PARSED is {m0diff_out}")
 
     df_all = None
     for name, num, muopt, muopt_num, fitopt, fitopt_num, path in m0diffs:
