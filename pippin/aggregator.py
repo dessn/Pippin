@@ -88,9 +88,12 @@ class Aggregator(Task):
 
     def _check_completion(self, squeue):
         if not self.passed:
+            self.logger.debug("Task not reporting passed, might be external. Checking done file.")
             if os.path.exists(self.done_file):
+                self.logger.debug("Done file exists, loading contents")
                 with open(self.done_file) as f:
                     self.passed = "SUCCESS" in f.read()
+                    self.logger.debug(f"After reading done file, passed set to {self.passed}")
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self, force_refresh):
