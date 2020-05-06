@@ -336,6 +336,11 @@ class Aggregator(Task):
                             self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
                 else:
                     self.logger.debug("Plot not set, skipping plotting section")
+
+            # Write the done file
+            with open(self.done_file, "w") as f:
+                f.write("SUCCESS")
+
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
@@ -347,6 +352,7 @@ class Aggregator(Task):
             self.output["sn_type_name"] = self.type_name
 
         self.passed = True
+
         return True
 
     def save_key_format(self, df, index, lcfitname):
