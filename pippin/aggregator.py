@@ -94,6 +94,8 @@ class Aggregator(Task):
                 with open(self.done_file) as f:
                     self.passed = "SUCCESS" in f.read()
                     self.logger.debug(f"After reading done file, passed set to {self.passed}")
+            else:
+                self.logger.warning(f"Task has not set passed and has no done file at {self.done_file}, returning failure")
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self, force_refresh):
