@@ -38,7 +38,6 @@ class Aggregator(Task):
     ========
         name : name given in the yml
         output_dir: top level output directory
-        classifiers: classifier tasks
         classifier_names: aggregators classifier names
         merge_predictions_filename: location of the merged csv file
         merge_key_filename: location of the merged fitres file
@@ -75,7 +74,8 @@ class Aggregator(Task):
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = options.get("PLOT", True)
         self.plot_all = options.get("PLOT_ALL", False)
-        self.output["classifiers"] = self.classifiers
+        self.output["classifier_names"] = [c.name for c in self.classifiers]
+        self.output["classifier_indexes"] = [c.index for c in self.classifiers]
         self.output["calibration_files"] = self.output_cals
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
