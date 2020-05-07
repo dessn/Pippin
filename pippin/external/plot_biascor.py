@@ -365,7 +365,7 @@ if __name__ == "__main__":
 
         # Plot hubble diagrams
         m0diff_file = args.get("M0DIFF_PARSED")
-        fitres_files = args.get("FIIRES_PARSED")
+        fitres_files = args.get("FITRES_PARSED")
         prob_cols = args.get("FITRES_PROB_COLS")
         for f, p in zip(fitres_files, prob_cols):
             make_hubble_plot(f, m0diff_file, p, args)
