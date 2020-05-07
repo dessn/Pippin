@@ -26,7 +26,6 @@ class Merger(Task):
     ========
         name : name given in the yml
         output_dir: top level output directory
-        classifiers: aggregators classifier tasks
         classifier_names: aggregators classifier names
         sim_name: sim name being aggregated
         genversion: genverison of sim
@@ -38,8 +37,8 @@ class Merger(Task):
         blind: bool - whether or not to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, dependencies, options):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, dependencies, options):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -47,8 +46,8 @@ class Merger(Task):
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
-        self.output["classifiers"] = self.agg["classifiers"]
-        self.output["classifier_names"] = [c.name for c in self.agg["classifiers"]]
+        self.output["classifier_names"] = self.agg["classifier_names"]
+        self.output["classifier_indexes"] = self.agg["classifier_indexes"]
         self.output["sim_name"] = self.lc_fit["sim_name"]
         self.output["lcfit_name"] = self.lc_fit["name"]
         self.output["genversion"] = self.lc_fit["genversion"]
@@ -178,7 +177,7 @@ class Merger(Task):
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
         tasks = []
 
-        def _get_merge_output_dir(base_output_dir, stage_number, merge_name, lcfit_name, agg_name):
+        def _get_merge_output_dir(base_output_dir, stage_number, merge_name, lcfit_name):
             return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}"
 
         for name in c.get("MERGE", []):
@@ -215,7 +214,7 @@ class Merger(Task):
                     num_gen += 1
 
                     merge_name2 = f"{name}_{lcfit.name}"
-                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name, agg.name), [lcfit, agg], options)
+                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name), config, [lcfit, agg], options)
                     Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
                     tasks.append(task)
             if num_gen == 0:

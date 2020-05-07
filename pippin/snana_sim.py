@@ -40,133 +40,138 @@ class SNANASimulation(ConfigBasedExecutable):
         blind: bool - whether to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, genversion, config, global_config, combine="combine.input"):
+    def __init__(self, name, output_dir, config, global_config, combine="combine.input"):
         self.data_dirs = global_config["DATA_DIRS"]
         base_file = get_data_loc(combine)
-        super().__init__(name, output_dir, base_file, ": ")
+        super().__init__(name, output_dir, config, base_file, ": ")
 
-        self.genversion = genversion
-        if len(genversion) < 30:
+        self.genversion = self.config["GENVERSION"]
+        if len(self.genversion) < 30:
             self.genprefix = self.genversion
         else:
             hash = get_hash(self.genversion)[:5]
             self.genprefix = self.genversion[:25] + hash
 
-        self.config = config
-        self.options = config.get("OPTS", {})
+        self.options = self.config.get("OPTS", {})
+
         self.reserved_keywords = ["BASE"]
+        self.reserved_top = ["GENVERSION", "GLOBAL", "OPTS", "EXTERNAL"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
-
-        # Deterime the type of each component
-        keys = [k for k in config.keys() if k != "GLOBAL" and k != "OPTS"]
-        self.base_ia = []
-        self.base_cc = []
-        types = {}
-        types_dict = {"IA": [], "NONIA": []}
-        for k in keys:
-            d = config[k]
-            base_file = d.get("BASE")
-            if base_file is None:
-                Task.fail_config(f"Your simulation component {k} for sim name {self.name} needs to specify a BASE input file")
-            base_path = get_data_loc(base_file)
-            if base_path is None:
-                Task.fail_config(f"Cannot find sim component {k} base file at {base_path} for sim name {self.name}")
-
-            gentype, genmodel = None, None
-            with open(base_path) as f:
-                for line in f.read().splitlines():
-                    if line.upper().strip().startswith("GENTYPE:"):
-                        gentype = line.upper().split(":")[1].strip()
-                    if line.upper().strip().startswith("GENMODEL:"):
-                        genmodel = line.upper().split(":")[1].strip()
-            gentype = gentype or d.get("GENTYPE")
-            genmodel = genmodel or d.get("GENMODEL")
-
-            if not gentype:
-                Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}")
-            if not genmodel:
-                Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
-
-            type2 = "1" + f"{int(gentype):02d}"
-            if "SALT2" in genmodel:
-                self.base_ia.append(base_file)
-                types[gentype] = "Ia"
-                types[type2] = "Ia"
-                types_dict["IA"].append(int(gentype))
-                types_dict["IA"].append(int(type2))
-            else:
-                self.base_cc.append(base_file)
-                types[gentype] = "II"
-                types[type2] = "II"
-                types_dict["NONIA"].append(int(gentype))
-                types_dict["NONIA"].append(int(type2))
-
-        sorted_types = collections.OrderedDict(sorted(types.items()))
-        self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
-        self.output["types_dict"] = types_dict
-        self.output["types"] = sorted_types
         self.global_config = global_config
-
-        rankeys = [r for r in config["GLOBAL"].keys() if r.startswith("RANSEED_")]
-        value = int(config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
-        self.set_num_jobs(2 * value)
 
         self.sim_log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".LOG")
-        self.output["blind"] = self.options.get("BLIND", False)
-        self.derived_batch_info = None
 
-        # Determine if all the top level input files exist
-        if len(self.base_ia + self.base_cc) == 0:
-            Task.fail_config("Your sim has no components specified! Please add something to simulate!")
+        if "EXTERNAL" not in self.config.keys():
+            # Deterime the type of each component
+            keys = [k for k in self.config.keys() if k not in self.reserved_top]
+            self.base_ia = []
+            self.base_cc = []
+            types = {}
+            types_dict = {"IA": [], "NONIA": []}
+            for k in keys:
+                d = self.config[k]
+                base_file = d.get("BASE")
+                if base_file is None:
+                    Task.fail_config(f"Your simulation component {k} for sim name {self.name} needs to specify a BASE input file")
+                base_path = get_data_loc(base_file)
+                if base_path is None:
+                    Task.fail_config(f"Cannot find sim component {k} base file at {base_path} for sim name {self.name}")
 
-        # Try to determine how many jobs will be put in the queue
-        try:
-            # If BATCH_INFO is set, we'll use that
-            batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
-            default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
+                gentype, genmodel = None, None
+                with open(base_path) as f:
+                    for line in f.read().splitlines():
+                        if line.upper().strip().startswith("GENTYPE:"):
+                            gentype = line.upper().split(":")[1].strip()
+                        if line.upper().strip().startswith("GENMODEL:"):
+                            genmodel = line.upper().split(":")[1].strip()
+                gentype = int(gentype or d.get("GENTYPE"))
+                genmodel = genmodel or d.get("GENMODEL")
 
-            # If its not set, lets check for ranseed_repeat or ranseed_change
-            if batch_info is None:
-                ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
-                ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-                ranseed = ranseed_repeat or ranseed_change
+                if not gentype:
+                    Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}")
+                if not genmodel:
+                    Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
 
-                if ranseed:
-                    num_jobs = int(ranseed.strip().split()[0])
-                    self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
-                    comps = default_batch_info.strip().split()
-                    comps[-1] = str(num_jobs)
-                    self.derived_batch_info = " ".join(comps)
-                    self.num_jobs = num_jobs
+                type2 = 100 + gentype
+                if "SALT2" in genmodel:
+                    self.base_ia.append(base_file)
+                    types[gentype] = "Ia"
+                    types[type2] = "Ia"
+                    types_dict["IA"].append(gentype)
+                    types_dict["IA"].append(type2)
+                else:
+                    self.base_cc.append(base_file)
+                    types[gentype] = "II"
+                    types[type2] = "II"
+                    types_dict["NONIA"].append(gentype)
+                    types_dict["NONIA"].append(type2)
+
+            sorted_types = dict(sorted(types.items()))
+            self.logger.debug(f"Types found: {json.dumps(sorted_types)}")
+            self.output["types_dict"] = types_dict
+            self.output["types"] = sorted_types
+
+            rankeys = [r for r in self.config["GLOBAL"].keys() if r.startswith("RANSEED_")]
+            value = int(self.config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
+            self.set_num_jobs(2 * value)
+
+            self.output["blind"] = self.options.get("BLIND", False)
+            self.derived_batch_info = None
+
+            # Determine if all the top level input files exist
+            if len(self.base_ia + self.base_cc) == 0:
+                Task.fail_config("Your sim has no components specified! Please add something to simulate!")
+
+            # Try to determine how many jobs will be put in the queue
+            try:
+                # If BATCH_INFO is set, we'll use that
+                batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
+                default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
+
+                # If its not set, lets check for ranseed_repeat or ranseed_change
+                if batch_info is None:
+                    ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
+                    ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+                    ranseed = ranseed_repeat or ranseed_change
+
+                    if ranseed:
+                        num_jobs = int(ranseed.strip().split()[0])
+                        self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
+                        comps = default_batch_info.strip().split()
+                        comps[-1] = str(num_jobs)
+                        self.derived_batch_info = " ".join(comps)
+                        self.num_jobs = num_jobs
+                else:
+                    # self.logger.debug(f"BATCH INFO property detected as {property}")
+                    self.num_jobs = int(default_batch_info.split()[-1])
+            except Exception:
+                self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
+                self.num_jobs = 10
+
+            self.output["genversion"] = self.genversion
+            self.output["genprefix"] = self.genprefix
+
+            ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+            base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
+            if ranseed_change:
+                num_sims = int(ranseed_change.split()[0])
+                self.logger.debug("Detected randseed change with {num_sims} sims, updating sim_folders")
+                self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
             else:
-                # self.logger.debug(f"BATCH INFO property detected as {property}")
-                self.num_jobs = int(default_batch_info.split()[-1])
-        except Exception:
-            self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
-            self.num_jobs = 10
-
-        self.output["genversion"] = self.genversion
-        self.output["genprefix"] = self.genprefix
-
-        ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-        base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-        if ranseed_change:
-            num_sims = int(ranseed_change.split()[0])
-            self.logger.debug("Detected randseed change with {num_sims} sims, updating sim_folders")
-            self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
+                self.sim_folders = [base]
+            self.output["ranseed_change"] = ranseed_change is not None
+            self.output["sim_folders"] = self.sim_folders
         else:
-            self.sim_folders = [base]
-        self.output["ranseed_change"] = ranseed_change is not None
-        self.output["sim_folders"] = self.sim_folders
+            self.sim_folders = self.output["sim_folders"]
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
         self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
         for k in self.config.keys():
-            if k.upper() != "GLOBAL":
+            if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
                 run_config_keys = list(run_config.keys())
                 assert "BASE" in run_config_keys, "You must specify a base file for each option"
@@ -349,8 +354,11 @@ class SNANASimulation(ConfigBasedExecutable):
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         tasks = []
         for sim_name in config.get("SIM", []):
+            task_config = config["SIM"][sim_name]
+            if "EXTERNAL" not in task_config.keys():
+                task_config["GENVERSION"] = f"{prefix}_{sim_name}"
             sim_output_dir = f"{base_output_dir}/{stage_number}_SIM/{sim_name}"
-            s = SNANASimulation(sim_name, sim_output_dir, f"{prefix}_{sim_name}", config["SIM"][sim_name], global_config)
+            s = SNANASimulation(sim_name, sim_output_dir, task_config, global_config)
             Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
             tasks.append(s)
         return tasks

@@ -26,8 +26,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         is_sim: bool - whether or not the input is a simulation
     """
 
-    def __init__(self, name, output_dir, options, global_config, dependencies=None):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, options, global_config, dependencies=None):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
 
@@ -167,7 +167,7 @@ fi
             options = config["DATAPREP"][name].get("OPTS")
             if options is None:
                 Task.fail_config(f"DATAPREP task {name} needs to specify OPTS!")
-            s = DataPrep(name, output_dir, options, global_config)
+            s = DataPrep(name, output_dir, config["DATAPREP"][name], options, global_config)
             Task.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
             tasks.append(s)
         return tasks

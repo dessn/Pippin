@@ -39,8 +39,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
     """
 
-    def __init__(self, name, output_dir, options, dependencies=None):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, options, dependencies=None):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
 
@@ -296,7 +296,7 @@ fi
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no dependencies!")
 
-            a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), options, deps)
+            a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), config, options, deps)
             Task.logger.info(f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs")
             tasks.append(a)
 

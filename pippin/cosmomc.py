@@ -38,8 +38,8 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
     """
 
-    def __init__(self, name, output_dir, options, global_config, dependencies=None):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, options, global_config, dependencies=None):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = global_config
 
@@ -295,7 +295,7 @@ fi
                     if mask not in ctask.name:
                         continue
                     name = f"{cname}_{ctask.name}"
-                    a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), options, global_config, dependencies=[ctask])
+                    a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), config, options, global_config, dependencies=[ctask])
                     Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
                     tasks.append(a)
 

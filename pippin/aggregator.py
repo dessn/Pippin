@@ -38,7 +38,6 @@ class Aggregator(Task):
     ========
         name : name given in the yml
         output_dir: top level output directory
-        classifiers: classifier tasks
         classifier_names: aggregators classifier names
         merge_predictions_filename: location of the merged csv file
         merge_key_filename: location of the merged fitres file
@@ -49,8 +48,8 @@ class Aggregator(Task):
         calibration_files: list[str] - all the calibration files. Hopefully only one will be made if you havent done something weird with the config
     """
 
-    def __init__(self, name, output_dir, dependencies, options, recal_aggtask):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.lcfit_deps = [c.get_fit_dependency(output=False) for c in self.classifiers]
@@ -75,7 +74,8 @@ class Aggregator(Task):
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
         self.plot = options.get("PLOT", True)
         self.plot_all = options.get("PLOT_ALL", False)
-        self.output["classifiers"] = self.classifiers
+        self.output["classifier_names"] = [c.name for c in self.classifiers]
+        self.output["classifier_indexes"] = [c.index for c in self.classifiers]
         self.output["calibration_files"] = self.output_cals
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
@@ -87,6 +87,15 @@ class Aggregator(Task):
             Task.fail_config(f"Attempting to find python file {self.python_file} but it's not there!")
 
     def _check_completion(self, squeue):
+        if not self.passed:
+            self.logger.debug("Task not reporting passed, might be external. Checking done file.")
+            if os.path.exists(self.done_file):
+                self.logger.debug("Done file exists, loading contents")
+                with open(self.done_file) as f:
+                    self.passed = "SUCCESS" in f.read()
+                    self.logger.debug(f"After reading done file, passed set to {self.passed}")
+            else:
+                self.logger.warning(f"Task has not set passed and has no done file at {self.done_file}, returning failure")
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self, force_refresh):
@@ -327,6 +336,12 @@ class Aggregator(Task):
                             self.logger.error("Plotting did not work correctly! Attempting to continue anyway.")
                 else:
                     self.logger.debug("Plot not set, skipping plotting section")
+
+            # Write the done file
+            self.logger.debug(f"Writing done file to {self.done_file}")
+            with open(self.done_file, "w") as f:
+                f.write("SUCCESS")
+
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
@@ -338,6 +353,7 @@ class Aggregator(Task):
             self.output["sn_type_name"] = self.type_name
 
         self.passed = True
+
         return True
 
     def save_key_format(self, df, index, lcfitname):
@@ -425,7 +441,7 @@ class Aggregator(Task):
                             Task.fail_config(f"The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
                         else:
                             deps.append(recal_aggtask)
-                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), deps, options, recal_aggtask)
+                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), config, deps, options, recal_aggtask)
                     if sim_task == recal_simtask:
                         recal_aggtask = a
                     Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")

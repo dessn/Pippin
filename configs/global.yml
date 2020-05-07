@@ -16,8 +16,9 @@ ALIAS:
     GENRANGE_SALT2BETA:  3.3  4.3
     GENGRID_SALT2BETA: 2
   NUMS: &nums
-    NGEN_UNIT: 3
+    NGEN_UNIT: 5
     RANSEED_REPEAT: 20 12345
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
 
 SIM:
   LOWZSIMBIAS_G10:
@@ -60,8 +61,74 @@ SIM:
       <<: *grid_c11
     GLOBAL: *nums
 
-
   DESSIMBIAS5YRCC:
     IBC_TEMPLATES:
       BASE: surveys/des/sims_cc/sn_collection_maria.input
     GLOBAL: *nums
+
+  DESTRAIN:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    II:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
+    GLOBAL:
+      <<: *nums
+
+  DESTEST:
+    IA_C11:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+    II:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
+
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
+
+  L:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZ
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
+
+
+CLASSIFICATION:
+  SNNTRAIN:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAIN
+
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNNTRAIN
+
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+
+  SNIRFTRAIN:
+    CLASSIFIER: SnirfClassifier
+    MODE: train
+    MASK_SIM: TRAIN
+
+  SNIRFTEST:
+    CLASSIFIER: SnirfClassifier
+    MODE: predict
+    OPTS:
+      MODEL: SNIRFTRAIN
+
+AGGREGATION:
+  AGG:
+
+
+MERGE:
+  MERGE:

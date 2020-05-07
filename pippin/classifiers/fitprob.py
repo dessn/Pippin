@@ -28,12 +28,13 @@ class FitProbClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
+        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
+        self.output["predictions_filename"] = self.output_file
         self.fitopt = options.get("FITOPT", "DEFAULT")
 
     def check_regenerate(self, force_refresh):
@@ -78,7 +79,10 @@ class FitProbClassifier(Classifier):
         return True
 
     def _check_completion(self, squeue):
-        self.output.update({"predictions_filename": self.output_file})
+        if not self.passed:
+            if os.path.exists(self.done_file):
+                with open(self.done_file) as f:
+                    self.passed = "SUCCESS" in f.read()
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self, force_refresh):

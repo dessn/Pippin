@@ -1,8 +1,11 @@
+import logging
+import shutil
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash, ensure_list
+from pippin.config import get_logger, get_hash, ensure_list, get_data_loc
 import os
 import datetime
 import numpy as np
+import yaml
 
 
 class Task(ABC):
@@ -10,17 +13,40 @@ class Task(ABC):
     FINISHED_FAILURE = -9
     logger = get_logger()
 
-    def __init__(self, name, output_dir, dependencies=None):
+    def __init__(self, name, output_dir, dependencies=None, config=None, done_file="done.txt"):
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
         if dependencies is None:
             dependencies = []
         self.dependencies = dependencies
+
+        if config is None:
+            config = {}
+        self.config = config
+        self.output = {}
+
+        # Determine if this is an external (already done) job or not
+        self.external = config.get("EXTERNAL")
+        if self.external is not None:
+            logging.debug(f"External config stated to be {self.external}")
+            self.external = get_data_loc(self.external)
+            if os.path.isdir(self.external):
+                self.external = os.path.join(self.external, "config.yml")
+            logging.debug(f"External config file path resolved to {self.external}")
+            with open(self.external, "r") as f:
+                external_config = yaml.safe_load(f)
+                conf = external_config.get("CONFIG", {})
+                conf.update(self.config)
+                self.config = conf
+                self.output = external_config.get("OUTPUT", {})
+                self.logger.debug("Loaded external config successfully")
+
         self.hash = None
-        self.output = {"name": name, "output_dir": output_dir}
         self.hash_file = os.path.join(self.output_dir, "hash.txt")
-        self.done_file = os.path.join(self.output_dir, "done.txt")
+        self.done_file = os.path.join(self.output_dir, done_file)
+
+        # Info about the job run
         self.start_time = None
         self.end_time = None
         self.wall_time = None
@@ -30,6 +56,28 @@ class Task(ABC):
         self.num_empty_threshold = 10
         self.display_threshold = 0
         self.gpu = False
+
+        self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
+        self.config_file = os.path.join(output_dir, "config.yml")
+
+    def write_config(self):
+        content = {"CONFIG": self.config, "OUTPUT": self.output}
+        with open(self.config_file, "w") as f:
+            yaml.dump(content, f)
+
+    def load_config(self):
+        with open(self.config_file, "r") as f:
+            content = yaml.safe_load(f)
+            return content
+
+    def clear_config(self):
+        if os.path.exists(self.config_file):
+            os.remove(self.config_file)
+
+    def clear_hash(self):
+        if os.path.exists(self.hash_file):
+            os.remove(self.hash_file)
+        self.clear_config()
 
     def check_for_job(self, squeue, match):
         if squeue is None:
@@ -94,6 +142,13 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self, force_refresh):
+        if self.external is not None:
+            if os.path.exists(self.output_dir) and not force_refresh:
+                self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
+            else:
+                self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
+                shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
+            return True
         return self._run(force_refresh)
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
@@ -194,15 +249,16 @@ class Task(ABC):
                 if self.end_time is not None and self.start_time is not None:
                     self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
                     self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
-            if result == Task.FINISHED_FAILURE and os.path.exists(self.hash_file):
-                os.remove(self.hash_file)
+            if result == Task.FINISHED_FAILURE:
+                self.clear_hash()
         elif not self.fresh_run:
             self.logger.error("Hash check had passed, so the task should be done, but it said it wasn't!")
             self.logger.error(f"This means it probably crashed, have a look in {self.output_dir}")
             self.logger.error(f"Removing hash from {self.hash_file}")
-            if os.path.exists(self.hash_file):
-                os.remove(self.hash_file)
+            self.clear_hash()
             return Task.FINISHED_FAILURE
+        if self.external is None and result == Task.FINISHED_SUCCESS and not os.path.exists(self.config_file):
+            self.write_config()
         return result
 
     @abstractmethod

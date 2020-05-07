@@ -41,7 +41,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         if self.base_file is None:
             Task.fail_config(f"Base file {base} cannot be found for task {name}")
 
-        super().__init__(name, output_dir, self.base_file, " = ", dependencies=[sim_task])
+        super().__init__(name, output_dir, config, self.base_file, " = ", dependencies=[sim_task])
 
         self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]
@@ -58,6 +58,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.num_empty_threshold = 20  # Damn that tarball creation can be so slow
         self.display_threshold = 8
         self.output["fitres_dirs"] = self.fitres_dirs
+        self.output["base_file"] = self.base_file
         self.output["nml_file"] = self.config_path
         self.output["genversion"] = self.sim_version
         self.output["sim_name"] = sim_task.output["name"]

@@ -2,8 +2,8 @@ from pippin.task import Task
 
 
 class ConfigBasedExecutable(Task):
-    def __init__(self, name, output_dir, base_file, default_assignment, dependencies=None):
-        super().__init__(name, output_dir, dependencies=dependencies)
+    def __init__(self, name, output_dir, config, base_file, default_assignment, dependencies=None):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.default_assignment = default_assignment
         self.base_file = base_file
         with open(base_file, "r") as f:
