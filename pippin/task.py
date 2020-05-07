@@ -27,6 +27,12 @@ class Task(ABC):
         self.output = {}
 
         # Determine if this is an external (already done) job or not
+        external_dirs = config.get("EXTERNAL_DIRS", [])
+        external_names = [os.path.basename(d) for d in external_dirs]
+        output_name = os.path.basename(output_dir)
+        if external_dirs:
+            if output_name in external_names:
+                config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
         self.external = config.get("EXTERNAL")
         if self.external is not None:
             logging.debug(f"External config stated to be {self.external}")
@@ -149,6 +155,7 @@ class Task(ABC):
                 self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
                 shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
             return True
+
         return self._run(force_refresh)
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):

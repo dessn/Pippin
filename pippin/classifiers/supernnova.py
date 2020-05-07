@@ -168,11 +168,11 @@ echo "#################TIMING  Classifier finished:   `date`"
                     has_cc = True
             if not has_ia:
                 self.logger.debug("No Ia type found, injecting type")
-                types.update({"1": "Ia"})
-                types.move_to_end("1", last=False)
+                types["1"] = "Ia"
+                types = dict(sorted(types.items()))
             if not has_cc:
                 self.logger.debug("No cc type found, injecting type")
-                types.update({"29": "II"})
+                types["29"] = "II"
         str_types = json.dumps(types)
         self.logger.debug(f"Types set to {str_types}")
 
