@@ -273,7 +273,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         ax.errorbar(tranz(dfz), df["MU"] - sub, yerr=df["MUERR"], fmt="none", elinewidth=0.5, c="#AAAAAA", alpha=0.5 * alpha)
         h = ax.scatter(tranz(dfz), df["MU"] - sub, c=cc, s=1, zorder=2, alpha=alpha, vmax=vmax, cmap=cmap)
 
-        if not args.blind:
+        if not args.get("BLIND", []):
             # Plot ref cosmology
             ax.plot(tranz(zs), distmod - sub3, c="k", zorder=-1, lw=0.5, alpha=0.7)
 
@@ -284,7 +284,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         ax.set_xticklabels(x_ticks)
         ax.set_xlim(z_scale.min(), z_scale.max())
 
-        if args.blind:
+        if args.get("BLIND", []):
             ax.set_yticklabels([])
             ax.set_yticks([])
     if color_prob:
