@@ -169,7 +169,7 @@ echo "#################TIMING  Classifier finished:   `date`"
             if not has_ia:
                 self.logger.debug("No Ia type found, injecting type")
                 types[1] = "Ia"
-                types = dict(sorted(types.items()))
+                types = dict(sorted(types.items(), key=lambda x: -1 if x[0] == 1 else x[0]))
             if not has_cc:
                 self.logger.debug("No cc type found, injecting type")
                 types[29] = "II"
