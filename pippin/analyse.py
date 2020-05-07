@@ -226,7 +226,7 @@ fi
                 "WFIT_SUMMARY_OUTPUT": "all_biascor.csv",
                 "FITRES_INPUT": self.biascor_fitres_input_files,
                 "FITRES_PROB_COLS": self.biascor_prob_col_names,
-                "FIIRES_PARSED": self.biascor_fitres_output_files,
+                "FITRES_PARSED": self.biascor_fitres_output_files,
                 "M0DIFF_INPUTS": self.biascor_m0diffs,
                 "M0DIFF_PARSED": self.biascor_m0diff_output,
             },
