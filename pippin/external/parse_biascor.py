@@ -45,7 +45,6 @@ def blind_df(df, args):
 
 def save_blind(df, args, output):
     df2 = blind_df(df, args)
-    logging.debug(f"Saving blind all biascor results to {output}, contents: {df2}")
     df2.to_csv(output, index=False, float_format="%0.5f")
 
 

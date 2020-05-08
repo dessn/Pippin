@@ -338,7 +338,7 @@ def make_m0diff_plot(m0diff_file):
         for label, df2 in dfg2:
             if not isinstance(label, str):
                 label = " ".join(list(label)).replace("_", " ")
-            ax.plot(df2.z, df2.mudif, label=label)
+            ax.plot(df2.z, df2.MUDIF, label=label)
 
         ax.legend()
         ax.set_title(name)
