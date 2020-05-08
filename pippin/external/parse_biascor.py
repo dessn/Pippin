@@ -45,6 +45,7 @@ def blind_df(df, args):
 
 def save_blind(df, args, output):
     df2 = blind_df(df, args)
+    logging.debug(f"Saving blind all biascor results to {output}, contents: {df2}")
     df2.to_csv(output, index=False, float_format="%0.5f")
 
 
@@ -57,6 +58,7 @@ def make_summary_file(wfit_files, args):
         df = pd.read_csv(f)
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         df["name"] = name
+        logging.debug(f"Read {f}, contents are: {df}")
         if df_all is None:
             df_all = df
         else:
