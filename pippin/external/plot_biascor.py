@@ -316,6 +316,7 @@ def make_m0diff_plot(m0diff_file):
         dfg = ("", dfm)
         n = 1
 
+    logging.debug(f"Group by set to {dfg}")
     if n > 6:
         ncols = 3
     else:
@@ -359,7 +360,7 @@ if __name__ == "__main__":
             if df.shape[0] > 1:
                 plot_single_file(name, df)
             else:
-                logging.info(f"Gruop {name} has df shape {str(df.shape)}")
+                logging.info(f"Group {name} has df shape {str(df.shape)}")
             plot_all_files(df_all)
             plot_scatter_comp(df_all)
 
