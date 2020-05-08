@@ -313,17 +313,16 @@ def make_m0diff_plot(m0diff_file):
         dfg = dfm.groupby(group)
         n = len(dfg)
     else:
-        dfg = ("", dfm)
+        dfg = [("", dfm)]
         n = 1
 
-    logging.debug(f"Group by set to {dfg}")
     if n > 6:
         ncols = 3
     else:
         ncols = 1
     nrows = (n + (ncols - 1)) // ncols
 
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 1 + nrows), squeeze=False, sharex=True)
+    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 1 + 1.5 * nrows), squeeze=False, sharex=True)
     axes = axes.flatten()
 
     for (name, df), ax in zip(dfg, axes):
@@ -338,7 +337,7 @@ def make_m0diff_plot(m0diff_file):
         dfg2 = df.groupby(label_cols)
         for label, df2 in dfg2:
             if not isinstance(label, str):
-                label = " ".join(list(label))
+                label = " ".join(list(label)).replace("_", " ")
             ax.plot(df2.z, df2.mudif, label=label)
 
         ax.legend()
