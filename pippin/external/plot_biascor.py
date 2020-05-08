@@ -54,7 +54,7 @@ def plot_single_file(source_file, df):
 
 def plot_all_files(df_all):
     logging.info("Plotting all files")
-    output_file = "all_biascor.png"
+    output_file = "all_biascor_results.png"
 
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
