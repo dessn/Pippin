@@ -243,6 +243,70 @@ GLOBAL:
     - /some/new/directory/with/your/files/in/it
 ```
 
+**I don't want to run this massive jobs again! Let me use external results!**
+
+Good news, everyone! Not only is there a dedicated config file for globally useful tasks, but its easier than ever to slow them
+into your existing jobs. For useful precomputed work, such as biascor sims and trained machine learning classifiers, check out `$PIPPIN_OUTPUT/GLOBAL`.
+
+For an example on how to use these results, check out the reference 5YR analysis `ref_des_5yr.yml`.  There are in essense two ways of 
+including external tasks. Both operate the same way, one is just a bit more explicit than the other. The explicit way is when adding 
+a task that is an *exact* replica of an external task, you can just add the `EXTERNAL` keyword. For example, in the reference 5YR analysis,
+all the biascor sims are precomputed, so we can define them as external tasks like this:
+
+```yaml
+SIM:
+  DESSIMBIAS5YRIA_C11:
+    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_C11
+  DESSIMBIAS5YRIA_G10:
+    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_G10
+  DESSIMBIAS5YRCC:
+    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRCC
+```
+
+Point to the external task output directory. In this case, we use the `EXTERNAL` keyword because each task we define has an explicit one-to-one match
+with an external task.
+
+But then say we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! Well, we set up the tasks
+in the same way as we normally would, but now there **isn't** a one-to-one mapping. See the config snippet below:
+
+```yaml
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DESSIM
+    EXTERNAL_DIRS:
+      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_C11
+      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_G10
+      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRCC
+```
+
+That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point a single external directory.
+But what we can do is point to multiple! And then if the output directory matches (ie `D_DESSIMBIAS5YRIA_C11` is the base name for both a computed
+task output directory and an external task directory), it will instead use that.
+
+Note that you still need to point to the right base file, because Pippin still wants those details. It won't be submitted anywhere though, just
+loaded in. 
+
+The flexibility of `EXTERNAL_DIRS` means you can mix both precomputed and non-precomputed tasks together. Take this classificaiton task:
+
+```yaml
+CLASSIFICATION:
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    OPTS:
+      MODEL: $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTRAIN_DESTRAIN/model.pt
+    EXTERNAL_DIRS:
+      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRIA_C11_SNNTRAIN_DESTRAIN
+      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRIA_G10_SNNTRAIN_DESTRAIN
+      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRCC_SNNTRAIN_DESTRAIN
+```
+
+It will load in the precomputed classification results for the biascor sims, and then also run and generate classification results on any other
+simulation tasks (such as running on the data) using the pretrained model `model.pt`.
+
+If you have any issues using this new feature, check out the `ref_des_5yr.yml` file or flick me a message.
+
 ## Tasks
 
 Pippin is essentially a wrapper around many different tasks. In this section, 
