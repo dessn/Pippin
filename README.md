@@ -305,6 +305,10 @@ CLASSIFICATION:
 It will load in the precomputed classification results for the biascor sims, and then also run and generate classification results on any other
 simulation tasks (such as running on the data) using the pretrained model `model.pt`.
 
+Finally, the way this works under the hood is simple - it copies the directory over explicitly. And it will only copy once, so if you want the 
+"latest version" just ask the task to refresh (or delete the folder). Once it copies it, there is no normal hash checking,
+it reads in the `config.yml` file created by the task in its initial run and powers onwards.
+
 If you have any issues using this new feature, check out the `ref_des_5yr.yml` file or flick me a message.
 
 ## Tasks
