@@ -36,7 +36,7 @@ class Task(ABC):
             if output_name in external_names:
                 print("DEBUG 2: ", external_names.index(output_name), external_dirs[external_names.index(output_name)])
                 self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
-        self.external = config.get("EXTERNAL")
+        self.external = self.config.get("EXTERNAL")
         if self.external is not None:
             logging.debug(f"External config stated to be {self.external}")
             self.external = get_data_loc(self.external)
