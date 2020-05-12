@@ -91,6 +91,9 @@ class FitProbClassifier(Classifier):
     def predict(self, force_refresh):
         return self.classify(force_refresh)
 
+    def get_unique_name(self):
+        return self.name
+
     @staticmethod
     def get_requirements(config):
         # Does not need simulations, does light curve fits
