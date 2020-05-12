@@ -32,6 +32,14 @@ class Task(ABC):
         output_name = os.path.basename(output_dir)
         if external_dirs:
             if output_name in external_names:
+                print(
+                    "EXTERNAL DIRS MATCH: ",
+                    external_names,
+                    output_name,
+                    external_names.index(output_name),
+                    external_dirs,
+                    external_dirs[external_names.index(output_name)],
+                )
                 config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
         self.external = config.get("EXTERNAL")
         if self.external is not None:
