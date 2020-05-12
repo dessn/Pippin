@@ -150,6 +150,12 @@ class BiasCor(ConfigBasedExecutable):
                     return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_name)
 
+    def get_simfile_biascor(self, ia_sims):
+        return ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in ia_sims])
+
+    def get_simfile_ccprior(self, cc_sims):
+        return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
+
     def write_input(self, force_refresh):
         for m in self.merged_iasim:
             if len(m.output["fitres_dirs"]) > 1:
@@ -158,12 +164,8 @@ class BiasCor(ConfigBasedExecutable):
             for m in self.merged_ccsim:
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
-        self.bias_cor_fits = ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_iasim])
-        self.cc_prior_fits = (
-            None
-            if self.merged_ccsim is None
-            else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in self.merged_ccsim])
-        )
+        self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim)
+        self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
 
         self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
@@ -211,9 +213,9 @@ class BiasCor(ConfigBasedExecutable):
                 mu_str += "\nMUOPT: "
             mu_str += f"[{label}] "
             if value.get("SIMFILE_BIASCOR"):
-                mu_str += f"simfile_biascor={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_BIASCOR')])} "
+                mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
             if value.get("SIMFILE_CCPRIOR"):
-                mu_str += f"simfile_ccprior={','.join([v.output['fitres_file'] for v in value.get('SIMFILE_CCPRIOR')])} "
+                mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value.get('SIMFILE_CCPRIOR'))} "
             if value.get("CLASSIFIER"):
                 cname = value.get("CLASSIFIER").output["prob_column_name"]
                 muopt_prob_cols[label] = cname
