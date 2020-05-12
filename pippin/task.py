@@ -6,6 +6,7 @@ import os
 import datetime
 import numpy as np
 import yaml
+import copy
 
 
 class Task(ABC):
@@ -23,7 +24,7 @@ class Task(ABC):
 
         if config is None:
             config = {}
-        self.config = config
+        self.config = copy.deepcopy(config)
         self.output = {}
 
         # Determine if this is an external (already done) job or not
