@@ -28,14 +28,14 @@ class Task(ABC):
         self.output = {}
 
         # Determine if this is an external (already done) job or not
-        external_dirs = config.get("EXTERNAL_DIRS", [])
+        external_dirs = self.config.get("EXTERNAL_DIRS", [])
         external_names = [os.path.basename(d) for d in external_dirs]
         output_name = os.path.basename(output_dir)
         print("DEBUG OUTPUT: ", external_dirs, external_names, output_name, external_dirs)
         if external_dirs:
             if output_name in external_names:
                 print("DEBUG 2: ", external_names.index(output_name), external_dirs[external_names.index(output_name)])
-                config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
+                self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
         self.external = config.get("EXTERNAL")
         if self.external is not None:
             logging.debug(f"External config stated to be {self.external}")
