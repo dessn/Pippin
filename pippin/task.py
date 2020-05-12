@@ -31,10 +31,8 @@ class Task(ABC):
         external_dirs = self.config.get("EXTERNAL_DIRS", [])
         external_names = [os.path.basename(d) for d in external_dirs]
         output_name = os.path.basename(output_dir)
-        print("DEBUG OUTPUT: ", external_dirs, external_names, output_name, external_dirs)
         if external_dirs:
             if output_name in external_names:
-                print("DEBUG 2: ", external_names.index(output_name), external_dirs[external_names.index(output_name)])
                 self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
         self.external = self.config.get("EXTERNAL")
         if self.external is not None:
