@@ -11,6 +11,7 @@ CREATE_COV:
 
   SYSTEMATICS:
     OPTS:
+      INI_DIR: /path/to/your/own/dir/of/cosmomc/templates # Defaults to cosmomc_templates, which you can exploit using DATA_DIRS
       SYS_SCALE: $somewhere/sys_scale.list # Location of sys_scale.LIST file, relative to create_cov dir by default
       FITOPT_SCALES:  # Optional
         cal: 2.0  # checks if its in the label, not an exact match. So this would scale all *cal* fitopts by a factor of two

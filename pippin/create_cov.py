@@ -42,6 +42,7 @@ class CreateCov(ConfigBasedExecutable):
         super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
 
         self.options = options
+        self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
         self.global_config = get_config()
         self.index = index
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
@@ -93,7 +94,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
 
     def calculate_input(self):
         self.logger.debug(f"Calculating input")
-        self.set_property("COSMOMC_TEMPLATES", get_data_loc("cosmomc_templates"))
+        self.set_property("COSMOMC_TEMPLATES", get_data_loc(self.templates_dir))
         self.set_property("BASEOUTPUT", self.name)
         self.set_property("SYSFILE", self.sys_file_out)
         self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
