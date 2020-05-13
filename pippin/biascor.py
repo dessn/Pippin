@@ -286,6 +286,7 @@ class BiasCor(ConfigBasedExecutable):
             return f"{base_output_dir}/{stage_number}_BIASCOR/{biascor_name}"
 
         for name in c.get("BIASCOR", []):
+            gname = name
             config = c["BIASCOR"][name]
             options = config.get("OPTS", {})
             deps = []
@@ -316,7 +317,7 @@ class BiasCor(ConfigBasedExecutable):
                 return task[0]  # We only care about the prob column name
 
             def resolve_merged_fitres_files(name, classifier_name):
-                task = [m for m in merge_tasks if classifier_name in m.output["classifier_names"] and m.output["lcfit_name"] == name]
+                task = [m for m in merge_tasks if m.output["lcfit_name"] == name]
                 if len(task) == 0:
                     valid = [m.output["lcfit_name"] for m in merge_tasks]
                     message = f"Unable to resolve merge {name} from list of merge_tasks. There are valid options: {valid}"
@@ -325,6 +326,12 @@ class BiasCor(ConfigBasedExecutable):
                     message = f"Resolved multiple merge tasks {task} for name {name}"
                     Task.fail_config(message)
                 else:
+                    if classifier_name not in task[0].output["classifier_names"]:
+                        Task.logger.warning(
+                            f"When constructing Biascor {gname}, merge input {name} does not have classifier {classifier_name}. "
+                            f"If this is a spec confirmed sample, all good, otherwise you might want "
+                            f"to make sure said classifier runs on this input."
+                        )
                     return task[0]
 
             def resolve_conf(subdict, default=None):
