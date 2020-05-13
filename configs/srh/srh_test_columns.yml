@@ -49,6 +49,7 @@ LCFIT:
 
 CLASSIFICATION:
   UNITY:
+    MASK_SIM: LOWZ
     CLASSIFIER: UnityClassifier
     MODE: predict
 
