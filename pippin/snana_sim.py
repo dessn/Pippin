@@ -154,18 +154,21 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output["genversion"] = self.genversion
             self.output["genprefix"] = self.genprefix
 
-            ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+            self.ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
             base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-            if ranseed_change:
-                num_sims = int(ranseed_change.split()[0])
-                self.logger.debug("Detected randseed change with {num_sims} sims, updating sim_folders")
-                self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
-            else:
-                self.sim_folders = [base]
+            self.get_sim_folders(base)
             self.output["ranseed_change"] = ranseed_change is not None
             self.output["sim_folders"] = self.sim_folders
         else:
             self.sim_folders = self.output["sim_folders"]
+
+    def get_sim_folders(self, base):
+        if self.ranseed_change:
+            num_sims = int(self.ranseed_change.split()[0])
+            self.logger.debug(f"Detected randseed change with {num_sims} sims, updating sim_folders")
+            self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
+        else:
+            self.sim_folders = [base]
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
@@ -332,6 +335,9 @@ class SNANASimulation(ConfigBasedExecutable):
                             self.logger.debug(f"Simulation reports {key} wrote {count} to file")
                             if int(count.strip()) > 0:
                                 allzero = False
+                        if line.strip().startswith("PATH_SNDATA_SIM:"):
+                            base = line.strip().split(":")[-1].strip()
+                            self.get_sim_folders(base)
                     if allzero:
                         self.logger.error(f"Simulation didn't write anything out according to {self.total_summary}")
                         return Task.FINISHED_FAILURE
