@@ -129,7 +129,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
   -r, --refresh      Refresh/redo - Rerun tasks that completed in a previous run even if the inputs haven't changed.
   -c, --check        Check that the input config is valid but don't actually run any tasks.
   -s, --start        Start at this task and refresh everything after it. Number of string accepted
-  -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including cosmology 
+  -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
 ```
 
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
