@@ -291,7 +291,11 @@ class Task(ABC):
             deps = f"{[d.name for d in self.dependencies[:5]]} + {len(self.dependencies) - 5} more deps"
         else:
             deps = f"{[d.name for d in self.dependencies]}"
-        return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {deps})"
+
+        if self.external is None:
+            return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {deps})"
+        else:
+            return f"{self.__class__.__name__} {self.name} task (EXTERNAL JOB, deps {deps})"
 
     def __repr__(self):
         return self.__str__()
