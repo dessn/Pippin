@@ -231,6 +231,29 @@ match a Pippin keyword for each stage, you'll be fine. I recommend `ANCHORS:` at
 Feel free to send me the log and stack, and I'll see what I can do turn the exception into something
 more human-readable.
 
+**I want Pippin to run after I log out** 
+
+Rather than redirecting Pippin output to a file or running it in the background, I *highly recommend* you run
+Pippin in a `screen` session. 
+
+For example, if you are doing machine-learning testing, you may create a new screen session called `ml` 
+by running `screen -S ml`. It will then launch a new instance of bash for you to play around in. conda **will not work out of the box**. To make
+it work again, run `conda deactivate` and then `conda activate`, and you can check this works by running `which python` and 
+verifying its pointing to the miniconda install. You can then run Pippin as per normal: `pippin.sh -v your_job.yml` and get the coloured output. 
+To leave the screen session, but *still keep Pippin running even after you log out*, press `Ctrl-A, Ctrl-D`. As in one, and then the other, not `Ctrl-A-D`. 
+This will detach from your screen session but keep it running. Just going `Ctrl_D` will disconnect and shut it down. To get back into your screen session,
+simply run `screen -r ml` to reattach. You can see your screen
+sessions using `screen -ls`. 
+
+You may notice if you log in and out of midway that your screen sessions might not show up. This is because midway has multiple head nodes, and
+your screen session exists only on one of them. This is why when I ssh to midway I specify a specific login node instead
+of being assigned one. To make it simpler, I'd recommend setting up
+an alias like so to either `login1` or `login2`:
+
+```yaml
+alias sshmidway="ssh username@midway2-login1.rcc.uchicago.edu"
+```
+
 **I want to modify a ton of files but don't want huge yml files, please help**
 
 You can modify input files and put them in a directory you own, and then tell Pippin to look there 
