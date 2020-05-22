@@ -75,31 +75,33 @@ if __name__ == "__main__":
             logging.info("Making Error Budgets")
 
             budget_labels = [n.split()[-1] for n in names]
-            base, base_index = [(b, i) for i, b in enumerate(budget_labels) if b in ["NOSYS", "STAT", "STATONLY"]][0]
-            data = [get_entry(n, b, f) for n, b, f in zip(names, budget_labels, files)]
-            others = [d for i, d in enumerate(data) if i != base_index]
+            bases = [(b, i) for i, b in enumerate(budget_labels) if b in ["NOSYS", "STAT", "STATONLY"]]
+            if len(bases):
+                base, base_index = bases[0]
+                data = [get_entry(n, b, f) for n, b, f in zip(names, budget_labels, files)]
+                others = [d for i, d in enumerate(data) if i != base_index]
 
-            base_df = data[base_index]
-            df_all = pd.concat([base_df] + others).reset_index()
+                base_df = data[base_index]
+                df_all = pd.concat([base_df] + others).reset_index()
 
-            # Save out all the means + stds to file unchanged.
-            df_all.to_csv("errbudget_all_uncertainties.csv", index=False, float_format="%0.4f")
+                # Save out all the means + stds to file unchanged.
+                df_all.to_csv("errbudget_all_uncertainties.csv", index=False, float_format="%0.4f")
 
-            # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
-            dfg = df_all.groupby("name")
-            for name, df in dfg:
-                output_filename = f"errbudget_{name}.txt".replace(" ", "_")
+                # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
+                dfg = df_all.groupby("name")
+                for name, df in dfg:
+                    output_filename = f"errbudget_{name}.txt".replace(" ", "_")
 
-                avg_cols = [c for c in df.columns if c.endswith(" avg")]
-                std_cols = [c for c in df.columns if c.endswith(" std")]
-                delta_cols = [c.replace(" avg", " delta") for c in df.columns if c.endswith(" avg")]
-                contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
+                    avg_cols = [c for c in df.columns if c.endswith(" avg")]
+                    std_cols = [c for c in df.columns if c.endswith(" std")]
+                    delta_cols = [c.replace(" avg", " delta") for c in df.columns if c.endswith(" avg")]
+                    contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
 
-                df[delta_cols] = df.loc[:, avg_cols] - df.loc[:, avg_cols].iloc[0, :]
-                df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - df.loc[:, std_cols].iloc[0, :] ** 2)
+                    df[delta_cols] = df.loc[:, avg_cols] - df.loc[:, avg_cols].iloc[0, :]
+                    df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - df.loc[:, std_cols].iloc[0, :] ** 2)
 
-                df = df.reindex(sorted(df.columns)[::-1], axis=1)
-                df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
+                    df = df.reindex(sorted(df.columns)[::-1], axis=1)
+                    df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
 
     except Exception as e:
         logging.exception(e, exc_info=True)
