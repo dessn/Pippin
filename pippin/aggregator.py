@@ -120,6 +120,7 @@ class Aggregator(Task):
                 if isinstance(task, SNANALightCurveFit):
                     check += task.dependencies
 
+        print("DEPS ARE: ", self.dependencies, check)
         for task in check:
             if isinstance(task, SNANASimulation) or isinstance(task, DataPrep):
                 return task
