@@ -129,7 +129,7 @@ def test_classifier_lcfit_config_valid():
 
     # Check properties and outputs all set correctly
     assert task.name == "FITPROBTEST"
-    assert task.output["prob_column_name"] == "PROB_FITPROBTEST_D_ASIM"
+    assert task.output["prob_column_name"] == "PROB_FITPROBTEST"
     assert len(task.dependencies) == 2
 
 
