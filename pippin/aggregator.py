@@ -120,8 +120,7 @@ class Aggregator(Task):
                 if isinstance(task, SNANALightCurveFit):
                     check += task.dependencies
 
-        print("DEPS ARE: ", self.dependencies, check)
-        for task in check:
+        for task in check + self.dependencies:
             if isinstance(task, SNANASimulation) or isinstance(task, DataPrep):
                 return task
         self.logger.error(f"Unable to find a simulation or data dependency for aggregator {self.name}")
