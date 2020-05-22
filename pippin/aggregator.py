@@ -433,18 +433,21 @@ class Aggregator(Task):
                     for c in classifier_tasks
                     if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
                 ]
-                if len(deps) == 0 and sim_task.external is None:
-                    Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
-                else:
-                    if recalibration and sim_task != recal_simtask:
-                        if recal_aggtask is None:
-                            Task.fail_config(f"The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
-                        else:
-                            deps.append(recal_aggtask)
-                    a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), config, deps, options, recal_aggtask)
-                    if sim_task == recal_simtask:
-                        recal_aggtask = a
-                    Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
-                    tasks.append(a)
+                if len(deps) == 0:
+                    if sim_task.external is None:
+                        Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
+                    else:
+                        deps = [sim_task]
+
+                if recalibration and sim_task != recal_simtask:
+                    if recal_aggtask is None:
+                        Task.fail_config(f"The aggregator task for {recalibration} has not been made yet. Sam probably screwed up dependency order.")
+                    else:
+                        deps.append(recal_aggtask)
+                a = Aggregator(agg_name2, _get_aggregator_dir(base_output_dir, stage_number, agg_name2), config, deps, options, recal_aggtask)
+                if sim_task == recal_simtask:
+                    recal_aggtask = a
+                Task.logger.info(f"Creating aggregation task {agg_name2} for {sim_task.name} with {a.num_jobs} jobs")
+                tasks.append(a)
 
         return tasks
