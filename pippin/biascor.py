@@ -329,7 +329,7 @@ class BiasCor(ConfigBasedExecutable):
                     if classifier_name not in task[0].output["classifier_names"]:
                         Task.logger.warning(
                             f"When constructing Biascor {gname}, merge input {name} does not have classifier {classifier_name}. "
-                            f"If this is a spec confirmed sample, all good, otherwise you might want "
+                            f"If this is a spec confirmed sample or an EXTERNAL task, all good, otherwise you might want "
                             f"to make sure said classifier runs on this input."
                         )
                     return task[0]
