@@ -157,15 +157,15 @@ class SNANASimulation(ConfigBasedExecutable):
 
             self.ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
             base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
-            self.get_sim_folders(base)
             self.output["ranseed_change"] = self.ranseed_change is not None
             self.output["ranseed_change_val"] = self.ranseed_change
+            self.get_sim_folders(base)
             self.output["sim_folders"] = self.sim_folders
         else:
             self.sim_folders = self.output["sim_folders"]
 
     def get_sim_folders(self, base):
-        if self.output["ranseed_change"]:
+        if self.output.get("ranseed_change"):
             num_sims = int(self.output["ranseed_change_val"].split()[0])
             self.logger.debug(f"Detected randseed change with {num_sims} sims, updating sim_folders")
             self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
