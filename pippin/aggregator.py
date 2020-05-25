@@ -434,10 +434,7 @@ class Aggregator(Task):
                     if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
                 ]
                 if len(deps) == 0:
-                    if sim_task.external is None:
-                        Task.fail_config(f"Aggregator {agg_name2} with mask {mask} matched no classifier tasks for sim {sim_task}")
-                    else:
-                        deps = [sim_task]
+                    deps = [sim_task]
 
                 if recalibration and sim_task != recal_simtask:
                     if recal_aggtask is None:
