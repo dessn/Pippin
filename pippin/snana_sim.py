@@ -37,6 +37,7 @@ class SNANASimulation(ConfigBasedExecutable):
         types: dict map from numeric gentype to string (Ia, II, etc)
         photometry_dirs: location of fits files with photometry. is a list.
         ranseed_change: true or false for if RANSEED_CHANGE was set
+        ranseed_change_val: the value of ranseed change (None if it wasnt set)
         blind: bool - whether to blind cosmo results
     """
 
@@ -158,13 +159,14 @@ class SNANASimulation(ConfigBasedExecutable):
             base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
             self.get_sim_folders(base)
             self.output["ranseed_change"] = self.ranseed_change is not None
+            self.output["ranseed_change_val"] = self.ranseed_change
             self.output["sim_folders"] = self.sim_folders
         else:
             self.sim_folders = self.output["sim_folders"]
 
     def get_sim_folders(self, base):
-        if self.ranseed_change:
-            num_sims = int(self.ranseed_change.split()[0])
+        if self.output["ranseed_change"]:
+            num_sims = int(self.output["ranseed_change_val"].split()[0])
             self.logger.debug(f"Detected randseed change with {num_sims} sims, updating sim_folders")
             self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
         else:
