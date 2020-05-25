@@ -39,14 +39,14 @@ class BiasCor(ConfigBasedExecutable):
         self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
         self.num_verions = [len(m.output["fitres_dirs"]) for m in self.merged_data]
-        self.genversion = "_".join(self.sim_names) + "_" + self.classifier.name
+        self.genversion = "_".join(self.sim_names) + ("" if self.classifier is None else "_" + self.classifier.name)
 
         self.config_filename = f"BBC_{self.name}_{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
-        self.probability_column_name = self.classifier.output["prob_column_name"]
+        self.probability_column_name = self.classifier.output["prob_column_name"] if self.classifier is not None else None
         self.output["prob_column_name"] = self.probability_column_name
 
         if self.use_recalibrated:
@@ -172,7 +172,8 @@ class BiasCor(ConfigBasedExecutable):
 
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
-        self.set_property("varname_pIa", self.probability_column_name)
+        if self.probability_column_name is not None:
+            self.set_property("varname_pIa", self.probability_column_name)
         self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
         self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
 
@@ -384,7 +385,9 @@ class BiasCor(ConfigBasedExecutable):
             if data_names is None:
                 Task.fail_config("For BIASCOR tasks you need to specify an input DATA which is a mask for a merged task")
             data_names = ensure_list(data_names)
-            data_tasks = [resolve_merged_fitres_files(s, config["CLASSIFIER"].name) for s in data_names]
+            class_task = config.get("CLASSIFIER")
+            class_name = class_task.name if class_task is not None else None
+            data_tasks = [resolve_merged_fitres_files(s, class_name) for s in data_names]
             deps += data_tasks
             config["DATA"] = data_tasks
 
