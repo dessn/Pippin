@@ -286,7 +286,7 @@ fi
             # Check if this is static. Could scan the folder, but dont have all the chains yet.
             # TODO: Update this when I have all the chains
             if options.get("INI") in ["cmb_omw", "cmb_omol"]:
-                a = CosmoMC(cname, _get_cosmomc_dir(base_output_dir, stage_number, cname), options, global_config)
+                a = CosmoMC(cname, _get_cosmomc_dir(base_output_dir, stage_number, cname), config, options, global_config)
                 Task.logger.info(f"Creating CosmoMC task {cname} for {a.num_jobs} jobs")
                 tasks.append(a)
 
