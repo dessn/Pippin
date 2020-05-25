@@ -298,7 +298,10 @@ class Aggregator(Task):
                     self.logger.debug(f"Photometric types are {type_df['SNTYPE'].unique()}")
 
                 if type_df is not None:
-                    df = pd.merge(df, type_df, on=self.id, how="left")
+                    if df is None:
+                        df = type_df
+                    else:
+                        df = pd.merge(df, type_df, on=self.id, how="left")
 
                 types = self.get_underlying_sim_task().output["types_dict"]
                 has_nonia = len(types.get("NONIA", [])) > 0
