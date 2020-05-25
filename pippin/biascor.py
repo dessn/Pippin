@@ -326,7 +326,7 @@ class BiasCor(ConfigBasedExecutable):
                     message = f"Resolved multiple merge tasks {task} for name {name}"
                     Task.fail_config(message)
                 else:
-                    if classifier_name not in task[0].output["classifier_names"]:
+                    if classifier_name is not None and classifier_name not in task[0].output["classifier_names"]:
                         Task.logger.warning(
                             f"When constructing Biascor {gname}, merge input {name} does not have classifier {classifier_name}. "
                             f"If this is a spec confirmed sample or an EXTERNAL task, all good, otherwise you might want "
@@ -344,16 +344,16 @@ class BiasCor(ConfigBasedExecutable):
 
                 # Get the specific classifier
                 classifier_name = subdict.get("CLASSIFIER")  # Specific classifier name
-                if classifier_name is None and default is None:
-                    Task.fail_config(f"You need to specify the name of a classifier under the CLASSIFIER key")
                 classifier_task = None
                 if classifier_name is not None:
                     classifier_task = resolve_classifier(classifier_name)
                 classifier_dep = classifier_task or default.get("CLASSIFIER")  # For resolving merge tasks
-                classifier_dep = classifier_dep.name
+                if classifier_dep is not None:
+                    classifier_dep = classifier_dep.name
                 if "CLASSIFIER" in subdict:
                     subdict["CLASSIFIER"] = classifier_task
-                    deps.append(classifier_task)
+                    if classifier_task is not None:
+                        deps.append(classifier_task)
 
                 # Get the Ia sims
                 simfile_ia = subdict.get("SIMFILE_BIASCOR")

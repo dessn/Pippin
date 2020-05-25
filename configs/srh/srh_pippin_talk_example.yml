@@ -1,0 +1,34 @@
+DATAPREP:
+  DATADES5YR:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+SIM:
+  DES_G10:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    CC_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+
+CLASSIFICATION:
+  FITPROBTEST:
+    CLASSIFIER: FitProbClassifier
+    MODE: predict
+
+AGGREGATION:
+  AGG:
+MERGE:
+  MERGE:
+
+ANALYSE:
+  MAKE_HISTOGRAMS:
+    HISTOGRAM:
+      - D_DATADES5YR
+      - D_DES_G10
+
