@@ -156,19 +156,19 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output["genprefix"] = self.genprefix
 
             self.ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-            base = os.path.expandvars(f"{self.global_config['SNANA']['sim_dir']}/{self.genversion}")
+            base = os.path.expandvars(self.global_config["SNANA"]["sim_dir"])
             self.output["ranseed_change"] = self.ranseed_change is not None
             self.output["ranseed_change_val"] = self.ranseed_change
-            self.get_sim_folders(base)
+            self.get_sim_folders(base, self.genversion)
             self.output["sim_folders"] = self.sim_folders
         else:
             self.sim_folders = self.output["sim_folders"]
 
-    def get_sim_folders(self, base):
+    def get_sim_folders(self, base, genversion):
         if self.output.get("ranseed_change"):
             num_sims = int(self.output["ranseed_change_val"].split()[0])
             self.logger.debug(f"Detected randseed change with {num_sims} sims, updating sim_folders")
-            self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
+            self.sim_folders = [os.path.join(base, genversion) + f"-{i + 1:04d}" for i in range(num_sims)]
             self.logger.debug(f"First sim folder set to {self.sim_folders[0]}")
 
         else:
@@ -341,7 +341,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                 allzero = False
                         if line.strip().startswith("PATH_SNDATA_SIM:"):
                             base = line.strip().split(":")[-1].strip()
-                            self.get_sim_folders(base)
+                            self.get_sim_folders(base, self.genversion)
                     if allzero:
                         self.logger.error(f"Simulation didn't write anything out according to {self.total_summary}")
                         return Task.FINISHED_FAILURE
