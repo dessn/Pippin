@@ -169,6 +169,8 @@ class SNANASimulation(ConfigBasedExecutable):
             num_sims = int(self.output["ranseed_change_val"].split()[0])
             self.logger.debug(f"Detected randseed change with {num_sims} sims, updating sim_folders")
             self.sim_folders = [base + f"-{i + 1:04d}" for i in range(num_sims)]
+            self.logger.debug(f"First sim folder set to {self.sim_folders[0]}")
+
         else:
             self.sim_folders = [base]
 
