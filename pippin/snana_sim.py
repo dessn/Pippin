@@ -172,7 +172,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.logger.debug(f"First sim folder set to {self.sim_folders[0]}")
 
         else:
-            self.sim_folders = [base]
+            self.sim_folders = [os.path.join(base, genversion)]
 
     def write_input(self, force_refresh):
         self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
