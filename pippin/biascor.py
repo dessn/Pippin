@@ -34,6 +34,7 @@ class BiasCor(ConfigBasedExecutable):
         self.bias_cor_fits = None
         self.cc_prior_fits = None
         self.data = None
+        self.data_fitres = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
         self.blind = np.any([m.output["blind"] for m in self.merged_data])
         self.output["blind"] = self.blind
@@ -167,6 +168,7 @@ class BiasCor(ConfigBasedExecutable):
         self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim)
         self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
+        self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
 
         self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
 
@@ -197,12 +199,18 @@ class BiasCor(ConfigBasedExecutable):
             self.set_property("blindflag", 0, assignment="=")
             self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121", assignment=": ")
 
-        bullshit_hack = ""
-        for i, d in enumerate(self.data):
-            if i > 0:
-                bullshit_hack += "\nINPDIR+: "
-            bullshit_hack += d
-        self.set_property("INPDIR+", bullshit_hack, assignment=": ")
+        keys = [x.upper() for x in self.options.keys()]
+        if "NSPLITRAN" in keys:
+            self.set_property("INPDIR+", None, assignment=": ")
+            # TODO: Find best way of checking for ranseed change as well and abort
+            self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
+        else:
+            bullshit_hack = ""
+            for i, d in enumerate(self.data):
+                if i > 0:
+                    bullshit_hack += "\nINPDIR+: "
+                bullshit_hack += d
+            self.set_property("INPDIR+", bullshit_hack, assignment=": ")
 
         # Set MUOPTS at top of file
         mu_str = ""
