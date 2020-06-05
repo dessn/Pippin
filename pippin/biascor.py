@@ -203,7 +203,7 @@ class BiasCor(ConfigBasedExecutable):
         if "NSPLITRAN" in keys:
             self.set_property("INPDIR+", None, assignment=": ")
             # TODO: Find best way of checking for ranseed change as well and abort
-            self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
+            self.set_property("datafile", ",".join(self.data_fitres), assignment="=", section_end="STRINGMATCH_IGNORE")
         else:
             bullshit_hack = ""
             for i, d in enumerate(self.data):
