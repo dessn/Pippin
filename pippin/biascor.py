@@ -20,7 +20,6 @@ class BiasCor(ConfigBasedExecutable):
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
-        self.config = config
         self.logging_file = os.path.join(self.output_dir, "output.log")
         self.global_config = get_config()
 
@@ -28,6 +27,8 @@ class BiasCor(ConfigBasedExecutable):
         self.merged_iasim = config.get("SIMFILE_BIASCOR")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
         self.classifier = config.get("CLASSIFIER")
+        if self.classifier is not None:
+            self.config["CLASSIFIER"] = self.classifier.name
         self.make_all = config.get("MAKE_ALL_HUBBLE", True)
         self.use_recalibrated = config.get("USE_RECALIBRATED", False)
 
@@ -37,6 +38,7 @@ class BiasCor(ConfigBasedExecutable):
         self.data_fitres = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
         self.blind = np.any([m.output["blind"] for m in self.merged_data])
+        self.logger.debug(f"Blinding set to {self.blind}")
         self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
         self.num_verions = [len(m.output["fitres_dirs"]) for m in self.merged_data]
