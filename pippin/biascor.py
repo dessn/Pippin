@@ -36,7 +36,7 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = None
         self.data = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
-        self.blind = np.any([m.output["blind"] for m in self.merged_data])
+        self.blind = bool(np.any([m.output["blind"] for m in self.merged_data]))
         self.logger.debug(f"Blinding set to {self.blind}")
         self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
