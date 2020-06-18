@@ -13,6 +13,7 @@ WFITMUDIF_OPT: -ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hste
 
 surveygroup_biascor='CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
 idsurvey_list_probcc0=CFA3K,CFA4p1,CFA4p2,CSP
+surveygroup_biascor_abortflag=0
 prefix=None
 file=None
 chi2max=16
