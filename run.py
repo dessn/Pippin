@@ -5,6 +5,7 @@ import logging
 import coloredlogs
 from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config
 from pippin.manager import Manager
+from colorama import init
 
 
 class MessageStore(logging.Handler):
@@ -65,6 +66,8 @@ def setup_logging(config_filename, logging_folder, args):
 
 
 def run(args):
+    init()
+
     # Load YAML config file
     yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
     assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."

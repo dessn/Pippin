@@ -4,6 +4,7 @@ import inspect
 import shutil
 import subprocess
 import time
+from colorama import Fore, Style
 
 from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
@@ -113,7 +114,9 @@ class Manager:
                 if dep not in done_tasks:
                     can_run = False
             if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
-                self.logger.warning(f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue_gpu} already running")
+                self.logger.warning(
+                    f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue_gpu} already running"
+                )
                 can_run = False
 
             if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
@@ -156,6 +159,62 @@ class Manager:
             self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
         self.logger.debug("")
 
+        self.print_dashboard(waiting, running, done, failed, blocked)
+
+    def get_subtasks(self, task_class, all_tasks):
+        return [x for x in all_tasks if isinstance(x, task_class)]
+
+    def get_string_with_colour(self, string, status):
+        colours = {
+            "waiting": Fore.BLACK + Style.BRIGHT,
+            "running": Fore.WHITE + Style.BRIGHT,
+            "done": Fore.GREEN + Style.BRIGHT,
+            "failed": Fore.RED + Style.BRIGHT,
+            "blocked": Fore.YELLOW + Style.BRIGHT,
+        }
+        return colours[status] + string + Style.RESET_ALL
+
+    def get_task_dashboard(self, task, waiting, running, done, failed, blocked):
+        status = None
+        if task in waiting:
+            status = "waiting"
+        elif task in running:
+            status = "running"
+        elif task in done:
+            status = "done"
+        elif task in failed:
+            status = "failed"
+        elif task in blocked:
+            status = "blocked"
+        return self.get_string_with_colour(task.name, status)
+
+    def get_dashboard_line(self, stage, tasks, waiting, running, done, failed, blocked):
+        strings = [self.get_task_dashboard(task, waiting, running, done, failed, blocked) for task in tasks]
+        n = len(strings)
+        output = ""
+        i = 0
+
+        while True:
+            maxv = min(i + 4, n)
+            s = strings[i:maxv]
+            output += f"{stage:12s}" + ", ".join(s) + "\n"
+            stage = ""
+            i += 4
+            if maxv == n:
+                break
+        return output
+
+    def print_dashboard(self, waiting, running, done, failed, blocked):
+        all_tasks = waiting + running + done + failed + blocked
+
+        options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
+        header = "Key: " + "  ".join([self.get_string_with_colour(o, o.lower()) for o in options])
+        self.logger.info(header)
+        for name, task_class in zip(Manager.stages, Manager.task_order):
+            tasks = self.get_subtasks(task_class, all_tasks)
+            if tasks:
+                self.logger.info(self.get_dashboard_line(name, tasks, waiting, running, done, failed, blocked))
+
     def execute(self, check_config):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
@@ -178,6 +237,8 @@ class Manager:
         failed_tasks = []
         blocked_tasks = []
         squeue = None
+
+        self.print_dashboard(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
 
         start_sleep_time = self.global_config["OUTPUT"]["ping_frequency"]
         max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
