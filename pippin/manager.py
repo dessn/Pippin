@@ -113,7 +113,9 @@ class Manager:
                 if dep not in done_tasks:
                     can_run = False
             if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
-                self.logger.warning(f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue_gpu} already running")
+                self.logger.warning(
+                    f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue_gpu} already running"
+                )
                 can_run = False
 
             if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
