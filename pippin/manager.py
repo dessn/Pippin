@@ -190,18 +190,16 @@ class Manager:
 
     def get_dashboard_line(self, stage, tasks, waiting, running, done, failed, blocked):
         strings = [self.get_task_dashboard(task, waiting, running, done, failed, blocked) for task in tasks]
-        n = len(strings)
-        output = ""
-        i = 0
+        line_width = 160
 
-        while True:
-            maxv = min(i + 4, n)
-            s = strings[i:maxv]
-            output += f"{stage:12s}" + ", ".join(s) + "\n"
-            stage = ""
-            i += 4
-            if maxv == n:
-                break
+        output = f"{stage:12s}"
+        for i, s in enumerate(strings):
+            if len(output + s) > line_width and i != len(strings) + 1:
+                self.logger.info(output)
+                output = " " * 12
+            output += s + "   "
+        self.logger.info(output)
+
         return output
 
     def print_dashboard(self, waiting, running, done, failed, blocked):
@@ -213,7 +211,7 @@ class Manager:
         for name, task_class in zip(Manager.stages, Manager.task_order):
             tasks = self.get_subtasks(task_class, all_tasks)
             if tasks:
-                self.logger.info(self.get_dashboard_line(name, tasks, waiting, running, done, failed, blocked))
+                self.get_dashboard_line(name, tasks, waiting, running, done, failed, blocked)
 
     def execute(self, check_config):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
@@ -226,10 +224,6 @@ class Manager:
 
         self.tasks = self.get_tasks(c)
 
-        if check_config:
-            self.logger.notice("Config verified, exiting")
-            return
-
         self.num_jobs_queue = 0
         self.num_jobs_queue_gpu = 0
         running_tasks = []
@@ -237,6 +231,10 @@ class Manager:
         failed_tasks = []
         blocked_tasks = []
         squeue = None
+
+        if check_config:
+            self.logger.notice("Config verified, exiting")
+            return
 
         self.print_dashboard(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
 
