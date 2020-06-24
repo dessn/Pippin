@@ -205,6 +205,9 @@ class Manager:
     def print_dashboard(self, waiting, running, done, failed, blocked):
         all_tasks = waiting + running + done + failed + blocked
 
+        self.logging.info("-------------------")
+        self.logging.info("CURRENT TASK STATUS")
+
         options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
         header = "Key: " + "  ".join([self.get_string_with_colour(o, o.lower()) for o in options])
         self.logger.info(header)
@@ -212,6 +215,8 @@ class Manager:
             tasks = self.get_subtasks(task_class, all_tasks)
             if tasks:
                 self.get_dashboard_line(name, tasks, waiting, running, done, failed, blocked)
+
+        self.logging.info("-------------------")
 
     def execute(self, check_config):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
