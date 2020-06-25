@@ -21,6 +21,7 @@ class SuperNNovaClassifier(Classifier):
             MASK_FIT: mask  # partial match
             MASK: mask  # partial match
             MODE: train/predict
+            GPU: True # default
             OPTS:  # Options
                 VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
                 MODEL: someName # exact name of training classification task
@@ -62,7 +63,7 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --partition={partition}
 #SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=64GB
+#SBATCH --mem=32GB
 {gres}
 
 source activate {conda_env}
