@@ -41,6 +41,8 @@ class CreateCov(ConfigBasedExecutable):
         base_file = get_data_loc("create_cov/input_file.txt")
         super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
 
+        if options is None:
+            options = {}
         self.options = options
         self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
         self.global_config = get_config()
