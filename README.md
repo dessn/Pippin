@@ -472,6 +472,7 @@ CLASSIFICATION:
   SNN_TEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
+    GPU: True # Or False - determines which queue it gets sent into
     OPTS:
       MODEL: SNN_TRAIN  # Havent shown this defined. Or /somepath/to/model.pt
       VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"

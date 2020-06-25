@@ -37,7 +37,7 @@ class BiasCor(ConfigBasedExecutable):
         self.data = None
         self.data_fitres = None
         self.sim_names = [m.output["sim_name"] for m in self.merged_data]
-        self.blind = bool(np.any([m.output["blind"] for m in self.merged_data]))
+        self.blind = self.get_blind(config, options)
         self.logger.debug(f"Blinding set to {self.blind}")
         self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
@@ -79,6 +79,14 @@ class BiasCor(ConfigBasedExecutable):
         self.muopt_order = list(self.muopts.keys())
         self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
+
+    def get_blind(self, config, options):
+        if "BLIND" in config:
+            return config.get("BLIND")
+        elif "blindflag" in options:
+            return options.get("blindflag") != 0
+        else:
+            return bool(np.any([m.output["blind"] for m in self.merged_data]))
 
     def generate_w_summary(self):
         try:
@@ -196,10 +204,16 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121 -blind", assignment=": ")
+            self.set_property(
+                "WFITMUDIF_OPT",
+                self.options.get("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind",
+                assignment=": ",
+            )
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.set_property("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121", assignment=": ")
+            self.set_property(
+                "WFITMUDIF_OPT", self.options.get("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"), assignment=": "
+            )
 
         keys = [x.upper() for x in self.options.keys()]
         if "NSPLITRAN" in keys:

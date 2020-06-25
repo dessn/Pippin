@@ -21,6 +21,7 @@ class SuperNNovaClassifier(Classifier):
             MASK_FIT: mask  # partial match
             MASK: mask  # partial match
             MODE: train/predict
+            GPU: True # default
             OPTS:  # Options
                 VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
                 MODEL: someName # exact name of training classification task
@@ -42,7 +43,7 @@ class SuperNNovaClassifier(Classifier):
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
-        self.gpu = True
+        self.gpu = config.get("GPU", True)
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
@@ -59,11 +60,11 @@ class SuperNNovaClassifier(Classifier):
 #SBATCH --time=23:00:00
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --partition=gpu2
-#SBATCH --gres=gpu:1
+#SBATCH --partition={partition}
 #SBATCH --output=output.log
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=64GB
+#SBATCH --mem=32GB
+{gres}
 
 source activate {conda_env}
 module load cuda
@@ -75,7 +76,7 @@ if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 else
     echo "#################TIMING  Database done now, starting classifier:   `date`"
-    python run.py --use_cuda {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
+    python run.py {cuda} {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
     if [ $? -eq 0 ]; then
         rm -rf {dump_dir}/processed
         echo SUCCESS > {done_file2}
@@ -211,6 +212,9 @@ echo "#################TIMING  Classifier finished:   `date`"
             "done_file": self.done_file,
             "clump": clump_txt,
             "done_file2": self.done_file2,
+            "partition": "gpu2" if self.gpu else "broadwl",
+            "gres": "#SBATCH --gres=gpu:1" if self.gpu else "",
+            "cuda": "--use_cuda" if self.gpu else "",
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"

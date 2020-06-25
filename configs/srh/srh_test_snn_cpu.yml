@@ -1,0 +1,16 @@
+DATAPREP:
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_SMP_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: False
+
+CLASSIFICATION:
+  SNNTEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict
+    GPU: False
+    OPTS:
+      MODEL: $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTRAIN_DESTRAIN/model.pt
