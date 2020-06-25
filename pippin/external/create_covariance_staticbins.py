@@ -370,17 +370,11 @@ def sysmat(
     print("fitopt", fitopt)
     print("muopt", muopt)
     print("base_output", base_output)
-    print("ls " + topdir + "/" + subdir + "/*" + fitopt + "*" + muopt + "*" + "M0DIF")
-    os.system("ls " + topdir + "/" + subdir + "/*" + fitopt + "*" + muopt + "*" + "M0DIF > " + base_output + ".list")
-    print("subdir", subdir)
-    print("topdir", topdir)
-    # stop
-    print("Created list of all M0DIF files called " + base_output + ".list")
-    if not os.path.isfile(base_output + ".list"):
-        print("List file does not exist. No M0DIF files!!! This makes me sad!!! Im done here!!")
-        return 0
-    if os.stat(base_output + ".list").st_size == 0:
-        print("List exists but is empty. No M0DIF files!!! This makes me sad!!! Im done here!!")
+
+    file_lines = sorted([x for x in os.listdir(os.path.join(topdir, subdir)) if x.endswith(".M0DIF")])
+
+    if not file_lines:
+        print("No M0DIF files!!! This makes me sad!!! Im done here!!")
         return 0
 
     if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
@@ -388,9 +382,6 @@ def sysmat(
         print("Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!")
         return 0
 
-    if os.path.isfile(base_output + ".list"):
-        print("##### I AM OPENING THIS FILE FOR READ: " + base_output + ".list")
-        file_lines = open(base_output + ".list", "r").readlines()
     if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
     print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
@@ -650,6 +641,7 @@ class FILE_INFO:
         self.COVOPT = parseLines(Lines, "COVOPT:", 1, 1, force_multi=True)
         self.ERRSCALE = parseLines(Lines, "ERRSCALE:", 99, 1)
         self.SUBDIR = parseLines(Lines, "SUBDIR:", 1, 1)
+        self.NSPLITRAN = parseLines(Lines, "NSPLITRAN:", 1, 1)
 
 
 # =========================
@@ -713,6 +705,7 @@ if __name__ == "__main__":
         print("COVLINES", FileInfo.COVOPT)
         print("ERRSCALE", FileInfo.ERRSCALE)
         print("TOPFILE", FileInfo.TOPFILE)
+        print("NSPLITRAN", FileInfo.NSPLITRAN)
 
         if not FileInfo.BASEOUTPUT:
             print("We need a BASE OUTPUT")
