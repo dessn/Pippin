@@ -42,6 +42,15 @@ BIASCOR:
       chi2max: 16
       NSPLITRAN: 2
 
+CREATE_COV:
+  ALL:
+    OPTS:
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_prior_omw.ini
+
 #
 #CREATE_COV:
 #  ALL:

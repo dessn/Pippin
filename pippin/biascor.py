@@ -58,11 +58,19 @@ class BiasCor(ConfigBasedExecutable):
             self.probability_column_name = new_name
         self.output["fit_output_dir"] = self.fit_output_dir
 
+        self.output["NSPLITRAN"] = "NSPLITRAN" in [x.upper() for x in self.options.keys()]
+        if self.output["NSPLITRAN"]:
+            self.output["NSPLITRAN_VAL"] = {x.upper(): y for x, y in self.options.items()}["NSPLITRAN"]
+
         num_dirs = self.num_verions[0]
-        if num_dirs == 1:
-            self.output["subdirs"] = ["SALT2mu_FITJOBS"]
+
+        if self.output["NSPLITRAN"]:
+            self.output["subdirs"] = [f"SPLITRAN-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
         else:
-            self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
+            if num_dirs == 1:
+                self.output["subdirs"] = ["SALT2mu_FITJOBS"]
+            else:
+                self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
 
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
@@ -95,11 +103,14 @@ class BiasCor(ConfigBasedExecutable):
             for d in self.output["m0dif_dirs"]:
                 wpath1 = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
                 wpath2 = os.path.join(d, "wfit_M0DIF_FITOPT000_MUOPT000.COSPAR")
+                wpath3 = os.path.join(d, "wfit_SALT2mu.COSPAR")
                 wpath = None
                 if os.path.exists(wpath1):
                     wpath = wpath1
                 elif os.path.exists(wpath2):
                     wpath = wpath2
+                elif os.path.exists(wpath3):
+                    wpath = wpath3
                 if wpath is not None:
                     with open(wpath) as f:
                         lines = f.read().splitlines()
@@ -134,9 +145,7 @@ class BiasCor(ConfigBasedExecutable):
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                    m0files = [
-                        os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu_F") and f.endswith(".M0DIF")
-                    ]
+                    m0files = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu") and f.endswith(".M0DIF")]
                     for path in wfiles:
                         with open(path) as f2:
                             if "ERROR:" in f2.read():
