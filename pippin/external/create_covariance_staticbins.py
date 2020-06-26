@@ -457,12 +457,8 @@ def sysmat(
     if (sysfile != "NONE") & (errscales != "NONE"):
         print("You have a list of systematics in your inFile and in your included file.  That is one two many lists.  We have to stop")
 
-    xco = 0
-    print(f"TOPFILE IS {topfile}, file_lines[xco] is {file_lines[xco]}, -33 gets to {file_lines[xco][:-33]}")
-    if topfile != "NONE":
-        topfile = file_lines[xco][:-33] + topfile
-    if (topfile == "NONE") | (topfile == "") | (topfile == "None"):
-        topfile = file_lines[xco][:-1]
+    topfile = os.path.join(look_dir, topfile)
+    print(f"TOPFILE IS {topfile}")
 
     skipc = linef(topfile, "VARNAMES")
     if topfile != "":
