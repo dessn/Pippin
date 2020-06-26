@@ -42,6 +42,14 @@ BIASCOR:
       chi2max: 16
       NSPLITRAN: 2
 
+  3YR_OFF:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [D_DES_G10]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10]
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      chi2max: 16
+
 CREATE_COV:
   ALL:
     OPTS:
