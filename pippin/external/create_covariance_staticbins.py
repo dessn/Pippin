@@ -373,7 +373,7 @@ def sysmat(
 
     look_dir = os.path.join(topdir, subdir)
 
-    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
+    file_lines = sorted([x for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
@@ -458,6 +458,7 @@ def sysmat(
         print("You have a list of systematics in your inFile and in your included file.  That is one two many lists.  We have to stop")
 
     xco = 0
+    print(f"TOPFILE IS {topfile}, file_lines[xco] is {file_lines[xco]}, -33 gets to {file_lines[xco][:-33]}")
     if topfile != "NONE":
         topfile = file_lines[xco][:-33] + topfile
     if (topfile == "NONE") | (topfile == "") | (topfile == "None"):
