@@ -59,32 +59,7 @@ COSMOMC:
     OPTS:
       INI: sn_prior_omw.ini
 
-#
-#CREATE_COV:
-#  ALL:
-#    OPTS:
-#      COVOPTS:
-#        - "[NOSYS] [=DEFAULT,=DEFAULT]"
-#
-#
-#COSMOMC:
-#  SN_OMW:
-#    OPTS:
-#      INI: sn_omw
-#      COVOPTS: [ALL, NOSYS]
-#      NUM_WALKERS: 40
-#
-#  SN_CMB_OMW:
-#    OPTS:
-#      INI: sn_cmb_omw
-#      COVOPTS: [ALL]
-#      NUM_WALKERS: 20
-#
-#  CMB_OMW:
-#    OPTS:
-#      INI: cmb_omw
-#
-#ANALYSE:
-#  ALL_OMW:
-#    MASK_COSMOMC: OMW
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW
 
