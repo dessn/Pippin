@@ -371,7 +371,9 @@ def sysmat(
     print("muopt", muopt)
     print("base_output", base_output)
 
-    file_lines = sorted([x for x in os.listdir(os.path.join(topdir, subdir)) if x.endswith(".M0DIF")])
+    look_dir = os.path.join(topdir, subdir)
+
+    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
