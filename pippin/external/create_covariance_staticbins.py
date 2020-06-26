@@ -496,7 +496,7 @@ def sysmat(
         xx1 = FITOPT_var1 == file_lines[xco].split("_")[-2]
         xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1][:-6]
         skipc = linef(file_lines[xco], "VARNAMES")
-        z2, mu2, mu2e = np.loadtxt(file_lines[xco][:-1], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
+        z2, mu2, mu2e = np.loadtxt(file_lines[xco], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
         print(file_lines[xco])
         mu2 = mu2.astype(float)
         mu2e = mu2e.astype(float)
