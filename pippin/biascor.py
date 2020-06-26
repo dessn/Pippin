@@ -103,7 +103,7 @@ class BiasCor(ConfigBasedExecutable):
             for d in self.output["m0dif_dirs"]:
                 wpath1 = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
                 wpath2 = os.path.join(d, "wfit_M0DIF_FITOPT000_MUOPT000.COSPAR")
-                wpath3 = os.path.join(d, "wfit_SALT2mu.COSPAR")
+                wpath3 = os.path.join(d, "wfit_SALT2mu_FITOPT000_MUOPT000.COSPAR")
                 wpath = None
                 if os.path.exists(wpath1):
                     wpath = wpath1
@@ -118,7 +118,7 @@ class BiasCor(ConfigBasedExecutable):
                         values = [os.path.basename(d)] + lines[1].split()
                         rows.append(values)
                 else:
-                    self.logger.warning(f"Cannot find file {wpath1} or {wpath2} when generating wfit summary")
+                    self.logger.warning(f"Cannot find file {wpath1} or {wpath2} or {wpath3} when generating wfit summary")
 
             df = pd.DataFrame(rows, columns=header).apply(pd.to_numeric, errors="ignore")
             self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
@@ -161,9 +161,7 @@ class BiasCor(ConfigBasedExecutable):
                     if self.generate_w_summary():
                         return Task.FINISHED_SUCCESS
                     else:
-                        self.logger.error(
-                            f"Hubble diagram failed to run. This might be a plotting issue, so not failing biascor, but please check this! {self.output_dir}"
-                        )
+                        self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
                         return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
