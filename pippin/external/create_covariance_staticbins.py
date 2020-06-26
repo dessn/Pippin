@@ -373,7 +373,7 @@ def sysmat(
 
     look_dir = os.path.join(topdir, subdir)
 
-    file_lines = sorted([x for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
+    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
@@ -489,14 +489,15 @@ def sysmat(
 
     logf = open(output_dir + "/" + base_output + ".log", "w")
     for xco in range(0, len(file_lines)):
-        print(file_lines[xco].split("_")[-2], file_lines[xco].split("_")[-1][:-7])
+        print("Now in file_lines")
+        print(file_lines[xco].split("_")[-2], file_lines[xco].split("_")[-1][:-6])
         # SALT2mu_SNLS+SDSS+LOWZ+PS1_Scolnic2+HST/DS17/SALT2mu_FITOPT000_MUOPT000.M0DIF
         # stop
         xx1 = FITOPT_var1 == file_lines[xco].split("_")[-2]
-        xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1][:-7]
-        skipc = linef(file_lines[xco][:-1], "VARNAMES")
+        xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1][:-6]
+        skipc = linef(file_lines[xco], "VARNAMES")
         z2, mu2, mu2e = np.loadtxt(file_lines[xco][:-1], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
-        print(file_lines[xco][:-1])
+        print(file_lines[xco])
         mu2 = mu2.astype(float)
         mu2e = mu2e.astype(float)
         z2 = z2.astype(float)
