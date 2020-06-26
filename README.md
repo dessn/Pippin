@@ -636,6 +636,20 @@ BIASCOR:
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 ```
 
+For those that generate large simulations and want to cut them up into little pieces, you want the `NSPLITRAN` syntax. 
+The configuration below will take the inputs and divide them into 10 samples, which will then propagate to 10 CosmoMC runs
+if you have a CosmoMC task defined.
+
+```yaml
+BIASCOR:
+  LABEL:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [D_DES_G10]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10]
+    OPTS:
+      NSPLITRAN: 10
+```
+
 ### Create Covariance
 
 Assuming the biascor task hasn't died, its time to prep for CosmoMC. To do this, we invoke a script from Dan originally
