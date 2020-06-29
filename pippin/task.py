@@ -153,6 +153,9 @@ class Task(ABC):
             if os.path.exists(self.output_dir) and not force_refresh:
                 self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
             else:
+                if os.path.exists(self.output_dir):
+                    self.logger.debug(f"Removing old directory {self.output_dir}")
+                    shutil.rmtree(self.output_dir, ignore_errors=True)
                 self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
                 shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
             return True
