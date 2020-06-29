@@ -23,7 +23,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         label:
             MASK_COSMOMC: mask  # partial match
             MASK_BIASCOR: mask # partial match
-            HISTOGRAMS: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
+            MASK_LCFIT: [D_DESSIM, D_DATADES] # Creates histograms based off the input LCFIT_SIMNAME matches. Optional
             EFFICIENCY: [D_DESSIM, D_DATADES] # Attempts to make histogram efficiency
             OPTS:
                 BLIND: [omegam, w]  # Optional. Parameters to blind. Single or list. omegam, omegal, w, wa, nu, etc
