@@ -42,19 +42,19 @@ SIM:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 20 12345
 
-    LOWZLIKE_G10:
-      IA_G10_LOWZ:
-        BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
-      GLOBAL:
-        NGEN_UNIT: 1
-        RANSEED_REPEAT: 20 12345
+  LOWZLIKE_G10:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
 
-    LOWZLIKE_C11:
-      IA_C11_LOWZ:
-        BASE: surveys/lowz/sims_ia/sn_ia_salt2_c11_lowz.input
-      GLOBAL:
-        NGEN_UNIT: 1
-        RANSEED_REPEAT: 20 12345
+  LOWZLIKE_C11:
+    IA_C11_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_c11_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 20 12345
 
 LCFIT:
   D:
