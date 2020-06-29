@@ -17,7 +17,7 @@ RANSEED: 12945       # random number seed
 GENFILTERS:   abcdefghijklmnopqrstuvwxyzA
 KCOR_FILE:   $SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_LOWZ.fits
 
-GENRANGE_PEAKMJD:  53200.0  55350
+GENRANGE_PEAKMJD:  52000.0  55650
 OPT_SETPKMJD: 16  # fmax clump
 
 GENRANGE_TREST:   -20.0  80.0     # rest epoch relative to peak (days)
