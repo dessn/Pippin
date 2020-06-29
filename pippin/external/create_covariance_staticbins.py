@@ -414,10 +414,13 @@ def sysmat(
             mu_split = log_lines[xco].split()
             INPDIR1 = np.append(INPDIR1, mu_split[1])
 
-    if INPDIR1 == []:
+    if len(INPDIR1) == 0:
         print("No INPDIR found, probably NSPLITRAN")
-
-    if INPDIR1:
+        line = "FITOPT: 000 [DEFAULT] NONE"
+        mu_split = line.split()
+        FITOPT_var1 = np.append(FITOPT_var1, "FITOPT" + mu_split[1])
+        FITOPT_var2 = np.append(FITOPT_var2, mu_split[2][1:-1])
+    else:
         if os.path.isfile(INPDIR1[0] + "/FITOPT.README"):
             fit_lines = open(INPDIR1[0] + "/FITOPT.README", "r").readlines()
 
@@ -426,12 +429,6 @@ def sysmat(
                 mu_split = fit_lines[xco].split()
                 FITOPT_var1 = np.append(FITOPT_var1, "FITOPT" + mu_split[1])
                 FITOPT_var2 = np.append(FITOPT_var2, mu_split[2][1:-1])
-
-    else:
-        line = "FITOPT: 000 [DEFAULT] NONE"
-        mu_split = line.split()
-        FITOPT_var1 = np.append(FITOPT_var1, "FITOPT" + mu_split[1])
-        FITOPT_var2 = np.append(FITOPT_var2, mu_split[2][1:-1])
 
     if (os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE")) | ((sysfile == "NONE") & (errscales != "NONE")):
         if os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE"):
