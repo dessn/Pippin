@@ -414,7 +414,7 @@ def sysmat(
             mu_split = log_lines[xco].split()
             INPDIR1 = np.append(INPDIR1, mu_split[1])
 
-    if not INPDIR1:
+    if INPDIR1 == []:
         print("No INPDIR found, probably NSPLITRAN")
 
     if INPDIR1:
