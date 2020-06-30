@@ -16,8 +16,8 @@ ALIAS:
     GENRANGE_SALT2BETA:  3.3  4.3
     GENGRID_SALT2BETA: 2
   NUMS: &nums
-    NGEN_UNIT: 5
-    RANSEED_REPEAT: 20 12345
+    NGEN_UNIT: 10
+    RANSEED_REPEAT: 30 12345
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
 
 SIM:
@@ -68,7 +68,8 @@ SIM:
 
   DESTRAIN:
     IA_G10:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      GENMODEL: SALT2.P18_UV2IR
     II:
       BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
     GLOBAL:
@@ -76,7 +77,8 @@ SIM:
 
   DESTEST:
     IA_C11:
-      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMODEL: SALT2.P18_UV2IR
     II:
       BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
     GLOBAL:
