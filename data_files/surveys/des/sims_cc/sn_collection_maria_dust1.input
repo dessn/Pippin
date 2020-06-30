@@ -23,8 +23,7 @@
 # Ic    --> 33
 # Ic-BL --> 35
 
-
-INPUT_FILE_INCLUDE:  surveys/des/sims_instrument/sim_des_5yr_phot_include.input
+INPUT_FILE_INCLUDE: surveys/des/sims_instrument/sim_des_5yr_phot_include.input
 
 GENTYPE:  20
 
@@ -39,7 +38,6 @@ GENGAUSIG_AV: 0.6
 GENRATIO_AV0: 1000.
 GENPEAK_RV: 3.1
 GENRANGE_RV: 3.0 3.2
-
 
 NON1A_KEYS: 5
          INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE
