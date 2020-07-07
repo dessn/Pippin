@@ -60,5 +60,4 @@ FITOPT: [lowz_CFAS_WAVE_d_survcal]  ->FITOPT000
 FITOPT: [lowz_CFAS_WAVE_e_survcal]  ->FITOPT000
 FITOPT: [danlowzsys] ->FITOPT000
 FITOPT: [DES_survcal_PS1COHERENT]  MAGOBS_SHIFT_ZP 'g -0.00756 r 0.0007 i 0.00425 z -0.00208'
-FITOPT: [noSupercal] ->FITOPT000
 FITOPT: [3sigignore] SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list

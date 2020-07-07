@@ -60,5 +60,4 @@ FITOPT: [lowz_CFAS_WAVE_d_survcal]  FILTER_LAMSHIFT  'd 10'
 FITOPT: [lowz_CFAS_WAVE_e_survcal]  FILTER_LAMSHIFT  'e 10'
 FITOPT: [danlowzsys] SNCID_IGNORE_FILE $DES3YR/config/pantheonlowzignore.list
 FITOPT: [DES_survcal_PS1COHERENT] ->FITOPT000
-FITOPT: [noSupercal]  KCOR_FILE '$DES_ROOT/kcor/LOWZ/kcor_DES_LOWZ_COMBINED_nosupercal.fits'
 FITOPT: [3sigignore] SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list
