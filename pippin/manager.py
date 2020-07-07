@@ -170,7 +170,7 @@ class Manager:
             "running": Fore.WHITE + Style.BRIGHT,
             "done": Fore.GREEN + Style.BRIGHT,
             "failed": Fore.RED + Style.BRIGHT,
-            "blocked": Fore.YELLOW + Style.BRIGHT,
+            "blocked": Fore.YELLOW + Style.DIM,
         }
         return colours[status] + string + Style.RESET_ALL
 
