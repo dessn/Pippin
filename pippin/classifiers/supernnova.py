@@ -71,7 +71,7 @@ module load cuda
 echo `which python`
 cd {path_to_classifier}
 echo "#################TIMING  Starting here:   `date`"
-python run.py --data --sntypes '{sntypes}' --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {test_or_train}
+python run.py --data --sntypes '{sntypes}' --phot_reject PHOTFLAG --phot_reject_list 8 16 32 64 128 256 512  --redshift_label REDSHIFT_FINAL --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {test_or_train}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 else
