@@ -49,7 +49,11 @@ class BiasCor(ConfigBasedExecutable):
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
-        self.probability_column_name = self.classifier.output["prob_column_name"] if self.classifier is not None else None
+        self.probability_column_name = None
+        if self.config.get("PROB_COLUMN_NAME") is not None:
+            self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
+        elif self.classifier is not None:
+            self.probability_column_name = self.classifier.output["prob_column_name"]
         self.output["prob_column_name"] = self.probability_column_name
 
         if self.use_recalibrated:

@@ -103,7 +103,7 @@ def plot_thresholds(df, output_dir, index):
 
 
 def plot_pr(df, output_dir, index):
-    logging.debug("Making roc plot")
+    logging.debug("Making pr plot")
 
     thresholds = np.linspace(0.01, 1, 100)
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
@@ -133,7 +133,7 @@ def plot_pr(df, output_dir, index):
 
 
 def plot_roc(df, output_dir, index):
-    logging.debug("Making pr plot")
+    logging.debug("Making roc plot")
 
     thresholds = np.linspace(0.01, 0.999, 100)
     columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]

@@ -646,6 +646,7 @@ BIASCOR:
     BASE: surveys/des/bbc/bbc_3yr.input
     DATA: [D_DES_G10]
     SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10]
+    PROB_COLUMN_NAME: some_column_name  # optional instead of CLASSIFIER
     OPTS:
       NSPLITRAN: 10
 ```
