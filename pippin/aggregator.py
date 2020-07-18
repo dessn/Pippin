@@ -277,8 +277,7 @@ class Aggregator(Task):
                     snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                    type_df[self.id] = type_df[self.id].apply(str)
-                    type_df[self.id] = type_df[self.id].str.strip()
+                    type_df[self.id] = type_df[self.id].astype(str).str.strip()
                     type_df.drop_duplicates(subset=self.id, inplace=True)
                 else:
                     for h in headers:
@@ -288,8 +287,7 @@ class Aggregator(Task):
                             sntype = np.array(data.field("SNTYPE")).astype(np.int64)
                             # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
                             dataframe = pd.DataFrame({self.id: snid, self.type_name: sntype})
-                            dataframe[self.id] = dataframe[self.id].apply(str)
-                            dataframe[self.id] = dataframe[self.id].str.strip()
+                            dataframe[self.id] = dataframe[self.id].astype(str).str.strip()
                             if type_df is None:
                                 type_df = dataframe
                             else:
