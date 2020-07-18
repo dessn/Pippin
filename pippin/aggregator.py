@@ -313,6 +313,7 @@ class Aggregator(Task):
                 num_nan = ia.isnull().sum()
 
                 self.logger.info(f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns")
+                assert num_ia + num_cc != 0, "I can't identify any Ias or CCs in the dataset!"
 
                 sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
                 df = df.reindex(sorted_columns, axis=1)
