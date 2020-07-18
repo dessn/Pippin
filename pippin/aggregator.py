@@ -259,7 +259,7 @@ class Aggregator(Task):
                     else:
                         df = pd.merge(df, dataframe, on=self.id, how="outer")
 
-                self.logger.info("Finding original types")
+                self.logger.info(f"Finding original types, size of prediction df is {df.shape}")
                 s = self.get_underlying_sim_task()
                 type_df = None
                 phot_dir = s.output["photometry_dirs"][index]
@@ -268,7 +268,7 @@ class Aggregator(Task):
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
 
                     cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
-                    self.logger.debug(f"Running command   {cmd}")
+                    self.logger.debug(f"Running command   {cmd}  in dir {phot_dir}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
@@ -297,10 +297,13 @@ class Aggregator(Task):
 
                 if type_df is not None:
                     if df is None:
+                        self.logger.debug("No original df found, only saving types")
                         df = type_df
                     else:
+                        self.logger.debug(f"Merging types of shape {type_df.shape} into df {df.shape}")
                         df = pd.merge(df, type_df, on=self.id, how="left")
 
+                self.logger.debug(f"Final dataframe from file ingestion has shape {df.shape}")
                 types = self.get_underlying_sim_task().output["types_dict"]
                 has_nonia = len(types.get("NONIA", [])) > 0
                 has_ia = len(types.get("IA", [])) > 0
@@ -313,11 +316,12 @@ class Aggregator(Task):
                 num_nan = ia.isnull().sum()
 
                 self.logger.info(f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns")
-                assert num_ia + num_cc != 0, "I can't identify any Ias or CCs in the dataset!"
 
                 sorted_columns = [self.id, "SNTYPE", "IA"] + sorted([c for c in df.columns if c.startswith("PROB_")])
                 df = df.reindex(sorted_columns, axis=1)
                 self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
+
+                assert df.shape[0] > 0, "Oh no, dataframe doesnt have any rows. What is going on?"
 
                 if has_nonia and has_ia:
                     self.save_calibration_curve(df, self.output_cals[index])
