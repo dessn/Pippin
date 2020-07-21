@@ -46,6 +46,7 @@ class Aggregator(Task):
         sim_name: name of sim
         lcfit_names: names of the lcfit tasks being merged
         calibration_files: list[str] - all the calibration files. Hopefully only one will be made if you havent done something weird with the config
+        empty_agg: if there were no types or ids that could be found.
     """
 
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
@@ -77,6 +78,7 @@ class Aggregator(Task):
         self.output["classifier_names"] = [c.name for c in self.classifiers]
         self.output["classifier_indexes"] = [c.index for c in self.classifiers]
         self.output["calibration_files"] = self.output_cals
+        self.output["empty_agg"] = False
         if isinstance(self.plot, bool):
             self.python_file = os.path.dirname(inspect.stack()[0][1]) + "/external/aggregator_plot.py"
         else:
@@ -321,7 +323,9 @@ class Aggregator(Task):
                 df = df.reindex(sorted_columns, axis=1)
                 self.logger.info(f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}")
 
-                assert df.shape[0] > 0, "Oh no, dataframe doesnt have any rows. What is going on?"
+                if df.shape[0] == 0:
+                    self.logger.warning("Oh no, dataframe doesnt have any rows. What is going on? What strange data format is this?")
+                    self.output["empty_agg"] = True
 
                 if has_nonia and has_ia:
                     self.save_calibration_curve(df, self.output_cals[index])

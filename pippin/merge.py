@@ -105,20 +105,33 @@ class Merger(Task):
             lcfit_index = 0
         else:
             lcfit_index = self.agg["lcfit_names"].index(lcfit)
-        command = ["combine_fitres.exe", fitres_file, self.agg["merge_key_filename"][index][lcfit_index], "--outfile_text", os.path.basename(fitres_file), "T"]
-        try:
-            self.logger.debug(f"Executing command {' '.join(command)}")
-            with open(self.logfile, "w+") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
-            # Run sed command
-            sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
-            self.logger.debug(f"Executing command {' '.join(sed_command)}")
-            with open(self.logfile, "w+") as f:
-                subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
 
-        except subprocess.CalledProcessError as e:
-            self.logger.error(f"Error invoking command {command}")
-            raise e
+        if not self.agg["empty_agg"]:
+            command = [
+                "combine_fitres.exe",
+                fitres_file,
+                self.agg["merge_key_filename"][index][lcfit_index],
+                "--outfile_text",
+                os.path.basename(fitres_file),
+                "T",
+            ]
+            try:
+                self.logger.debug(f"Executing command {' '.join(command)}")
+                with open(self.logfile, "w+") as f:
+                    subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
+                # Run sed command
+                sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
+                self.logger.debug(f"Executing command {' '.join(sed_command)}")
+                with open(self.logfile, "w+") as f:
+                    subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
+
+            except subprocess.CalledProcessError as e:
+                self.logger.error(f"Error invoking command {command}")
+                raise e
+        else:
+            self.logger.info("Empty aggregation result found, not invoking combine_fitres.exe")
+            self.logger.debug(f"Copying file {fitres_file} to {outdir}")
+            shutil.copy(fitres_file, outdir)
 
     def _run(self, force_refresh):
         fitres_files, symlink_files = [], []
