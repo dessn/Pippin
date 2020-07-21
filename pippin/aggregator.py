@@ -259,7 +259,7 @@ class Aggregator(Task):
                     else:
                         df = pd.merge(df, dataframe, on=self.id, how="outer")
 
-                self.logger.info(f"Finding original types, size of prediction df is {df.shape}")
+                self.logger.info(f"Finding original types, size of prediction df is {df.shape if df is not None else 'None'}")
                 s = self.get_underlying_sim_task()
                 type_df = None
                 phot_dir = s.output["photometry_dirs"][index]
