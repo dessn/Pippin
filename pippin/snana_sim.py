@@ -88,7 +88,11 @@ class SNANASimulation(ConfigBasedExecutable):
                             gentype = line.upper().split(":")[1].strip()
                         if line.upper().strip().startswith("GENMODEL:"):
                             genmodel = line.upper().split(":")[1].strip()
-                gentype = int(gentype or d.get("GENTYPE"))
+
+                gentype = gentype or d.get("GENTYPE")
+                if gentype is None:
+                    self.fail_config(f"The simulation component {k} needs to specify a GENTYPE in its input file")
+                gentype = int(gentype)
                 genmodel = genmodel or d.get("GENMODEL")
 
                 if not gentype:
