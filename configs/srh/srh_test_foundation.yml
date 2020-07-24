@@ -1,0 +1,34 @@
+DATAPREP:
+  DATAFOUND:
+    OPTS:
+      RAW_DIR: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/lcmerge/Foundation_DJ17_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: False
+
+SIM:
+  FOUND_G10:
+    IA_FOUND_G10:
+      BASE: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/sims_ia/SIMGEN_MASTER_FOUND.INPUT
+      NGENTOT_LC: 5000
+      CIDOFF: 5000
+    GLOBAL:
+      NGEN_UNIT: .6
+      FORMAT_MASK: 32
+      RANSEED_REPEAT: 1 12345
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+LCFIT:
+  FOUNDfit:
+    BASE: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/lcfit_nml/FOUND_nofo.nml
+    MASK: FOUND
+    SNLCINP:
+      USE_MINOS: F
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+
+
+ANALYSE:
+  FOUNDATION_COMPARISON:
+    MASK_LCFIT: FOUND
