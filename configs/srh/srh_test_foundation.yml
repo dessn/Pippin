@@ -10,25 +10,17 @@ DATAPREP:
 SIM:
   FOUND_G10:
     IA_FOUND_G10:
-      BASE: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/sims_ia/SIMGEN_MASTER_FOUND.INPUT
-      NGENTOT_LC: 5000
-      CIDOFF: 5000
+      BASE: surveys/foundation/sims_ia/sn_ia_salt2_g10_foundation.input
     GLOBAL:
-      NGEN_UNIT: .6
-      FORMAT_MASK: 32
-      RANSEED_REPEAT: 1 12345
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
 
 LCFIT:
-  FOUNDfit:
-    BASE: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/lcfit_nml/FOUND_nofo.nml
+  FIT:
+    BASE: surveys/foundation/lcfit_nml/foundation.nml
     MASK: FOUND
-    SNLCINP:
-      USE_MINOS: F
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 10
 
 
 ANALYSE:
   FOUNDATION_COMPARISON:
-    MASK_LCFIT: FOUND
+    MASK_LCFIT: FIT

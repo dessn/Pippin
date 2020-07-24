@@ -1,0 +1,30 @@
+INPUT_FILE_INCLUDE:  surveys/foundation/sims_instrument/sim_foundation_include.input
+
+
+GENTYPE:   1
+GENMODEL:  SALT2.JLA-B14
+GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
+GENMAG_SMEAR_ADDPHASECOR: 0.02 15
+
+GENMAG_SMEAR_MODELNAME: G10
+
+DNDZ: POWERLAW  2.6E-5  2.2
+
+# --------------------------------------------------
+# define SALT2 params from Scolnic et al 2016, using G10 High-z row
+
+GENMEAN_SALT2c:     -0.068
+GENRANGE_SALT2c:   -0.4   0.4     # color range
+GENSIGMA_SALT2c:    0.033   0.125     # bifurcated sigmas
+
+GENMEAN_SALT2x1:     0.703
+GENRANGE_SALT2x1:   -5.0  +4.0     # x1 (stretch) range
+GENSIGMA_SALT2x1:    1.0  0.5      # bifurcated sigmas
+
+GENPROB2_SALT2x1:     0.35
+GENPEAK2_SALT2x1:   -1.5     # x1 (stretch) range
+GENSIGMA2_SALT2x1:    0.50  0.5     # bifurcated sigmas
+
+# SALT2 alpha and beta
+GENPEAK_SALT2ALPHA:   0.14
+GENPEAK_SALT2BETA:   3.1
