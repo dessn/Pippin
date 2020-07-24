@@ -38,8 +38,6 @@ SMEARFLAG_ZEROPT:  1  # smear zero-point with zptsig
 APPLY_SEARCHEFF_OPT: 3
 SEARCHEFF_SPEC_FILE:  /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/sims_ia/SEARCHEFF_Found.DAT #this is the big one for now.
 
-GENMEAN_RV:         3.1               # mean RV to generate
-
 
 APPLY_CUTWIN_OPT: 1                 # 1=implement cuts
 CUTWIN_NEPOCH:   3 3.              # require 5 epochs (no S/N requirement)
@@ -66,4 +64,3 @@ SIMGEN_DUMP:  37
   HOSTMAG_g HOSTMAG_r HOSTMAG_i HOSTMAG_z
   SBFLUX_g  SBFLUX_r  SBFLUX_i  SBFLUX_z
 # ======
-
