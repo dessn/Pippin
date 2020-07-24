@@ -19,7 +19,8 @@ LCFIT:
   FIT:
     BASE: surveys/foundation/lcfit_nml/foundation.nml
     MASK: FOUND
-
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
 
 ANALYSE:
   FOUNDATION_COMPARISON:

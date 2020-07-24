@@ -16,22 +16,22 @@ DONE_STAMP: FINISHED.DONE
     INTERP_OPT     = 1
     USE_MWCOR = F
 
-    OPT_MWEBV    = 3       ! 3=Schafly2011 update, 2=SFD98, 1=FileDefined
-    OPT_MWCOLORLAW  = 99   ! Fitzpatrick99
-    OPT_SETPKMJD = 20      ! 16=fmax clump, 4=no abort
+    !OPT_MWEBV    = 3       ! 3=Schafly2011 update, 2=SFD98, 1=FileDefined
+    !OPT_MWCOLORLAW  = 99   ! Fitzpatrick99
+    !OPT_SETPKMJD = 20      ! 16=fmax clump, 4=no abort
 
-    ABORT_ON_NOEPOCHS = F
+    !ABORT_ON_NOEPOCHS = F
 
-    CUTWIN_NEPOCH    =  1
-    CUTWIN_REDSHIFT   = 0.01, 2.0
-    CUTWIN_CID  = 0,99999999999990
+    !CUTWIN_NEPOCH    =  1
+    !CUTWIN_REDSHIFT   = 0.01, 2.0
+    !CUTWIN_CID  = 0,99999999999990
 
-    RV_MWCOLORLAW = 3.1
+    !RV_MWCOLORLAW = 3.1
 
-    HEADER_OVERRIDE_FILE= '/project2/rkessler/SURVEYS/DES/USERS/mfoley7/Codes/Flow_Corrections_found.txt', '$PS1_ROOT/S16Analysis/DATA/myUpdates.dat'
+    !HEADER_OVERRIDE_FILE= '/project2/rkessler/SURVEYS/DES/USERS/mfoley7/Codes/Flow_Corrections_found.txt', '$PS1_ROOT/S16Analysis/DATA/myUpdates.dat'
 
-    LDMP_SNFAIL =  F
-    SNCCID_IGNORE = '110426','110431','460004','020132','370589','080735','550197','480162','380040'
+    !LDMP_SNFAIL =  F
+    !SNCCID_IGNORE = '110426','110431','460004','020132','370589','080735','550197','480162','380040'
 
 &END
 
