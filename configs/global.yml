@@ -62,16 +62,28 @@ SIM:
     GLOBAL: *nums
 
   DESSIMBIAS5YRCC:
-    IBC_TEMPLATES:
-      BASE: surveys/des/sims_cc/sn_collection_maria.input
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg_stretchCorr.input
+    IBC:
+      BASE: surveys/des/sims_cc/sn_ibc_v19_li11revised_nodust.input
+    II:
+      BASE: surveys/des/sims_cc/sn_ii_v19_li11revised_nodust.input
     GLOBAL: *nums
 
   DESTRAIN:
     IA_G10:
       BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
       GENMODEL: SALT2.P18_UV2IR
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg_stretchCorr.input
+    IBC:
+      BASE: surveys/des/sims_cc/sn_ibc_v19_li11revised_nodust.input
     II:
-      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
+      BASE: surveys/des/sims_cc/sn_ii_v19_li11revised_nodust.input
     GLOBAL:
       <<: *nums
 
@@ -79,8 +91,12 @@ SIM:
     IA_C11:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
       GENMODEL: SALT2.P18_UV2IR
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg_stretchCorr.input
+    IBC:
+      BASE: surveys/des/sims_cc/sn_ibc_v19_dustH98.input
     II:
-      BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
+      BASE: surveys/des/sims_cc/sn_ii_v19_dustH98.input
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 20 12345

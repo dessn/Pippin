@@ -22,9 +22,11 @@ SIM:
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
     IA91BG:
-      BASE: surveys/des/sims_cc/sn_ia91bg.input
-    CC_TEMPLATES:
-      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+      BASE: surveys/des/sims_cc/sn_ia91bg_stretchCorr.input
+    IBC:
+      BASE: surveys/des/sims_cc/sn_ibc_v19_li11revised_nodust.input
+    II:
+      BASE: surveys/des/sims_cc/sn_ii_v19_li11revised_nodust.input
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 20 12345
@@ -35,9 +37,11 @@ SIM:
     IAX:
       BASE: surveys/des/sims_cc/sn_iax_dust.input
     IA91BG:
-      BASE: surveys/des/sims_cc/sn_ia91bg.input
-    CC_TEMPLATES:
-      BASE: surveys/des/sims_cc/sn_collection_maria_dust1.input
+      BASE: surveys/des/sims_cc/sn_ia91bg_stretchCorr.input
+    IBC:
+      BASE: surveys/des/sims_cc/sn_ibc_v19_li11revised_nodust.input
+    II:
+      BASE: surveys/des/sims_cc/sn_ii_v19_li11revised_nodust.input
     GLOBAL:
       NGEN_UNIT: 1
       RANSEED_REPEAT: 20 12345

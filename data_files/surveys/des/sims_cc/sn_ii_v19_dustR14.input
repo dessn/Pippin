@@ -1,0 +1,83 @@
+DOCUMENTATION:
+    PURPOSE: Generate Baseline Core collapse simulations
+    INTENT:   Test
+    USAGE_KEY:  SIMLIB_FILE
+    USAGE_CODE: snlc_sim.exe
+    VALIDATE_SCIENCE: match DES sample as shown in Vincenzi et al. 2020 (in prep.)
+    NOTES:
+      - TEMPLATES: presented in Vincenzi et al. 2019 (arXiv:1908.05228)
+      - TEMPLATES used here HAS BEEN corrected for MW and host extinction.
+      - LUMINOSITY FUNCTION: templates matched to REVISED LF from Li. et al 2010 (arXiv:1006.4612, for details see Vincenzi et al. 2019)
+      - RELATIVE RATES: from Shivvars et al. 2017 (also reported in Vincenzi et al. 2019)
+      - HOST DUST EXTINCTION: Rodney et al 2014 (we use "dust-free" templates, so dust is simulated independently)
+    VERSIONS:
+    - DATE:  2020-07
+      AUTHORS: M. Vincenzi
+DOCUMENTATION_END:
+
+# -----------------------------------------
+# TEMPLATES presented in Vincenzi et al. 2019 (arXiv:1908.05228)
+# TEMPLATES used here HAS BEEN corrected for MW and host extinction.
+#
+# LUMINOSITY FUNCTION: templates matched to REVISED LF from Li. et al 2010 (arXiv:1006.4612, for details see Vincenzi et al. 2019)
+# RELATIVE RATES: from Shivvars et al. 2017 (also reported in Vincenzi et al. 2019)
+# HOST DUST EXTINCTION: Rodney 2014 (we use "dust-free" templates, so dust is simulated independently)
+#
+#
+# II    --> 25 (IIP+IIL, no distinction)
+# IIP   --> 20
+# IIn   --> 21
+# IIL   --> 22
+# IIb   --> 23
+# Ib    --> 32
+# Ic    --> 33
+# Ic-BL --> 35
+
+INPUT_FILE_INCLUDE:  surveys/des/sims_instrument/sim_des_5yr_phot_include.input
+
+GENTYPE:  20
+GENSOURCE: RANDOM
+GENMODEL: $SNDATA_ROOT/models/NON1ASED/NON1ASED.V19_CC+HostXT
+DNDZ: CC_S15
+
+GENRANGE_AV: 0.001 3.
+GENTAU_AV: 1.7
+GENSIG_AV: 0.6
+GENRATIO_AV0: 4.
+
+GENPEAK_RV: 3.1
+GENRANGE_RV: 3.0 3.2
+
+
+NON1A_KEYS: 5
+         INDEX   WGT    MAGOFF   MAGSMEAR  SNTYPE
+NON1A:          734  0.007841    -0.15      0.46    21    ## IIn    SN2008fq
+NON1A:          725  0.007841    -0.15      0.46    21    ## IIn    SN2007pk
+NON1A:          740  0.007841    -0.15      0.46    21    ## IIn    SN2009ip
+NON1A:          745  0.007841    -0.15      0.46    21    ## IIn    SN2010al
+NON1A:          719  0.007841    -0.15      0.46    21    ## IIn    SN2006aa
+NON1A:          751  0.007841    -0.15      0.46    21    ## IIn    SN2011ht
+NON1A:          764  0.027069    0.41      0.77    25     ## II   SN2016bkv
+NON1A:          766  0.027069    0.41      0.77    25     ## II     SN2016X
+NON1A:          735  0.027069    0.41      0.77    25     ## II    SN2008in
+NON1A:          744  0.027069    0.41      0.77    25     ## II     SN2009N
+NON1A:          737  0.027069    0.41      0.77    25     ## II    SN2009bw
+NON1A:          738  0.027069    0.41      0.77    25     ## II    SN2009dd
+NON1A:          755  0.027069    0.41      0.77    25     ## II    SN2012aw
+NON1A:          763  0.027069    0.41      0.77    25     ## II     SN2014G
+NON1A:          743  0.027069    0.41      0.77    25     ## II    SN2009kr
+NON1A:          761  0.027069    0.41      0.77    25     ## II    SN2013fs
+NON1A:          760  0.027069    0.41      0.77    25     ## II    SN2013ej
+NON1A:          758  0.027069    0.41      0.77    25     ## II    SN2013by
+NON1A:          757  0.027069    0.41      0.77    25     ## II    SN2013am
+NON1A:          756  0.027069    0.41      0.77    25     ## II    SN2013ab
+NON1A:          752  0.027069    0.41      0.77    25     ## II     SN2012A
+NON1A:          739  0.027069    0.41      0.77    25     ## II    SN2009ib
+NON1A:          701  0.027069    0.41      0.77    25     ## II  ASASSN14jb
+NON1A:          702  0.027069    0.41      0.77    25     ## II  ASASSN15oz
+# NON1A:          767  0.027069    0.41      0.77    25     ## II     SN1987A
+NON1A:          724  0.027069    0.41      0.77    25     ## II    SN2007od
+NON1A:          708  0.027069    0.41      0.77    25     ## II    SN1999em
+NON1A:          711  0.027069    0.41      0.77    25     ## II    SN2004et
+NON1A:          731  0.027069    0.41      0.77    25     ## II    SN2008bj
+NON1A:          717  0.027069    0.41      0.77    25     ## II    SN2005cs
