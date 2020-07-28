@@ -217,13 +217,13 @@ class BiasCor(ConfigBasedExecutable):
             self.set_property("blindflag", 2, assignment="=")
             self.set_property(
                 "WFITMUDIF_OPT",
-                self.options.get("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind",
+                self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind",
                 assignment=": ",
             )
         else:
             self.set_property("blindflag", 0, assignment="=")
             self.set_property(
-                "WFITMUDIF_OPT", self.options.get("WFITMUDIF_OPT", "-ompri 0.30 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"), assignment=": "
+                "WFITMUDIF_OPT", self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"), assignment=": "
             )
 
         keys = [x.upper() for x in self.options.keys()]
