@@ -173,15 +173,16 @@ class BiasCor(ConfigBasedExecutable):
         return self.check_for_job(squeue, self.job_name)
 
     def get_simfile_biascor(self, ia_sims):
-        return ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in ia_sims])
+        return None if ia_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in ia_sims])
 
     def get_simfile_ccprior(self, cc_sims):
         return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
 
     def write_input(self, force_refresh):
-        for m in self.merged_iasim:
-            if len(m.output["fitres_dirs"]) > 1:
-                self.logger.warning(f"Your IA sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
+        if self.merged_iasim is not None:
+            for m in self.merged_iasim:
+                if len(m.output["fitres_dirs"]) > 1:
+                    self.logger.warning(f"Your IA sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         if self.merged_ccsim is not None:
             for m in self.merged_ccsim:
                 if len(m.output["fitres_dirs"]) > 1:
