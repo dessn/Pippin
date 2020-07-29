@@ -376,6 +376,7 @@ class Aggregator(Task):
             if lcfit == lcfitname:
                 df = df.rename(columns={c: name})
             else:
+                self.logger.warning(f"Aggregation for LCFIT {lcfitname} is dropping column {c} as it doesnt match.")
                 df = df.drop(columns=[c])
         df2 = df.fillna(0.0)
         df2.insert(0, "VARNAMES:", ["SN:"] * df2.shape[0])
