@@ -1,7 +1,7 @@
 DATAPREP:
   DATAFOUND:
     OPTS:
-      RAW_DIR: /project2/rkessler/SURVEYS/DES/ROOT/analysis_photoIa_5yr/base/foundation/lcmerge/Foundation_DJ17_COMBINED_FITS
+      RAW_DIR: $SNDATA_ROOT/lcmerge/Foundation_DR1
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30]
