@@ -15,6 +15,7 @@ class ConfigBasedExecutable(Task):
         for index, line in enumerate(self.base):
             if "#END_YAML" in line:
                 self.process_yaml(index)
+                break
         else:
             self.yaml = None
             self.logger.debug("No YAML section found")
