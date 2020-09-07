@@ -54,7 +54,7 @@ class SuperNNovaClassifier(Classifier):
         self.clean = config.get("CLEAN", True)
         self.validate_model()
 
-        assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
+        assert self.norm in ["global", "cosmo", "perfilter", "none"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
 
