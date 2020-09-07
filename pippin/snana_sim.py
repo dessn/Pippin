@@ -134,7 +134,7 @@ class SNANASimulation(ConfigBasedExecutable):
             try:
                 # If BATCH_INFO is set, we'll use that
                 batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
-                default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
+                default_batch_info = self.yaml.get("BATCH_INFO")
 
                 # If its not set, lets check for ranseed_repeat or ranseed_change
                 if batch_info is None:
