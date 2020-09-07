@@ -245,6 +245,7 @@ class BiasCor(ConfigBasedExecutable):
         mu_str = ""
         muopt_prob_cols = {"DEFAULT": self.probability_column_name}
         for label in self.muopt_order:
+            prob_ia_col = self.probability_column_name
             value = self.muopts[label]
             if mu_str != "":
                 mu_str += "\nMUOPT: "
@@ -257,6 +258,7 @@ class BiasCor(ConfigBasedExecutable):
                 cname = value.get("CLASSIFIER").output["prob_column_name"]
                 muopt_prob_cols[label] = cname
                 mu_str += f"varname_pIa={cname} "
+                prob_ia_col = cname
             else:
                 muopt_prob_cols[label] = self.probability_column_name
             if value.get("FITOPT") is not None:
@@ -266,7 +268,7 @@ class BiasCor(ConfigBasedExecutable):
                 if "CUTWIN_" in opt:
                     opt2 = opt.replace("CUTWIN_", "")
                     if opt2 == "PROB_IA":
-                        opt2 = self.probability_column_name
+                        opt2 = prob_ia_col
                     mu_str += f"CUTWIN {opt2} {opt_value}"
                 else:
                     mu_str += f"{opt}={opt_value} "
