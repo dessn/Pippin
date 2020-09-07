@@ -22,6 +22,7 @@ class SuperNNovaClassifier(Classifier):
             MASK: mask  # partial match
             MODE: train/predict
             GPU: True # default
+            CLEAN: True # Whether to remove processed directory, defaults to true
             OPTS:  # Options
                 VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
                 MODEL: someName # exact name of training classification task
@@ -50,6 +51,7 @@ class SuperNNovaClassifier(Classifier):
         self.variant = options.get("VARIANT", "vanilla").lower()
         self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
         self.norm = options.get("NORM", "cosmo")
+        self.clean = config.get("CLEAN", True)
         self.validate_model()
 
         assert self.norm in ["global", "cosmo", "perfilter"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
@@ -78,7 +80,7 @@ else
     echo "#################TIMING  Database done now, starting classifier:   `date`"
     python run.py {cuda} {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
     if [ $? -eq 0 ]; then
-        rm -rf {dump_dir}/processed
+        {clean_command}
         echo SUCCESS > {done_file2}
     else
         echo FAILURE > {done_file2}
@@ -215,6 +217,7 @@ echo "#################TIMING  Classifier finished:   `date`"
             "partition": "gpu2" if self.gpu else "broadwl",
             "gres": "#SBATCH --gres=gpu:1" if self.gpu else "",
             "cuda": "--use_cuda" if self.gpu else "",
+            "clean_command": f"rm -rf {self.dump_dir}/processed" if self.clean else "",
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
