@@ -333,7 +333,7 @@ class SNANASimulation(ConfigBasedExecutable):
             return True
 
         with open(self.logging_file, "w") as f:
-            subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(["submit_batch_jobs.sh", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
