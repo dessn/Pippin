@@ -152,8 +152,9 @@ class SNANASimulation(ConfigBasedExecutable):
                 else:
                     # self.logger.debug(f"BATCH INFO property detected as {property}")
                     self.num_jobs = int(default_batch_info.split()[-1])
-            except Exception:
+            except Exception as e:
                 self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
+                self.logger.warning(f"Error when determining batch jobs was: {e}")
                 self.num_jobs = 10
 
             self.output["genversion"] = self.genversion
