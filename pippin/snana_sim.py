@@ -6,6 +6,7 @@ import subprocess
 import tempfile
 import collections
 import json
+import yaml
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash
@@ -61,7 +62,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.global_config = global_config
 
         self.sim_log_dir = f"{self.output_dir}/LOGS"
-        self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
+        self.total_summary = os.path.join(self.sim_log_dir, "MERGE.LOG")
         self.done_file = f"{self.output_dir}/FINISHED.DONE"
         self.logging_file = self.config_path.replace(".input", ".LOG")
 
@@ -357,21 +358,12 @@ class SNANASimulation(ConfigBasedExecutable):
 
             if os.path.exists(self.total_summary):
                 with open(self.total_summary) as f:
-                    key, count = None, None
-                    allzero = True
-                    for line in f.readlines():
-                        if line.strip().startswith("SUM-"):
-                            key = line.strip().split()[0]
-                        if line.strip().startswith(self.genversion):
-                            count = line.split()[2]
-                            self.logger.debug(f"Simulation reports {key} wrote {count} to file")
-                            if int(count.strip()) > 0:
-                                allzero = False
-                        if line.strip().startswith("PATH_SNDATA_SIM:"):
-                            base = line.strip().split(":")[-1].strip()
-                            self.get_sim_folders(base, self.genversion)
-                    if allzero:
-                        self.logger.error(f"Simulation didn't write anything out according to {self.total_summary}")
+                    contents = yaml.safe_load(f.read())
+                    if "MERGE" in contents.keys():
+                        state, iver, version, ngen, nwrite, cpu = contents["MERGE"][0]
+                        self.logger.info(f"Simulation generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU hours")
+                    else:
+                        self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
                         return Task.FINISHED_FAILURE
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
