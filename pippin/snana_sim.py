@@ -179,8 +179,22 @@ class SNANASimulation(ConfigBasedExecutable):
             self.sim_folders = [os.path.join(base, genversion)]
 
     def write_input(self, force_refresh):
-        self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
-        self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
+        # As Pippin only does one GENVERSION at a time, lets extract it first, and also the config
+        c = self.yaml["CONFIG"]
+        d = self.yaml["GENVERSION_LIST"][0]
+        g = self.yaml["GENOPT_GLOBAL"]
+
+        # Ensure g is a dict with a ref we can update
+        if g is None:
+            g = {}
+            self.yaml["GENOPT_GLOBAL"] = g
+
+        # Start setting properties in the right area
+        d["GENVERSION"] = self.genversion
+
+        # Logging now goes in the "CONFIG"
+        c["LOGDIR"] = os.path.basename(self.sim_log_dir)
+
         for k in self.config.keys():
             if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
@@ -194,33 +208,45 @@ class SNANASimulation(ConfigBasedExecutable):
                     val = run_config[key]
                     if not isinstance(val, list):
                         val = [val]
+
+                    lookup = f"GENOPT({match})"
+                    if lookup not in d:
+                        d[lookup] = {}
                     for v in val:
-                        self.set_property(f"GENOPT({match})", f"{key} {v}", section_end="ENDLIST_GENVERSION", only_add=True)
+                        d[lookup][key] = v
 
         if len(self.data_dirs) > 1:
             data_dir = self.data_dirs[0]
-            self.set_property("PATH_USER_INPUT", data_dir, assignment=": ")
+            c["PATH_USER_INPUT"] = data_dir
 
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
             direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT", "RESET_CIDOFF"]
             if key in direct_set:
-                self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
+                c[key] = self.config["GLOBAL"][key]
             else:
-                self.set_property(f"GENOPT_GLOBAL: {key}", self.config["GLOBAL"][key], assignment=" ")
+                g[key] = self.config["GLOBAL"][key]
 
             if self.derived_batch_info:
-                self.set_property("BATCH_INFO", self.derived_batch_info, assignment=": ")
+                c["BATCH_INFO"] = self.derived_batch_info
 
-            if key == "RANSEED_CHANGE":
-                self.delete_property("RANSEED_REPEAT")
-            elif key == "RANSEED_REPEAT":
-                self.delete_property("RANSEED_CHANGE")
+            if key == "RANSEED_CHANGE" and c.get("RANSEED_REPEAT") is not None:
+                del c["RANSEED_REPEAT"]
+            elif key == "RANSEED_REPEAT" and c.get("RANSEED_CHANGE") is not None:
+                del c["RANSEED_CHANGE"]
 
-        self.set_property("SIMGEN_INFILE_Ia", " ".join([os.path.basename(f) for f in self.base_ia]) if self.base_ia else None)
-        self.set_property("SIMGEN_INFILE_NONIa", " ".join([os.path.basename(f) for f in self.base_cc]) if self.base_cc else None)
-        self.set_property("GENPREFIX", self.genprefix)
+        if self.base_ia:
+            c["SIMGEN_INFILE_Ia"] = [os.path.basename(f) for f in self.base_ia]
+        else:
+            del c["SIMGEN_INFILE_Ia"]
+
+        if self.base_cc:
+            c["SIMGEN_INFILE_NONIa"] = [os.path.basename(f) for f in self.base_cc]
+        else:
+            del c["SIMGEN_INFILE_NONIa"]
+
+        c["GENPREFIX"] = self.genprefix
 
         # Put config in a temp directory
         temp_dir_obj = tempfile.TemporaryDirectory()
@@ -269,9 +295,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
-        with open(main_input_file, "w") as f:
-            f.writelines(map(lambda s: s + "\n", self.base))
-        self.logger.info(f"Input file written to {main_input_file}")
+        self.write_output_file(main_input_file)
 
         # Remove any duplicates and order the output files
         output_files = [f"{temp_dir}/{a}" for a in sorted(os.listdir(temp_dir))]

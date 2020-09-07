@@ -1,4 +1,5 @@
 from pippin.task import Task
+import yaml
 
 
 class ConfigBasedExecutable(Task):
@@ -10,8 +11,30 @@ class ConfigBasedExecutable(Task):
             self.base = list(f.read().splitlines())
             self.logger.debug(f"Loaded base file from {self.base_file}")
 
+        # Check to see if any of the input is YAML by searching for an END_YAML tag
+        for index, line in enumerate(self.base):
+            if "#END_YAML" in line:
+                self.process_yaml(index)
+        else:
+            self.yaml = None
+            self.logger.debug("No YAML section found")
+
+    def process_yaml(self, index):
+        self.logger.debug(f"Found {index} lines of YAML at the beginning of the file")
+        yaml_str = "\n".join(self.base[:index])
+        self.yaml = yaml.safe_load(yaml_str)
+        self.base = self.base[index:]
+
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
+
+    def write_output_file(self, path):
+        with open(path, "w") as f:
+            if self.yaml:
+                f.write(yaml.dump(self.yaml))
+            for line in self.base:
+                f.write(line + "\n")
+        self.logger.info(f"Input file written to {path}")
 
     def get_property(self, name, assignment=None):
         """ Get a property from the base file
