@@ -378,7 +378,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
 
-        return self.check_for_job(squeue, f"{self.genprefix}_0")
+        return self.check_for_job(squeue, f"{self.genversion}.input-CPU")
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
