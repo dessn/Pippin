@@ -141,7 +141,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 if batch_info is None:
                     ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
                     ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-                    ranseed = ranseed_repeat or ranseed_change
+                    default = self.yaml.get("CONFIG", {}).get("RANSEED_REPEAT")
+                    ranseed = ranseed_repeat or ranseed_change or default
 
                     if ranseed:
                         num_jobs = int(ranseed.strip().split()[0])
@@ -155,7 +156,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     self.num_jobs = int(default_batch_info.split()[-1])
             except Exception:
                 self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
-                self.num_jobs = 10
+                self.num_jobs = 1
 
             self.output["genversion"] = self.genversion
             self.output["genprefix"] = self.genprefix
