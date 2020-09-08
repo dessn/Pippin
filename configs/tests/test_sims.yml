@@ -26,7 +26,7 @@ SIM:
     CCA:
       BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
     CCB:
-      BASE: surveys/des/sims_cc/sn_collection_maria_split_b.input
+      BASE: surveys/des/sims_cc/sn_ibc_maria_li_revised.input
     GLOBAL:
       NGEN_UNIT: 0.1
       RANSEED_CHANGE: 2 12345
