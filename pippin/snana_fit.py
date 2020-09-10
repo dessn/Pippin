@@ -51,8 +51,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
-        self.done_file = f"{self.output_dir}/FINISHED.DONE"
-        secondary_log = os.path.join(self.lc_log_dir, "MERGELOGS/MERGE2.LOG")
+        self.done_file = f"{self.output_dir}/ALL.DONE"
+        secondary_log = os.path.join(self.lc_log_dir, "MERGE.LOG")
 
         self.log_files = [self.logging_file, secondary_log]
         self.num_empty_threshold = 20  # Damn that tarball creation can be so slow
@@ -107,9 +107,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
         try:
-            property = self.options.get("BATCH_INFO") or self.get_property("BATCH_INFO", assignment=": ")
+            property = self.options.get("BATCH_INFO") or self.yaml["CONFIG"].get("BATCH_INFO")
             self.num_jobs = int(property.split()[-1])
         except Exception:
+            self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
             self.num_jobs = 10
 
     def get_sim_dependency(self):
@@ -192,15 +193,15 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
         for key, value in self.options.items():
-            self.set_property(key, value, assignment=": ", section_end="&SNLCINP")
+            self.yaml["CONFIG"][key] = value
 
         if self.sim_task.output["ranseed_change"]:
-            self.set_property("VERSION", self.sim_version + "-0*", assignment=": ", section_end="&SNLCINP")
+            self.yaml["CONFIG"]["VERSION"] = [self.sim_version + "-0*"]
         else:
-            self.set_property("VERSION", self.sim_version, assignment=": ", section_end="&SNLCINP")
+            self.yaml["CONFIG"]["VERSION"] = [self.sim_version]
 
-        self.set_property("OUTDIR", self.lc_output_dir, assignment=": ", section_end="&SNLCINP")
-        self.set_property("DONE_STAMP", "FINISHED.DONE", assignment=": ", section_end="&SNLCINP")
+        self.yaml["CONFIG"]["OUTDIR"] = self.lc_output_dir
+        self.yaml["CONFIG"]["DONE_STAMP"] = "ALL.DONE"
 
         if isinstance(self.sim_task, DataPrep):
             self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")

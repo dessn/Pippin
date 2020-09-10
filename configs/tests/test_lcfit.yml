@@ -1,0 +1,24 @@
+SIM:
+  DES:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    CC:
+      BASE: surveys/des/sims_cc/sn_collection_maria_split_a.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_REPEAT: 2 12345
+
+  LOWZ:
+    IA:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+
+LCFIT:
+  DES_A:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+    MASK: DES
+
+  LOWZ_A:
+    BASE: surveys/lowz/lcfit_nml/lowz.nml
+    MASK: LOWZ
