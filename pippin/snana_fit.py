@@ -218,8 +218,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             # Write main file
-            with open(self.config_path, "w") as f:
-                f.writelines(map(lambda s: s + "\n", string_to_hash))
+
+            # Write the primary input file
+            self.write_output_file(self.config_path)
             self.logger.info(f"NML file written to {self.config_path}")
             self.save_new_hash(new_hash)
             chown_dir(self.output_dir)
