@@ -67,6 +67,11 @@ def get_output_dir():
     return output_dir
 
 
+def read_yaml(path):
+    with open(path) as f:
+        return yaml.safe_load(f.read())
+
+
 def get_data_loc(path, extra=None):
     if extra is None:
         data_dirs = get_config()["DATA_DIRS"]

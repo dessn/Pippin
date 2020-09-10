@@ -9,7 +9,7 @@ import json
 import yaml
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash
+from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml
 from pippin.task import Task
 
 
@@ -358,19 +358,18 @@ class SNANASimulation(ConfigBasedExecutable):
                     return Task.FINISHED_FAILURE
 
             if os.path.exists(self.total_summary):
-                with open(self.total_summary) as f:
-                    contents = yaml.safe_load(f.read())
-                    if "MERGE" in contents.keys():
-                        state, iver, version, ngen, nwrite, cpu = contents["MERGE"][0]
-                        if cpu < 60:
-                            units = "minutes"
-                        else:
-                            cpu = cpu / 60
-                            units = "hours"
-                        self.logger.info(f"Simulation generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
+                y = read_yaml(self.total_summary)
+                if "MERGE" in y.keys():
+                    state, iver, version, ngen, nwrite, cpu = y["MERGE"][0]
+                    if cpu < 60:
+                        units = "minutes"
                     else:
-                        self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
-                        return Task.FINISHED_FAILURE
+                        cpu = cpu / 60
+                        units = "hours"
+                    self.logger.info(f"Simulation generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
+                else:
+                    self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
+                    return Task.FINISHED_FAILURE
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
 

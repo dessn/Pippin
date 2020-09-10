@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import mkdirs, get_data_loc, chown_dir
+from pippin.config import mkdirs, get_data_loc, chown_dir, read_yaml
 from pippin.dataprep import DataPrep
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
@@ -51,10 +51,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
 
         self.logging_file = self.config_path.replace(".nml", ".nml_log")
-        self.done_file = f"{self.output_dir}/ALL.DONE"
-        secondary_log = os.path.join(self.lc_log_dir, "MERGE.LOG")
+        self.done_file = f"{self.lc_output_dir}/ALL.DONE"
 
-        self.log_files = [self.logging_file, secondary_log]
+        self.merge_log = os.path.join(self.lc_output_dir, "MERGE.LOG")
+
+        self.log_files = [self.logging_file]
         self.num_empty_threshold = 20  # Damn that tarball creation can be so slow
         self.display_threshold = 8
         self.output["fitres_dirs"] = self.fitres_dirs
@@ -252,7 +253,23 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
             with open(self.done_file) as f:
                 if "SUCCESS" in f.read():
-                    return Task.FINISHED_SUCCESS
+                    if os.path.exists(self.merge_log):
+                        y = read_yaml(self.merge_log)
+                        if "MERGE" in y.keys():
+                            # STATE   VERSION  FITOPT  NEVT_ALL  NEVT_SNANACUT NEVT_FITCUT  CPU
+                            state, iver, fitopt, n_all, n_snanacut, n_fitcut, cpu = y["MERGE"][0]
+                            if cpu < 60:
+                                units = "minutes"
+                            else:
+                                cpu = cpu / 60
+                                units = "hours"
+                            self.logger.info(f"LCFIT fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}")
+                        else:
+                            self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
+                            return Task.FINISHED_FAILURE
+                        return Task.FINISHED_SUCCESS
+                    else:
+                        return Task.FINISHED_FAILURE
                 else:
                     self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
 
@@ -262,7 +279,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
                     return Task.FINISHED_FAILURE
 
-        return self.check_for_job(squeue, os.path.basename(self.config_path)[:-4])
+        return self.check_for_job(squeue, os.path.basename(self.config_path))
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
