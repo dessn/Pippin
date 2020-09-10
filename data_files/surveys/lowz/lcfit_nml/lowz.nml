@@ -17,7 +17,7 @@ CONFIG:
     SNTABLE_LIST      = 'FITRES'
     TEXTFILE_PREFIX   = 'DES5YR_DES_CHANGEME'
 
-    KCOR_FILE        = '$SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_LOWZ.fits'
+    KCOR_FILE        = '$SNDATA_ROOT/kcor/DES/DES-SN3YR/kcor_LOWZ.fits.gz'
 
     FLUXERRMODEL_FILE = ''  ! No error fudge map
 
