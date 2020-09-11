@@ -16,7 +16,8 @@ from pippin.task import Task
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
-
+        self.base_file = base
+        self.convert_base_file()
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
@@ -91,6 +92,14 @@ class BiasCor(ConfigBasedExecutable):
         self.muopt_order = list(self.muopts.keys())
         self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
+
+    def convert_base_file(self):
+        self.logger.debug(f"Translating base file {self.base_file}")
+        try:
+            subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
+        except FileNotFoundError:
+            # For testing, this wont exist
+            pass
 
     def get_blind(self, config, options):
         if "BLIND" in config:
@@ -197,13 +206,14 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-        self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
-        self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
+        self.yaml["CONFIG"]["OUTDIR_OVERRIDE"] = self.fit_output_dir
+        self.yaml["CONFIG"]["STRINGMATCH_IGNORE"] = " ".join(self.genversions)
 
         for key, value in self.options.items():
             assignment = "="
             if key.upper().startswith("BATCH"):
-                assignment = ": "
+                self.yaml["CONFIG"][key] = value
+                continue
             if key.upper().startswith("CUTWIN"):
                 assignment = " "
                 split = key.split("_", 1)
@@ -216,40 +226,33 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.set_property(
-                "WFITMUDIF_OPT",
-                self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind",
-                assignment=": ",
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = (
+                self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
             )
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.set_property(
-                "WFITMUDIF_OPT", self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"), assignment=": "
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get(
+                "WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"
             )
 
         keys = [x.upper() for x in self.options.keys()]
         if "NSPLITRAN" in keys:
-            self.set_property("INPDIR+", None, assignment=": ")
+            if "INPDIR+" in self.yaml["CONFIG"].keys():
+                del self.yaml["CONFIG"]["INPDIR+"]
             # TODO: Find best way of checking for ranseed change as well and abort
-            self.set_property("datafile", ",".join(self.data_fitres), assignment="=", section_end="STRINGMATCH_IGNORE")
+            self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
             self.set_property("file", None, assignment="=")
         else:
-            bullshit_hack = ""
-            for i, d in enumerate(self.data):
-                if i > 0:
-                    bullshit_hack += "\nINPDIR+: "
-                bullshit_hack += d
-            self.set_property("INPDIR+", bullshit_hack, assignment=": ")
+            self.yaml["CONFIG"]["INPDIR+"] = self.data
 
         # Set MUOPTS at top of file
-        mu_str = ""
+        muopts = []
         muopt_prob_cols = {"DEFAULT": self.probability_column_name}
         for label in self.muopt_order:
             prob_ia_col = self.probability_column_name
             value = self.muopts[label]
-            if mu_str != "":
-                mu_str += "\nMUOPT: "
-            mu_str += f"[{label}] "
+
+            mu_str = f"[{label}] "
             if value.get("SIMFILE_BIASCOR"):
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
             if value.get("SIMFILE_CCPRIOR"):
@@ -272,12 +275,12 @@ class BiasCor(ConfigBasedExecutable):
                     mu_str += f"CUTWIN {opt2} {opt_value}"
                 else:
                     mu_str += f"{opt}={opt_value} "
-            mu_str += "\n"
-        if mu_str:
-            self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
+            muopts.append(mu_str)
+        if muopts:
+            self.yaml["CONFIG"]["MUOPT"] = muopts
 
         self.output["muopt_prob_cols"] = muopt_prob_cols
-        final_output = "\n".join(self.base)
+        final_output = self.get_output_string()
 
         new_hash = self.get_hash_from_string(final_output)
         old_hash = self.get_old_hash()
@@ -303,7 +306,7 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input(force_refresh)
         if regenerating:
-            command = ["SALT2mu_fit.pl", self.config_filename, "NOPROMPT"]
+            command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Will check for done file at {self.done_file}")
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")

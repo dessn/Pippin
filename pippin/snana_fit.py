@@ -218,8 +218,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
 
         # We want to do our hashing check here
-        string_to_hash = self.fitopts + self.base
-        new_hash = self.get_hash_from_string("".join(string_to_hash))
+        self.base = self.fitopts + self.base
+        string_to_hash = self.get_output_string()
+        new_hash = self.get_hash_from_string(string_to_hash)
         old_hash = self.get_old_hash()
         regenerate = force_refresh or (old_hash is None or old_hash != new_hash)
 

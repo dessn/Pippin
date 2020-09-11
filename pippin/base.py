@@ -29,12 +29,12 @@ class ConfigBasedExecutable(Task):
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
 
+    def get_output_string(self):
+        return yaml.dump(self.yaml) + "\n".join(self.base)
+
     def write_output_file(self, path):
         with open(path, "w") as f:
-            if self.yaml:
-                f.write(yaml.dump(self.yaml))
-            for line in self.base:
-                f.write(line + "\n")
+            f.write(self.get_output_string())
         self.logger.info(f"Input file written to {path}")
 
     def get_property(self, name, assignment=None):
