@@ -367,7 +367,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         else:
                             cpu = cpu / 60
                             units = "hours"
-                        self.logger.info(f"Simulation {i} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
+                        self.logger.info(f"Simulation {i + 1} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
                 else:
                     self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
                     return Task.FINISHED_FAILURE
