@@ -246,7 +246,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             return True
         self.logger.info(f"Light curve fitting outputting to {self.logging_file}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(["submit_batch_jobs.sh", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(
+                ["submit_batch_jobs.sh", "--force_crash_prep", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir
+            )
         return True
 
     def _check_completion(self, squeue):
