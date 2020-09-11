@@ -360,13 +360,14 @@ class SNANASimulation(ConfigBasedExecutable):
             if os.path.exists(self.total_summary):
                 y = read_yaml(self.total_summary)
                 if "MERGE" in y.keys():
-                    state, iver, version, ngen, nwrite, cpu = y["MERGE"][0]
-                    if cpu < 60:
-                        units = "minutes"
-                    else:
-                        cpu = cpu / 60
-                        units = "hours"
-                    self.logger.info(f"Simulation generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
+                    for i, row in enumerate(y["MERGE"]):
+                        state, iver, version, ngen, nwrite, cpu = row
+                        if cpu < 60:
+                            units = "minutes"
+                        else:
+                            cpu = cpu / 60
+                            units = "hours"
+                        self.logger.info(f"Simulation {i} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
                 else:
                     self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
                     return Task.FINISHED_FAILURE
