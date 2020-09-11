@@ -14,6 +14,13 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 0.1
 
+  DES_CHANGE:
+    IA:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+    GLOBAL:
+      NGEN_UNIT: 0.1
+      RANSEED_CHANGE: 2 12345
+
 LCFIT:
   DES_A:
     BASE: surveys/des/lcfit_nml/des_5yr.nml

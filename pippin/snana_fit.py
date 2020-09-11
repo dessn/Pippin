@@ -117,7 +117,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def convert_base_file(self):
         self.logger.debug(f"Translating base file {self.base_file}")
-        subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
+        try:
+            subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
+        except FileNotFoundError:
+            # For testing, this wont exist
+            pass
 
     def get_sim_dependency(self):
         for t in self.dependencies:
@@ -261,16 +265,16 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     if os.path.exists(self.merge_log):
                         y = read_yaml(self.merge_log)
                         if "MERGE" in y.keys():
-                            # STATE   VERSION  FITOPT  NEVT_ALL  NEVT_SNANACUT NEVT_FITCUT  CPU
-                            state, iver, fitopt, n_all, n_snanacut, n_fitcut, cpu = y["MERGE"][0]
-                            if cpu < 60:
-                                units = "minutes"
-                            else:
-                                cpu = cpu / 60
-                                units = "hours"
-                            self.logger.info(
-                                f"LCFIT fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
-                            )
+                            for i, row in enumerate(y["MERGE"]):
+                                state, iver, fitopt, n_all, n_snanacut, n_fitcut, cpu = row
+                                if cpu < 60:
+                                    units = "minutes"
+                                else:
+                                    cpu = cpu / 60
+                                    units = "hours"
+                                self.logger.info(
+                                    f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
+                                )
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
