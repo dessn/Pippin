@@ -335,7 +335,9 @@ class SNANASimulation(ConfigBasedExecutable):
             return True
 
         with open(self.logging_file, "w") as f:
-            subprocess.run(["submit_batch_jobs.sh", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(
+                ["submit_batch_jobs.sh", "--force_crash_prep", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir
+            )
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
