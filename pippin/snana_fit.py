@@ -102,6 +102,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             label = line.split("[")[1].split("]")[0]
             mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
             mapped2[i] = label
+        self.yaml["CONFIG"]["FITOPT"] = self.fitopts
         self.output["fitopt_map"] = mapped
         self.output["fitopt_index"] = mapped2
         self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
@@ -218,7 +219,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
 
         # We want to do our hashing check here
-        self.base = self.fitopts + self.base
         string_to_hash = self.get_output_string()
         new_hash = self.get_hash_from_string(string_to_hash)
         old_hash = self.get_old_hash()

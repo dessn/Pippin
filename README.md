@@ -421,10 +421,10 @@ LCFIT:
       
     # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
     # Normally this would be a single entry like des.fitopts, but you can also pass a list
-    # If you specify a FITOPT manually, make sure it has the square bracket label at the start
+    # If you specify a FITOPT manually, make sure it has the / around the label
     FITOPS:
       - des.fitopts
-      - "[custom_extra_fitopt] REDSHIFT_FINAL_SHIFT 0.0001"
+      - "/custom_extra_fitopt/ REDSHIFT_FINAL_SHIFT 0.0001"
 
     # We can optionally customise keys in the FITINP section
     FITINP:
