@@ -52,3 +52,19 @@ SIM:
     GLOBAL:
       NGEN_UNIT: 0.1
 
+  TEST_G:
+    IA_C11:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_c11_des5yr.input
+      GENMODEL: SALT2.P18_UV2IR
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMODEL: SALT2.P18_UV2IR
+    IAX:
+      BASE: surveys/des/sims_cc/sn_iax_dust.input
+    IA91BG:
+      BASE: surveys/des/sims_cc/sn_ia91bg.input
+    Ibc_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_ibc_maria_li_revised.input
+      DNDZ: 0.3*CC_S15
+    GLOBAL:
+      NGEN_UNIT: 0.05
