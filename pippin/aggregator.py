@@ -388,7 +388,7 @@ class Aggregator(Task):
         try:
             subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
             self.logger.info(f"Finished invoking {self.python_file}")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             return False
         return True
 
@@ -399,13 +399,6 @@ class Aggregator(Task):
 
         def _get_aggregator_dir(base_output_dir, stage_number, agg_name):
             return f"{base_output_dir}/{stage_number}_AGG/{agg_name}"
-
-        def get_num_ranseed(sim_task, lcfit_task):
-            if sim_task is not None:
-                return len(sim_task.output["sim_folders"])
-            if lcfit_task is not None:
-                return len(sim_task.output["fitres_dirs"])
-            raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
 
         tasks = []
 

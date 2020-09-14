@@ -1,8 +1,10 @@
+from abc import ABC
+
 from pippin.task import Task
 import yaml
 
 
-class ConfigBasedExecutable(Task):
+class ConfigBasedExecutable(Task, ABC):
     def __init__(self, name, output_dir, config, base_file, default_assignment, dependencies=None):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.default_assignment = default_assignment

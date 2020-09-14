@@ -4,7 +4,6 @@ import subprocess
 import os
 import pandas as pd
 import numpy as np
-from scipy.interpolate import interp1d
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
@@ -145,7 +144,6 @@ class BiasCor(ConfigBasedExecutable):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
             with open(self.done_file) as f:
-                failed = False
                 if "FAIL" in f.read():
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
 

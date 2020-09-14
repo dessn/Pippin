@@ -1,6 +1,4 @@
-import copy
 import os
-import inspect
 import shutil
 import subprocess
 import time
@@ -10,8 +8,7 @@ from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
-from pippin.classifiers.factory import ClassifierFactory
-from pippin.config import get_logger, get_config, ensure_list, get_output_dir, mkdirs, chown_dir, chown_file
+from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep

@@ -1,12 +1,8 @@
 import os
-import inspect
-import logging
 import shutil
 import subprocess
 import tempfile
-import collections
 import json
-import yaml
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml
@@ -398,12 +394,3 @@ class SNANASimulation(ConfigBasedExecutable):
             Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
             tasks.append(s)
         return tasks
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
-    s = SNANASimulation("test", "testv")
-
-    s.set_property("TESTPROP", "HELLO")
-    s.delete_property("GOODBYE")
-    s.write_input()

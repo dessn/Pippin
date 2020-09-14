@@ -3,7 +3,6 @@ import shutil
 import subprocess
 import re
 import pandas as pd
-import numpy as np
 
 from pippin.base import ConfigBasedExecutable
 from pippin.config import mkdirs, get_data_loc, chown_dir, read_yaml
@@ -85,8 +84,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             potential_path = get_data_loc(f)
             if os.path.exists(potential_path):
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
-                with open(potential_path) as f:
-                    new_fitopts = list(f.read().splitlines())
+                with open(potential_path) as file:
+                    new_fitopts = list(file.read().splitlines())
                     self.fitopts += new_fitopts
                     self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
             else:
