@@ -90,7 +90,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     self.fitopts += new_fitopts
                     self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
             else:
-                assert "[" in f and "]" in f, f"Manual fitopt {f} for lcfit {self.name} should specify a label in square brackets"
+                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /"
                 if not f.startswith("FITOPT:"):
                     f = "FITOPT: " + f
                 self.logger.debug(f"Adding manual fitopt {f}")
@@ -99,7 +99,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         mapped = {"DEFAULT": "FITOPT000.FITRES"}
         mapped2 = {0: "DEFAULT"}
         for i, line in enumerate(self.fitopts):
-            label = line.split("[")[1].split("]")[0]
+            label = line.strip().split("/")[1]
             mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
             mapped2[i] = label
         self.yaml["CONFIG"]["FITOPT"] = self.fitopts
