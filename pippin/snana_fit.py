@@ -95,11 +95,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.fitopts.append(f)
         # Map the fitopt outputs
-        mapped = {"DEFAULT": "FITOPT000.FITRES"}
+        mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
         mapped2 = {0: "DEFAULT"}
         for i, line in enumerate(self.fitopts):
             label = line.strip().split("/")[1]
-            mapped[line] = f"FITOPT{i + 1:3d}.FITRES"
+            mapped[line] = f"FITOPT{i + 1:3d}.FITRES.gz"
             mapped2[i] = label
         self.yaml["CONFIG"]["FITOPT"] = self.fitopts
         self.output["fitopt_map"] = mapped
@@ -137,7 +137,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for f in folders:
             path = os.path.join(self.lc_output_dir, f)
             try:
-                full_path = os.path.join(path, "FITOPT000.FITRES")
+                full_path = os.path.join(path, "FITOPT000.FITRES.gz")
                 if not os.path.exists(full_path):
                     self.logger.info(f"{full_path} not found, seeing if it was gzipped")
                     full_path += ".gz"

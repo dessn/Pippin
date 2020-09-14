@@ -42,7 +42,7 @@ class Merger(Task):
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
+        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
@@ -159,8 +159,8 @@ class Merger(Task):
                             self.add_to_fitres(os.path.join(f[0], f[2]), f[1], f[4], index=f[3])
                     for s in symlink_files:
                         if s[1] == fitres_dir:
-                            self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES')}")
-                            os.symlink(os.path.join(s[1], "FITOPT000.FITRES"), os.path.join(s[1], s[2]))
+                            self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES.gz')}")
+                            os.symlink(os.path.join(s[1], "FITOPT000.FITRES.gz"), os.path.join(s[1], s[2]))
 
                     self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
                     filenames = ["MERGE.LOG", "FITOPT.README"]
