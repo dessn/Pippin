@@ -43,7 +43,6 @@ class Merger(Task):
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
-        self.done_file = os.path.join(self.output_dir, "done.txt")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
@@ -53,6 +52,8 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")
+        self.done_file = os.path.join(self.suboutput_dir, "ALL.DONE")
+
         self.fitres_outdirs = [os.path.join(self.suboutput_dir, os.path.basename(f)) for f in self.lc_fit["fitres_dirs"]]
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_dirs"] = self.fitres_outdirs
@@ -137,12 +138,8 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            fitres_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
-            ]
-            symlink_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
-            ]
+            fitres_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
+            symlink_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
 
         new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
