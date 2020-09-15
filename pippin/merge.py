@@ -120,11 +120,6 @@ class Merger(Task):
                 self.logger.debug(f"Executing command {' '.join(command)}")
                 with open(self.logfile, "w+") as f:
                     subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
-                # Run sed command
-                sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
-                self.logger.debug(f"Executing command {' '.join(sed_command)}")
-                with open(self.logfile, "w+") as f:
-                    subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
 
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Error invoking command {command}")
@@ -138,8 +133,12 @@ class Merger(Task):
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
-            fitres_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))]
-            symlink_files += [(fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))]
+            fitres_files += [
+                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
+            ]
+            symlink_files += [
+                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
+            ]
 
         new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
         old_hash = self.get_old_hash()
