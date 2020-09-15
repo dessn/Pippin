@@ -339,7 +339,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
     def kill_and_fail(self):
         with open(self.kill_file, "w") as f:
-            self.logger.warning(f"Killing job {self.name}")
+            self.logger.info(f"Killing remaining jobs for {self.name}")
             subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return Task.FINISHED_FAILURE
 
