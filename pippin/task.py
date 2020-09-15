@@ -169,7 +169,7 @@ class Task(ABC):
             self.logger.warning(f"Note, expected log path {path} does not exist")
             return False
 
-        print(f"============== {error_match}")
+        print(f"============== {error_match} - {path}")
 
         with open(path) as f:
             for i, line in enumerate(f.read().splitlines()):
