@@ -103,7 +103,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             label = line.strip().split("/")[1]
             mapped[line] = f"FITOPT{i + 1:3d}.FITRES.gz"
             mapped2[i] = label
-        self.yaml["CONFIG"]["FITOPT"] = self.fitopts
+        if self.fitopts:
+            self.yaml["CONFIG"]["FITOPT"] = self.fitopts
         self.output["fitopt_map"] = mapped
         self.output["fitopt_index"] = mapped2
         self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
