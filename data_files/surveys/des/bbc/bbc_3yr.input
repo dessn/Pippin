@@ -1,6 +1,5 @@
 CONFIG:
   BATCH_INFO:  sbatch  $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 10
-  STRINGMATCH_IGNORE: _
   INPDIR+: []
   WFITMUDIF_OPT: -ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121
 
