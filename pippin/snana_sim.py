@@ -343,22 +343,28 @@ class SNANASimulation(ConfigBasedExecutable):
             subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return Task.FINISHED_FAILURE
 
+    def check_issues(self):
+        log_files = [self.logging_file]
+        if os.path.exists(self.sim_log_dir):
+            log_files += [os.path.join(self.sim_log_dir, f) for f in os.listdir(self.sim_log_dir) if f.upper().endswith(".LOG")]
+        else:
+            self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
+        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        return self.kill_and_fail()
+
     def _check_completion(self, squeue):
 
-        if os.path.exists(self.done_file):
-            self.logger.info(f"Simulation {self.name} found done file!")
+        if os.path.exists(self.done_file) or not os.path.exists(self.total_summary):
 
-            with open(self.done_file) as f:
-                if "FAIL" in f.read():
-                    self.logger.error(f"Done file {self.done_file} reporting failure")
-
-                    log_files = [self.logging_file]
-                    if os.path.exists(self.sim_log_dir):
-                        log_files += [os.path.join(self.sim_log_dir, f) for f in os.listdir(self.sim_log_dir) if f.upper().endswith(".LOG")]
-                    else:
-                        self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return self.kill_and_fail()
+            if os.path.exists(self.done_file):
+                self.logger.info(f"Simulation {self.name} found done file!")
+                with open(self.done_file) as f:
+                    if "FAIL" in f.read():
+                        self.logger.error(f"Done file {self.done_file} reporting failure")
+                        return self.check_issues()
+            else:
+                self.logger.error("MERGE.LOG was not created, job died on submission")
+                return self.check_issues()
 
             if os.path.exists(self.total_summary):
                 y = read_yaml(self.total_summary)

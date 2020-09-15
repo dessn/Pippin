@@ -258,9 +258,14 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return Task.FINISHED_FAILURE
 
-    def _check_completion(self, squeue):
+    def check_issues(self):
+        log_files = [] + self.log_files
+        log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
 
-        # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
+        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        return Task.FINISHED_FAILURE
+
+    def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.info("Light curve done file found")
             if not os.path.exists(self.logging_file):
@@ -281,7 +286,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                                 else:
                                     cpu = cpu / 60
                                     units = "hours"
-                                self.logger.info(f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}")
+                                self.logger.info(
+                                    f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
+                                )
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
@@ -290,12 +297,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         return Task.FINISHED_FAILURE
                 else:
                     self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
-
-                    log_files = [] + self.log_files
-                    log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
-
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return Task.FINISHED_FAILURE
+                    return self.check_issues()
+        elif not os.path.exists(self.merge_log):
+            self.logger.error("MERGE.LOG was not created, job died on submission")
+            return self.check_issues()
 
         return self.check_for_job(squeue, os.path.basename(self.config_path))
 

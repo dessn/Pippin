@@ -49,6 +49,8 @@ class BiasCor(ConfigBasedExecutable):
         self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
+        self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
+
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
@@ -80,7 +82,10 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
+        self.output_plots = [
+            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
+            for m in self.output["m0dif_dirs"]
+        ]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -144,19 +149,21 @@ class BiasCor(ConfigBasedExecutable):
             subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return Task.FINISHED_FAILURE
 
+    def check_issues(self):
+        log_files = [self.logging_file]
+
+        for dir in self.output["m0dif_dirs"]:
+            log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
+        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        return self.kill_and_fail()
+
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
             with open(self.done_file) as f:
                 if "FAIL" in f.read():
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
-
-                    log_files = [self.logging_file]
-
-                    for dir in self.output["m0dif_dirs"]:
-                        log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return self.kill_and_fail()
+                    return self.check_issues()
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
@@ -180,6 +187,10 @@ class BiasCor(ConfigBasedExecutable):
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return Task.FINISHED_SUCCESS
+        elif not os.path.exists(self.merge_log):
+            self.logger.error("MERGE.LOG was not created, job died on submission")
+            return self.check_issues()
+
         return self.check_for_job(squeue, self.job_name)
 
     def get_simfile_biascor(self, ia_sims):
@@ -227,10 +238,14 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = (
+                self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
+            )
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get(
+                "WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"
+            )
 
         keys = [x.upper() for x in self.options.keys()]
         if "NSPLITRAN" in keys:
