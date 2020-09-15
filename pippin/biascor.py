@@ -51,7 +51,7 @@ class BiasCor(ConfigBasedExecutable):
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
 
-        self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
+        self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
             self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
