@@ -32,7 +32,7 @@ class ConfigBasedExecutable(Task, ABC):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
 
     def get_output_string(self):
-        return yaml.dump(self.yaml) + "\n".join(self.base) + "\n"
+        return yaml.safe_dump(self.yaml, width=2048) + "\n".join(self.base) + "\n"
 
     def write_output_file(self, path):
         with open(path, "w") as f:
