@@ -207,7 +207,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-        self.yaml["CONFIG"]["OUTDIR_OVERRIDE"] = self.fit_output_dir
+        self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
         self.yaml["CONFIG"]["STRINGMATCH_IGNORE"] = " ".join(self.genversions)
 
         for key, value in self.options.items():
