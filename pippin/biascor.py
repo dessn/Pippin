@@ -46,6 +46,7 @@ class BiasCor(ConfigBasedExecutable):
 
         self.config_filename = f"{self.name}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
+        self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
@@ -79,10 +80,7 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [
-            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
-            for m in self.output["m0dif_dirs"]
-        ]
+        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -140,6 +138,12 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.exception(e, exc_info=True)
             return False
 
+    def kill_and_fail(self):
+        with open(self.kill_file, "w") as f:
+            self.logger.warning(f"Killing job {self.name}")
+            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        return Task.FINISHED_FAILURE
+
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
@@ -152,7 +156,7 @@ class BiasCor(ConfigBasedExecutable):
                     for dir in self.output["m0dif_dirs"]:
                         log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
                     self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return Task.FINISHED_FAILURE
+                    return self.kill_and_fail()
 
                 if not os.path.exists(self.w_summary):
                     wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
@@ -161,7 +165,6 @@ class BiasCor(ConfigBasedExecutable):
                         with open(path) as f2:
                             if "ERROR:" in f2.read():
                                 self.logger.error(f"Error found in wfit file: {path}")
-                                failed = True
                     for path in m0files:
                         with open(path) as f2:
                             for line in f2.readlines():
@@ -224,14 +227,10 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = (
-                self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
-            )
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get(
-                "WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"
-            )
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
 
         keys = [x.upper() for x in self.options.keys()]
         if "NSPLITRAN" in keys:

@@ -61,6 +61,7 @@ class SNANASimulation(ConfigBasedExecutable):
         self.total_summary = os.path.join(self.sim_log_dir, "MERGE.LOG")
         self.done_file = f"{self.output_dir}/LOGS/ALL.DONE"
         self.logging_file = self.config_path.replace(".input", ".LOG")
+        self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
 
         if "EXTERNAL" not in self.config.keys():
             # Deterime the type of each component
@@ -336,6 +337,12 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
 
+    def kill_and_fail(self):
+        with open(self.kill_file, "w") as f:
+            self.logger.warning(f"Killing job {self.name}")
+            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        return Task.FINISHED_FAILURE
+
     def _check_completion(self, squeue):
 
         if os.path.exists(self.done_file):
@@ -351,7 +358,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     else:
                         self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
                     self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return Task.FINISHED_FAILURE
+                    return self.kill_and_fail()
 
             if os.path.exists(self.total_summary):
                 y = read_yaml(self.total_summary)
@@ -366,7 +373,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         self.logger.info(f"Simulation {i + 1} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
                 else:
                     self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
-                    return Task.FINISHED_FAILURE
+                    return self.kill_and_fail()
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
 

@@ -50,7 +50,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.lc_log_dir = os.path.join(self.lc_output_dir, "SPLIT_JOBS_LCFIT")
         self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
 
-        self.logging_file = self.config_path.replace(".nml", ".nml_log")
+        self.logging_file = self.config_path.replace(".nml", ".LOG")
+        self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
+
         self.done_file = f"{self.lc_output_dir}/ALL.DONE"
 
         self.merge_log = os.path.join(self.lc_output_dir, "MERGE.LOG")
@@ -249,6 +251,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             subprocess.run(["submit_batch_jobs.sh", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return True
 
+    def kill_and_fail(self):
+        with open(self.kill_file, "w") as f:
+            self.logger.warning(f"Killing job {self.name}")
+            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        return Task.FINISHED_FAILURE
+
     def _check_completion(self, squeue):
 
         # Check for existence of SPLIT_JOBS_LCFIT.tar.gz to see if job is done
@@ -272,9 +280,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                                 else:
                                     cpu = cpu / 60
                                     units = "hours"
-                                self.logger.info(
-                                    f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
-                                )
+                                self.logger.info(f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}")
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
