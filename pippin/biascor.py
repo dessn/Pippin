@@ -239,14 +239,12 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = (
-                self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
-            )
+            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = self.yaml["CONFIG"].get(
-                "WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"
-            )
+            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
 
         keys = [x.upper() for x in self.options.keys()]
         if "NSPLITRAN" in keys:
