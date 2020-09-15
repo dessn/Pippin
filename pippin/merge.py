@@ -159,7 +159,7 @@ class Merger(Task):
                             os.symlink(os.path.join(s[1], "FITOPT000.FITRES.gz"), os.path.join(s[1], s[2]))
 
                     self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
-                    filenames = ["MERGE.LOG", "FITOPT.README"]
+                    filenames = ["MERGE.LOG", "FITOPT.README", "SUBMIT.INFO"]
                     for f in filenames:
                         original = os.path.join(self.lc_fit["lc_output_dir"], f)
                         moved = os.path.join(self.suboutput_dir, f)
