@@ -153,7 +153,8 @@ class BiasCor(ConfigBasedExecutable):
         log_files = [self.logging_file]
 
         for dir in self.output["m0dif_dirs"]:
-            log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
+            if os.path.exists(dir):
+                log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
         self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
         return self.kill_and_fail()
 
