@@ -214,7 +214,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.yaml["CONFIG"]["VERSION"] = [self.sim_version]
 
         self.yaml["CONFIG"]["OUTDIR"] = self.lc_output_dir
-        self.yaml["CONFIG"]["DONE_STAMP"] = "ALL.DONE"
+        # self.yaml["CONFIG"]["DONE_STAMP"] = "ALL.DONE"
 
         if isinstance(self.sim_task, DataPrep):
             self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
