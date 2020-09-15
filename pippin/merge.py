@@ -115,6 +115,8 @@ class Merger(Task):
                 "--outfile_text",
                 os.path.basename(fitres_file),
                 "T",
+                "-nullval_float",
+                "0",
             ]
             try:
                 self.logger.debug(f"Executing command {' '.join(command)}")
