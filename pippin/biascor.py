@@ -75,7 +75,7 @@ class BiasCor(ConfigBasedExecutable):
             self.output["subdirs"] = [f"SPLITRAN-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
         else:
             if num_dirs == 1:
-                self.output["subdirs"] = ["SALT2mu_FITJOBS"]
+                self.output["subdirs"] = ["OUTPUT_BBCFIT"]
             else:
                 self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
 

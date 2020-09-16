@@ -16,39 +16,48 @@ DATAPREP:
       BLIND: False
 
 SIM:
+  DES_SIM:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 2 12345
+
+  LOWZ_SIM:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_CHANGE: 2 12345
+
+  DES_NSPLIT:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 2 12345
+
+  LOWZ_NSPLIT:
+    IA_G10_LOWZ:
+      BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 2 12345
+
   DESSIMBIAS3YRIA_C11:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS3YRIA_C11
   DESSIMBIAS3YRIA_G10:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS3YRIA_G10
+
   LOWZSIMBIAS_G10:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/LOWZSIMBIAS_G10
   LOWZSIMBIAS_C11:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/LOWZSIMBIAS_C11
 
 LCFIT:
-  # Run the full fitopts again only the data
-  LS:
-    BASE: surveys/lowz/lcfit_nml/lowz.nml
-    MASK: DATALOWZ
-    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
-    SNLCINP:
-      USE_MINOS: F
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
-
-  DS:
-    BASE: surveys/des/lcfit_nml/des_3yr.nml
-    MASK: DATADES
-    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
-    SNLCINP:
-      USE_MINOS: F
-    OPTS:
-      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
-
-  # For the biascor sims, fit without fitopt
   L:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
-    MASK: LOWZSIM
+    MASK: LOWZ
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -59,7 +68,7 @@ LCFIT:
 
   D:
     BASE: surveys/des/lcfit_nml/des_3yr.nml
-    MASK: DESSIM
+    MASK: DES
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -84,13 +93,32 @@ MERGE:
       - $PIPPIN_OUTPUT/GLOBAL/5_MERGE/MERGE_D_DESSIMBIAS3YRIA_G10
 
 BIASCOR:
-  3YR:
+
+  DATA_ONE:
     BASE: surveys/des/bbc/bbc_3yr.input
-    DATA: [DS_DATADES3YR, LS_DATALOWZ]
-    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10, L_LOWZSIMBIAS_G10]
-    MUOPTS:
-      C11:
-        SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_C11, L_LOWZSIMBIAS_C11]
+    DATA: [ D_DATADES3YR ]
+    SIMFILE_BIASCOR: [ D_DESSIMBIAS3YRIA_G10 ]
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
-      chi2max: 16
+
+  DATA_BOTH:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [D_DATADES3YR, L_DATALOWZ]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10, L_LOWZSIMBIAS_G10]
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+
+  NSPLITRAN:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [D_DES_NSPLIT, L_LOWZ_NSPLIT]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10, L_LOWZSIMBIAS_G10]
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
+      NSPLITRAN: 2
+
+  CHANGE:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [D_DES_SIM, L_LOWZ_SIM]
+    SIMFILE_BIASCOR: [D_DESSIMBIAS3YRIA_G10, L_LOWZSIMBIAS_G10]
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
