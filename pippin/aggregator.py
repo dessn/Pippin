@@ -269,11 +269,17 @@ class Aggregator(Task):
                 if len(headers) == 0:
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
 
-                    cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
+                    cmd = "grep --exclude-dir=* TYPE *.dat | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}  in dir {phot_dir}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
+
+                    cmd = "zgrep TYPE *.dat.gz | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
+                    output2 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output2 if x]
 
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                     snid = [x[1:] if x.startswith("0") else x for x in snid]
