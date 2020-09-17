@@ -154,7 +154,8 @@ class BiasCor(ConfigBasedExecutable):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
             with open(self.done_file) as f:
-                if "FAIL" in f.read():
+                content = f.read().upper()
+                if "FAIL" in content or "STOP" in content:
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
                     return self.check_issues()
 
