@@ -200,9 +200,11 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("varname_pIa", self.probability_column_name)
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
 
+        yaml_keys = ["NSPLITRAN"]
+
         for key, value in self.options.items():
             assignment = "="
-            if key.upper().startswith("BATCH"):
+            if key.upper().startswith("BATCH") or key.upper() in yaml_keys:
                 self.yaml["CONFIG"][key] = value
                 continue
             if key.upper().startswith("CUTWIN"):
