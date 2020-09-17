@@ -72,7 +72,7 @@ class BiasCor(ConfigBasedExecutable):
         num_dirs = self.num_verions[0]
 
         if self.output["NSPLITRAN"]:
-            self.output["subdirs"] = [f"SPLITRAN-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
+            self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
         else:
             if num_dirs == 1:
                 self.output["subdirs"] = ["OUTPUT_BBCFIT"]
