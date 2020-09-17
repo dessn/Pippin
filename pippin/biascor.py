@@ -7,7 +7,7 @@ import numpy as np
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml
 from pippin.merge import Merger
 from pippin.task import Task
 
@@ -113,29 +113,18 @@ class BiasCor(ConfigBasedExecutable):
 
     def generate_w_summary(self):
         try:
-            header = None
             rows = []
             for d in self.output["m0dif_dirs"]:
-                wpath1 = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
-                wpath2 = os.path.join(d, "wfit_M0DIF_FITOPT000_MUOPT000.COSPAR")
-                wpath3 = os.path.join(d, "wfit_SALT2mu_FITOPT000_MUOPT000.COSPAR")
-                wpath = None
-                if os.path.exists(wpath1):
-                    wpath = wpath1
-                elif os.path.exists(wpath2):
-                    wpath = wpath2
-                elif os.path.exists(wpath3):
-                    wpath = wpath3
-                if wpath is not None:
-                    with open(wpath) as f:
-                        lines = f.read().splitlines()
-                        header = ["VERSION"] + lines[0].split()[1:]
-                        values = [os.path.basename(d)] + lines[1].split()
-                        rows.append(values)
-                else:
-                    self.logger.warning(f"Cannot find file {wpath1} or {wpath2} or {wpath3} when generating wfit summary")
+                wpath = os.path.join(d, "wfit_FITOPT000_MUOPT000.YAML")
 
-            df = pd.DataFrame(rows, columns=header).apply(pd.to_numeric, errors="ignore")
+                if os.path.exists(wpath):
+                    wfit_results = read_yaml(wpath)
+                    wfit_results["VERSION"] = os.path.basename(d)
+                    rows.append(wfit_results)
+                else:
+                    self.logger.warning(f"Cannot find file {wpath} when generating wfit summary")
+
+            df = pd.DataFrame(rows).apply(pd.to_numeric, errors="ignore")
             self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
             df.to_csv(self.w_summary, index=False, float_format="%0.4f")
             return True
@@ -220,8 +209,6 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
-        # No longer need to set STRINGMATCH_IGNORE for only one genversion?
-        # self.yaml["CONFIG"]["STRINGMATCH_IGNORE"] = " ".join(self.genversions)
 
         for key, value in self.options.items():
             assignment = "="
@@ -247,15 +234,19 @@ class BiasCor(ConfigBasedExecutable):
             w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
             self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
 
-        keys = [x.upper() for x in self.options.keys()]
-        if "NSPLITRAN" in keys:
-            if "INPDIR+" in self.yaml["CONFIG"].keys():
-                del self.yaml["CONFIG"]["INPDIR+"]
-            # TODO: Find best way of checking for ranseed change as well and abort
-            self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
-            self.set_property("file", None, assignment="=")
-        else:
-            self.yaml["CONFIG"]["INPDIR+"] = self.data
+        # keys = [x.upper() for x in self.options.keys()]
+        # if "NSPLITRAN" in keys:
+        # No longer need to set STRINGMATCH_IGNORE for only one genversion?
+        # NSPLITRAN updates means we dont need to dick around again
+        # if "INPDIR+" in self.yaml["CONFIG"].keys():
+        #     del self.yaml["CONFIG"]["INPDIR+"]
+        # self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
+        # self.set_property("file", None, assignment="=")
+        # else:
+        # if len(self.data):
+        #     self.yaml["CONFIG"]["STRINGMATCH_IGNORE"] = " ".join(self.genversions)
+
+        self.yaml["CONFIG"]["INPDIR+"] = self.data
 
         # Set MUOPTS at top of file
         muopts = []
