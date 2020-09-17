@@ -138,14 +138,17 @@ class BiasCor(ConfigBasedExecutable):
             subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
         return Task.FINISHED_FAILURE
 
-    def check_issues(self):
+    def check_issues(self, kill=True):
         log_files = [self.logging_file]
 
         for dir in self.output["m0dif_dirs"]:
             if os.path.exists(dir):
                 log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
         self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-        return self.kill_and_fail()
+        if kill:
+            return self.kill_and_fail()
+        else:
+            return Task.FINISHED_FAILURE
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
@@ -156,24 +159,11 @@ class BiasCor(ConfigBasedExecutable):
                     return self.check_issues()
 
                 if not os.path.exists(self.w_summary):
-                    wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                    m0files = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu") and f.endswith(".M0DIF")]
-                    for path in wfiles:
-                        with open(path) as f2:
-                            if "ERROR:" in f2.read():
-                                self.logger.error(f"Error found in wfit file: {path}")
-                    for path in m0files:
-                        with open(path) as f2:
-                            for line in f2.readlines():
-                                if "WARNING(SEVERE):" in line:
-                                    self.logger.warning(f"File {path} reporting severe warning: {line}")
-                                    self.logger.warning("You wont see this warning on a rerun, so look into it now!")
-
                     if self.generate_w_summary():
                         return Task.FINISHED_SUCCESS
                     else:
                         self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
-                        return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
+                        return self.check_issues(kill=False)
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return Task.FINISHED_SUCCESS
