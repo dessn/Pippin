@@ -83,7 +83,10 @@ def parseLines(lines, key, narg, vbose, force_multi=False):
 
 def dataset(output_dir, base_output, strex1, strex2, sys=1):
     # DILLON: I replaced getcwd() because I'm specifying full output
-    g = open(output_dir + "/" + base_output + strex1 + ".dataset", "w+")
+
+    path = output_dir + "/" + base_output + strex1 + ".dataset"
+    print(f"Writing dataset to {path}")
+    g = open(path, "w+")
     # g=open(os.getcwd()+'/'+output_dir+'/'+base_output+strex1+'.dataset','w+');
     g.write("name = JLA\n")
     # g.write('data_file = '+os.getcwd()+'/'+output_dir+'/lcparam_'+base_output+strex2+'.txt\n');
