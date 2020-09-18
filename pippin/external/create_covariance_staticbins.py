@@ -379,8 +379,8 @@ def sysmat(
     file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF") or x.endswith(".M0DIF.gz")])
 
     if not file_lines:
-        print("No M0DIF files!!! This makes me sad!!! Im done here!!")
-        raise ValueError("No M0DIF files found")
+        print(f"No M0DIF files in {look_dir}!!! This makes me sad!!! Im done here!!")
+        raise ValueError(f"No M0DIF files found in {look_dir}")
 
     if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
