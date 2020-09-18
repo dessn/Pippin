@@ -77,7 +77,7 @@ class BiasCor(ConfigBasedExecutable):
             if num_dirs == 1:
                 self.output["subdirs"] = ["OUTPUT_BBCFIT"]
             else:
-                self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
+                self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)]
 
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
