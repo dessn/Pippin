@@ -37,6 +37,7 @@ import shutil
 import string
 import fnmatch
 
+import yaml
 
 SNDATA_ROOT = os.environ["SNDATA_ROOT"]
 HOSTNAME = os.environ["HOSTNAME"]
@@ -329,6 +330,12 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     print(output_dir + "/sys_" + base_output + ".txt")
 
 
+def read_yaml(path):
+    print(f"Opening {path} to read as YAML")
+    with open(path) as f:
+        return yaml.safe_load(f.read())
+
+
 def sysmat(
     base_output,
     fitopt="_",
@@ -382,14 +389,13 @@ def sysmat(
         print(f"No M0DIF files in {look_dir}!!! This makes me sad!!! Im done here!!")
         raise ValueError(f"No M0DIF files found in {look_dir}")
 
-    if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
-        print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
-        print("Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!")
-        raise ValueError("No M0DIF files found")
+    log_file = os.path.join(topdir, "MERGE.LOG")
 
-    if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
-        log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
-    print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
+    if not os.path.exists(log_file):
+        print(f"{log_file} not found This makes me sad!!! Im done here!!")
+        raise ValueError(f"Cannot find {log_file}")
+
+    log_lines = read_yaml(log_file)
 
     filesize = len(file_lines)  # read in number of M0DIF files
     print("Total of " + str(filesize) + " M0DIF files")
