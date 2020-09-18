@@ -380,12 +380,12 @@ def sysmat(
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
-        return 0
+        raise ValueError("No M0DIF files found")
 
     if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
         print("Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!")
-        return 0
+        raise ValueError("No M0DIF files found")
 
     if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
