@@ -82,10 +82,7 @@ class BiasCor(ConfigBasedExecutable):
         self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [
-            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
-            for m in self.output["m0dif_dirs"]
-        ]
+        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -248,7 +245,7 @@ class BiasCor(ConfigBasedExecutable):
             prob_ia_col = self.probability_column_name
             value = self.muopts[label]
 
-            mu_str = f"[{label}] "
+            mu_str = f"/{label}/ "
             if value.get("SIMFILE_BIASCOR"):
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
             if value.get("SIMFILE_CCPRIOR"):
