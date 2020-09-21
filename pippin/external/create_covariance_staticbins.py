@@ -37,7 +37,6 @@ import shutil
 import string
 import fnmatch
 
-import yaml
 
 SNDATA_ROOT = os.environ["SNDATA_ROOT"]
 HOSTNAME = os.environ["HOSTNAME"]
@@ -84,10 +83,7 @@ def parseLines(lines, key, narg, vbose, force_multi=False):
 
 def dataset(output_dir, base_output, strex1, strex2, sys=1):
     # DILLON: I replaced getcwd() because I'm specifying full output
-
-    path = output_dir + "/" + base_output + strex1 + ".dataset"
-    print(f"Writing dataset to {path}")
-    g = open(path, "w+")
+    g = open(output_dir + "/" + base_output + strex1 + ".dataset", "w+")
     # g=open(os.getcwd()+'/'+output_dir+'/'+base_output+strex1+'.dataset','w+');
     g.write("name = JLA\n")
     # g.write('data_file = '+os.getcwd()+'/'+output_dir+'/lcparam_'+base_output+strex2+'.txt\n');
@@ -330,12 +326,6 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     print(output_dir + "/sys_" + base_output + ".txt")
 
 
-def read_yaml(path):
-    print(f"Opening {path} to read as YAML")
-    with open(path) as f:
-        return yaml.safe_load(f.read())
-
-
 def sysmat(
     base_output,
     fitopt="_",
@@ -383,25 +373,26 @@ def sysmat(
 
     look_dir = os.path.join(topdir, subdir)
 
-    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF") or x.endswith(".M0DIF.gz")])
+    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
 
     if not file_lines:
-        print(f"No M0DIF files in {look_dir}!!! This makes me sad!!! Im done here!!")
-        raise ValueError(f"No M0DIF files found in {look_dir}")
+        print("No M0DIF files!!! This makes me sad!!! Im done here!!")
+        return 0
 
-    submit_info = os.path.join(topdir, "SUBMIT.INFO")
+    if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
+        print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
+        print("Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!")
+        return 0
 
-    if not os.path.exists(submit_info):
-        print(f"{submit_info} not found This makes me sad!!! Im done here!!")
-        raise ValueError(f"Cannot find {submit_info}")
-
-    log_lines = read_yaml(submit_info)
+    if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
+        log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
+    print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
 
     filesize = len(file_lines)  # read in number of M0DIF files
     print("Total of " + str(filesize) + " M0DIF files")
 
-    muopt_designations = []
-    muopt_labels = []
+    MUOPT_var1 = []
+    MUOPT_var2 = []
 
     FITOPT_var1 = []
     FITOPT_var2 = []
@@ -412,9 +403,12 @@ def sysmat(
 
     INPDIR1 = []
 
-    for designation, label, args in log_lines["MUOPT_LIST"]:
-        muopt_designations.append(designation)
-        muopt_labels.append("NONE" if label is None else label)
+    for xco in range(0, len(log_lines)):
+        if "MUOPT:" in log_lines[xco]:
+            mu_split = log_lines[xco].split()
+            print(mu_split)
+            MUOPT_var1 = np.append(MUOPT_var1, "MUOPT" + mu_split[1])
+            MUOPT_var2 = np.append(MUOPT_var2, mu_split[2][1:-1])
 
         if "INPDIR+:" in log_lines[xco]:
             mu_split = log_lines[xco].split()
@@ -497,7 +491,7 @@ def sysmat(
         # SALT2mu_SNLS+SDSS+LOWZ+PS1_Scolnic2+HST/DS17/SALT2mu_FITOPT000_MUOPT000.M0DIF
         # stop
         xx1 = FITOPT_var1 == file_lines[xco].split("_")[-2]
-        xx2 = muopt_designations == file_lines[xco].split("_")[-1].split(".M0DIF")[0]
+        xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1][:-6]
         skipc = linef(file_lines[xco], "VARNAMES")
         z2, mu2, mu2e = np.loadtxt(file_lines[xco], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
         print(file_lines[xco])
@@ -526,7 +520,7 @@ def sysmat(
             comatch = 0
             for y1 in range(0, len(SYSOPT_var1)):
                 filtered1 = fnmatch.filter([FITOPT_var2[xx1][0]], SYSOPT_var1[y1])
-                filtered2 = fnmatch.filter([muopt_labels[xx2][0]], SYSOPT_var2[y1])
+                filtered2 = fnmatch.filter([MUOPT_var2[xx2][0]], SYSOPT_var2[y1])
                 if (len(filtered1) > 0) & (len(filtered2) > 0):
                     print("sys", SYSOPT_var3)
                     sys_ratio = float(SYSOPT_var3[y1])
@@ -581,19 +575,19 @@ def sysmat(
             if syscheck1[0] == "=":
                 sys_flag1 = syscheck1[1:] == FITOPT_var2[xx1][0]
             if syscheck2[0] == "-":
-                sys_flag2 = syscheck2[1:] not in muopt_labels[xx2][0]
+                sys_flag2 = syscheck2[1:] not in MUOPT_var2[xx2][0]
             if syscheck2[0] == "+":
-                sys_flag2 = syscheck2[1:] in muopt_labels[xx2][0]
+                sys_flag2 = syscheck2[1:] in MUOPT_var2[xx2][0]
             if syscheck2[0] == "=":
-                sys_flag2 = syscheck2[1:] == muopt_labels[xx2][0]
+                sys_flag2 = syscheck2[1:] == MUOPT_var2[xx2][0]
             if syscheck1[0] == "-":
                 print(sys_flag1)
                 print(sys_flag2)
-                print(FITOPT_var2[xx1][0], muopt_labels[xx2][0], (sys_flag1) & (sys_flag2))
+                print(FITOPT_var2[xx1][0], MUOPT_var2[xx2][0], (sys_flag1) & (sys_flag2))
                 # stop
             if (sys_flag1) & (sys_flag2):
                 logf.write(
-                    FITOPT_var2[xx1][0] + " " + muopt_labels[xx2][0] + " " + syscheck1[0:] + " " + syscheck2[0:] + " " + str(x) + " " + str(sys_ratio) + " \n"
+                    FITOPT_var2[xx1][0] + " " + MUOPT_var2[xx2][0] + " " + syscheck1[0:] + " " + syscheck2[0:] + " " + str(x) + " " + str(sys_ratio) + " \n"
                 )
                 bigmatmm[:, :, x] = np.add(bigmatmm[:, :, x], np.multiply(dmm, 1.0))
 
