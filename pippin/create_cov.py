@@ -51,7 +51,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/des/bbc/scale_5yr.list"))
+        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/des/bbc/scale_5yr.yml"))
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
@@ -78,9 +78,14 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --account=pi-rkessler
 #SBATCH --mem=1GB
 
-cd {path_to_code}
-source activate
-python create_covariance_staticbins.py {input_file} {done_file}
+cd {output_dir}
+conda activate
+python {path_to_code}/create_covariance.py {input_file}
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file}
+else
+    echo FAILURE > {done_file}
+fi
 """
 
     def _check_completion(self, squeue):
@@ -96,22 +101,13 @@ python create_covariance_staticbins.py {input_file} {done_file}
 
     def calculate_input(self):
         self.logger.debug(f"Calculating input")
-        self.set_property("COSMOMC_TEMPLATES", get_data_loc(self.templates_dir))
-        self.set_property("BASEOUTPUT", self.name)
-        self.set_property("SYSFILE", self.sys_file_out)
-        self.set_property("TOPDIR", self.biascor_dep.output["fit_output_dir"])
-        self.set_property("OUTPUTDIR", self.config_dir)
-        self.set_property("SUBDIR", self.biascor_dep.output["subdirs"][self.index])
-        self.set_property("ROOTDIR", self.chain_dir)
-        self.set_property("SYSDEFAULT", self.options.get("SYSDEFAULT", 0))
-
-        # More bs hacks
-        covopt_str = ""
-        for i, covopt in enumerate(self.options.get("COVOPTS", [])):
-            if i > 0:
-                covopt_str += "COVOPT: "
-            covopt_str += covopt + "\n"
-        self.set_property("COVOPT", covopt_str)
+        self.yaml["COSMOMC_TEMPLATES"] = get_data_loc(self.templates_dir)
+        self.yaml["NAME"] = self.name
+        self.yaml["SYSFILE"] = self.sys_file_out
+        self.yaml["INPUT_DIR"] = self.biascor_dep.output["fit_output_dir"]
+        self.yaml["OUTDIR"] = self.config_dir
+        self.yaml["VERSION"] = self.biascor_dep.output["subdirs"][self.index]
+        self.yaml["COVOPTS"] = self.options.get("COVOPTS", [])
 
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords
@@ -145,6 +141,7 @@ python create_covariance_staticbins.py {input_file} {done_file}
             "done_file": self.done_file,
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
+            "output_dir": self.output_dir,
         }
         final_slurm = self.slurm.format(**format_dict)
 
