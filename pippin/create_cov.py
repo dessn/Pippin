@@ -145,7 +145,7 @@ fi
         }
         final_slurm = self.slurm.format(**format_dict)
 
-        final_output_for_hash = self.get_output_string() + sys_scale + final_slurm
+        final_output_for_hash = self.get_output_string() + "\n".join(sys_scale) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
         old_hash = self.get_old_hash()
