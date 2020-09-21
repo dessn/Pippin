@@ -167,7 +167,7 @@ fi
                 f.write(final_slurm)
 
             self.logger.info(f"Submitting batch job for data prep")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir, shell=True)
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
