@@ -51,7 +51,7 @@ def get_m0difs(folder):
 
 
 def get_fitopt_muopt_from_name(name):
-    f = int(name.split("FITOPT")[0][:3])
+    f = int(name.split("FITOPT")[1][:3])
     m = int(name.split("MUOPT")[1][:3])
     return f, m
 
@@ -109,7 +109,7 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
             df_compare = m0difs[get_name_from_fitopt_muopt(0, 0)]
             cov = get_cov_from_diff(df, df_compare, scale)
 
-        result[name] = fitopt_label, muopt_label, cov
+        result[f"{fitopt_label}|{muopt_label}"] = fitopt_label, muopt_label, cov
     return result, base
 
 
@@ -121,6 +121,8 @@ def apply_filter(string, pattern):
         return pattern[1:] in string
     elif pattern.startswith("-"):
         return pattern[1:] not in string
+    elif pattern == "":
+        return True
     else:
         raise ValueError(f"Unable to parse COVOPT matching pattern {pattern}")
 
@@ -131,7 +133,7 @@ def get_cov_from_covopt(covopt, contributions):
     # legacy, but dont want to make too many people change how they are doing things
     # in one go
     label, fitopt_filter, muopt_filter = re.findall(r"\[(.*)\] \[(.*),(.*)\]", covopt)[0]
-    logging.debug(f"Computing cov for COVOPT {label} with FITOPT filter {fitopt_filter} and MUOPT filter {muopt_filter}")
+    logging.debug(f"Computing cov for COVOPT {label} with FITOPT filter '{fitopt_filter}' and MUOPT filter '{muopt_filter}'")
 
     final_cov = None
 
@@ -142,7 +144,7 @@ def get_cov_from_covopt(covopt, contributions):
                 final_cov = cov.copy()
             else:
                 final_cov += cov
-    return label, final_cov
+    return final_cov
 
 
 def write_dataset(path, lcparam_file, cov_file):
@@ -243,7 +245,7 @@ def create_covariance(config):
     # Also need to get the FITOPT labels from the original LCFIT directory
     lcfit_info = read_yaml(Path(submit_info["INPDIR_LIST"][0]) / "SUBMIT.INFO")
     fitopt_scales = get_fitopt_scales(lcfit_info, sys_scale)
-    muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in lcfit_info["MUOPT_LIST"]}
+    muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info["MUOPT_LIST"]}
 
     # Now that we have the data, figure out how each much each FITOPT/MUOPT pair contributes to cov
     contributions, base = get_contributions(m0difs, fitopt_scales, muopt_labels)
@@ -258,6 +260,7 @@ def create_covariance(config):
 
 if __name__ == "__main__":
     try:
+        setup_logging()
         args = get_args()
         config = read_yaml(args.input)
         create_covariance(config)
