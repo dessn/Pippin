@@ -171,3 +171,4 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[cal] [+cal,=DEFAULT]"

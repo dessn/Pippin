@@ -389,19 +389,19 @@ def sysmat(
         print(f"No M0DIF files in {look_dir}!!! This makes me sad!!! Im done here!!")
         raise ValueError(f"No M0DIF files found in {look_dir}")
 
-    log_file = os.path.join(topdir, "MERGE.LOG")
+    submit_info = os.path.join(topdir, "SUBMIT.INFO")
 
-    if not os.path.exists(log_file):
-        print(f"{log_file} not found This makes me sad!!! Im done here!!")
-        raise ValueError(f"Cannot find {log_file}")
+    if not os.path.exists(submit_info):
+        print(f"{submit_info} not found This makes me sad!!! Im done here!!")
+        raise ValueError(f"Cannot find {submit_info}")
 
-    log_lines = read_yaml(log_file)
+    log_lines = read_yaml(submit_info)
 
     filesize = len(file_lines)  # read in number of M0DIF files
     print("Total of " + str(filesize) + " M0DIF files")
 
-    MUOPT_var1 = []
-    MUOPT_var2 = []
+    muopt_designations = []
+    muopt_labels = []
 
     FITOPT_var1 = []
     FITOPT_var2 = []
@@ -412,12 +412,9 @@ def sysmat(
 
     INPDIR1 = []
 
-    for xco in range(0, len(log_lines)):
-        if "MUOPT:" in log_lines[xco]:
-            mu_split = log_lines[xco].split()
-            print(mu_split)
-            MUOPT_var1 = np.append(MUOPT_var1, "MUOPT" + mu_split[1])
-            MUOPT_var2 = np.append(MUOPT_var2, mu_split[2][1:-1])
+    for designation, label, args in log_lines["MUOPT_LIST"]:
+        muopt_designations.append(designation)
+        muopt_labels.append("NONE" if label is None else label)
 
         if "INPDIR+:" in log_lines[xco]:
             mu_split = log_lines[xco].split()
@@ -500,7 +497,7 @@ def sysmat(
         # SALT2mu_SNLS+SDSS+LOWZ+PS1_Scolnic2+HST/DS17/SALT2mu_FITOPT000_MUOPT000.M0DIF
         # stop
         xx1 = FITOPT_var1 == file_lines[xco].split("_")[-2]
-        xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1].split(".M0DIF")[0]
+        xx2 = muopt_designations == file_lines[xco].split("_")[-1].split(".M0DIF")[0]
         skipc = linef(file_lines[xco], "VARNAMES")
         z2, mu2, mu2e = np.loadtxt(file_lines[xco], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
         print(file_lines[xco])
@@ -529,7 +526,7 @@ def sysmat(
             comatch = 0
             for y1 in range(0, len(SYSOPT_var1)):
                 filtered1 = fnmatch.filter([FITOPT_var2[xx1][0]], SYSOPT_var1[y1])
-                filtered2 = fnmatch.filter([MUOPT_var2[xx2][0]], SYSOPT_var2[y1])
+                filtered2 = fnmatch.filter([muopt_labels[xx2][0]], SYSOPT_var2[y1])
                 if (len(filtered1) > 0) & (len(filtered2) > 0):
                     print("sys", SYSOPT_var3)
                     sys_ratio = float(SYSOPT_var3[y1])
@@ -584,19 +581,19 @@ def sysmat(
             if syscheck1[0] == "=":
                 sys_flag1 = syscheck1[1:] == FITOPT_var2[xx1][0]
             if syscheck2[0] == "-":
-                sys_flag2 = syscheck2[1:] not in MUOPT_var2[xx2][0]
+                sys_flag2 = syscheck2[1:] not in muopt_labels[xx2][0]
             if syscheck2[0] == "+":
-                sys_flag2 = syscheck2[1:] in MUOPT_var2[xx2][0]
+                sys_flag2 = syscheck2[1:] in muopt_labels[xx2][0]
             if syscheck2[0] == "=":
-                sys_flag2 = syscheck2[1:] == MUOPT_var2[xx2][0]
+                sys_flag2 = syscheck2[1:] == muopt_labels[xx2][0]
             if syscheck1[0] == "-":
                 print(sys_flag1)
                 print(sys_flag2)
-                print(FITOPT_var2[xx1][0], MUOPT_var2[xx2][0], (sys_flag1) & (sys_flag2))
+                print(FITOPT_var2[xx1][0], muopt_labels[xx2][0], (sys_flag1) & (sys_flag2))
                 # stop
             if (sys_flag1) & (sys_flag2):
                 logf.write(
-                    FITOPT_var2[xx1][0] + " " + MUOPT_var2[xx2][0] + " " + syscheck1[0:] + " " + syscheck2[0:] + " " + str(x) + " " + str(sys_ratio) + " \n"
+                    FITOPT_var2[xx1][0] + " " + muopt_labels[xx2][0] + " " + syscheck1[0:] + " " + syscheck2[0:] + " " + str(x) + " " + str(sys_ratio) + " \n"
                 )
                 bigmatmm[:, :, x] = np.add(bigmatmm[:, :, x], np.multiply(dmm, 1.0))
 
