@@ -145,7 +145,9 @@ fi
         }
         final_slurm = self.slurm.format(**format_dict)
 
-        new_hash = self.get_hash_from_string("\n".join(self.base + sys_scale) + final_slurm)
+        final_output_for_hash = self.get_output_string() + sys_scale + final_slurm
+
+        new_hash = self.get_hash_from_string(final_output_for_hash)
         old_hash = self.get_old_hash()
 
         if force_refresh or new_hash != old_hash:
@@ -158,7 +160,7 @@ fi
             with open(self.sys_file_out, "w") as f:
                 f.write("\n".join(sys_scale))
             with open(self.input_file, "w") as f:
-                f.write("\n".join(self.base))
+                f.write(self.get_output_string())
             # Write out slurm job script
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
