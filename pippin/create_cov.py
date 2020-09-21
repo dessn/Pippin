@@ -79,7 +79,7 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --mem=1GB
 
 cd {output_dir}
-conda activate
+source activate
 python {path_to_code}/create_covariance.py {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
