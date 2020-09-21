@@ -14,7 +14,7 @@ VPEC_bscr: 1
 zshift_newsys: 0.4
 DES_ZP_g_survcal: 0.3
 DES_ZP_r_survcal: 0.2
-DES_ZP_i_survcal: 0.2		
+DES_ZP_i_survcal: 0.2
 DES_ZP_z_survcal: 0.3
 DES_wave_g_survcal: 0.6
 DES_wave_r_survcal: 0.6
