@@ -4,9 +4,11 @@ import subprocess
 import os
 from pathlib import Path
 
+import yaml
+
 from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config, get_data_loc
+from pippin.config import mkdirs, get_config, get_data_loc, read_yaml
 from pippin.task import Task
 
 
@@ -52,7 +54,7 @@ class CreateCov(ConfigBasedExecutable):
 
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/des/bbc/scale_5yr.yml"))
-        self.sys_file_out = os.path.join(self.output_dir, "sys_scale.LIST")
+        self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
 
@@ -112,26 +114,8 @@ fi
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords
         self.logger.debug(f"Leading sys scaling from {self.sys_file_in}")
-        with open(self.sys_file_in) as f:
-            sys_scale = f.read().splitlines()
-
-            # Overwrite the fitopt scales
-            fitopt_scale_overwrites = self.options.get("FITOPT_SCALES", {})
-            for label, overwrite in fitopt_scale_overwrites.items():
-                for i, line in enumerate(sys_scale):
-                    comps = line.split()
-                    if label in comps[1]:
-                        sys_scale[i] = " ".join(comps[:-1] + [f"{overwrite}"])
-                        self.logger.debug(f"FITOPT_SCALES: Setting {' '.join(comps)} to {sys_scale[i]}")
-
-            # Set the muopts scales
-            muopt_scales = self.options.get("MUOPT_SCALES", {})
-            muopts = self.biascor_dep.output["muopts"]
-            for muopt in muopts:
-                scale = muopt_scales.get(muopt, 1.0)
-                sys_scale.append(f"ERRSCALE: DEFAULT {muopt} {scale}")
-
-            return sys_scale
+        sys_scale = {**read_yaml(self.sys_file_in), **self.options.get("FITOPT_SCALES", {})}
+        return sys_scale
 
     def _run(self, force_refresh):
         sys_scale = self.calculate_input()
@@ -145,7 +129,7 @@ fi
         }
         final_slurm = self.slurm.format(**format_dict)
 
-        final_output_for_hash = self.get_output_string() + "\n".join(sys_scale) + final_slurm
+        final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
         old_hash = self.get_old_hash()
@@ -158,7 +142,8 @@ fi
             self.save_new_hash(new_hash)
             # Write sys scales and the main input file
             with open(self.sys_file_out, "w") as f:
-                f.write("\n".join(sys_scale))
+                f.write(yaml.safe_dump(sys_scale, width=2048))
+
             with open(self.input_file, "w") as f:
                 f.write(self.get_output_string())
             # Write out slurm job script
