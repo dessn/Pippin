@@ -177,3 +177,7 @@ COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_omw
+
+ANALYSE:
+  ALL_OMW:
+    MASK_COSMOMC: OMW
