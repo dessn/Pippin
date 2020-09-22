@@ -205,7 +205,7 @@ def write_output(config, covs, base):
 
         write_covariance(cov_file, cov)
         write_dataset(dataset_file, lcparam_file, cov_file)
-        dataset_files.append(cov_file)
+        dataset_files.append(dataset_file)
 
     # Copy some INI files
     ini_files = [f for f in os.listdir(config["COSMOMC_TEMPLATES"]) if f.endswith(".ini")]
