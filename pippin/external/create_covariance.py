@@ -65,8 +65,9 @@ def get_fitopt_scales(lcfit_info, sys_scales):
     fitopt_list = lcfit_info["FITOPT_LIST"]
     result = {}
     for name, label, _ in fitopt_list:
-        if label not in sys_scales:
-            logging.warning(f"No FITOPT scale found for {label} in input options: {sys_scales}")
+        if label != "DEFAULT":
+            if label not in sys_scales:
+                logging.warning(f"No FITOPT scale found for {label} in input options: {sys_scales}")
         scale = sys_scales.get(label, 1.0)
         d = int(name.replace("FITOPT", ""))
         result[d] = (label, scale)
@@ -97,19 +98,19 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
 
         # Depending on f and m, compute the contribution to the covariance matrix
         if f == 0 and m == 0:
-            # This is the base file, so return it as a diagonal matrix
-            cov = np.diag(df["MUDIFERR"] ** 2)
+            # This is the base file, so don't return anything. CosmoMC will add the diag terms itself.
+            cov = np.zeros((df["MUDIFERR"].size, df["MUDIFERR"].size))
             base = df
         elif m:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
-            df_compare = m0difs[get_name_from_fitopt_muopt(0, m)]
+            df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
             cov = get_cov_from_diff(df, df_compare, scale)
         else:
             # This is a fitopt with MUOPT000, compare to base file
             df_compare = m0difs[get_name_from_fitopt_muopt(0, 0)]
             cov = get_cov_from_diff(df, df_compare, scale)
 
-        result[f"{fitopt_label}|{muopt_label}"] = fitopt_label, muopt_label, cov
+        result[f"{fitopt_label}|{muopt_label}"] = cov
     return result, base
 
 
@@ -185,7 +186,7 @@ def write_covariance(path, cov):
     with open(path, "w") as f:
         f.write(f"{cov.shape[0]}\n")
         for c in cov.flatten():
-            f.write(f"{c}\n")
+            f.write(f"{c:0.8f}\n")
 
 
 def write_output(config, covs, base):
@@ -198,7 +199,7 @@ def write_output(config, covs, base):
     write_lcparam(lcparam_file, base)
 
     # Create covariance matrices and datasets
-    for i, (label, cov) in enumerate(covs):
+    for i, cov in enumerate(covs):
         cov_file = out / f"sys_{i}.txt"
         dataset_file = out / f"dataset_{i}.txt"
 
@@ -217,16 +218,16 @@ def write_output(config, covs, base):
             shutil.copy(op, npath)
         else:
             # Else we need one of each ini per covopt
-            for i, (label, cov) in enumerate(covs):
+            for i, cov in enumerate(covs):
                 # Copy with new index
                 npath = out / ini.replace(".ini", f"_{i}.ini")
                 shutil.copy(op, npath)
 
-                basename = os.path.basename(npath)
+                basename = os.path.basename(npath).replace(".ini", "")
 
                 # Append the dataset info
-                with open(npath, "w+") as f:
-                    f.write(f"file_root={basename}\n")
+                with open(npath, "a+") as f:
+                    f.write(f"\nfile_root={basename}\n")
                     f.write(f"jla_dataset={dataset_files[i]}\n")
                     f.write("root_dir = {root_dir}\n")
 
