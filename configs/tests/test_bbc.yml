@@ -172,3 +172,8 @@ CREATE_COV:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
         - "[cal] [+cal,=DEFAULT]"
+
+COSMOMC:
+  SN_OMW:
+    OPTS:
+      INI: sn_omw
