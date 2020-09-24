@@ -60,6 +60,7 @@ if __name__ == "__main__":
             truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
             shift_params = truth if args.get("SHIFT") else None
 
+            num_parsed = len(args.get("PARSED_FILES"))
             for index, basename in enumerate(args.get("PARSED_FILES")):
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
@@ -86,8 +87,9 @@ if __name__ == "__main__":
 
                     prior = norm.pdf(chain[:, om_index], loc=0.3, scale=prior)
                     weights *= prior
-
-                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=likelihood, shift_params=shift_params, linestyle=linestyle)
+                if num_parsed > 10:
+                    name = "CosmoMC Fit"
+                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=-likelihood, shift_params=shift_params, linestyle=linestyle)
 
             # Write all our glorious output
             out = args.get("OUTPUT_NAME")
