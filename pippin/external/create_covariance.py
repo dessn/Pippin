@@ -128,7 +128,7 @@ def apply_filter(string, pattern):
         raise ValueError(f"Unable to parse COVOPT matching pattern {pattern}")
 
 
-def get_cov_from_covopt(covopt, contributions):
+def get_cov_from_covopt(covopt, contributions, base):
     # Covopts will come in looking like "[cal] [+cal,=DEFAULT]"
     # We have to parse this. Eventually can make this structured and move away from
     # legacy, but dont want to make too many people change how they are doing things
@@ -148,8 +148,9 @@ def get_cov_from_covopt(covopt, contributions):
 
     # Validate that the final_cov is invertible
     try:
-        np.linalg.inv(final_cov)
-        raise np.linalg.LinAlgError("Covariance is not invertible")  # Testing epxlicit failure
+        # CosmoMC will add the diag terms, so lets do it here and make sure its all good
+        effective_cov = final_cov + np.diag(base["MUDIFERR"] ** 2)
+        np.linalg.inv(effective_cov)
     except np.linalg.LinAlgError as ex:
         logging.exception(f"Unable to invert covariance matrix for COVOPT {label}")
         raise ex
@@ -263,7 +264,7 @@ def create_covariance(config):
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
     covopts = ["[ALL] [,]"] + config["COVOPTS"]  # Adds the covopt to compute everything
-    covariances = [get_cov_from_covopt(c, contributions) for c in covopts]
+    covariances = [get_cov_from_covopt(c, contributions, base) for c in covopts]
 
     write_output(config, covariances, base)
 
