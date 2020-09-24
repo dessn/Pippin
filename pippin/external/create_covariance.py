@@ -145,6 +145,12 @@ def get_cov_from_covopt(covopt, contributions):
                 final_cov = cov.copy()
             else:
                 final_cov += cov
+
+    # Validate that the final_cov is invertible. Will error if it cant
+    logging.debug(f"Inverting cov for COVOPT {label}")
+    np.linalg.inv(final_cov)
+    raise np.linalg.LinAlgError("Covariance is not invertible")  # Testing epxlicit failure
+
     return final_cov
 
 

@@ -96,6 +96,7 @@ fi
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
                     self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                    self.scan_files_for_error([self.logfile], "EXCEPTION")
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
