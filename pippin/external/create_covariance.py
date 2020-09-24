@@ -146,10 +146,13 @@ def get_cov_from_covopt(covopt, contributions):
             else:
                 final_cov += cov
 
-    # Validate that the final_cov is invertible. Will error if it cant
-    logging.debug(f"Inverting cov for COVOPT {label}")
-    np.linalg.inv(final_cov)
-    raise np.linalg.LinAlgError("Covariance is not invertible")  # Testing epxlicit failure
+    # Validate that the final_cov is invertible
+    try:
+        np.linalg.inv(final_cov)
+        raise np.linalg.LinAlgError("Covariance is not invertible")  # Testing epxlicit failure
+    except np.linalg.LinAlgError as ex:
+        logging.exception(f"Unable to invert covariance matrix for COVOPT {label}")
+        raise ex
 
     return final_cov
 
@@ -272,5 +275,5 @@ if __name__ == "__main__":
         config = read_yaml(args.input)
         create_covariance(config)
     except Exception as e:
-        logging.exception(e, exc_info=e)
+        logging.exception(e)
         raise e
