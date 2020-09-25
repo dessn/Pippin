@@ -206,10 +206,6 @@ class BiasCor(ConfigBasedExecutable):
 
     def write_input(self, force_refresh):
 
-        if not os.path.exists(self.reject_list):
-            with open(self.reject_list, "w") as f:
-                pass
-
         if self.merged_iasim is not None:
             for m in self.merged_iasim:
                 if len(m.output["fitres_dirs"]) > 1:
@@ -316,7 +312,8 @@ class BiasCor(ConfigBasedExecutable):
 
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
-
+            with open(self.reject_list, "w") as f:
+                pass
             with open(self.config_path, "w") as f:
                 f.writelines(final_output)
             self.logger.info(f"Input file written to {self.config_path}")
