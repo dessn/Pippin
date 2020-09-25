@@ -624,6 +624,10 @@ BIASCOR:
     
     # Defaults to False. Will load in the recalibrated probabilities, and crash and burn if they dont exist.
     USE_RECALIBRATED: True
+    
+    # Defaults to True. If set to True, will rerun biascor twice, removing any SNID that got dropped in any FITOPT/MUOPT
+    CONSISTENT_SAMPLE: False
+
   
   # We can also specify muopts to add in systematics. They share the structure of the main biascor definition
   # You can have multiple, use a dict structure, with the muopt name being the key

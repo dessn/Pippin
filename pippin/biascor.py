@@ -31,7 +31,8 @@ class BiasCor(ConfigBasedExecutable):
             self.config["CLASSIFIER"] = self.classifier.name
         self.make_all = config.get("MAKE_ALL_HUBBLE", True)
         self.use_recalibrated = config.get("USE_RECALIBRATED", False)
-
+        self.consistent_sample = config.get("CONSISTENT_SAMPLE", True)
+        self.run_iteration = 0
         self.bias_cor_fits = None
         self.cc_prior_fits = None
         self.data = None
@@ -50,6 +51,11 @@ class BiasCor(ConfigBasedExecutable):
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
         self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
+        self.reject_list = os.path.join(self.output_dir, "reject.list")
+
+        if not os.path.exists(self.reject_list):
+            with open(self.reject_list, "w") as f:
+                pass
 
         self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
         self.probability_column_name = None
@@ -79,10 +85,13 @@ class BiasCor(ConfigBasedExecutable):
             else:
                 self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)]
 
-        self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
+        self.w_summary = os.path.join(self.fit_output_dir, "BBC_SUMMARY_wfit.FITRES")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png") for m in self.output["m0dif_dirs"]]
+        self.output_plots = [
+            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
+            for m in self.output["m0dif_dirs"]
+        ]
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -108,27 +117,6 @@ class BiasCor(ConfigBasedExecutable):
         else:
             return bool(np.any([m.output["blind"] for m in self.merged_data]))
 
-    def generate_w_summary(self):
-        try:
-            rows = []
-            for d in self.output["m0dif_dirs"]:
-                wpath = os.path.join(d, "wfit_FITOPT000_MUOPT000.YAML")
-
-                if os.path.exists(wpath):
-                    wfit_results = read_yaml(wpath)
-                    wfit_results["VERSION"] = os.path.basename(d)
-                    rows.append(wfit_results)
-                else:
-                    self.logger.warning(f"Cannot find file {wpath} when generating wfit summary")
-
-            df = pd.DataFrame(rows).apply(pd.to_numeric, errors="ignore")
-            self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
-            df.to_csv(self.w_summary, index=False, float_format="%0.4f")
-            return True
-        except Exception as e:
-            self.logger.exception(e, exc_info=True)
-            return False
-
     def kill_and_fail(self):
         with open(self.kill_file, "w") as f:
             self.logger.info(f"Killing remaining jobs for {self.name}")
@@ -147,6 +135,52 @@ class BiasCor(ConfigBasedExecutable):
         else:
             return Task.FINISHED_FAILURE
 
+    def submit_reject_phase(self):
+        """ Merges the reject lists for each version, saves it to the output dir, modifies the input file, and resubmits if needed
+
+        Returns: true if the job is resubmited, false otherwise
+        """
+        self.logger.info("Checking for rejected SNID after round 1 of BiasCor has finished")
+        rejects = None
+        for folder in self.output["m0dif_dirs"]:
+
+            num_fitres_files = len([f for f in os.listdir(folder) if f.startswith("FITOPT") and ".FITRES" in f])
+            if num_fitres_files < 2:
+                self.logger.debug(f"M0DIF dir {folder} has only {num_fitres_files} FITRES file, so rejecting wont do anything. Not taking it into account.")
+                continue
+            path = os.path.join(folder, "BBC_REJECT_SUMMARY.LIST")
+            df = pd.read_csv(path, delim_whitespace=True, comment="#")
+            self.logger.debug(f"Folder {folder} has {df.shape[0]} rejected SNID")
+            if rejects is None:
+                rejects = df
+            else:
+                rejects = rejects.apend(df)
+        if not rejects.shape[0]:
+            self.logger.info("No rejected SNIDs found, not rerunning, task finishing successfully")
+            return False
+        else:
+            self.logger.info(f"Found {rejects.shape[0]} rejected SNIDs, will resubmit")
+            self.logger.debug(f"Saving reject list to {self.reject_list}")
+            rejects.to_csv(self.reject_list, sep=" ", index=False)
+
+            # And now rerun
+            command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
+            self.logger.debug(f"Running command: {' '.join(command)}")
+            with open(self.logging_file, "w") as f:
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+
+    def move_to_next_phase(self):
+        if self.consistent_sample and self.run_iteration == 0:
+            self.run_iteration += 1
+            any_to_reject = self.submit_reject_phase()
+            if any_to_reject:
+                os.remove(self.done_file)
+                return 1
+            else:
+                return Task.FINISHED_SUCCESS
+        else:
+            return Task.FINISHED_SUCCESS
+
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug("Done file found, biascor task finishing")
@@ -157,14 +191,11 @@ class BiasCor(ConfigBasedExecutable):
                     return self.check_issues()
 
                 if not os.path.exists(self.w_summary):
-                    if self.generate_w_summary():
-                        return Task.FINISHED_SUCCESS
-                    else:
-                        self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
-                        return self.check_issues(kill=False)
+                    self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
+                    return self.check_issues(kill=False)
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
-                    return Task.FINISHED_SUCCESS
+                    return self.move_to_next_phase()
         elif not os.path.exists(self.merge_log):
             self.logger.error("MERGE.LOG was not created, job died on submission")
             return self.check_issues()
@@ -196,6 +227,7 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
+        self.set_property("cid_reject_file", self.reject_list)
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
 
         yaml_keys = ["NSPLITRAN"]
