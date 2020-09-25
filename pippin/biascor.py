@@ -53,10 +53,6 @@ class BiasCor(ConfigBasedExecutable):
         self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
         self.reject_list = os.path.join(self.output_dir, "reject.list")
 
-        if not os.path.exists(self.reject_list):
-            with open(self.reject_list, "w") as f:
-                pass
-
         self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
@@ -209,6 +205,11 @@ class BiasCor(ConfigBasedExecutable):
         return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
 
     def write_input(self, force_refresh):
+
+        if not os.path.exists(self.reject_list):
+            with open(self.reject_list, "w") as f:
+                pass
+
         if self.merged_iasim is not None:
             for m in self.merged_iasim:
                 if len(m.output["fitres_dirs"]) > 1:
