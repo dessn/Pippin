@@ -151,7 +151,7 @@ class BiasCor(ConfigBasedExecutable):
                 rejects = df
             else:
                 rejects = rejects.apend(df)
-        if not rejects.shape[0]:
+        if rejects is None or not rejects.shape[0]:
             self.logger.info("No rejected SNIDs found, not rerunning, task finishing successfully")
             return False
         else:
