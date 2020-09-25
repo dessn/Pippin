@@ -153,29 +153,26 @@ class BiasCor(ConfigBasedExecutable):
                 rejects = rejects.apend(df)
         if rejects is None or not rejects.shape[0]:
             self.logger.info("No rejected SNIDs found, not rerunning, task finishing successfully")
-            return False
+            return Task.FINISHED_SUCCESS
         else:
             self.logger.info(f"Found {rejects.shape[0]} rejected SNIDs, will resubmit")
             self.logger.debug(f"Saving reject list to {self.reject_list}")
             rejects.to_csv(self.reject_list, sep=" ", index=False)
 
             # And now rerun
+            if os.path.exists(self.done_file):
+                os.remove(self.done_file)
+
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
-
-            return True
+            return 1
 
     def move_to_next_phase(self):
         if self.consistent_sample and self.run_iteration == 0:
             self.run_iteration += 1
-            any_to_reject = self.submit_reject_phase()
-            if any_to_reject:
-                os.remove(self.done_file)
-                return 1
-            else:
-                return Task.FINISHED_SUCCESS
+            return self.submit_reject_phase()
         else:
             return Task.FINISHED_SUCCESS
 
