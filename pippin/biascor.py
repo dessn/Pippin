@@ -167,6 +167,7 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            self.logger.notice(f"RESUBMITTED: BiasCor {self.name} task")
             return 1
 
     def move_to_next_phase(self):
@@ -178,7 +179,7 @@ class BiasCor(ConfigBasedExecutable):
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug("Done file found, biascor task finishing")
+            self.logger.debug(f"Done file found for {self.name}, biascor task finishing")
             with open(self.done_file) as f:
                 content = f.read().upper()
                 if "FAIL" in content or "STOP" in content:
