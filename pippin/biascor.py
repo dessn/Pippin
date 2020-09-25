@@ -165,6 +165,8 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.logging_file, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
+            return True
+
     def move_to_next_phase(self):
         if self.consistent_sample and self.run_iteration == 0:
             self.run_iteration += 1
