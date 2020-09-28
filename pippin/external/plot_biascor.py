@@ -8,6 +8,7 @@ import os
 import logging
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+import gzip
 
 
 def setup_logging():
@@ -174,7 +175,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     num_sn_fit = df.shape[0]
     contam_data, contam_true = "", ""
 
-    with open(fitres_file) as f:
+    with gzip.open(fitres_file, "rt") as f:
         for line in f.read().splitlines():
             if "NSNFIT" in line:
                 v = int(line.split("=", 1)[1].strip())

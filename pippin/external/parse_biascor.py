@@ -1,5 +1,5 @@
 import shutil
-
+import gzip
 import numpy as np
 import yaml
 from chainconsumer import ChainConsumer
@@ -92,7 +92,7 @@ def parse_m0diffs(args):
         ol_ref = np.NaN
         w_ref = np.NaN
 
-        with open(path) as f:
+        with gzip.open(path, "rt") as f:
             for line in f.read().splitlines():
                 if "Omega_DE(ref)" in line:
                     ol_ref = float(line.strip().split()[-1])

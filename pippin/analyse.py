@@ -112,7 +112,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.biascor_fitres_input_files = [os.path.join(m, "FITOPT000_MUOPT000.FITRES.gz") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_fitres_output_files = [
-            b.name + "_" + os.path.basename(m).replace("OUTPUT_BBCFIT", "1") + "_FITOPT0_MUOPT0.fitres"
+            b.name + "_" + os.path.basename(m).replace("OUTPUT_BBCFIT", "1") + "_FITOPT0_MUOPT0.fitres.gz"
             for b in self.biascor_deps
             for m in b.output["m0dif_dirs"]
         ]
