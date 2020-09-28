@@ -67,6 +67,11 @@ def get_output_dir():
     return output_dir
 
 
+def read_yaml(path):
+    with open(path) as f:
+        return yaml.safe_load(f.read())
+
+
 def get_data_loc(path, extra=None):
     if extra is None:
         data_dirs = get_config()["DATA_DIRS"]
@@ -117,7 +122,8 @@ def mkdirs(path):
     if not os.path.exists(path):
         parent = os.path.dirname(path)
         mkdirs(parent)
-        os.makedirs(path, exist_ok=True, mode=0o7701)
+        os.system(f"mkdir {path}")
+        # os.makedirs(path, exist_ok=True, mode=0o7701)
         chown_dir(path)
 
 

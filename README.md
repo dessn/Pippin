@@ -421,10 +421,10 @@ LCFIT:
       
     # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
     # Normally this would be a single entry like des.fitopts, but you can also pass a list
-    # If you specify a FITOPT manually, make sure it has the square bracket label at the start
+    # If you specify a FITOPT manually, make sure it has the / around the label
     FITOPS:
       - des.fitopts
-      - "[custom_extra_fitopt] REDSHIFT_FINAL_SHIFT 0.0001"
+      - "/custom_extra_fitopt/ REDSHIFT_FINAL_SHIFT 0.0001"
 
     # We can optionally customise keys in the FITINP section
     FITINP:
@@ -624,6 +624,10 @@ BIASCOR:
     
     # Defaults to False. Will load in the recalibrated probabilities, and crash and burn if they dont exist.
     USE_RECALIBRATED: True
+    
+    # Defaults to True. If set to True, will rerun biascor twice, removing any SNID that got dropped in any FITOPT/MUOPT
+    CONSISTENT_SAMPLE: False
+
   
   # We can also specify muopts to add in systematics. They share the structure of the main biascor definition
   # You can have multiple, use a dict structure, with the muopt name being the key

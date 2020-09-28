@@ -269,11 +269,17 @@ class Aggregator(Task):
                 if len(headers) == 0:
                     self.logger.warning(f"No HEAD fits files found in {phot_dir}, manually running grep command!")
 
-                    cmd = "grep --exclude-dir=* TYPE * | awk -F ':' '{print $1 $3}'"
+                    cmd = "grep --exclude-dir=* TYPE *.dat | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}  in dir {phot_dir}")
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
+
+                    cmd = "zgrep TYPE *.dat.gz | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
+                    output2 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output2 if x]
 
                     snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                     snid = [x[1:] if x.startswith("0") else x for x in snid]
@@ -388,7 +394,7 @@ class Aggregator(Task):
         try:
             subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.output_dir, check=True)
             self.logger.info(f"Finished invoking {self.python_file}")
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError:
             return False
         return True
 
@@ -399,13 +405,6 @@ class Aggregator(Task):
 
         def _get_aggregator_dir(base_output_dir, stage_number, agg_name):
             return f"{base_output_dir}/{stage_number}_AGG/{agg_name}"
-
-        def get_num_ranseed(sim_task, lcfit_task):
-            if sim_task is not None:
-                return len(sim_task.output["sim_folders"])
-            if lcfit_task is not None:
-                return len(sim_task.output["fitres_dirs"])
-            raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
 
         tasks = []
 

@@ -1,7 +1,10 @@
+from abc import ABC
+
 from pippin.task import Task
+import yaml
 
 
-class ConfigBasedExecutable(Task):
+class ConfigBasedExecutable(Task, ABC):
     def __init__(self, name, output_dir, config, base_file, default_assignment, dependencies=None):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.default_assignment = default_assignment
@@ -10,8 +13,31 @@ class ConfigBasedExecutable(Task):
             self.base = list(f.read().splitlines())
             self.logger.debug(f"Loaded base file from {self.base_file}")
 
+        # Check to see if any of the input is YAML by searching for an END_YAML tag
+        for index, line in enumerate(self.base):
+            if "#END_YAML" in line:
+                self.process_yaml(index)
+                break
+        else:
+            self.yaml = None
+            self.logger.debug("No YAML section found")
+
+    def process_yaml(self, index):
+        self.logger.debug(f"Found {index} lines of YAML at the beginning of the file")
+        yaml_str = "\n".join(self.base[:index])
+        self.yaml = yaml.safe_load(yaml_str)
+        self.base = self.base[index:]
+
     def delete_property(self, name, section_start=None, section_end=None):
         self.set_property(name, None, section_start=section_start, section_end=section_end)
+
+    def get_output_string(self):
+        return yaml.safe_dump(self.yaml, width=2048) + "\n".join(self.base) + "\n"
+
+    def write_output_file(self, path):
+        with open(path, "w") as f:
+            f.write(self.get_output_string())
+        self.logger.info(f"Input file written to {path}")
 
     def get_property(self, name, assignment=None):
         """ Get a property from the base file

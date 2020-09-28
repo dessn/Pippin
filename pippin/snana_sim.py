@@ -1,14 +1,11 @@
 import os
-import inspect
-import logging
 import shutil
 import subprocess
 import tempfile
-import collections
 import json
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash
+from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml
 from pippin.task import Task
 
 
@@ -61,9 +58,10 @@ class SNANASimulation(ConfigBasedExecutable):
         self.global_config = global_config
 
         self.sim_log_dir = f"{self.output_dir}/LOGS"
-        self.total_summary = os.path.join(self.sim_log_dir, "TOTAL_SUMMARY.LOG")
-        self.done_file = f"{self.output_dir}/FINISHED.DONE"
+        self.total_summary = os.path.join(self.sim_log_dir, "MERGE.LOG")
+        self.done_file = f"{self.output_dir}/LOGS/ALL.DONE"
         self.logging_file = self.config_path.replace(".input", ".LOG")
+        self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
 
         if "EXTERNAL" not in self.config.keys():
             # Deterime the type of each component
@@ -134,13 +132,14 @@ class SNANASimulation(ConfigBasedExecutable):
             try:
                 # If BATCH_INFO is set, we'll use that
                 batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
-                default_batch_info = self.get_property("BATCH_INFO", assignment=": ")
+                default_batch_info = self.yaml["CONFIG"].get("BATCH_INFO")
 
                 # If its not set, lets check for ranseed_repeat or ranseed_change
                 if batch_info is None:
                     ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
                     ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-                    ranseed = ranseed_repeat or ranseed_change
+                    default = self.yaml.get("CONFIG", {}).get("RANSEED_REPEAT")
+                    ranseed = ranseed_repeat or ranseed_change or default
 
                     if ranseed:
                         num_jobs = int(ranseed.strip().split()[0])
@@ -154,7 +153,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     self.num_jobs = int(default_batch_info.split()[-1])
             except Exception:
                 self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
-                self.num_jobs = 10
+                self.num_jobs = 1
 
             self.output["genversion"] = self.genversion
             self.output["genprefix"] = self.genprefix
@@ -179,8 +178,22 @@ class SNANASimulation(ConfigBasedExecutable):
             self.sim_folders = [os.path.join(base, genversion)]
 
     def write_input(self, force_refresh):
-        self.set_property("GENVERSION", self.genversion, assignment=": ", section_end="ENDLIST_GENVERSION")
-        self.set_property("LOGDIR", os.path.basename(self.sim_log_dir), assignment=": ", section_end="ENDLIST_GENVERSION")
+        # As Pippin only does one GENVERSION at a time, lets extract it first, and also the config
+        c = self.yaml["CONFIG"]
+        d = self.yaml["GENVERSION_LIST"][0]
+        g = self.yaml["GENOPT_GLOBAL"]
+
+        # Ensure g is a dict with a ref we can update
+        if g is None:
+            g = {}
+            self.yaml["GENOPT_GLOBAL"] = g
+
+        # Start setting properties in the right area
+        d["GENVERSION"] = self.genversion
+
+        # Logging now goes in the "CONFIG"
+        c["LOGDIR"] = os.path.basename(self.sim_log_dir)
+
         for k in self.config.keys():
             if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
@@ -194,33 +207,45 @@ class SNANASimulation(ConfigBasedExecutable):
                     val = run_config[key]
                     if not isinstance(val, list):
                         val = [val]
+
+                    lookup = f"GENOPT({match})"
+                    if lookup not in d:
+                        d[lookup] = {}
                     for v in val:
-                        self.set_property(f"GENOPT({match})", f"{key} {v}", section_end="ENDLIST_GENVERSION", only_add=True)
+                        d[lookup][key] = v
 
         if len(self.data_dirs) > 1:
             data_dir = self.data_dirs[0]
-            self.set_property("PATH_USER_INPUT", data_dir, assignment=": ")
+            c["PATH_USER_INPUT"] = data_dir
 
         for key in self.config.get("GLOBAL", []):
             if key.upper() == "BASE":
                 continue
             direct_set = ["FORMAT_MASK", "RANSEED_REPEAT", "RANSEED_CHANGE", "BATCH_INFO", "BATCH_MEM", "NGEN_UNIT", "RESET_CIDOFF"]
             if key in direct_set:
-                self.set_property(key, self.config["GLOBAL"][key], assignment=": ")
+                c[key] = self.config["GLOBAL"][key]
             else:
-                self.set_property(f"GENOPT_GLOBAL: {key}", self.config["GLOBAL"][key], assignment=" ")
+                g[key] = self.config["GLOBAL"][key]
 
             if self.derived_batch_info:
-                self.set_property("BATCH_INFO", self.derived_batch_info, assignment=": ")
+                c["BATCH_INFO"] = self.derived_batch_info
 
-            if key == "RANSEED_CHANGE":
-                self.delete_property("RANSEED_REPEAT")
-            elif key == "RANSEED_REPEAT":
-                self.delete_property("RANSEED_CHANGE")
+            if key == "RANSEED_CHANGE" and c.get("RANSEED_REPEAT") is not None:
+                del c["RANSEED_REPEAT"]
+            elif key == "RANSEED_REPEAT" and c.get("RANSEED_CHANGE") is not None:
+                del c["RANSEED_CHANGE"]
 
-        self.set_property("SIMGEN_INFILE_Ia", " ".join([os.path.basename(f) for f in self.base_ia]) if self.base_ia else None)
-        self.set_property("SIMGEN_INFILE_NONIa", " ".join([os.path.basename(f) for f in self.base_cc]) if self.base_cc else None)
-        self.set_property("GENPREFIX", self.genprefix)
+        if self.base_ia:
+            c["SIMGEN_INFILE_Ia"] = [os.path.basename(f) for f in self.base_ia]
+        else:
+            del c["SIMGEN_INFILE_Ia"]
+
+        if self.base_cc:
+            c["SIMGEN_INFILE_NONIa"] = [os.path.basename(f) for f in self.base_cc]
+        else:
+            del c["SIMGEN_INFILE_NONIa"]
+
+        c["GENPREFIX"] = self.genprefix
 
         # Put config in a temp directory
         temp_dir_obj = tempfile.TemporaryDirectory()
@@ -269,9 +294,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Write the primary input file
         main_input_file = f"{temp_dir}/{self.genversion}.input"
-        with open(main_input_file, "w") as f:
-            f.writelines(map(lambda s: s + "\n", self.base))
-        self.logger.info(f"Input file written to {main_input_file}")
+        self.write_output_file(main_input_file)
 
         # Remove any duplicates and order the output files
         output_files = [f"{temp_dir}/{a}" for a in sorted(os.listdir(temp_dir))]
@@ -309,46 +332,54 @@ class SNANASimulation(ConfigBasedExecutable):
             return True
 
         with open(self.logging_file, "w") as f:
-            subprocess.run(["sim_SNmix.pl", self.config_path], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(["submit_batch_jobs.sh", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
 
+    def kill_and_fail(self):
+        with open(self.kill_file, "w") as f:
+            self.logger.info(f"Killing remaining jobs for {self.name}")
+            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        return Task.FINISHED_FAILURE
+
+    def check_issues(self):
+        log_files = [self.logging_file]
+        if os.path.exists(self.sim_log_dir):
+            log_files += [os.path.join(self.sim_log_dir, f) for f in os.listdir(self.sim_log_dir) if f.upper().endswith(".LOG")]
+        else:
+            self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
+        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        return self.kill_and_fail()
+
     def _check_completion(self, squeue):
 
-        if os.path.exists(self.done_file):
-            self.logger.info(f"Simulation {self.name} found done file!")
+        if os.path.exists(self.done_file) or not os.path.exists(self.total_summary):
 
-            with open(self.done_file) as f:
-                if "FAIL" in f.read():
-                    self.logger.error(f"Done file {self.done_file} reporting failure")
-
-                    log_files = [self.logging_file]
-                    if os.path.exists(self.sim_log_dir):
-                        log_files += [os.path.join(self.sim_log_dir, f) for f in os.listdir(self.sim_log_dir) if f.upper().endswith(".LOG")]
-                    else:
-                        self.logger.warning(f"Warning, sim log dir {self.sim_log_dir} does not exist. Something might have gone terribly wrong")
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return Task.FINISHED_FAILURE
+            if os.path.exists(self.done_file):
+                self.logger.info(f"Simulation {self.name} found done file!")
+                with open(self.done_file) as f:
+                    if "FAIL" in f.read():
+                        self.logger.error(f"Done file {self.done_file} reporting failure")
+                        return self.check_issues()
+            else:
+                self.logger.error("MERGE.LOG was not created, job died on submission")
+                return self.check_issues()
 
             if os.path.exists(self.total_summary):
-                with open(self.total_summary) as f:
-                    key, count = None, None
-                    allzero = True
-                    for line in f.readlines():
-                        if line.strip().startswith("SUM-"):
-                            key = line.strip().split()[0]
-                        if line.strip().startswith(self.genversion):
-                            count = line.split()[2]
-                            self.logger.debug(f"Simulation reports {key} wrote {count} to file")
-                            if int(count.strip()) > 0:
-                                allzero = False
-                        if line.strip().startswith("PATH_SNDATA_SIM:"):
-                            base = line.strip().split(":")[-1].strip()
-                            self.get_sim_folders(base, self.genversion)
-                    if allzero:
-                        self.logger.error(f"Simulation didn't write anything out according to {self.total_summary}")
-                        return Task.FINISHED_FAILURE
+                y = read_yaml(self.total_summary)
+                if "MERGE" in y.keys():
+                    for i, row in enumerate(y["MERGE"]):
+                        state, iver, version, ngen, nwrite, cpu = row
+                        if cpu < 60:
+                            units = "minutes"
+                        else:
+                            cpu = cpu / 60
+                            units = "hours"
+                        self.logger.info(f"Simulation {i + 1} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}")
+                else:
+                    self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
+                    return self.kill_and_fail()
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
 
@@ -362,7 +393,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
 
-        return self.check_for_job(squeue, f"{self.genprefix}_0")
+        return self.check_for_job(squeue, f"{self.genversion}.input-CPU")
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
@@ -376,12 +407,3 @@ class SNANASimulation(ConfigBasedExecutable):
             Task.logger.debug(f"Creating simulation task {sim_name} with {s.num_jobs} jobs, output to {sim_output_dir}")
             tasks.append(s)
         return tasks
-
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG, format="[%(levelname)7s |%(funcName)20s]   %(message)s")
-    s = SNANASimulation("test", "testv")
-
-    s.set_property("TESTPROP", "HELLO")
-    s.delete_property("GOODBYE")
-    s.write_input()

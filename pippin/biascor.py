@@ -4,11 +4,10 @@ import subprocess
 import os
 import pandas as pd
 import numpy as np
-from scipy.interpolate import interp1d
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml
 from pippin.merge import Merger
 from pippin.task import Task
 
@@ -16,7 +15,8 @@ from pippin.task import Task
 class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
-
+        self.base_file = base
+        self.convert_base_file()
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
@@ -31,7 +31,8 @@ class BiasCor(ConfigBasedExecutable):
             self.config["CLASSIFIER"] = self.classifier.name
         self.make_all = config.get("MAKE_ALL_HUBBLE", True)
         self.use_recalibrated = config.get("USE_RECALIBRATED", False)
-
+        self.consistent_sample = config.get("CONSISTENT_SAMPLE", True)
+        self.run_iteration = 0
         self.bias_cor_fits = None
         self.cc_prior_fits = None
         self.data = None
@@ -46,9 +47,13 @@ class BiasCor(ConfigBasedExecutable):
 
         self.config_filename = f"{self.name}.input"  # Make sure this syncs with the tmp file name
         self.config_path = os.path.join(self.output_dir, self.config_filename)
+        self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
         self.job_name = os.path.basename(self.config_path)
         self.fit_output_dir = os.path.join(self.output_dir, "output")
-        self.done_file = os.path.join(self.fit_output_dir, f"SALT2mu_FITSCRIPTS/ALL.DONE")
+        self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
+        self.reject_list = os.path.join(self.output_dir, "reject.list")
+
+        self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
             self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
@@ -69,14 +74,14 @@ class BiasCor(ConfigBasedExecutable):
         num_dirs = self.num_verions[0]
 
         if self.output["NSPLITRAN"]:
-            self.output["subdirs"] = [f"SPLITRAN-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
+            self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
         else:
             if num_dirs == 1:
-                self.output["subdirs"] = ["SALT2mu_FITJOBS"]
+                self.output["subdirs"] = ["OUTPUT_BBCFIT"]
             else:
-                self.output["subdirs"] = [f"{i + 1:04d}" for i in range(num_dirs)]
+                self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)]
 
-        self.w_summary = os.path.join(self.fit_output_dir, "w_summary.csv")
+        self.w_summary = os.path.join(self.fit_output_dir, "BBC_SUMMARY_wfit.FITRES")
         self.output["w_summary"] = self.w_summary
         self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
         self.output_plots = [
@@ -92,6 +97,14 @@ class BiasCor(ConfigBasedExecutable):
         self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
 
+    def convert_base_file(self):
+        self.logger.debug(f"Translating base file {self.base_file}")
+        try:
+            subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
+        except FileNotFoundError:
+            # For testing, this wont exist
+            pass
+
     def get_blind(self, config, options):
         if "BLIND" in config:
             return config.get("BLIND")
@@ -100,76 +113,89 @@ class BiasCor(ConfigBasedExecutable):
         else:
             return bool(np.any([m.output["blind"] for m in self.merged_data]))
 
-    def generate_w_summary(self):
-        try:
-            header = None
-            rows = []
-            for d in self.output["m0dif_dirs"]:
-                wpath1 = os.path.join(d, "wfit_M0DIF_FITOPT000.COSPAR")
-                wpath2 = os.path.join(d, "wfit_M0DIF_FITOPT000_MUOPT000.COSPAR")
-                wpath3 = os.path.join(d, "wfit_SALT2mu_FITOPT000_MUOPT000.COSPAR")
-                wpath = None
-                if os.path.exists(wpath1):
-                    wpath = wpath1
-                elif os.path.exists(wpath2):
-                    wpath = wpath2
-                elif os.path.exists(wpath3):
-                    wpath = wpath3
-                if wpath is not None:
-                    with open(wpath) as f:
-                        lines = f.read().splitlines()
-                        header = ["VERSION"] + lines[0].split()[1:]
-                        values = [os.path.basename(d)] + lines[1].split()
-                        rows.append(values)
-                else:
-                    self.logger.warning(f"Cannot find file {wpath1} or {wpath2} or {wpath3} when generating wfit summary")
+    def kill_and_fail(self):
+        with open(self.kill_file, "w") as f:
+            self.logger.info(f"Killing remaining jobs for {self.name}")
+            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        return Task.FINISHED_FAILURE
 
-            df = pd.DataFrame(rows, columns=header).apply(pd.to_numeric, errors="ignore")
-            self.logger.info(f"wfit summary reporting mean w {df['w'].mean()}, see file at {self.w_summary}")
-            df.to_csv(self.w_summary, index=False, float_format="%0.4f")
-            return True
-        except Exception as e:
-            self.logger.exception(e, exc_info=True)
-            return False
+    def check_issues(self, kill=True):
+        log_files = [self.logging_file]
+
+        for dir in [self.output_dir, self.fit_output_dir] + self.output["m0dif_dirs"]:
+            if os.path.exists(dir):
+                log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
+        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        if kill:
+            return self.kill_and_fail()
+        else:
+            return Task.FINISHED_FAILURE
+
+    def submit_reject_phase(self):
+        """ Merges the reject lists for each version, saves it to the output dir, modifies the input file, and resubmits if needed
+
+        Returns: true if the job is resubmited, false otherwise
+        """
+        self.logger.info("Checking for rejected SNID after round 1 of BiasCor has finished")
+        rejects = None
+        for folder in self.output["m0dif_dirs"]:
+
+            num_fitres_files = len([f for f in os.listdir(folder) if f.startswith("FITOPT") and ".FITRES" in f])
+            if num_fitres_files < 2:
+                self.logger.debug(f"M0DIF dir {folder} has only {num_fitres_files} FITRES file, so rejecting wont do anything. Not taking it into account.")
+                continue
+            path = os.path.join(folder, "BBC_REJECT_SUMMARY.LIST")
+            df = pd.read_csv(path, delim_whitespace=True, comment="#")
+            self.logger.debug(f"Folder {folder} has {df.shape[0]} rejected SNID")
+            if rejects is None:
+                rejects = df
+            else:
+                rejects = rejects.apend(df)
+        if rejects is None or not rejects.shape[0]:
+            self.logger.info("No rejected SNIDs found, not rerunning, task finishing successfully")
+            return Task.FINISHED_SUCCESS
+        else:
+            self.logger.info(f"Found {rejects.shape[0]} rejected SNIDs, will resubmit")
+            self.logger.debug(f"Saving reject list to {self.reject_list}")
+            rejects.to_csv(self.reject_list, sep=" ", index=False)
+
+            # And now rerun
+            if os.path.exists(self.done_file):
+                os.remove(self.done_file)
+
+            command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
+            self.logger.debug(f"Running command: {' '.join(command)}")
+            with open(self.logging_file, "w") as f:
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            self.logger.notice(f"RESUBMITTED: BiasCor {self.name} task")
+            return 1
+
+    def move_to_next_phase(self):
+        if self.consistent_sample and self.run_iteration == 0:
+            self.run_iteration += 1
+            return self.submit_reject_phase()
+        else:
+            return Task.FINISHED_SUCCESS
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug("Done file found, biascor task finishing")
+            self.logger.debug(f"Done file found for {self.name}, biascor task finishing")
             with open(self.done_file) as f:
-                failed = False
-                if "FAIL" in f.read():
+                content = f.read().upper()
+                if "FAIL" in content or "STOP" in content:
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
-
-                    log_files = [self.logging_file]
-
-                    for dir in self.output["m0dif_dirs"]:
-                        log_files += [f for f in os.listdir(dir) if f.upper().endswith(".LOG")]
-                    self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
-                    return Task.FINISHED_FAILURE
+                    return self.check_issues()
 
                 if not os.path.exists(self.w_summary):
-                    wfiles = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("wfit_") and f.endswith(".LOG")]
-                    m0files = [os.path.join(d, f) for d in self.output["m0dif_dirs"] for f in os.listdir(d) if f.startswith("SALT2mu") and f.endswith(".M0DIF")]
-                    for path in wfiles:
-                        with open(path) as f2:
-                            if "ERROR:" in f2.read():
-                                self.logger.error(f"Error found in wfit file: {path}")
-                                failed = True
-                    for path in m0files:
-                        with open(path) as f2:
-                            for line in f2.readlines():
-                                if "WARNING(SEVERE):" in line:
-                                    self.logger.warning(f"File {path} reporting severe warning: {line}")
-                                    self.logger.warning("You wont see this warning on a rerun, so look into it now!")
-
-                    if self.generate_w_summary():
-                        return Task.FINISHED_SUCCESS
-                    else:
-                        self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
-                        return Task.FINISHED_SUCCESS  # Note this is probably a plotting issue, so don't rerun the biascor by returning FAILURE
+                    self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
+                    return self.check_issues(kill=False)
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
-                    return Task.FINISHED_SUCCESS
+                    return self.move_to_next_phase()
+        elif not os.path.exists(self.merge_log):
+            self.logger.error("MERGE.LOG was not created, job died on submission")
+            return self.check_issues()
+
         return self.check_for_job(squeue, self.job_name)
 
     def get_simfile_biascor(self, ia_sims):
@@ -179,6 +205,7 @@ class BiasCor(ConfigBasedExecutable):
         return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
 
     def write_input(self, force_refresh):
+
         if self.merged_iasim is not None:
             for m in self.merged_iasim:
                 if len(m.output["fitres_dirs"]) > 1:
@@ -197,13 +224,16 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-        self.set_property("OUTDIR_OVERRIDE", self.fit_output_dir, assignment=": ")
-        self.set_property("STRINGMATCH_IGNORE", " ".join(self.genversions), assignment=": ")
+        self.set_property("cid_reject_file", self.reject_list)
+        self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
+
+        yaml_keys = ["NSPLITRAN"]
 
         for key, value in self.options.items():
             assignment = "="
-            if key.upper().startswith("BATCH"):
-                assignment = ": "
+            if key.upper().startswith("BATCH") or key.upper() in yaml_keys:
+                self.yaml["CONFIG"][key] = value
+                continue
             if key.upper().startswith("CUTWIN"):
                 assignment = " "
                 split = key.split("_", 1)
@@ -216,40 +246,35 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            self.set_property(
-                "WFITMUDIF_OPT",
-                self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind",
-                assignment=": ",
-            )
+            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
         else:
             self.set_property("blindflag", 0, assignment="=")
-            self.set_property(
-                "WFITMUDIF_OPT", self.options.get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121"), assignment=": "
-            )
+            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
+            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
 
-        keys = [x.upper() for x in self.options.keys()]
-        if "NSPLITRAN" in keys:
-            self.set_property("INPDIR+", None, assignment=": ")
-            # TODO: Find best way of checking for ranseed change as well and abort
-            self.set_property("datafile", ",".join(self.data_fitres), assignment="=", section_end="STRINGMATCH_IGNORE")
-            self.set_property("file", None, assignment="=")
-        else:
-            bullshit_hack = ""
-            for i, d in enumerate(self.data):
-                if i > 0:
-                    bullshit_hack += "\nINPDIR+: "
-                bullshit_hack += d
-            self.set_property("INPDIR+", bullshit_hack, assignment=": ")
+        # keys = [x.upper() for x in self.options.keys()]
+        # if "NSPLITRAN" in keys:
+        # No longer need to set STRINGMATCH_IGNORE for only one genversion?
+        # NSPLITRAN updates means we dont need to dick around again
+        # if "INPDIR+" in self.yaml["CONFIG"].keys():
+        #     del self.yaml["CONFIG"]["INPDIR+"]
+        # self.set_property("datafile", ",".join(self.data_fitres), assignment="=")
+        # self.set_property("file", None, assignment="=")
+        # else:
+        # if len(self.data):
+        #     self.yaml["CONFIG"]["STRINGMATCH_IGNORE"] = " ".join(self.genversions)
+
+        self.yaml["CONFIG"]["INPDIR+"] = self.data
 
         # Set MUOPTS at top of file
-        mu_str = ""
+        muopts = []
         muopt_prob_cols = {"DEFAULT": self.probability_column_name}
         for label in self.muopt_order:
             prob_ia_col = self.probability_column_name
             value = self.muopts[label]
-            if mu_str != "":
-                mu_str += "\nMUOPT: "
-            mu_str += f"[{label}] "
+
+            mu_str = f"/{label}/ "
             if value.get("SIMFILE_BIASCOR"):
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
             if value.get("SIMFILE_CCPRIOR"):
@@ -272,12 +297,12 @@ class BiasCor(ConfigBasedExecutable):
                     mu_str += f"CUTWIN {opt2} {opt_value}"
                 else:
                     mu_str += f"{opt}={opt_value} "
-            mu_str += "\n"
-        if mu_str:
-            self.set_property("MUOPT", mu_str, assignment=": ", section_end="#MUOPT_END")
+            muopts.append(mu_str)
+        if muopts:
+            self.yaml["CONFIG"]["MUOPT"] = muopts
 
         self.output["muopt_prob_cols"] = muopt_prob_cols
-        final_output = "\n".join(self.base)
+        final_output = self.get_output_string()
 
         new_hash = self.get_hash_from_string(final_output)
         old_hash = self.get_old_hash()
@@ -287,7 +312,8 @@ class BiasCor(ConfigBasedExecutable):
 
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
-
+            with open(self.reject_list, "w") as f:
+                pass
             with open(self.config_path, "w") as f:
                 f.writelines(final_output)
             self.logger.info(f"Input file written to {self.config_path}")
@@ -303,12 +329,12 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input(force_refresh)
         if regenerating:
-            command = ["SALT2mu_fit.pl", self.config_filename, "NOPROMPT"]
+            command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Will check for done file at {self.done_file}")
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
-                subprocess.Popen(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             chown_dir(self.output_dir)
         else:
             self.should_be_done()

@@ -42,8 +42,7 @@ class Merger(Task):
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES")
-        self.done_file = os.path.join(self.output_dir, "done.txt")
+        self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.lc_fit = self.get_lcfit_dep()
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
@@ -53,6 +52,8 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")
+        self.done_file = os.path.join(self.suboutput_dir, "ALL.DONE")
+
         self.fitres_outdirs = [os.path.join(self.suboutput_dir, os.path.basename(f)) for f in self.lc_fit["fitres_dirs"]]
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_dirs"] = self.fitres_outdirs
@@ -114,16 +115,13 @@ class Merger(Task):
                 "--outfile_text",
                 os.path.basename(fitres_file),
                 "T",
+                "-nullval_float",
+                "0",
             ]
             try:
                 self.logger.debug(f"Executing command {' '.join(command)}")
                 with open(self.logfile, "w+") as f:
                     subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
-                # Run sed command
-                sed_command = ["sed", "-i", "s/ -888/ 0/", os.path.basename(fitres_file)]
-                self.logger.debug(f"Executing command {' '.join(sed_command)}")
-                with open(self.logfile, "w+") as f:
-                    subprocess.run(sed_command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
 
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Error invoking command {command}")
@@ -159,11 +157,11 @@ class Merger(Task):
                             self.add_to_fitres(os.path.join(f[0], f[2]), f[1], f[4], index=f[3])
                     for s in symlink_files:
                         if s[1] == fitres_dir:
-                            self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES')}")
-                            os.symlink(os.path.join(s[1], "FITOPT000.FITRES"), os.path.join(s[1], s[2]))
+                            self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES.gz')}")
+                            os.symlink(os.path.join(s[1], "FITOPT000.FITRES.gz"), os.path.join(s[1], s[2]))
 
                     self.logger.debug(f"Copying MERGE.LOG and FITOPT.README")
-                    filenames = ["MERGE.LOG", "FITOPT.README"]
+                    filenames = ["MERGE.LOG", "FITOPT.README", "SUBMIT.INFO"]
                     for f in filenames:
                         original = os.path.join(self.lc_fit["lc_output_dir"], f)
                         moved = os.path.join(self.suboutput_dir, f)

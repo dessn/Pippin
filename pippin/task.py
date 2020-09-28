@@ -172,8 +172,8 @@ class Task(ABC):
         with open(path) as f:
             for i, line in enumerate(f.read().splitlines()):
                 error_found = np.any([e in line for e in error_match])
-                index = i
                 if error_found:
+                    index = i
                     found = True
                     self.logger.error(f"Found error in file {path}, excerpt below")
                 if found and i - index <= max_lines:
