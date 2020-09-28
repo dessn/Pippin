@@ -292,7 +292,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
         cbar.set_label("Prob Ia")
 
-    fp = fitres_file.replace(".fitres", ".png")
+    fp = fitres_file.replace(".fitres.gz", ".png")
     logging.debug(f"Saving Hubble plot to {fp}")
     fig.savefig(fp, dpi=300, transparent=True, bbox_inches="tight")
     plt.close(fig)
