@@ -190,7 +190,7 @@ fi
                 sim_number = 1
                 if os.path.basename(m).isdigit():
                     sim_number = int(os.path.basename(m))
-                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIF")]
+                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIF") or f.endswith(".M0DIF.gz")]
                 for f in files:
                     muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
                     fitopt_num = int(f.split("FITOPT")[-1].split("_")[0])
