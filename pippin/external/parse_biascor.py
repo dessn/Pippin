@@ -56,6 +56,9 @@ def make_summary_file(wfit_files, args):
     for f in wfit_files:
         logging.debug(f"Reading in wfit_summary {f}")
         df = pd.read_csv(f, delim_whitespace=True, comment="#")
+        print("##########################################")
+        print(df)
+        print("==========================================")
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         df["name"] = name
         logging.debug(f"Read {f}, contents are: {df}")
