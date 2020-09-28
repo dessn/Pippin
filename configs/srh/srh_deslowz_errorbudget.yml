@@ -106,35 +106,27 @@ BIASCOR:
     MUOPTS:
       SCATTER_C11:
         SIMFILE_BIASCOR: [D_DESSIMBIAS5YRIA_C11, L_LOWZSIMBIAS_C11]
-        FITOPT: 0
       CLAS_SNIRF:
         CLASSIFIER: SNIRFTEST
-        FITOPT: 0
       PROB_CUT_05:
         OPTS:
           CUTWIN_PROB_IA: 0.5 1.0
-        FITOPT: 0
       PROB_CUT_08:
         OPTS:
           CUTWIN_PROB_IA: 0.8 1.0
-        FITOPT: 0
       CHI2MAX_12:
         OPTS:
           chi2max: 12.25
-        FITOPT: 0
       CHI2MAX_100:
         OPTS:
           chi2max: 100
-        FITOPT: 0
       CCPRIORBINS:
         OPTS:
           nzbin_ccprior: 8
-        FITOPT: 0
       HOSTMASS_DBETA:
         OPTS:
           u16: 1  # p16 = betaHost (dbeta/dlogmass)
           u7: 0  # p7 = logmass_cen (fix location of logmass step)
-        FITOPT: 0
     OPTS:
       u5: 1  # Vary and fit mass step at all
       u7: 1  # Vary and fit step location
