@@ -112,7 +112,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.biascor_fitres_input_files = [os.path.join(m, "FITOPT000_MUOPT000.FITRES.gz") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_fitres_output_files = [
-            b.name + "_" + os.path.basename(m) + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]
+            b.name + "_" + os.path.basename(m).replace("OUTPUT_BBCFIT", "1") + "_FITOPT0_MUOPT0.fitres"
+            for b in self.biascor_deps
+            for m in b.output["m0dif_dirs"]
         ]
 
         self.biascor_m0diffs = []
@@ -136,7 +138,7 @@ cd {output_dir}
     def get_slurm_raw(self):
         base = self.slurm
         template = """
-echo "Executing {path}"
+echo "\nExecuting {path}"
 python {path} {{input_yml}}
 if [ $? -ne 0 ]; then
     echo FAILURE > {donefile}
