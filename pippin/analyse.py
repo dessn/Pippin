@@ -109,12 +109,10 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
 
         # Get the fitres and m0diff files we'd want to parse for Hubble diagram plotting
-        self.biascor_fitres_input_files = [os.path.join(m, "SALT2mu_FITOPT000_MUOPT000.FITRES") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_fitres_input_files = [os.path.join(m, "FITOPT000_MUOPT000.FITRES.gz") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
         self.biascor_fitres_output_files = [
-            b.name + "_" + os.path.basename(m.replace("SALT2mu_FITJOBS", "1")) + "_FITOPT0_MUOPT0.fitres"
-            for b in self.biascor_deps
-            for m in b.output["m0dif_dirs"]
+            b.name + "_" + os.path.basename(m) + "_FITOPT0_MUOPT0.fitres" for b in self.biascor_deps for m in b.output["m0dif_dirs"]
         ]
 
         self.biascor_m0diffs = []
