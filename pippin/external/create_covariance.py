@@ -181,9 +181,9 @@ def write_data(path, base):
     # I am so sorry about this, but CosmoMC is very particular
     logging.info(f"Writing out data to {path}")
     with open(path, "w") as f:
-        f.write("#name zcmb zhel dz mb dmb\n")
+        f.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n")
         for i, (z, mb, mbe) in enumerate(zip(zs, mbs, mbes)):
-            f.write(f"{i} {z} {z} 0 {mb:0.5f} {mbe:0.5f}\n")
+            f.write(f"{i} {z} {z} 0 {mb} {mbe} 0 0 0 0 0 0 0 0 0 0 0 0\n")
 
 
 def write_covariance(path, cov):
