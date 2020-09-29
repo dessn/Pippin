@@ -169,7 +169,7 @@ def get_cov_from_covopt(covopt, contributions, base):
 def write_dataset(path, data_file, cov_file, template_path):
     with open(template_path) as f_in:
         with open(path, "w") as f_out:
-            f_out.write(f_in.read().format({"data_file": data_file, "cov_file": cov_file}))
+            f_out.write(f_in.read().format(data_file=data_file, cov_file=cov_file))
 
 
 def write_data(path, base):
