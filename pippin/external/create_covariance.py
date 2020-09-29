@@ -67,7 +67,7 @@ def get_fitopt_scales(lcfit_info, sys_scales):
     for name, label, _ in fitopt_list:
         if label != "DEFAULT":
             if label not in sys_scales:
-                logging.warning(f"No FITOPT scale found for {label} in input options: {sys_scales}")
+                logging.warning(f"No FITOPT scale found for {label}")
         scale = sys_scales.get(label, 1.0)
         d = int(name.replace("FITOPT", ""))
         result[d] = (label, scale)
