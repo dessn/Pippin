@@ -191,6 +191,9 @@ class Task(ABC):
                     if key.startswith("FAILURE-0"):
                         self.logger.error(f"{key}: {' '.join(dicts.get('ABORT_MESSAGES', 'Unknown message'))}")
                         self.logger.error(f"{key}: Detailed in {dicts.get('JOB_LOG_FILE', 'Unknown path')}")
+                        num_errors += 1
+                    if num_errors > max_erroring_files:
+                        break
             else:
                 self.logger.debug(f"Scanning {path} for error")
                 if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
