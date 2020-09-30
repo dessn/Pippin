@@ -1,7 +1,7 @@
 import logging
 import shutil
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash, ensure_list, get_data_loc
+from pippin.config import get_logger, get_hash, ensure_list, get_data_loc, read_yaml
 import os
 import datetime
 import numpy as np
@@ -184,9 +184,17 @@ class Task(ABC):
         num_errors = 0
         self.logger.debug(f"Found {len(paths)} to scan")
         for path in paths:
-            self.logger.debug(f"Scanning {path} for error")
-            if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
-                num_errors += 1
+            if "FAIL_SUMMARY.LOG" in path.upper():
+                self.logger.debug(f"Found {path}, loading in YAML contents")
+                fail_summary = read_yaml(path)
+                for key, dicts in fail_summary.items():
+                    if key.startswith("FAILURE-0"):
+                        self.logger.error(f"{key}: {' '.join(dicts.get('ABORT_MESSAGES', 'Unknown message'))}")
+                        self.logger.error(f"{key}: Detailed in {dicts.get('JOB_LOG_FILE', 'Unknown path')}")
+            else:
+                self.logger.debug(f"Scanning {path} for error")
+                if self.scan_file_for_error(path, *error_match, max_lines=max_lines):
+                    num_errors += 1
             if num_errors >= max_erroring_files:
                 break
         return num_errors > 0
