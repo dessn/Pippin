@@ -321,14 +321,14 @@ def write_correlation(path, label, cov, base):
         logging.info("\tMatrix is large, skipping plotting")
 
 
-def write_debug_output(config, covariances, base, slopes):
+def write_debug_output(config, covariances, base, summary):
     # Plot correlation matrix
     out = Path(config["OUTDIR"])
 
     # The slopes can be used to figure out what systematics have largest impact on cosmology
-    logging.info("Writing out slopes.csv information")
-    with open(out / "slopes.csv", "w") as f:
-        f.write(slopes.__repr__())
+    logging.info("Writing out summary.csv information")
+    with open(out / "summary.csv", "w") as f:
+        f.write(summary.__repr__())
 
     logging.info("Showing correlation matrices:")
     diag = np.diag(base["MUDIFERR"] ** 2)
@@ -353,7 +353,7 @@ def create_covariance(config, args):
     muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info["MUOPT_LIST"]}
 
     # Now that we have the data, figure out how each much each FITOPT/MUOPT pair contributes to cov
-    contributions, base, slopes = get_contributions(data, fitopt_scales, muopt_labels)
+    contributions, base, summary = get_contributions(data, fitopt_scales, muopt_labels)
 
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
@@ -362,7 +362,7 @@ def create_covariance(config, args):
 
     write_cosmomc_output(config, covariances, base)
     write_summary_output(config, covariances, base)
-    write_debug_output(config, covariances, base, slopes)
+    write_debug_output(config, covariances, base, summary)
 
 
 if __name__ == "__main__":
