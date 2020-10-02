@@ -337,7 +337,7 @@ def write_debug_output(config, covariances, base, summary):
     # The slopes can be used to figure out what systematics have largest impact on cosmology
     logging.info("Writing out summary.csv information")
     with open(out / "summary.csv", "w") as f:
-        with pd.option_context("display.max_rows", 100000, "display.max_columns", 100):
+        with pd.option_context("display.max_rows", 100000, "display.max_columns", 100, "display.width", 1000):
             f.write(summary.__repr__())
 
     logging.info("Showing correlation matrices:")
