@@ -121,13 +121,19 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 
 
 def get_cov_from_diff(df1, df2, scale):
-    """ Retrusn both the covariance contribution and the gradient """
+    """ Returns both the covariance contribution and summary stats (slope and mean abs diff) """
     diff = scale * (df1["MUDIF"].to_numpy() - df2["MUDIF"].to_numpy())
     cov = diff[:, None] @ diff[None, :]
+
+    # Determine the gradient using simple linear regression
     reg = LinearRegression()
-    reg.fit(df1[["z"]], diff, sample_weight=1 / np.sqrt(0.003 ** 2 + df1["MUDIFERR"] ** 2 + df2["MUDIFERR"] ** 2))
+    weights = 1 / np.sqrt(0.003 ** 2 + df1["MUDIFERR"] ** 2 + df2["MUDIFERR"] ** 2)
+    reg.fit(df1[["z"]], diff, sample_weight=weights)
     coef = reg.coef_[0]
-    return cov, coef
+
+    mean_abs_deviation = np.average(np.abs(diff), weights=weights)
+    max_abs_deviation = np.max(np.abs(diff))
+    return cov, (coef, mean_abs_deviation, max_abs_deviation)
 
 
 def get_contributions(m0difs, fitopt_scales, muopt_labels):
@@ -151,23 +157,23 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
         if f == 0 and m == 0:
             # This is the base file, so don't return anything. CosmoMC will add the diag terms itself.
             cov = np.zeros((df["MU"].size, df["MU"].size))
-            slope = 0
+            summary = 0, 0, 0
             base = df
         elif m > 0:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
             df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
-            cov, slope = get_cov_from_diff(df, df_compare, scale)
+            cov, summary = get_cov_from_diff(df, df_compare, scale)
         else:
             # This is a fitopt with MUOPT000, compare to base file
             df_compare = m0difs[get_name_from_fitopt_muopt(0, 0)]
-            cov, slope = get_cov_from_diff(df, df_compare, scale)
+            cov, summary = get_cov_from_diff(df, df_compare, scale)
 
         result[f"{fitopt_label}|{muopt_label}"] = cov
-        slopes.append([name, fitopt_label, muopt_label, slope])
+        slopes.append([name, fitopt_label, muopt_label, *summary])
 
-    slope_df = pd.DataFrame(slopes, columns=["name", "fitopt_label", "muopt_label", "slope"])
-    slope_df = slope_df.sort_values("slope", ascending=False)
-    return result, base, slope_df
+    summary_df = pd.DataFrame(slopes, columns=["name", "fitopt_label", "muopt_label", "slope", "mean_abs_deviation", "max_abs_deviation"])
+    summary_df = summary_df.sort_values(["slope", "mean_abs_deviation", "max_abs_deviation"], ascending=False)
+    return result, base, summary_df
 
 
 def apply_filter(string, pattern):
@@ -265,7 +271,7 @@ def write_cosmomc_output(config, covs, base):
         dataset_files.append(dataset_file)
 
     # Copy some INI files
-    ini_files = [f for f in os.listdir(config["COSMOMC_TEMPLATES"]) if f.endswith(".ini")]
+    ini_files = [f for f in os.listdir(config["COSMOMC_TEMPLATES"]) if f.endswith(".ini") or f.endswith(".yml") or f.endswith(".md")]
     for ini in ini_files:
         op = Path(config["COSMOMC_TEMPLATES"]) / ini
 

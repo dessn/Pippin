@@ -104,7 +104,11 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-
+  UNBINNED:
+    OPTS:
+      BINNED: False
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
 COSMOMC:
   SN_OMW:

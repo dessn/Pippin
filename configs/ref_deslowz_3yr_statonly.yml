@@ -76,14 +76,10 @@ BIASCOR:
 
 CREATE_COV:
   ALL:
-    OPTS:
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
   UNBINNED:
     OPTS:
       BINNED: False
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
 COSMOMC:
   SN_OMW:
