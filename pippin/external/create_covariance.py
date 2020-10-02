@@ -246,7 +246,7 @@ def write_covariance(path, cov):
 
 def write_cosmomc_output(config, covs, base):
     # Copy INI files. Create covariance matrices. Create .dataset. Modifying INI files to point to resources
-    out = Path(config["OUTDIR"])
+    out = Path(config["OUTDIR"]) / "cosmomc"
     data_file = out / f"data.txt"
     dataset_template = Path(config["COSMOMC_TEMPLATES"]) / config["DATASET_FILE"]
     dataset_files = []
