@@ -8,10 +8,36 @@ import pandas as pd
 from pathlib import Path
 import re
 import yaml
+from sklearn.linear_model import LinearRegression
+import seaborn as sb
+import matplotlib.pyplot as plt
+
+# TODO: Write out corr matrix separately to help debugging. Maybe make some plots as well for debugging. Also a readable txt file with corr.
+# TODO: Add ordered list of systematics
+# - delta mu vs z for systematics of chocie
+# Note: choice should be determined automatically
+# ie systematics that shift things more that like 0.2mag
+# Text and plots
+# Look for gradients in the diff vector over redshift to see what will impact cosmo
+# output sorted list of gradients for each contribution (note be simple and use equal weighting for bins/sn? Or add an error floor)
+# Make a dedicated CosmoMC folder to differentiate the human readable stuff
+
+# TODO: Add analyse step to plot/copy corr
+# TODO: Create readme analog / SUBMIT.INFO in top level output to explain wtf is going on (how all the files work together)
+# TODO: Maybe put all useful output in a single YML file so we can easily put this into another fitter
+# TODO: Add file which maps the COVOPT to the integers
+# TODO: Get this working for each SN, not just each bin
+# TODO: Check the size of the number of SN
+# TODO: Get list of features that would be useful
+# TODO: Make more explicit the checking for matched bins and number of supernova
+# QUESTION: We write out zcmb = zhel, which does CosmoMC actually use? Should we not write out the actual values?
+# TODO: Make CosmoMC starting point for Rick and Viv to debug and make a generic SN dataset f90 input
 
 
 def setup_logging():
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s")
+    logging.getLogger("matplotlib").setLevel(logging.ERROR)
+    logging.getLogger("seaborn").setLevel(logging.ERROR)
 
 
 def read_yaml(path):
@@ -21,32 +47,44 @@ def read_yaml(path):
 
 
 def get_args():
-    # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="the name of the yml config file to run.")
+    parser.add_argument("-u", "--unbinned", help="Utilise individual SN instead of binning", action="store_true")
     return parser.parse_args()
 
 
-def load_m0dif(path):
+def load_data(path):
     if not os.path.exists(path):
-        raise ValueError(f"Cannot load M0DIF from {path} - it doesnt exist")
+        raise ValueError(f"Cannot load data from {path} - it doesnt exist")
     df = pd.read_csv(path, delim_whitespace=True, comment="#")
-    logging.debug(f"\tLoaded M0DIF with shape {df.shape} from {path}")
+    logging.debug(f"\tLoaded data with shape {df.shape} from {path}")
 
     # Do a bit of data cleaning
     df = df.replace(999.0, np.inf)
-    df["MU"] = df["MUREF"] + df["MUDIF"]
+    # M0DIF doesnt have MU column, so add it back in
+    if "MU" not in df.columns:
+        df["MU"] = df["MUREF"] + df["MUDIF"]
+
+    # Sort to ensure direct subtraction comparison
+    if "CID" in df.columns:
+        df = df.sort_values(["zHD", "CID"])
+    elif "z" in df.columns:
+        df = df.sort_values("z")
+    # The FITRES and M0DIF files have different column names
+    if "CID" in df.columns:
+        df = df.rename(columns={"MURES": "MUDIF", "MUERR": "MUDIFERR", "zHD": "z"})
+
     df = df.drop(columns=["VARNAMES:"])
     return df
 
 
-def get_m0difs(folder):
-    logging.debug(f"Loading all M0DIF files in {folder}")
+def get_data_files(folder, individual):
+    logging.debug(f"Loading all data files in {folder}")
     result = {}
     for file in os.listdir(folder):
-        if ".M0DIF" in file:
-            label = file.replace(".gz", "").replace(".M0DIF", "")
-            result[label] = load_m0dif(folder / file)
+        if (not individual and ".M0DIF" in file) or (individual and ".FITRES" in file and "MUOPT" in file):
+            label = file.replace(".gz", "").replace(".M0DIF", "").replace(".FITRES", "")
+            result[label] = load_data(folder / file)
     return result
 
 
@@ -75,13 +113,18 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 
 
 def get_cov_from_diff(df1, df2, scale):
+    """ Retrusn both the covariance contribution and the gradient """
     diff = scale * (df1["MUDIF"].to_numpy() - df2["MUDIF"].to_numpy())
-    return diff[:, None] @ diff[None, :]
+    cov = diff[:, None] @ diff[None, :]
+    reg = LinearRegression()
+    reg.fit(df1[["z"]], diff, sample_weight=1 / np.sqrt(0.003 ** 2 + df1["MUDIFERR"] ** 2 + df2["MUDIFERR"] ** 2))
+    coef = reg.coef_[0]
+    return cov, coef
 
 
 def get_contributions(m0difs, fitopt_scales, muopt_labels):
     """ Gets a dict mapping 'FITOPT_LABEL|MUOPT_LABEL' to covariance)"""
-    result = {}
+    result, slopes = {}, []
     base = None
 
     for name, df in m0difs.items():
@@ -99,19 +142,24 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
         # Depending on f and m, compute the contribution to the covariance matrix
         if f == 0 and m == 0:
             # This is the base file, so don't return anything. CosmoMC will add the diag terms itself.
-            cov = np.zeros((df["MUDIFERR"].size, df["MUDIFERR"].size))
+            cov = np.zeros((df["MU"].size, df["MU"].size))
+            slope = 0
             base = df
         elif m:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
             df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
-            cov = get_cov_from_diff(df, df_compare, scale)
+            cov, slope = get_cov_from_diff(df, df_compare, scale)
         else:
             # This is a fitopt with MUOPT000, compare to base file
             df_compare = m0difs[get_name_from_fitopt_muopt(0, 0)]
-            cov = get_cov_from_diff(df, df_compare, scale)
+            cov, slope = get_cov_from_diff(df, df_compare, scale)
 
         result[f"{fitopt_label}|{muopt_label}"] = cov
-    return result, base
+        slopes.append([name, fitopt_label, muopt_label, slope])
+
+    slope_df = pd.DataFrame(slopes, columns=["name", "fitopt_label", "muopt_label", "slope"])
+    slope_df = slope_df.sort_values("slope", ascending=False)
+    return result, base, slope_df
 
 
 def apply_filter(string, pattern):
@@ -155,7 +203,7 @@ def get_cov_from_covopt(covopt, contributions, base):
         logging.exception(f"Unable to invert covariance matrix for COVOPT {label}")
         raise ex
 
-    return final_cov
+    return label, final_cov
 
 
 def write_dataset(path, lcparam_file, cov_file):
@@ -186,30 +234,34 @@ def write_lcparam(path, base):
     # I am so sorry about this, but CosmoMC is very particular
     logging.info(f"Writing out lcparam data to {path}")
     with open(path, "w") as f:
-        f.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n")
+        f.write("#name zcmb    zhel    dz mb        dmb     x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor\n")
         for i, (z, mb, mbe) in enumerate(zip(zs, mbs, mbes)):
-            f.write(f"{i} {z} {z} 0 {mb} {mbe} 0 0 0 0 0 0 0 0 0 0 0 0\n")
+            f.write(f"{i:5d} {z:6.5f} {z:6.5f} 0  {mb:8.5f} {mbe:8.5f} 0 0 0 0 0 0 0 0 0 0 0 0\n")
 
 
 def write_covariance(path, cov):
     logging.info(f"Writing covariance to {path}")
+
+    # Write out the slopes
     with open(path, "w") as f:
         f.write(f"{cov.shape[0]}\n")
         for c in cov.flatten():
             f.write(f"{c:0.8f}\n")
 
 
-def write_output(config, covs, base):
+def write_cosmomc_output(config, covs, base):
     # Copy INI files. Create covariance matrices. Create .dataset. Modifying INI files to point to resources
     out = Path(config["OUTDIR"])
-    lcparam_file = out / f"lcparam.txt"
+    data_file = out / f"data.txt"
+    dataset_template = Path(config["COSMOMC_TEMPLATES"]) / config["DATASET_FILE"]
     dataset_files = []
+    os.makedirs(out, exist_ok=True)
 
     # Create lcparam file
     write_lcparam(lcparam_file, base)
 
     # Create covariance matrices and datasets
-    for i, cov in enumerate(covs):
+    for i, (label, cov) in enumerate(covs):
         cov_file = out / f"sys_{i}.txt"
         dataset_file = out / f"dataset_{i}.txt"
 
@@ -228,7 +280,7 @@ def write_output(config, covs, base):
             shutil.copy(op, npath)
         else:
             # Else we need one of each ini per covopt
-            for i, cov in enumerate(covs):
+            for i, (label, cov) in enumerate(covs):
                 # Copy with new index
                 npath = out / ini.replace(".ini", f"_{i}.ini")
                 shutil.copy(op, npath)
@@ -242,7 +294,49 @@ def write_output(config, covs, base):
                     f.write("root_dir = {root_dir}\n")
 
 
-def create_covariance(config):
+def write_summary_output(config, covariances, base):
+    pass
+
+
+def write_correlation(path, label, cov, base):
+    logging.debug(f"\tWriting out cov for COVOPT {label}")
+    diag = np.sqrt(np.diag(cov))
+    corr = cov / (diag[:, None] @ diag[None, :])
+    np.fill_diagonal(corr, 1.0)
+    np.savetxt(path, corr, fmt="%5.2f")
+    corr = pd.DataFrame((corr * 100).astype(int), columns=base["z"], index=base["z"])
+
+    precision = pd.DataFrame(np.linalg.inv(cov), columns=base["z"], index=base["z"])
+
+    if corr.shape[0] < 100:
+        height = 5 + 5  # corr.shape[0] // 4
+        fig, axes = plt.subplots(figsize=(2 * height + 2, height), ncols=2)
+        sb.heatmap(precision, annot=False, ax=axes[0], cmap="magma", square=True)
+        sb.heatmap(corr, annot=True, fmt="d", ax=axes[1], cmap="RdBu", vmin=-100, vmax=100, square=True)
+        axes[0].set_title("Precision matrix")
+        axes[1].set_title("Correlation matrix (percent)")
+        plt.tight_layout()
+        fig.savefig(path.with_suffix(".png"), bbox_inches="tight", dpi=100)
+    else:
+        logging.info("\tMatrix is large, skipping plotting")
+
+
+def write_debug_output(config, covariances, base, slopes):
+    # Plot correlation matrix
+    out = Path(config["OUTDIR"])
+
+    # The slopes can be used to figure out what systematics have largest impact on cosmology
+    logging.info("Writing out slopes.csv information")
+    with open(out / "slopes.csv", "w") as f:
+        f.write(slopes.__repr__())
+
+    logging.info("Showing correlation matrices:")
+    diag = np.diag(base["MUDIFERR"] ** 2)
+    for i, (label, cov) in enumerate(covariances):
+        write_correlation(out / f"corr_{i}_{label}.txt", label, cov + diag, base)
+
+
+def create_covariance(config, args):
     # Define all our pathing to be super obvious about where it all is
     input_dir = Path(config["INPUT_DIR"])
     data_dir = input_dir / config["VERSION"]
@@ -250,7 +344,7 @@ def create_covariance(config):
 
     # Read in all the needed data
     submit_info = read_yaml(input_dir / "SUBMIT.INFO")
-    m0difs = get_m0difs(data_dir)
+    data = get_data_files(data_dir, args.unbinned)
     sys_scale = read_yaml(sys_file)
 
     # Also need to get the FITOPT labels from the original LCFIT directory
@@ -259,14 +353,16 @@ def create_covariance(config):
     muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info["MUOPT_LIST"]}
 
     # Now that we have the data, figure out how each much each FITOPT/MUOPT pair contributes to cov
-    contributions, base = get_contributions(m0difs, fitopt_scales, muopt_labels)
+    contributions, base, slopes = get_contributions(data, fitopt_scales, muopt_labels)
 
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
     covopts = ["[ALL] [,]"] + config["COVOPTS"]  # Adds the covopt to compute everything
     covariances = [get_cov_from_covopt(c, contributions, base) for c in covopts]
 
-    write_output(config, covariances, base)
+    write_cosmomc_output(config, covariances, base)
+    write_summary_output(config, covariances, base)
+    write_debug_output(config, covariances, base, slopes)
 
 
 if __name__ == "__main__":
@@ -274,7 +370,7 @@ if __name__ == "__main__":
         setup_logging()
         args = get_args()
         config = read_yaml(args.input)
-        create_covariance(config)
+        create_covariance(config, args)
     except Exception as e:
         logging.exception(e)
         raise e
