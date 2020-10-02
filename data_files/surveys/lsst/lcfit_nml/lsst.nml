@@ -38,8 +38,7 @@ APPEND_FITRES:  FITRES  delmu  MNSTAT_COV MWEBV RA DEC HOST_OBJID HOST_DDLR HOST
 
   cutwin_peakmjd      = 0.0,  9999999.0
   cutwin_Nepoch       = 5
-  cutwin_Nband_thresh = 1
-	       
+
   &END
  
 

@@ -8,6 +8,7 @@ import os
 import logging
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+import gzip
 
 
 def setup_logging():
@@ -45,8 +46,8 @@ def plot_single_file(source_file, df):
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     for index, row in df.iterrows():
-        means = [row["OM"], row["w"], row["sigint"]]
-        cov = np.diag([row["OM_sig"] ** 2, row["wsig_marg"] ** 2, 0.01 ** 2])
+        means = [row["omm"], row["w"], row["sigint"]]
+        cov = np.diag([row["omm_sig"] ** 2, row["w_sig"] ** 2, 0.01 ** 2])
         c.add_covariance(means, cov, parameters=labels, name=f"Realisation {index}")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
     del c
@@ -60,15 +61,15 @@ def plot_all_files(df_all):
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
     data = []
     for name, df in df_all.groupby("name"):
-        means = [df["OM"].mean(), df["w"].mean(), df["sigint"].mean()]
+        means = [df["omm"].mean(), df["w"].mean(), df["sigint"].mean()]
         if df.shape[0] < 2:
             name2 = name + " (showing mean error)"
-            cov = np.diag([df["OM_sig"].mean() ** 2, df["wsig_marg"].mean() ** 2, 0.01 ** 2])
+            cov = np.diag([df["omm_sig"].mean() ** 2, df["w_sig"].mean() ** 2, 0.01 ** 2])
         else:
             name2 = name + " (showing scatter error)"
-            cov = np.diag([df["OM"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2])
+            cov = np.diag([df["omm"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2])
         c.add_covariance(means, cov, parameters=labels, name=name2.replace("_", "\\_"))
-        data.append([name, df["w"].mean(), df["w"].std(), df["wsig_marg"].mean()])
+        data.append([name, df["w"].mean(), df["w"].std(), df["w_sig"].mean()])
     wdf = pd.DataFrame(data, columns=["name", "mean_w", "scatter_mean_w", "mean_std_w"])
     wdf.to_csv(output_file.replace(".png", ".csv"), index=False, float_format="%0.4f")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
@@ -146,7 +147,7 @@ def plot_scatter_comp(df_all):
 
 
 def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
-    logging.info("Making Hubble plot")
+    logging.info(f"Making Hubble plot from FITRES file {fitres_file} and M0DIF file {m0diff_file}")
     # Note that the fitres file has mu and fit 0, m0diff will have to select down to it
 
     name, sim_num, *_ = fitres_file.split("_")
@@ -174,7 +175,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     num_sn_fit = df.shape[0]
     contam_data, contam_true = "", ""
 
-    with open(fitres_file) as f:
+    with gzip.open(fitres_file, "rt") as f:
         for line in f.read().splitlines():
             if "NSNFIT" in line:
                 v = int(line.split("=", 1)[1].strip())
@@ -291,7 +292,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         cbar = fig.colorbar(h, ax=axes, orientation="vertical", fraction=0.1, pad=0.01, aspect=40)
         cbar.set_label("Prob Ia")
 
-    fp = fitres_file.replace(".fitres", ".png")
+    fp = fitres_file.replace(".fitres.gz", ".png")
     logging.debug(f"Saving Hubble plot to {fp}")
     fig.savefig(fp, dpi=300, transparent=True, bbox_inches="tight")
     plt.close(fig)

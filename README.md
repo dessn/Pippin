@@ -634,7 +634,6 @@ BIASCOR:
   MUOPTS:
       C11:
         SIMFILE_BIASCOR: [D_DESBIASSYS_C11, L_LOWZBIASSYS_C11]
-        FITOPT: 0
         
   # Generic OPTS that can modify the base file and overwrite properties
   OTPS:

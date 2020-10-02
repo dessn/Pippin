@@ -1,5 +1,5 @@
 import shutil
-
+import gzip
 import numpy as np
 import yaml
 from chainconsumer import ChainConsumer
@@ -54,7 +54,8 @@ def make_summary_file(wfit_files, args):
 
     df_all = None
     for f in wfit_files:
-        df = pd.read_csv(f)
+        logging.debug(f"Reading in wfit_summary {f}")
+        df = pd.read_csv(f, delim_whitespace=True, comment="#").drop(columns=["VARNAMES:", "ROW"])
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         df["name"] = name
         logging.debug(f"Read {f}, contents are: {df}")
@@ -91,7 +92,7 @@ def parse_m0diffs(args):
         ol_ref = np.NaN
         w_ref = np.NaN
 
-        with open(path) as f:
+        with gzip.open(path, "rt") as f:
             for line in f.read().splitlines():
                 if "Omega_DE(ref)" in line:
                     ol_ref = float(line.strip().split()[-1])

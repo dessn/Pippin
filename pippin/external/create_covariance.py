@@ -33,6 +33,14 @@ import matplotlib.pyplot as plt
 # QUESTION: We write out zcmb = zhel, which does CosmoMC actually use? Should we not write out the actual values?
 # TODO: Make CosmoMC starting point for Rick and Viv to debug and make a generic SN dataset f90 input
 
+# TODO: Write out corr matrix separately to help debugging
+# TODO: Add analyse step to plot corr
+# TODO: Create readme analog / SUBMIT.INFO in top level output to explain wtf is going on (how all the files work together)
+# TODO: Maybe put all useful output in a single YML file so we can easily put this into another fitter
+# TODO: Add file which maps the COVOPT to the integers
+# TODO: Get this working for each SN, not just each bin
+# TODO: Get list of features that would be useful
+
 
 def setup_logging():
     logging.basicConfig(level=logging.DEBUG, format="[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s")
@@ -105,7 +113,7 @@ def get_fitopt_scales(lcfit_info, sys_scales):
     for name, label, _ in fitopt_list:
         if label != "DEFAULT":
             if label not in sys_scales:
-                logging.warning(f"No FITOPT scale found for {label} in input options: {sys_scales}")
+                logging.warning(f"No FITOPT scale found for {label}")
         scale = sys_scales.get(label, 1.0)
         d = int(name.replace("FITOPT", ""))
         result[d] = (label, scale)
@@ -145,7 +153,7 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
             cov = np.zeros((df["MU"].size, df["MU"].size))
             slope = 0
             base = df
-        elif m:
+        elif m > 0:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
             df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
             cov, slope = get_cov_from_diff(df, df_compare, scale)
@@ -206,33 +214,20 @@ def get_cov_from_covopt(covopt, contributions, base):
     return label, final_cov
 
 
-def write_dataset(path, lcparam_file, cov_file):
-    template = f"""name = JLA
-data_file = {lcparam_file}
-pecz = 0
-intrinsicdisp = 0
-twoscriptmfit = F
-scriptmcut = 10.0
-has_mag_covmat = T
-mag_covmat_file =  {cov_file}
-has_stretch_covmat = F
-has_colour_covmat = F
-has_mag_stretch_covmat = F
-has_mag_colour_covmat = F
-has_stretch_colour_covmat = F
-"""
-    with open(path, "w") as f:
-        f.write(template)
+def write_dataset(path, data_file, cov_file, template_path):
+    with open(template_path) as f_in:
+        with open(path, "w") as f_out:
+            f_out.write(f_in.read().format(data_file=data_file, cov_file=cov_file))
 
 
-def write_lcparam(path, base):
+def write_data(path, base):
     zs = base["z"].to_numpy()
     mu = base["MU"].to_numpy()
     mbs = -19.36 + mu
     mbes = base["MUDIFERR"].to_numpy()
 
     # I am so sorry about this, but CosmoMC is very particular
-    logging.info(f"Writing out lcparam data to {path}")
+    logging.info(f"Writing out data to {path}")
     with open(path, "w") as f:
         f.write("#name zcmb    zhel    dz mb        dmb     x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor\n")
         for i, (z, mb, mbe) in enumerate(zip(zs, mbs, mbes)):
@@ -258,7 +253,7 @@ def write_cosmomc_output(config, covs, base):
     os.makedirs(out, exist_ok=True)
 
     # Create lcparam file
-    write_lcparam(lcparam_file, base)
+    write_data(data_file, base)
 
     # Create covariance matrices and datasets
     for i, (label, cov) in enumerate(covs):
@@ -266,7 +261,7 @@ def write_cosmomc_output(config, covs, base):
         dataset_file = out / f"dataset_{i}.txt"
 
         write_covariance(cov_file, cov)
-        write_dataset(dataset_file, lcparam_file, cov_file)
+        write_dataset(dataset_file, data_file, cov_file, dataset_template)
         dataset_files.append(dataset_file)
 
     # Copy some INI files
@@ -291,7 +286,6 @@ def write_cosmomc_output(config, covs, base):
                 with open(npath, "a+") as f:
                     f.write(f"\nfile_root={basename}\n")
                     f.write(f"jla_dataset={dataset_files[i]}\n")
-                    f.write("root_dir = {root_dir}\n")
 
 
 def write_summary_output(config, covariances, base):
