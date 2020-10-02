@@ -295,7 +295,16 @@ def write_cosmomc_output(config, covs, base):
 
 
 def write_summary_output(config, covariances, base):
-    pass
+    out = Path(config["OUTDIR"])
+    info = {}
+    cov_info = {}
+    for i, (label, cov) in enumerate(covariances):
+        cov_info[i] = label
+    info["COVOPTS"] = cov_info
+
+    logging.info("Writing INFO.YML")
+    with open(out / "INFO.YML", "w") as f:
+        yaml.safe_dump(info, f)
 
 
 def write_correlation(path, label, cov, base):
@@ -328,7 +337,8 @@ def write_debug_output(config, covariances, base, summary):
     # The slopes can be used to figure out what systematics have largest impact on cosmology
     logging.info("Writing out summary.csv information")
     with open(out / "summary.csv", "w") as f:
-        f.write(summary.__repr__())
+        with pd.option_context("display.max_rows", 100000, "display.max_columns", 100):
+            f.write(summary.__repr__())
 
     logging.info("Showing correlation matrices:")
     diag = np.diag(base["MUDIFERR"] ** 2)
