@@ -348,9 +348,9 @@ def write_correlation(path, label, base_cov, diag, base):
         annot = corr.shape[0] < 30
 
         args = {"shrink": 0.9}
-        cm = np.nanmax(np.abs(np.nan_to_num(cov, nan=0, posinf=0)))
-        pm = np.nanmax(np.abs(np.nan_to_num(precision.to_numpy(), nan=0, posinf=0)))
-        bcm = np.nanmax(np.abs(np.nan_to_num(base_covdf.to_numpy(), nan=0, posinf=0)))
+        cm = np.nanmax(np.abs(cov))
+        pm = np.nanmax(np.abs(precision.to_numpy()))
+        bcm = np.nanmax(np.abs(base_covdf.to_numpy()))
         sb.heatmap(covdf.replace([np.inf, -np.inf], np.nan), annot=False, ax=axes[0], vmin=-cm, vmax=cm, cmap="PuOr", square=True, cbar_kws=args)
         sb.heatmap(precision, annot=False, ax=axes[1], cmap="PuOr", square=True, vmin=-pm, vmax=pm, cbar_kws=args)
         sb.heatmap(corr, annot=annot, fmt="d", ax=axes[2], cmap="RdBu", vmin=-100, vmax=100, square=True, cbar_kws=args)
