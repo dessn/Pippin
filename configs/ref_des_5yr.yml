@@ -87,8 +87,8 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-        - "[SCATTER] [=DEFAULT,+SCATTER]"
-        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
+#        - "[SCATTER] [=DEFAULT,+SCATTER]"
+#        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
 
   UNBINNED:
     OPTS:
