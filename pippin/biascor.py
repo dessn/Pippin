@@ -70,24 +70,11 @@ class BiasCor(ConfigBasedExecutable):
         self.output["NSPLITRAN"] = "NSPLITRAN" in [x.upper() for x in self.options.keys()]
         if self.output["NSPLITRAN"]:
             self.output["NSPLITRAN_VAL"] = {x.upper(): y for x, y in self.options.items()}["NSPLITRAN"]
-
-        num_dirs = self.num_verions[0]
-
-        if self.output["NSPLITRAN"]:
-            self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
-        else:
-            if num_dirs == 1:
-                self.output["subdirs"] = ["OUTPUT_BBCFIT"]
-            else:
-                self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)]
-
         self.w_summary = os.path.join(self.fit_output_dir, "BBC_SUMMARY_wfit.FITRES")
         self.output["w_summary"] = self.w_summary
-        self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
-        self.output_plots = [
-            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
-            for m in self.output["m0dif_dirs"]
-        ]
+
+        self.set_m0dif_dirs()
+
         if not self.make_all:
             self.output_plots = [self.output_plots[0]]
         self.logger.debug(f"Making {len(self.output_plots)} plots")
@@ -96,6 +83,33 @@ class BiasCor(ConfigBasedExecutable):
         self.muopt_order = list(self.muopts.keys())
         self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
+
+    def set_m0dif_dirs(self):
+
+        versions = None
+        # Check if the SUBMIT.INFO exists
+        submit_info = os.path.join(self.fit_output_dir, "SUBMIT.INFO")
+        if os.path.exists(submit_info):
+            yml = read_yaml(submit_info)
+            versions = yml.get("VERSION_OUT_LIST")
+
+        if versions is not None:
+            self.output["subdirs"] = versions
+        else:
+            num_dirs = self.num_verions[0]
+            if self.output["NSPLITRAN"]:
+                self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(self.output["NSPLITRAN_VAL"])]
+            else:
+                if num_dirs == 1:
+                    self.output["subdirs"] = ["OUTPUT_BBCFIT"]
+                else:
+                    self.output["subdirs"] = [f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)]
+
+        self.output["m0dif_dirs"] = [os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]]
+        self.output_plots = [
+            os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
+            for m in self.output["m0dif_dirs"]
+        ]
 
     def convert_base_file(self):
         self.logger.debug(f"Translating base file {self.base_file}")
@@ -337,6 +351,7 @@ class BiasCor(ConfigBasedExecutable):
             with open(self.logging_file, "w") as f:
                 subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
             chown_dir(self.output_dir)
+            self.set_m0dif_dirs()
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
