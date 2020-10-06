@@ -341,7 +341,7 @@ def write_correlation(path, label, base_cov, diag, base):
     corr = pd.DataFrame((corr * 100).astype(int), columns=zs, index=zs)
     precision = pd.DataFrame(np.arcsinh(np.linalg.inv(cov)), columns=zs, index=zs)
 
-    if corr.shape[0] < 3000:
+    if corr.shape[0] < 1000:
         logging.debug("\tCreating precision and correlation matrix plots. Sit tight.")
         fig, axes = plt.subplots(figsize=(16, 14), ncols=2, nrows=2)
         axes = axes.flatten()

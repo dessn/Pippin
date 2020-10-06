@@ -79,7 +79,7 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=1GB
+#SBATCH --mem=4GB
 
 cd {output_dir}
 source activate
