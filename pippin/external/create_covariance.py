@@ -8,6 +8,8 @@ import pandas as pd
 from pathlib import Path
 import re
 import yaml
+import sys
+from scipy.stats import binned_statistic_2d
 from sklearn.linear_model import LinearRegression
 import seaborn as sb
 import matplotlib.pyplot as plt
@@ -68,10 +70,12 @@ def load_data(path):
     logging.debug(f"\tLoaded data with shape {df.shape} from {path}")
 
     # Do a bit of data cleaning
-    df = df.replace(999.0, np.inf)
+    df = df.replace(999.0, np.nan)
     # M0DIF doesnt have MU column, so add it back in
     if "MU" not in df.columns:
         df["MU"] = df["MUREF"] + df["MUDIF"]
+    if "MUERR" not in df.columns:
+        df["MUERR"] = df["MUDIFERR"]
 
     # Sort to ensure direct subtraction comparison
     if "CID" in df.columns:
@@ -80,9 +84,9 @@ def load_data(path):
         df = df.sort_values("z")
     # The FITRES and M0DIF files have different column names
     if "CID" in df.columns:
-        df = df.rename(columns={"MURES": "MUDIF", "MUERR": "MUDIFERR", "zHD": "z"})
+        df = df.rename(columns={"zHD": "z"})
 
-    df = df.drop(columns=["VARNAMES:"])
+    df = df.loc[:, ["z", "MU", "MUERR"]]
     return df
 
 
@@ -122,12 +126,12 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 
 def get_cov_from_diff(df1, df2, scale):
     """ Returns both the covariance contribution and summary stats (slope and mean abs diff) """
-    diff = scale * (df1["MUDIF"].to_numpy() - df2["MUDIF"].to_numpy())
+    diff = scale * (df1["MU"].to_numpy() - df2["MU"].to_numpy())
     cov = diff[:, None] @ diff[None, :]
 
     # Determine the gradient using simple linear regression
     reg = LinearRegression()
-    weights = 1 / np.sqrt(0.003 ** 2 + df1["MUDIFERR"] ** 2 + df2["MUDIFERR"] ** 2)
+    weights = 1 / np.sqrt(0.003 ** 2 + df1["MUERR"] ** 2 + df2["MUERR"] ** 2)
     reg.fit(df1[["z"]], diff, sample_weight=weights)
     coef = reg.coef_[0]
 
@@ -139,7 +143,6 @@ def get_cov_from_diff(df1, df2, scale):
 def get_contributions(m0difs, fitopt_scales, muopt_labels):
     """ Gets a dict mapping 'FITOPT_LABEL|MUOPT_LABEL' to covariance)"""
     result, slopes = {}, []
-    base = None
 
     for name, df in m0difs.items():
         f, m = get_fitopt_muopt_from_name(name)
@@ -158,7 +161,6 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
             # This is the base file, so don't return anything. CosmoMC will add the diag terms itself.
             cov = np.zeros((df["MU"].size, df["MU"].size))
             summary = 0, 0, 0
-            base = df
         elif m > 0:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
             df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
@@ -173,7 +175,7 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
 
     summary_df = pd.DataFrame(slopes, columns=["name", "fitopt_label", "muopt_label", "slope", "mean_abs_deviation", "max_abs_deviation"])
     summary_df = summary_df.sort_values(["slope", "mean_abs_deviation", "max_abs_deviation"], ascending=False)
-    return result, base, summary_df
+    return result, summary_df
 
 
 def apply_filter(string, pattern):
@@ -208,11 +210,26 @@ def get_cov_from_covopt(covopt, contributions, base):
             else:
                 final_cov += cov
 
+    assert final_cov is not None, f"No systematics matched COVOPT {label} with FITOPT filter '{fitopt_filter}' and MUOPT filter '{muopt_filter}'!"
+
     # Validate that the final_cov is invertible
     try:
         # CosmoMC will add the diag terms, so lets do it here and make sure its all good
-        effective_cov = final_cov + np.diag(base["MUDIFERR"] ** 2)
-        np.linalg.inv(effective_cov)
+        effective_cov = final_cov + np.diag(base["MUERR"] ** 2)
+
+        # First just try and invert it to catch singular matrix errors
+        precision = np.linalg.inv(effective_cov)
+
+        # Then check that the matrix is well conditioned to deal with float precision
+        episolon = sys.float_info.epsilon
+        cond = np.linalg.cond(effective_cov)
+        assert cond < 1 / episolon, "Covariance matrix is ill-conditioned and cannot be stably inverted"
+        logging.info(f"Condition for covariance COVOPT {label} is {cond}")
+
+        # Finally, re-invert the precision matrix and ensure its within tolerance of the original covariance
+        cov2 = np.linalg.inv(precision)
+        assert np.all(np.isclose(effective_cov, cov2)), "Double inversion does not give original covariance, matrix is unstable"
+
     except np.linalg.LinAlgError as ex:
         logging.exception(f"Unable to invert covariance matrix for COVOPT {label}")
         raise ex
@@ -230,7 +247,7 @@ def write_data(path, base):
     zs = base["z"].to_numpy()
     mu = base["MU"].to_numpy()
     mbs = -19.36 + mu
-    mbes = base["MUDIFERR"].to_numpy()
+    mbes = base["MUERR"].to_numpy()
 
     # I am so sorry about this, but CosmoMC is very particular
     logging.info(f"Writing out data to {path}")
@@ -281,7 +298,7 @@ def write_cosmomc_output(config, covs, base):
             shutil.copy(op, npath)
         else:
             # Else we need one of each ini per covopt
-            for i, (label, cov) in enumerate(covs):
+            for i, _ in enumerate(covs):
                 # Copy with new index
                 npath = out / ini.replace(".ini", f"_{i}.ini")
                 shutil.copy(op, npath)
@@ -307,25 +324,43 @@ def write_summary_output(config, covariances, base):
         yaml.safe_dump(info, f)
 
 
-def write_correlation(path, label, cov, base):
+def write_correlation(path, label, base_cov, diag, base):
     logging.debug(f"\tWriting out cov for COVOPT {label}")
+
+    zs = base["z"].round(decimals=5)
+    cov = diag + base_cov
+
     diag = np.sqrt(np.diag(cov))
     corr = cov / (diag[:, None] @ diag[None, :])
+
     np.fill_diagonal(corr, 1.0)
     np.savetxt(path, corr, fmt="%5.2f")
-    corr = pd.DataFrame((corr * 100).astype(int), columns=base["z"], index=base["z"])
+    np.savetxt(str(path).replace("corr", "cov"), cov, fmt="%9.6f")
+    covdf = pd.DataFrame(cov, columns=zs, index=zs)
+    base_covdf = pd.DataFrame(base_cov, columns=zs, index=zs)
+    corr = pd.DataFrame((corr * 100).astype(int), columns=zs, index=zs)
+    precision = pd.DataFrame(np.arcsinh(np.linalg.inv(cov)), columns=zs, index=zs)
 
-    precision = pd.DataFrame(np.linalg.inv(cov), columns=base["z"], index=base["z"])
+    if corr.shape[0] < 3000:
+        logging.debug("\tCreating precision and correlation matrix plots. Sit tight.")
+        fig, axes = plt.subplots(figsize=(16, 14), ncols=2, nrows=2)
+        axes = axes.flatten()
+        annot = corr.shape[0] < 30
 
-    if corr.shape[0] < 100:
-        height = 5 + 5  # corr.shape[0] // 4
-        fig, axes = plt.subplots(figsize=(2 * height + 2, height), ncols=2)
-        sb.heatmap(precision, annot=False, ax=axes[0], cmap="magma", square=True)
-        sb.heatmap(corr, annot=True, fmt="d", ax=axes[1], cmap="RdBu", vmin=-100, vmax=100, square=True)
-        axes[0].set_title("Precision matrix")
-        axes[1].set_title("Correlation matrix (percent)")
+        args = {"shrink": 0.9}
+        cm = np.nanmax(np.abs(np.nan_to_num(cov, nan=0, posinf=0)))
+        pm = np.nanmax(np.abs(np.nan_to_num(precision.to_numpy(), nan=0, posinf=0)))
+        bcm = np.nanmax(np.abs(np.nan_to_num(base_covdf.to_numpy(), nan=0, posinf=0)))
+        sb.heatmap(covdf.replace([np.inf, -np.inf], np.nan), annot=False, ax=axes[0], vmin=-cm, vmax=cm, cmap="PuOr", square=True, cbar_kws=args)
+        sb.heatmap(precision, annot=False, ax=axes[1], cmap="PuOr", square=True, vmin=-pm, vmax=pm, cbar_kws=args)
+        sb.heatmap(corr, annot=annot, fmt="d", ax=axes[2], cmap="RdBu", vmin=-100, vmax=100, square=True, cbar_kws=args)
+        sb.heatmap(base_covdf.replace([np.inf, -np.inf], np.nan), annot=False, ax=axes[3], cmap="PuOr", vmin=-bcm, vmax=bcm, square=True, cbar_kws=args)
+        axes[0].set_title("Covariance matrix")
+        axes[1].set_title(f"Arcsinh(precision) ")
+        axes[2].set_title("Correlation matrix (percent)")
+        axes[3].set_title("Covariance matrix without diagonal contributions")
         plt.tight_layout()
-        fig.savefig(path.with_suffix(".png"), bbox_inches="tight", dpi=100)
+        fig.savefig(path.with_suffix(".png"), bbox_inches="tight", dpi=300)
     else:
         logging.info("\tMatrix is large, skipping plotting")
 
@@ -341,9 +376,24 @@ def write_debug_output(config, covariances, base, summary):
             f.write(summary.__repr__())
 
     logging.info("Showing correlation matrices:")
-    diag = np.diag(base["MUDIFERR"] ** 2)
+    diag = np.diag(base["MUERR"] ** 2)
     for i, (label, cov) in enumerate(covariances):
-        write_correlation(out / f"corr_{i}_{label}.txt", label, cov + diag, base)
+        write_correlation(out / f"corr_{i}_{label}.txt", label, cov, diag, base)
+
+
+def get_lcfit_info(submit_info):
+    path = Path(submit_info["INPDIR_LIST"][0]) / "SUBMIT.INFO"
+    logging.info(f"Loading LCFIT SUBMIT.INFO from {path}")
+    return read_yaml(path)
+
+
+def filter_nans(data):
+    base_name = get_name_from_fitopt_muopt(0, 0)
+    base = data[base_name]
+    mask = ~(base.isnull().any(axis=1))
+    for name, df in data.items():
+        data[name] = df.loc[mask, :]
+    return data, base.loc[mask, :]
 
 
 def create_covariance(config, args):
@@ -354,16 +404,20 @@ def create_covariance(config, args):
 
     # Read in all the needed data
     submit_info = read_yaml(input_dir / "SUBMIT.INFO")
-    data = get_data_files(data_dir, args.unbinned)
+    lcfit_info = get_lcfit_info(submit_info)
     sys_scale = read_yaml(sys_file)
-
-    # Also need to get the FITOPT labels from the original LCFIT directory
-    lcfit_info = read_yaml(Path(submit_info["INPDIR_LIST"][0]) / "SUBMIT.INFO")
     fitopt_scales = get_fitopt_scales(lcfit_info, sys_scale)
+    # Also need to get the FITOPT labels from the original LCFIT directory
     muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info["MUOPT_LIST"]}
 
+    # Load in all the data
+    data = get_data_files(data_dir, args.unbinned)
+
+    # Filter data to remove rows with infinite error
+    data, base = filter_nans(data)
+
     # Now that we have the data, figure out how each much each FITOPT/MUOPT pair contributes to cov
-    contributions, base, summary = get_contributions(data, fitopt_scales, muopt_labels)
+    contributions, summary = get_contributions(data, fitopt_scales, muopt_labels)
 
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
