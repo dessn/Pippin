@@ -239,7 +239,8 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-        self.set_property("cid_reject_file", self.reject_list)
+        if self.get_property("cid_reject_file") is not None:
+            self.set_property("cid_reject_file", self.reject_list)
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
 
         yaml_keys = ["NSPLITRAN"]
