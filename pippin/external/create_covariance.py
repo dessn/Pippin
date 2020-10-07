@@ -127,6 +127,7 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 def get_cov_from_diff(df1, df2, scale):
     """ Returns both the covariance contribution and summary stats (slope and mean abs diff) """
     diff = scale * (df1["MU"].to_numpy() - df2["MU"].to_numpy())
+    diff[~np.isfinite(diff)] = 0
     cov = diff[:, None] @ diff[None, :]
 
     # Determine the gradient using simple linear regression
