@@ -87,14 +87,8 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-#        - "[SCATTER] [=DEFAULT,+SCATTER]"
-#        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
-
-  UNBINNED:
-    OPTS:
-      BINNED: False
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+        - "[SCATTER] [=DEFAULT,+SCATTER]"
+        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
 
 COSMOMC:
   SN_OMW:
