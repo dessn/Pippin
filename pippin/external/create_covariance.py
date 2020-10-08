@@ -9,39 +9,9 @@ from pathlib import Path
 import re
 import yaml
 import sys
-from scipy.stats import binned_statistic_2d
 from sklearn.linear_model import LinearRegression
 import seaborn as sb
 import matplotlib.pyplot as plt
-
-# TODO: Write out corr matrix separately to help debugging. Maybe make some plots as well for debugging. Also a readable txt file with corr.
-# TODO: Add ordered list of systematics
-# - delta mu vs z for systematics of chocie
-# Note: choice should be determined automatically
-# ie systematics that shift things more that like 0.2mag
-# Text and plots
-# Look for gradients in the diff vector over redshift to see what will impact cosmo
-# output sorted list of gradients for each contribution (note be simple and use equal weighting for bins/sn? Or add an error floor)
-# Make a dedicated CosmoMC folder to differentiate the human readable stuff
-
-# TODO: Add analyse step to plot/copy corr
-# TODO: Create readme analog / SUBMIT.INFO in top level output to explain wtf is going on (how all the files work together)
-# TODO: Maybe put all useful output in a single YML file so we can easily put this into another fitter
-# TODO: Add file which maps the COVOPT to the integers
-# TODO: Get this working for each SN, not just each bin
-# TODO: Check the size of the number of SN
-# TODO: Get list of features that would be useful
-# TODO: Make more explicit the checking for matched bins and number of supernova
-# QUESTION: We write out zcmb = zhel, which does CosmoMC actually use? Should we not write out the actual values?
-# TODO: Make CosmoMC starting point for Rick and Viv to debug and make a generic SN dataset f90 input
-
-# TODO: Write out corr matrix separately to help debugging
-# TODO: Add analyse step to plot corr
-# TODO: Create readme analog / SUBMIT.INFO in top level output to explain wtf is going on (how all the files work together)
-# TODO: Maybe put all useful output in a single YML file so we can easily put this into another fitter
-# TODO: Add file which maps the COVOPT to the integers
-# TODO: Get this working for each SN, not just each bin
-# TODO: Get list of features that would be useful
 
 
 def setup_logging():
@@ -126,6 +96,7 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 
 def get_cov_from_diff(df1, df2, scale):
     """ Returns both the covariance contribution and summary stats (slope and mean abs diff) """
+    assert df1["MU"].size == df2["MU"].size, "Oh no, looks like you have a different number of bins/supernova for your systematic and this is not good."
     diff = scale * (df1["MU"].to_numpy() - df2["MU"].to_numpy())
     diff[~np.isfinite(diff)] = 0
     cov = diff[:, None] @ diff[None, :]
