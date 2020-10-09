@@ -422,7 +422,7 @@ LCFIT:
     # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
     # Normally this would be a single entry like des.fitopts, but you can also pass a list
     # If you specify a FITOPT manually, make sure it has the / around the label
-    FITOPS:
+    FITOPTS:
       - des.fitopts
       - "/custom_extra_fitopt/ REDSHIFT_FINAL_SHIFT 0.0001"
 
