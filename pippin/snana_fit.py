@@ -87,7 +87,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             if os.path.exists(potential_path):
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 with open(potential_path) as file:
-                    new_fitopts = list(file.read().splitlines())
+                    new_fitopts = [x for x in list(file.read().splitlines()) if x != ""]
                     self.fitopts += new_fitopts
                     self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
             else:
