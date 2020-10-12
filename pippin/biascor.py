@@ -223,13 +223,13 @@ class BiasCor(ConfigBasedExecutable):
         fitopts = {}
         # Construct first map based off listed labels
         for data in datas:
-            for label, file in data.output["fitopt_map"]:
+            for label, file in data.output["fitopt_map"].items():
                 if label not in fitopts:
                     fitopts[label] = {}
                 fitopts[label][data.name] = file.split(".")[0]
 
         # If the label isnt present, then map it back to FITOPT000
-        for label, d in fitopts:
+        for label, d in fitopts.items():
             for data in datas:
                 if fitopts[label].get(data.name) is None:
                     fitopts[label][data.name] = "FITOPT000"
@@ -238,7 +238,7 @@ class BiasCor(ConfigBasedExecutable):
         # Which is just FITOPT004: {DES_NAME: FITOPT004, LOWZ_NAME: FITOPT029}... etc
         index = 0
         result = {}
-        for label, d in fitopts:
+        for label, d in fitopts.items():
             index += 1
             result[f"FITOPT{index:03d}"] = d
 
