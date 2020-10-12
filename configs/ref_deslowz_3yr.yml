@@ -33,7 +33,9 @@ LCFIT:
   LS:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: DATALOWZ
-    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    FITOPTS:
+      - surveys/global/lcfit_fitopts/global.fitopts
+      - surveys/lowz/lcfit_fitopts/lowz.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -42,7 +44,9 @@ LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_3yr.nml
     MASK: DATADES
-    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    FITOPTS:
+      - surveys/global/lcfit_fitopts/global.fitopts
+      - surveys/des/lcfit_fitopts/des.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:

@@ -101,7 +101,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         mapped2 = {0: "DEFAULT"}
         for i, line in enumerate(self.fitopts):
             label = line.strip().split("/")[1]
-            mapped[line] = f"FITOPT{i + 1:3d}.FITRES.gz"
+            mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"
             mapped2[i] = label
         if self.fitopts:
             self.yaml["CONFIG"]["FITOPT"] = self.fitopts

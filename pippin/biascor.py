@@ -219,6 +219,31 @@ class BiasCor(ConfigBasedExecutable):
     def get_simfile_ccprior(self, cc_sims):
         return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
 
+    def get_fitopt_map(self, datas):
+        fitopts = {}
+        # Construct first map based off listed labels
+        for data in datas:
+            for label, file in data.output["fitopt_map"]:
+                if label not in fitopts:
+                    fitopts[label] = {}
+                fitopts[label][data.name] = file.split(".")[0]
+
+        # If the label isnt present, then map it back to FITOPT000
+        for label, d in fitopts:
+            for data in datas:
+                if fitopts[label].get(data.name) is None:
+                    fitopts[label][data.name] = "FITOPT000"
+
+        # Now for each of the labels we've found in all files, construct the output dict
+        # Which is just FITOPT004: {DES_NAME: FITOPT004, LOWZ_NAME: FITOPT029}... etc
+        index = 0
+        result = {}
+        for label, d in fitopts:
+            index += 1
+            result[f"FITOPT{index:03d}"] = d
+
+        return result
+
     def write_input(self, force_refresh):
 
         if self.merged_iasim is not None:
@@ -231,9 +256,9 @@ class BiasCor(ConfigBasedExecutable):
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim)
         self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
-        self.data = [m.output["lc_output_dir"] for m in self.merged_data]
+        self.data = {m.name: m.output["lc_output_dir"] for m in self.merged_data}
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
-
+        self.yaml["FITOPT_MAP"] = self.get_fitopt_map(self.merged_data)
         self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
 
         self.set_property("simfile_biascor", self.bias_cor_fits)
