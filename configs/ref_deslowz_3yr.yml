@@ -33,9 +33,7 @@ LCFIT:
   LS:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: DATALOWZ
-    FITOPTS:
-      - surveys/global/lcfit_fitopts/global.fitopts
-      - surveys/lowz/lcfit_fitopts/lowz.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/everything.fitopts
     SNLCINP:
       USE_MINOS: F
     OPTS:

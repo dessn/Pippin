@@ -75,40 +75,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 is_data = not d.output["is_sim"]
         self.output["is_data"] = is_data
 
-        # Loading fitopts
-        fitopts = config.get("FITOPTS", [])
-        if isinstance(fitopts, str):
-            fitopts = [fitopts]
-
-        self.logger.debug("Loading fitopts")
-        self.fitopts = []
-        for f in fitopts:
-            potential_path = get_data_loc(f)
-            if os.path.exists(potential_path):
-                self.logger.debug(f"Loading in fitopts from {potential_path}")
-                with open(potential_path) as file:
-                    new_fitopts = [x for x in list(file.read().splitlines()) if x != ""]
-                    self.fitopts += new_fitopts
-                    self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
-            else:
-                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /"
-                if not f.startswith("FITOPT:"):
-                    f = "FITOPT: " + f
-                self.logger.debug(f"Adding manual fitopt {f}")
-                self.fitopts.append(f)
-        # Map the fitopt outputs
-        mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
-        mapped2 = {0: "DEFAULT"}
-        for i, line in enumerate(self.fitopts):
-            label = line.strip().split("/")[1]
-            mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"
-            mapped2[i] = label
-        if self.fitopts:
-            self.yaml["CONFIG"]["FITOPT"] = self.fitopts
-        self.output["fitopt_map"] = mapped
-        self.output["fitopt_index"] = mapped2
-        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
-
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
         try:
@@ -117,6 +83,61 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         except Exception:
             self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
             self.num_jobs = 10
+
+    def validate_fitopts(self, config):
+        # Loading fitopts
+        fitopts = config.get("FITOPTS", [])
+        if isinstance(fitopts, str):
+            fitopts = [fitopts]
+
+        self.logger.debug("Loading fitopts")
+
+        self.raw_fitopts = []
+        for f in fitopts:
+            potential_path = get_data_loc(f)
+            if os.path.exists(potential_path):
+                self.logger.debug(f"Loading in fitopts from {potential_path}")
+                y = read_yaml(potential_path)
+                assert isinstance(y, dict), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                self.raw_fitopts.append(y)
+                self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
+            else:
+                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /"
+                self.logger.debug(f"Adding manual fitopt {f}")
+                self.raw_fitopts.append(f)
+
+    def compute_fitopts(self):
+        """ Runs after the sim/data to locate the survey """
+
+        survey = self.get_sim_dependency().output["SURVEY"]
+
+        # Determine final fitopts based on survey
+        fitopts = []
+        for f in self.raw_fitopts:
+            if isinstance(f, str):
+                fitopts.append(f)
+            elif isinstance(f, dict):
+                for key, values in f.items():
+                    if key in ["GLOBAL", survey]:
+                        assert isinstance(values, (str, list)), "Fitopt values should be a string or a list of strings"
+                        if isinstance(values, str):
+                            values = [values]
+                        fitopts += values
+            else:
+                raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
+
+        # Map the fitopt outputs
+        mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
+        mapped2 = {0: "DEFAULT"}
+        for i, line in enumerate(fitopts):
+            label = line.strip().split("/")[1]
+            mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"
+            mapped2[i] = label
+        if fitopts:
+            self.yaml["CONFIG"]["FITOPT"] = [f"FITOPT: {f}" for f in fitopts]
+        self.output["fitopt_map"] = mapped
+        self.output["fitopt_index"] = mapped2
+        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
 
     def convert_base_file(self):
         self.logger.debug(f"Translating base file {self.base_file}")

@@ -380,6 +380,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 else:
                     self.logger.error(f"File {self.total_summary} does not have a MERGE section - did it die?")
                     return self.kill_and_fail()
+                self.output["SURVEY"] = y["SURVEY"]
+                self.output["SURVEY_ID"] = y["IDSURVEY"]
             else:
                 self.logger.warning(f"Cannot find {self.total_summary}")
 

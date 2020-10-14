@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict
 from pathlib import Path
 
-from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc
+from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc, read_yaml
 from pippin.task import Task
 
 
@@ -47,6 +47,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
             self.data_path = ""
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
 
+        self.output_info = os.path.join(self.output_dir, f"{self.genversion}.YAML")
         self.output["genversion"] = self.genversion
         self.output["data_path"] = self.data_path
         self.output["photometry_dirs"] = [get_output_loc(self.raw_dir)]
@@ -106,6 +107,7 @@ fi
      OPT_SETPKMJD = 16
      SNTABLE_LIST = 'SNANA(text:key)'
      TEXTFILE_PREFIX = '{genversion}'
+     OPT_YAML = 1
 
      ! data
      PRIVATE_DATA_PATH = '{data_path}'
@@ -127,6 +129,13 @@ fi
                     self.logger.info(f"Done file reported failure. Check output log {self.logfile}")
                     return Task.FINISHED_FAILURE
                 else:
+                    if not os.path.exists(self.output_info):
+                        self.logger.exception(f"Cannot find output info file {self.output_info}")
+                        return Task.FINISHED_FAILURE
+                    else:
+                        content = read_yaml(self.output_info)
+                        self.output["SURVEY"] = content["SURVEY"]
+                        self.output["SURVEY_ID"] = content["IDSURVEY"]
                     self.output["types"] = self._get_types()
                     return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_name)
