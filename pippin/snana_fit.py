@@ -69,6 +69,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["lc_output_dir"] = self.lc_output_dir
         self.str_pattern = re.compile("[A-DG-SU-Za-dg-su-z]")
 
+        self.validate_fitopts(config)
+
         is_data = False
         for d in self.dependencies:
             if isinstance(d, DataPrep):
