@@ -96,8 +96,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.raw_fitopts = []
         for f in fitopts:
+            self.logger.debug(f"Parsing fitopt {f}")
             potential_path = get_data_loc(f)
-            if os.path.exists(potential_path):
+            if potential_path is not None and os.path.exists(potential_path):
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 y = read_yaml(potential_path)
                 assert isinstance(y, dict), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
