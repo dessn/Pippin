@@ -109,7 +109,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     def compute_fitopts(self):
         """ Runs after the sim/data to locate the survey """
 
-        survey = self.get_sim_dependency().output["SURVEY"]
+        survey = self.get_sim_dependency()["SURVEY"]
 
         # Determine final fitopts based on survey
         fitopts = []
