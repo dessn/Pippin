@@ -28,7 +28,7 @@ DES:
     - /DES_noHOSTNOISE/          FUDGE_HOSTNOISE_FILE ' '
     - /DES_survcal_PS1COHERENT/  MAGOBS_SHIFT_ZP 'g -0.00756 r 0.0007 i 0.00425 z -0.00208'
 
-LOWZ:
+DES3YR_LOWZ_COMBINED:
     - /lowz_CSP_ZP_t_survcal/      MAGOBS_SHIFT_ZP 't .01'
     - /lowz_CSP_ZP_y_survcal/      MAGOBS_SHIFT_ZP 'y .01'
     - /lowz_CSP_ZP_z_survcal/      MAGOBS_SHIFT_ZP 'z .01'
