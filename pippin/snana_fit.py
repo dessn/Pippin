@@ -105,7 +105,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.raw_fitopts.append(y)
                 self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
             else:
-                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /"
+                assert f.strip().startswith(
+                    "/"
+                ), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.raw_fitopts.append(f)
 
