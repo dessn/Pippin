@@ -52,9 +52,8 @@ class SnirfClassifier(Classifier):
         self.model_pk_file = "model.pkl"
         self.output_pk_file = os.path.join(self.output_dir, self.model_pk_file)
         self.fitopt = options.get("FITOPT", "DEFAULT")
-        lcfit = self.get_fit_dependency()
-        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+        self.fitres_filename = None
+        self.fitres_file = None
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -73,7 +72,13 @@ cd {path_to_classifier}
 python SNIRF.py {command_opts}
 """
 
+    def setup(self):
+        lcfit = self.get_fit_dependency()
+        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
+        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+
     def classify(self, force_refresh, command):
+        self.setup()
         format_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
@@ -113,6 +118,7 @@ python SNIRF.py {command_opts}
         return leaf_opts
 
     def predict(self, force_refresh):
+        self.setup()
         model = self.options.get("MODEL")
         if model is None:
             self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")

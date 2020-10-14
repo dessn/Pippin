@@ -229,6 +229,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.options.items():
             self.yaml["CONFIG"][key] = value
 
+        self.compute_fitopts()
+
         if self.sim_task.output["ranseed_change"]:
             self.yaml["CONFIG"]["VERSION"] = [self.sim_version + "-0*"]
         else:

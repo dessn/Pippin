@@ -58,9 +58,6 @@ class Merger(Task):
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
-        self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
-        self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
-        self.output["fitres_file"] = self.lc_fit["fitres_file"]
         self.output["blind"] = self.lc_fit["blind"]
 
     def get_lcfit_dep(self):
@@ -132,6 +129,10 @@ class Merger(Task):
             shutil.copy(fitres_file, outdir)
 
     def _run(self, force_refresh):
+        self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
+        self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
+        self.output["fitres_file"] = self.lc_fit["fitres_file"]
+
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
             files = os.listdir(fitres_dir)
