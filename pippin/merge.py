@@ -132,8 +132,8 @@ class Merger(Task):
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
-        self.output["survey"] = self.lc_fit["survey"]
-        self.output["survey_id"] = self.lc_fit["survey_id"]
+        self.output["SURVEY"] = self.lc_fit["SURVEY"]
+        self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
 
         fitres_files, symlink_files = [], []
         for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):

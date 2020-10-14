@@ -322,6 +322,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
+                        self.output["SURVEY"] = y["SURVEY"]
+                        self.output["SURVEY_ID"] = y["IDSURVEY"]
                         return Task.FINISHED_SUCCESS
                     else:
                         return Task.FINISHED_FAILURE
