@@ -121,12 +121,14 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for f in self.raw_fitopts:
             if isinstance(f, str):
                 fitopts.append(f)
+                self.logger.debug(f"Adding manual fitopt: {f}")
             elif isinstance(f, dict):
                 for key, values in f.items():
                     if key in ["GLOBAL", survey]:
                         assert isinstance(values, (str, list)), "Fitopt values should be a string or a list of strings"
                         if isinstance(values, str):
                             values = [values]
+                        self.logger.debug(f"Adding {len(values)} fitopts from dictionary key {key}")
                         fitopts += values
             else:
                 raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
