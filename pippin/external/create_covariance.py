@@ -63,7 +63,7 @@ def load_data(path):
 def get_data_files(folder, individual):
     logging.debug(f"Loading all data files in {folder}")
     result = {}
-    for file in os.listdir(folder):
+    for file in sorted(os.listdir(folder)):
         if (not individual and ".M0DIF" in file) or (individual and ".FITRES" in file and "MUOPT" in file):
             label = file.replace(".gz", "").replace(".M0DIF", "").replace(".FITRES", "")
             result[label] = load_data(folder / file)
