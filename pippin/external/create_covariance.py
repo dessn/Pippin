@@ -104,7 +104,8 @@ def get_cov_from_diff(df1, df2, scale):
     # Determine the gradient using simple linear regression
     reg = LinearRegression()
     weights = 1 / np.sqrt(0.003 ** 2 + df1["MUERR"] ** 2 + df2["MUERR"] ** 2)
-    reg.fit(df1[["z"]], diff, sample_weight=weights)
+    mask = np.isfinite(weights)
+    reg.fit(df1.loc[mask, ["z"]], diff[mask], sample_weight=weights[mask])
     coef = reg.coef_[0]
 
     mean_abs_deviation = np.average(np.abs(diff), weights=weights)
