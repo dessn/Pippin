@@ -369,6 +369,7 @@ class BiasCor(ConfigBasedExecutable):
             mkdirs(self.output_dir)
             with open(self.reject_list, "w") as f:
                 pass
+            self.run_iteration = 0
             with open(self.config_path, "w") as f:
                 f.writelines(final_output)
             self.logger.info(f"Input file written to {self.config_path}")
