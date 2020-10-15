@@ -82,14 +82,14 @@ def get_name_from_fitopt_muopt(f, m):
 
 def get_fitopt_scales(lcfit_info, sys_scales):
     """ Returns a dict mapping FITOPT numbers to (label, scale) """
-    fitopt_list = lcfit_info["FITOPT_LIST"]
+    fitopt_list = lcfit_info["FITOPT_OUT_LIST"]
     result = {}
-    for name, label, _ in fitopt_list:
-        if label != "DEFAULT":
+    for number, _, label, _ in fitopt_list:
+        if label != "DEFAULT" and label is not None:
             if label not in sys_scales:
                 logging.warning(f"No FITOPT scale found for {label}")
         scale = sys_scales.get(label, 1.0)
-        d = int(name.replace("FITOPT", ""))
+        d = int(number.replace("FITOPT", ""))
         result[d] = (label, scale)
     return result
 
@@ -376,11 +376,10 @@ def create_covariance(config, args):
 
     # Read in all the needed data
     submit_info = read_yaml(input_dir / "SUBMIT.INFO")
-    lcfit_info = get_lcfit_info(submit_info)
     sys_scale = read_yaml(sys_file)
-    fitopt_scales = get_fitopt_scales(lcfit_info, sys_scale)
+    fitopt_scales = get_fitopt_scales(submit_info, sys_scale)
     # Also need to get the FITOPT labels from the original LCFIT directory
-    muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info["MUOPT_LIST"]}
+    muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info.get("MUOPT_OUT_LIST", [])}
 
     # Load in all the data
     data = get_data_files(data_dir, args.unbinned)
