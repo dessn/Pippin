@@ -78,7 +78,6 @@ python SNIRF.py {command_opts}
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
     def classify(self, force_refresh, command):
-        self.setup()
         format_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
@@ -151,6 +150,7 @@ python SNIRF.py {command_opts}
         return self.classify(force_refresh, command)
 
     def train(self, force_refresh):
+        self.setup()
         command = (
             f"--nc 4 "
             f"--nclass 2 "
