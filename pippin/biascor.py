@@ -179,6 +179,8 @@ class BiasCor(ConfigBasedExecutable):
             # And now rerun
             if os.path.exists(self.done_file):
                 os.remove(self.done_file)
+            # Remove the output not just the done file
+            shutil.rmtree(self.fit_output_dir)
 
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Running command: {' '.join(command)}")
@@ -194,6 +196,7 @@ class BiasCor(ConfigBasedExecutable):
                 pass
             return self.submit_reject_phase()
         else:
+            self.logger.info(f"On run iteration {self.run_iteration}, finishing successfully")
             return Task.FINISHED_SUCCESS
 
     def _check_completion(self, squeue):
