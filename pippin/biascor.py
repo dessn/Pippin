@@ -54,8 +54,7 @@ class BiasCor(ConfigBasedExecutable):
 
         self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
         self.done_file_iteration = os.path.join(self.output_dir, "RESUBMITTED.DONE")
-        self.run_iteration = 0 if not os.path.exists(self.done_file_iteration) else 1
-
+        self.run_iteration = 1 if os.path.exists(self.done_file_iteration) else 0
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
             self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
