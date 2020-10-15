@@ -32,7 +32,6 @@ class BiasCor(ConfigBasedExecutable):
         self.make_all = config.get("MAKE_ALL_HUBBLE", True)
         self.use_recalibrated = config.get("USE_RECALIBRATED", False)
         self.consistent_sample = config.get("CONSISTENT_SAMPLE", True)
-        self.run_iteration = 0
         self.bias_cor_fits = None
         self.cc_prior_fits = None
         self.data = None
@@ -54,6 +53,9 @@ class BiasCor(ConfigBasedExecutable):
         self.reject_list = os.path.join(self.output_dir, "reject.list")
 
         self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
+        self.done_file_iteration = os.path.join(self.output_dir, "RESUBMITTED.DONE")
+        self.run_iteration = 0 if not os.path.exists(self.done_file_iteration) else 1
+
         self.probability_column_name = None
         if self.config.get("PROB_COLUMN_NAME") is not None:
             self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
@@ -188,6 +190,8 @@ class BiasCor(ConfigBasedExecutable):
     def move_to_next_phase(self):
         if self.consistent_sample and self.run_iteration == 0:
             self.run_iteration += 1
+            with open(self.done_file_iteration, "w") as f:
+                pass
             return self.submit_reject_phase()
         else:
             return Task.FINISHED_SUCCESS
