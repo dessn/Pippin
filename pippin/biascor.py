@@ -220,10 +220,10 @@ class BiasCor(ConfigBasedExecutable):
         return self.check_for_job(squeue, self.job_name)
 
     def get_simfile_biascor(self, ia_sims):
-        return None if ia_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in ia_sims])
+        return None if ia_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], "FITOPT000.FITRES.gz") for m in ia_sims])
 
     def get_simfile_ccprior(self, cc_sims):
-        return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], m.output["fitopt_map"]["DEFAULT"]) for m in cc_sims])
+        return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], "FITOPT000.FITRES.gz") for m in cc_sims])
 
     def get_fitopt_map(self, datas):
         fitopts = {}
