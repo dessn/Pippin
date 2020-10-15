@@ -9,7 +9,7 @@ LCFIT:
 
   DIFFERENT_SN:
       BASE: surveys/des/lcfit_nml/des_5yr.nml
-      FITOPTS: des.fitopts  # You can specify a file containing fitopts to test systematics
+      FITOPTS: surveys/global/lcfit_fitopts/salt2cal.yml # You can specify a file containing a fitopt dictionary to test systematics
       FITINP:  # Override FITINP paramters like so
         FILTLIST_FIT: 'gri'
       SNLCINP: # Override SNLCINP parameters like so

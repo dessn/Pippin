@@ -78,7 +78,7 @@ LCFIT:
   LS:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: DATALOWZ
-    FITOPTS: surveys/des/lcfit_fitopts/test.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/salt2cal.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -90,7 +90,7 @@ LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_3yr.nml
     MASK: DATADES3YR
-    FITOPTS: surveys/des/lcfit_fitopts/test.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/salt2cal.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:

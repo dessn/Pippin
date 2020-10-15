@@ -19,7 +19,7 @@ LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DATADES
-    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/global.yml
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 20
     EXTERNAL_DIRS:
