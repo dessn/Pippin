@@ -245,7 +245,7 @@ class BiasCor(ConfigBasedExecutable):
         # Now for each of the labels we've found in all files, construct the output dict
         # Which is just FITOPT004: {DES_NAME: FITOPT004, LOWZ_NAME: FITOPT029}... etc
         index = 0
-        result = {"INPDIR_LABELS": " ".join([d.output["SURVEY"] for d in datas]), "FITOPT000": " ".join(["FITOPT000" for d in datas])}
+        result = {"SURVEY_LIST": " ".join([d.output["SURVEY"] for d in datas]), "FITOPT000": " ".join(["FITOPT000" for d in datas])}
         for label, mapping in fitopts.items():
             index += 1
             result[f"FITOPT{index:03d}"] = " ".join([mapping[d.name] for d in datas])
