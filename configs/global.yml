@@ -37,14 +37,14 @@ SIM:
       <<: *nums
       NGEN_UNIT: 10
 
-  FOUND_G10:
+  FOUNDSIMBIAS_G10:
     IA_FOUND_G10:
       BASE: surveys/foundation/sims_ia/sn_ia_salt2_g10_foundation.input
     GLOBAL:
       <<: *nums
       NGEN_UNIT: 20
 
-  FOUND_C11:
+  FOUNDSIMBIAS_C11:
     IA_FOUND_G10:
       BASE: surveys/foundation/sims_ia/sn_ia_salt2_c11_foundation.input
     GLOBAL:
