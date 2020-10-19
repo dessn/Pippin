@@ -27,7 +27,7 @@ SIM:
       <<: *grid_g10
     GLOBAL:
       <<: *nums
-      NGEN_UNIT: 10
+      NGEN_UNIT: 20
 
   LOWZSIMBIAS_C11:
     IA_C11_LOWZ:
@@ -35,11 +35,12 @@ SIM:
       <<: *grid_c11
     GLOBAL:
       <<: *nums
-      NGEN_UNIT: 10
+      NGEN_UNIT: 20
 
   FOUNDSIMBIAS_G10:
     IA_FOUND_G10:
       BASE: surveys/foundation/sims_ia/sn_ia_salt2_g10_foundation.input
+      <<: *grid_g10
     GLOBAL:
       <<: *nums
       NGEN_UNIT: 20
@@ -47,6 +48,7 @@ SIM:
   FOUNDSIMBIAS_C11:
     IA_FOUND_G10:
       BASE: surveys/foundation/sims_ia/sn_ia_salt2_c11_foundation.input
+      <<: *grid_c11
     GLOBAL:
       <<: *nums
       NGEN_UNIT: 20
@@ -146,12 +148,14 @@ CLASSIFICATION:
   SNNTEST:
     CLASSIFIER: SuperNNovaClassifier
     MODE: predict
+    MASK_SIM: DES
     OPTS:
       MODEL: SNNTRAIN
 
   FITPROBTEST:
     CLASSIFIER: FitProbClassifier
     MODE: predict
+    MASK_SIM: DES
 
   SNIRFTRAIN:
     CLASSIFIER: SnirfClassifier
@@ -161,6 +165,7 @@ CLASSIFICATION:
   SNIRFTEST:
     CLASSIFIER: SnirfClassifier
     MODE: predict
+    MASK_SIM: DES
     OPTS:
       MODEL: SNIRFTRAIN
 
