@@ -1,10 +1,4 @@
 DATAPREP:
-  DATADES5YR:  # 5 yr photometry sample
-    OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
-      TYPES:
-        IA: [1, 101]
-        NONIA: [120, 130, 20, 30]
   DATALOWZ:  # lowz combined sample
     OPTS:
       RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
@@ -22,7 +16,7 @@ LCFIT:
   LS:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: DATALOWZ
-    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/global.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -31,7 +25,7 @@ LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DATADES
-    FITOPTS: des.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/global.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:

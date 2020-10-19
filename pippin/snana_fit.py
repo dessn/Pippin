@@ -69,45 +69,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["lc_output_dir"] = self.lc_output_dir
         self.str_pattern = re.compile("[A-DG-SU-Za-dg-su-z]")
 
+        self.validate_fitopts(config)
+
         is_data = False
         for d in self.dependencies:
             if isinstance(d, DataPrep):
                 is_data = not d.output["is_sim"]
         self.output["is_data"] = is_data
-
-        # Loading fitopts
-        fitopts = config.get("FITOPTS", [])
-        if isinstance(fitopts, str):
-            fitopts = [fitopts]
-
-        self.logger.debug("Loading fitopts")
-        self.fitopts = []
-        for f in fitopts:
-            potential_path = get_data_loc(f)
-            if os.path.exists(potential_path):
-                self.logger.debug(f"Loading in fitopts from {potential_path}")
-                with open(potential_path) as file:
-                    new_fitopts = list(file.read().splitlines())
-                    self.fitopts += new_fitopts
-                    self.logger.debug(f"Loaded {len(new_fitopts)} fitopts file from {potential_path}")
-            else:
-                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /"
-                if not f.startswith("FITOPT:"):
-                    f = "FITOPT: " + f
-                self.logger.debug(f"Adding manual fitopt {f}")
-                self.fitopts.append(f)
-        # Map the fitopt outputs
-        mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
-        mapped2 = {0: "DEFAULT"}
-        for i, line in enumerate(self.fitopts):
-            label = line.strip().split("/")[1]
-            mapped[line] = f"FITOPT{i + 1:3d}.FITRES.gz"
-            mapped2[i] = label
-        if self.fitopts:
-            self.yaml["CONFIG"]["FITOPT"] = self.fitopts
-        self.output["fitopt_map"] = mapped
-        self.output["fitopt_index"] = mapped2
-        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
 
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
@@ -117,6 +85,66 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         except Exception:
             self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
             self.num_jobs = 10
+
+    def validate_fitopts(self, config):
+        # Loading fitopts
+        fitopts = config.get("FITOPTS", [])
+        if isinstance(fitopts, str):
+            fitopts = [fitopts]
+
+        self.logger.debug("Loading fitopts")
+
+        self.raw_fitopts = []
+        for f in fitopts:
+            self.logger.debug(f"Parsing fitopt {f}")
+            potential_path = get_data_loc(f)
+            if potential_path is not None and os.path.exists(potential_path):
+                self.logger.debug(f"Loading in fitopts from {potential_path}")
+                y = read_yaml(potential_path)
+                assert isinstance(y, dict), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                self.raw_fitopts.append(y)
+                self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
+            else:
+                assert f.strip().startswith(
+                    "/"
+                ), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
+                self.logger.debug(f"Adding manual fitopt {f}")
+                self.raw_fitopts.append(f)
+
+    def compute_fitopts(self):
+        """ Runs after the sim/data to locate the survey """
+
+        survey = self.get_sim_dependency()["SURVEY"]
+
+        # Determine final fitopts based on survey
+        fitopts = []
+        for f in self.raw_fitopts:
+            if isinstance(f, str):
+                fitopts.append(f)
+                self.logger.debug(f"Adding manual fitopt: {f}")
+            elif isinstance(f, dict):
+                for key, values in f.items():
+                    if key in ["GLOBAL", survey]:
+                        assert isinstance(values, (str, list)), "Fitopt values should be a string or a list of strings"
+                        if isinstance(values, str):
+                            values = [values]
+                        self.logger.debug(f"Adding {len(values)} fitopts from dictionary key {key}")
+                        fitopts += values
+            else:
+                raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
+
+        # Map the fitopt outputs
+        mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
+        mapped2 = {0: "DEFAULT"}
+        for i, line in enumerate(fitopts):
+            label = line.strip().split("/")[1]
+            mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"
+            mapped2[i] = label
+        if fitopts:
+            self.yaml["CONFIG"]["FITOPT"] = fitopts
+        self.output["fitopt_map"] = mapped
+        self.output["fitopt_index"] = mapped2
+        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
 
     def convert_base_file(self):
         self.logger.debug(f"Translating base file {self.base_file}")
@@ -208,6 +236,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.options.items():
             self.yaml["CONFIG"][key] = value
 
+        self.compute_fitopts()
+
         if self.sim_task.output["ranseed_change"]:
             self.yaml["CONFIG"]["VERSION"] = [self.sim_version + "-0*"]
         else:
@@ -292,6 +322,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
+                        if "SURVEY" in y.keys():
+                            self.output["SURVEY"] = y["SURVEY"]
+                            self.output["SURVEY_ID"] = y["IDSURVEY"]
+                        else:
+                            s = self.get_sim_dependency()
+                            self.output["SURVEY"] = s["SURVEY"]
+                            self.output["SURVEY_ID"] = s["SURVEY_ID"]
                         return Task.FINISHED_SUCCESS
                     else:
                         return Task.FINISHED_FAILURE

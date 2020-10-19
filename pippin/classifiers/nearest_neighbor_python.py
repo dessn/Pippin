@@ -51,9 +51,6 @@ class NearestNeighborPyClassifier(Classifier):
         self.predictions_filename = os.path.join(self.output_dir, "predictions.csv")
 
         self.fitopt = options.get("FITOPT", "DEFAULT")
-        lcfit = self.get_fit_dependency()
-        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
         self.output["predictions_filename"] = self.predictions_filename
         self.output["model_filename"] = self.output_pk_file
@@ -79,7 +76,13 @@ if [ $? -ne 0 ]; then
 fi
 """
 
+    def setup(self):
+        lcfit = self.get_fit_dependency()
+        self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
+        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+
     def classify(self, force_refresh, command):
+        self.setup()
         format_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
@@ -109,6 +112,7 @@ fi
         return True
 
     def predict(self, force_refresh):
+        self.setup()
         model = self.options.get("MODEL")
         if model is None:
             self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")

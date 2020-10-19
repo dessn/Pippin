@@ -57,13 +57,14 @@ class CreateCov(ConfigBasedExecutable):
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
+        self.binned = options.get("BINNED", True)
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.output["blind"] = self.biascor_dep.output["blind"]
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
-        self.output["ini_dir"] = self.config_dir
+        self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
         covopts_map = {"ALL": 0}
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
@@ -78,11 +79,11 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=1GB
+#SBATCH --mem=4GB
 
 cd {output_dir}
 source activate
-python {path_to_code}/create_covariance.py {input_file}
+python {path_to_code}/create_covariance.py {unbinned} {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
 else
@@ -127,6 +128,7 @@ fi
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
             "output_dir": self.output_dir,
+            "unbinned": "" if self.binned else "-u",
         }
         final_slurm = self.slurm.format(**format_dict)
 

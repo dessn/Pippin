@@ -74,13 +74,12 @@ BIASCOR:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_10hr.TEMPLATE 5
       chi2max: 16
 
-
 CREATE_COV:
   ALL:
-    OPTS:
-      COVOPTS:
-        - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
+  UNBINNED:
+    OPTS:
+      BINNED: False
 
 COSMOMC:
   SN_OMW:

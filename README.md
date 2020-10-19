@@ -420,10 +420,12 @@ LCFIT:
     BASE: surveys/des/lcfit_nml/des.nml
       
     # FITOPTS can be left out for nothing, pointed to a file, specified manually or a combination of the two
-    # Normally this would be a single entry like des.fitopts, but you can also pass a list
+    # Normally this would be a single entry like global.yml shown below, but you can also pass a list
     # If you specify a FITOPT manually, make sure it has the / around the label
-    FITOPS:
-      - des.fitopts
+    # And finally, if you specify a file, make sure its a yml dictionary that links a survey name to the correct
+    # fitopts. See the file below for an example
+    FITOPTS:
+      - surveys/global/lcfit_fitopts/global.yml
       - "/custom_extra_fitopt/ REDSHIFT_FINAL_SHIFT 0.0001"
 
     # We can optionally customise keys in the FITINP section

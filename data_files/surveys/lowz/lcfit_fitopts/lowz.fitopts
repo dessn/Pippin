@@ -1,27 +1,3 @@
-/SALT20_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys0'
-/SALT21_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys1'
-/SALT22_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys2'
-/SALT23_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys3'
-/SALT24_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys4'
-/SALT25_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys5'
-/SALT26_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys6'
-/SALT27_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys7'
-/SALT28_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys8'
-/SALT29_cal/ FITMODEL_NAME  '$PS1_ROOT/models/SALT2/SALT2.sys9'
-/MWEBV/  MWEBV_SCALE 0.95  MWEBV_SHIFT  0.00
-/HST_cal/ MAGOBS_SHIFT_ZP_PARAMS 0 0.00714 0
-/VPEC/ VPEC_FILE '$DES_ROOT/simlibs/VPEC_LOWZ_sys.TXT'
-/TESTnozband/  FITOPT000
-/DES_ZP_g_survcal/  FITOPT000
-/DES_ZP_r_survcal/  FITOPT000
-/DES_ZP_i_survcal/  FITOPT000
-/DES_ZP_z_survcal/  FITOPT000
-/DES_wave_g_survcal/ FITOPT000
-/DES_wave_r_survcal/  FITOPT000
-/DES_wave_i_survcal/ FITOPT000
-/DES_wave_z_survcal/ FITOPT000
-/DES_noHOSTNOISE/    FITOPT000
-/zshift/  REDSHIFT_FINAL_SHIFT 0.0001
 /lowz_CSP_ZP_t_survcal/  MAGOBS_SHIFT_ZP 't .01'
 /lowz_CSP_ZP_y_survcal/   MAGOBS_SHIFT_ZP 'y .01'
 /lowz_CSP_ZP_z_survcal/  MAGOBS_SHIFT_ZP 'z .01'
@@ -59,5 +35,3 @@
 /lowz_CFAS_WAVE_d_survcal/  FILTER_LAMSHIFT  'd 10'
 /lowz_CFAS_WAVE_e_survcal/  FILTER_LAMSHIFT  'e 10'
 /danlowzsys/ SNCID_IGNORE_FILE $DES3YR/config/pantheonlowzignore.list
-/DES_survcal_PS1COHERENT/ FITOPT000
-/3sigignore/ SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list

@@ -41,6 +41,7 @@ class NearestNeighborClassifier(Classifier):
         self.outfile_predict = f"{output_dir}/predictions.out"
         self.logging_file = os.path.join(output_dir, "output.log")
         self.splitfit_output_dir = f"{self.output_dir}/output"
+        self.options = options
 
         self.num_check = 0
         self.max_check = 5
@@ -48,15 +49,16 @@ class NearestNeighborClassifier(Classifier):
         self.nn_options = "z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04"
         self.train_info_local = {}
 
+    def setup(self):
         lcfit = self.get_fit_dependency()
-        self.fitopt = options.get("FITOPT", "DEFAULT")
+        self.fitopt = self.options.get("FITOPT", "DEFAULT")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
     def train(self, force_refresh):
         # Created April 2019 by R.Kessler
         # Train nearest nbr.
-
+        self.setup()
         # prepare new split-and_fit NML file with extra NNINP namelist
         new_hash, self.train_info_local = self.prepare_train_job(force_refresh)
         self.output["model_filename"] = self.outfile_train
@@ -210,7 +212,7 @@ class NearestNeighborClassifier(Classifier):
                 return 0
 
     def predict(self, force_refresh):
-        train_info = self.get_fit_dependency()
+        self.setup()
 
         model = self.options.get("MODEL")
         assert model is not None, "If TRAIN is not specified, you have to point to a model to use"

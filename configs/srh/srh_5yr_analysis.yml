@@ -45,7 +45,7 @@ LCFIT:
   LS:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: DATALOWZ
-    FITOPTS: surveys/lowz/lcfit_fitopts/lowz.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/global.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:
@@ -54,7 +54,7 @@ LCFIT:
   DS:
     BASE: surveys/des/lcfit_nml/des_5yr.nml
     MASK: DATADES
-    FITOPTS: surveys/des/lcfit_fitopts/des.fitopts
+    FITOPTS: surveys/global/lcfit_fitopts/global.yml
     SNLCINP:
       USE_MINOS: F
     OPTS:
