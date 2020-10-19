@@ -105,9 +105,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.raw_fitopts.append(y)
                 self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
             else:
-                assert f.strip().startswith(
-                    "/"
-                ), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
+                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.raw_fitopts.append(f)
 
@@ -247,7 +245,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         # self.yaml["CONFIG"]["DONE_STAMP"] = "ALL.DONE"
 
         if isinstance(self.sim_task, DataPrep):
-            self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
+            data_path = self.sim_task.output["data_path"]
+            if "SNDATA_ROOT/lcmerge" not in data_path:
+                self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
             self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
 
         # We want to do our hashing check here
@@ -316,9 +316,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                                 else:
                                     cpu = cpu / 60
                                     units = "hours"
-                                self.logger.info(
-                                    f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
-                                )
+                                self.logger.info(f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}")
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE
