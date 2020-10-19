@@ -12,8 +12,21 @@ GLOBAL:
     - /MWEBV/        MWEBV_SCALE 0.95  MWEBV_SHIFT  0.00
     - /HST_cal/      MAGOBS_SHIFT_ZP_PARAMS 0 0.00714 0
     - /zshift/       REDSHIFT_FINAL_SHIFT 0.0001
-    - /VPEC/         VPEC_FILE '$DES_ROOT/simlibs/VPEC_LOWZ_sys.TXT'
-    - /3sigignore/   SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list
+    - /VPEC/         VPEC_FILE '$DES_ROOT/simlibs/VPEC_LOWZ_sys.TXT' # Should split this out into DES and LOWZ exclusions
+    - /3sigignore/   SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list # Should split this out into DES and LOWZ exclusions
+
+FOUNDATION:
+    - /PS1_wave_g_SURVCAL/    KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_g.fits'  # Would be good to not point to FOUNDATION_ROOT
+    - /PS1_wave_r_SURVCAL/    KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_r.fits'
+    - /PS1_wave_i_SURVCAL/    KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_i.fits'
+    - /PS1_wave_z_SURVCAL/    KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_z.fits'
+    - /PS1_ZP_g_SURVCAL/      MAGOBS_SHIFT_ZP 'g 0.003'
+    - /PS1_ZP_r_SURVCAL/      MAGOBS_SHIFT_ZP 'r 0.003'
+    - /PS1_ZP_i_SURVCAL/      MAGOBS_SHIFT_ZP 'i 0.003'
+    - /PS1_ZP_z_SURVCAL/      MAGOBS_SHIFT_ZP 'z 0.003'
+# Should we add FILTER_LAMSHIFT in as well?
+#    - /VPEC]                  VPEC_FILE '$FOUNDATION_USERS/djones/FoundationCosmo/vpec_sys0.1.list'
+# Should move the VPEC in GLOBAl into LOWZ, and have VPEC in Foundation separately
 
 DES:
     - /TESTnozband/              FILTLIST_FIT 'gri'
