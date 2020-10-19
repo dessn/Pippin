@@ -42,6 +42,14 @@ SIM:
       BASE: surveys/foundation/sims_ia/sn_ia_salt2_g10_foundation.input
     GLOBAL:
       <<: *nums
+      NGEN_UNIT: 20
+
+  FOUND_C11:
+    IA_FOUND_G10:
+      BASE: surveys/foundation/sims_ia/sn_ia_salt2_c11_foundation.input
+    GLOBAL:
+      <<: *nums
+      NGEN_UNIT: 20
 
   DESSIMBIAS3YRIA_G10:
     IA_G10_DES3YR:
