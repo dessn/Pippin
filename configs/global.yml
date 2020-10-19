@@ -37,6 +37,12 @@ SIM:
       <<: *nums
       NGEN_UNIT: 10
 
+  FOUND_G10:
+    IA_FOUND_G10:
+      BASE: surveys/foundation/sims_ia/sn_ia_salt2_g10_foundation.input
+    GLOBAL:
+      <<: *nums
+
   DESSIMBIAS3YRIA_G10:
     IA_G10_DES3YR:
       BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
@@ -113,6 +119,12 @@ LCFIT:
   L:
     BASE: surveys/lowz/lcfit_nml/lowz.nml
     MASK: LOWZ
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
+
+  F:
+    BASE: surveys/foundation/lcfit_nml/foundation.nml
+    MASK: FOUND
     OPTS:
       BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 20
 
