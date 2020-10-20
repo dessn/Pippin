@@ -175,7 +175,7 @@ fi
             if config is None:
                 config = {}
             options = config.get("OPTS", {})
-            mask = config.get("MASK", "")
+            mask = config.get("MASK", config.get("MASK_BIASCOR", ""))
 
             for btask in biascor_tasks:
                 if mask not in btask.name:

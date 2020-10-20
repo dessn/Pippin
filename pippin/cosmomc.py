@@ -285,7 +285,7 @@ fi
             config = c[key].get(cname, {})
             options = config.get("OPTS", {})
 
-            mask = config.get("MASK_CREATE_COV", "")
+            mask = config.get("MASK_CREATE_COV", config.get("MASK", ""))
 
             # Check if this is static. Could scan the folder, but dont have all the chains yet.
             # TODO: Update this when I have all the chains

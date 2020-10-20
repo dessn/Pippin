@@ -178,8 +178,8 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-        - "[SCATTER] [=DEFAULT,+SCATTER]"
-        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
+#        - "[SCATTER] [=DEFAULT,+SCATTER]"
+#        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
 
 COSMOMC:
   SN_OMW:
@@ -187,6 +187,6 @@ COSMOMC:
       INI: sn_omw.ini
 
 ANALYSE:
-  ALL_OMW:
+  5YR_COMBINED:
     MASK_COSMOMC: OMW
 #    MASK_BIASCOR: 5YR

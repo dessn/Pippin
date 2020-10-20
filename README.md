@@ -666,6 +666,7 @@ systematics, and determining which covariance options to run with.
 ```yaml
 CREATE_COV:
   SOMELABEL:
+    MASK: some_biascor_task
     OPTS:
       INI_DIR: /path/to/your/own/dir/of/cosmomc/templates # Defaults to cosmomc_templates, which you can exploit using DATA_DIRS
       SYS_SCALE: surveys/des/bbc/scale_5yr.list  # Location of systematic scaling file
