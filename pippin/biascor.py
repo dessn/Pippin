@@ -264,7 +264,7 @@ class BiasCor(ConfigBasedExecutable):
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
         self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim)
         self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
-        self.data = {m.name: m.output["lc_output_dir"] for m in self.merged_data}
+        self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
         self.yaml["FITOPT_MAP"] = self.get_fitopt_map(self.merged_data)
         self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
