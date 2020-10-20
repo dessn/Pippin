@@ -10,7 +10,7 @@ varname_pIa=NN_PROB_IA
 simfile_biascor=something.FITRES
 simfile_ccprior=something.FITRES
 surveygroup_biascor='CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),DES(zbin=0.05)'
-idsurvey_list_probcc0=CFA3K,CFA4p1,CFA4p2,CSP
+idsurvey_list_probcc0=CFA3K,CFA4p1,CFA4p2,CSP,CFA3S
 surveygroup_biascor_abortflag=0
 prefix=None
 file=None
