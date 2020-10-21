@@ -105,7 +105,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.raw_fitopts.append(y)
                 self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
             else:
-                assert f.strip().startswith("/"), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
+                assert f.strip().startswith(
+                    "/"
+                ), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.raw_fitopts.append(f)
 
@@ -123,11 +125,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             elif isinstance(f, dict):
                 for key, values in f.items():
                     if key in ["GLOBAL", survey]:
-                        assert isinstance(values, (str, list)), "Fitopt values should be a string or a list of strings"
-                        if isinstance(values, str):
-                            values = [values]
-                        self.logger.debug(f"Adding {len(values)} fitopts from dictionary key {key}")
-                        fitopts += values
+                        assert isinstance(values, dict), "Fitopt values should be a dict of label: scale command"
+
+                        for label, scale_command in values.items():
+                            scale, command = scale_command.split(maxsplit=1)
+                            fitopt = f"/{label}/ {command}"
+                            self.logger.debug(f"Adding FITOPT from {key}: {fitopt}")
+                            fitopts.append(fitopt)
             else:
                 raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
 
@@ -316,7 +320,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                                 else:
                                     cpu = cpu / 60
                                     units = "hours"
-                                self.logger.info(f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}")
+                                self.logger.info(
+                                    f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
+                                )
                         else:
                             self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
                             return Task.FINISHED_FAILURE

@@ -53,7 +53,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/global/lcfit_fitopts/scale.yml"))
+        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/global/lcfit_fitopts/global.yml"))
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
@@ -103,6 +103,12 @@ fi
                     return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_name)
 
+    def get_scales_from_fitopt_file(self):
+        self.logger.debug(f"Loading sys scaling from {self.sys_file_in}")
+        yaml = read_yaml(self.sys_file_in)
+        raw = {k: v.split(maxsplit=1)[0] for _, d in yaml.items() for k, v in d.items()}
+        return raw
+
     def calculate_input(self):
         self.logger.debug(f"Calculating input")
         self.yaml["COSMOMC_TEMPLATES"] = get_data_loc(self.templates_dir)
@@ -115,8 +121,7 @@ fi
 
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords
-        self.logger.debug(f"Leading sys scaling from {self.sys_file_in}")
-        sys_scale = {**read_yaml(self.sys_file_in), **self.options.get("FITOPT_SCALES", {})}
+        sys_scale = {**self.get_scales_from_fitopt_file(), **self.options.get("FITOPT_SCALES", {})}
         return sys_scale
 
     def _run(self, force_refresh):
