@@ -669,7 +669,7 @@ CREATE_COV:
     MASK: some_biascor_task
     OPTS:
       INI_DIR: /path/to/your/own/dir/of/cosmomc/templates # Defaults to cosmomc_templates, which you can exploit using DATA_DIRS
-      SYS_SCALE: surveys/des/bbc/scale_5yr.list  # Location of systematic scaling file
+      SYS_SCALE: surveys/global/lcfit_fitopts/scale.list  # Location of systematic scaling file
       FITOPT_SCALES:  # Optional
         FITOPT_LABEL: some_scale  # Note this is a partial match, ie SALT2: 1.0 would apply to all SALT2 cal fitopts
        MUOPT_SCALES:
