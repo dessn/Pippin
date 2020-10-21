@@ -106,7 +106,7 @@ fi
     def get_scales_from_fitopt_file(self):
         self.logger.debug(f"Loading sys scaling from {self.sys_file_in}")
         yaml = read_yaml(self.sys_file_in)
-        raw = {k: v.split(maxsplit=1)[0] for _, d in yaml.items() for k, v in d.items()}
+        raw = {k: float(v.split(maxsplit=1)[0]) for _, d in yaml.items() for k, v in d.items()}
         return raw
 
     def calculate_input(self):
