@@ -178,8 +178,13 @@ CREATE_COV:
     OPTS:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
-#        - "[SCATTER] [=DEFAULT,+SCATTER]"
-#        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
+        - "[SCATTER] [=DEFAULT,+SCATTER]"
+        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
+        - "[SALT2] [+SALT2,=DEFAULT]"
+        - "[survcal] [+SURVCAL,=DEFAULT]"
+        - "[DES] [+DES,=DEFAULT]"
+        - "[LOWZ] [+LOWZ,=DEFAULT]"
+        - "[PS1] [+PS1,=DEFAULT]"
 
 COSMOMC:
   SN_OMW:
@@ -189,4 +194,6 @@ COSMOMC:
 ANALYSE:
   5YR_COMBINED:
     MASK_COSMOMC: OMW
-#    MASK_BIASCOR: 5YR
+    OPTS:
+      COVOPTS: [ALL, NOSYS]
+    MASK_BIASCOR: 5YR

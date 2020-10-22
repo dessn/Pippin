@@ -53,6 +53,7 @@ if __name__ == "__main__":
     try:
         if args.get("PARSED_FILES"):
             logging.info("Creating chain consumer object")
+            plot_covopts = args.get("CONTOUR_COVOPTS")
             c = ChainConsumer()
             do_full = False
             biases = {}
@@ -61,7 +62,9 @@ if __name__ == "__main__":
             shift_params = truth if args.get("SHIFT") else None
 
             num_parsed = len(args.get("PARSED_FILES"))
-            for index, basename in enumerate(args.get("PARSED_FILES")):
+            for index, (basename, covopt) in enumerate(zip(args.get("PARSED_FILES"), args.get("PARSED_COVOPTS"))):
+                if covopt not in plot_covopts:
+                    continue
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
                 else:

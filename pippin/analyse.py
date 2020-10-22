@@ -53,16 +53,13 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.plot_code_dir = os.path.join(os.path.dirname(inspect.stack()[0][1]), "external")
 
-        self.path_to_code = "plot_cosmomc.py"
-        self.path_to_code_biascor = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_biascor.py"
-        self.path_to_code_histogram = os.path.dirname(inspect.stack()[0][1]) + "/external/plot_histogram.py"
-
         self.covopts = options.get("COVOPTS")
         if isinstance(self.covopts, str):
             self.covopts = [self.covopts]
 
         self.cosmomc_input_files = []
         self.cosmomc_output_files = []
+        self.cosmomc_covopts = []
         self.names = []
         self.params = []
 
@@ -97,13 +94,13 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
-                if self.covopts is None or covopt in self.covopts:
-                    self.cosmomc_input_files.append(c.output["base_dict"][covopt])
-                    self.cosmomc_output_files.append(c.output["label"] + "_" + covopt + ".csv.gz")
-                    self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
-                    for p in c.output["cosmology_params"]:
-                        if p not in self.params:
-                            self.params.append(p)
+                self.cosmomc_input_files.append(c.output["base_dict"][covopt])
+                self.cosmomc_output_files.append(c.output["label"] + "_" + covopt + ".csv.gz")
+                self.cosmomc_covopts.append(covopt)
+                self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
+                for p in c.output["cosmology_params"]:
+                    if p not in self.params:
+                        self.params.append(p)
             self.logger.debug(f"Analyse task will create CosmoMC plots with {len(self.cosmomc_input_files)} covopts/plots")
 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
@@ -216,10 +213,12 @@ fi
             "COSMOMC": {
                 "INPUT_FILES": self.cosmomc_input_files,
                 "PARSED_FILES": self.cosmomc_output_files,
+                "PARSED_COVOPTS": self.cosmomc_covopts,
                 "PARAMS": self.params,
                 "SHIFT": self.options.get("SHIFT", False),
                 "PRIOR": self.options.get("PRIOR"),
                 "NAMES": self.names,
+                "CONTOUR_COVOPTS": self.covopts,
             },
             "BIASCOR": {
                 "WFIT_SUMMARY_INPUT": self.wsummary_files,

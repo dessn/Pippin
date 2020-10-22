@@ -153,6 +153,7 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
 
 def apply_filter(string, pattern):
     """ Used for matching COVOPTs to FITOPTs and MUOPTs"""
+    string, pattern = string.upper(), pattern.upper()
     if pattern.startswith("="):
         return string == pattern[1:]
     elif pattern.startswith("+"):
