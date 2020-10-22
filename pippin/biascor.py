@@ -247,11 +247,13 @@ class BiasCor(ConfigBasedExecutable):
         # Which is just FITOPT004: {DES_NAME: FITOPT004, LOWZ_NAME: FITOPT029}... etc
         index = 0
         result = {"SURVEY_LIST": " ".join([d.output["SURVEY"] for d in datas]), "FITOPT000": " ".join(["FITOPT000" for d in datas])}
+        index_map = ["DEFAULT"]
         for label, mapping in fitopts.items():
             index += 1
+            index_map.append(label)
             result[f"FITOPT{index:03d}"] = " ".join([mapping[d.name] for d in datas])
 
-        return result
+        return result, index_map
 
     def write_input(self, force_refresh):
 
@@ -267,8 +269,8 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
-        self.yaml["FITOPT_MAP"] = self.get_fitopt_map(self.merged_data)
-        self.output["fitopt_index"] = self.merged_data[0].output["fitopt_index"]
+        self.yaml["FITOPT_MAP"], fitopt_index = self.get_fitopt_map(self.merged_data)
+        self.output["fitopt_index"] = fitopt_index
 
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
