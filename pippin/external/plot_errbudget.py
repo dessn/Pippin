@@ -84,6 +84,8 @@ if __name__ == "__main__":
                 base_df = data[base_index]
                 df_all = pd.concat([base_df] + others).reset_index()
 
+                df_all.columns = [c.replace(r"\ \mathrm{Blinded}", "") for c in df_all.columns]
+
                 # Save out all the means + stds to file unchanged.
                 df_all.to_csv("errbudget_all_uncertainties.csv", index=False, float_format="%0.4f")
 
@@ -102,6 +104,9 @@ if __name__ == "__main__":
 
                     df = df.reindex(sorted(df.columns)[::-1], axis=1)
                     df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
+                    rep_file = output_filename.replace(".txt", "_repr.txt")
+                    with open(rep_file, "w") as f:
+                        f.write(df.__repr__())
 
     except Exception as e:
         logging.exception(e, exc_info=True)
