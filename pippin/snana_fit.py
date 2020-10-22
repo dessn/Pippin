@@ -93,17 +93,22 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             fitopts = [fitopts]
 
         self.logger.debug("Loading fitopts")
-
+        has_file = False
+        self.output["fitopt_file"] = None
         self.raw_fitopts = []
         for f in fitopts:
             self.logger.debug(f"Parsing fitopt {f}")
             potential_path = get_data_loc(f)
             if potential_path is not None and os.path.exists(potential_path):
+                if has_file:
+                    raise ValueError("It seems that you're trying to load in two files for the FITOPTS! Please specify only one file path!")
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 y = read_yaml(potential_path)
                 assert isinstance(y, dict), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                has_file = True
                 self.raw_fitopts.append(y)
                 self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
+                self.output["fitopt_file"] = potential_path
             else:
                 assert f.strip().startswith(
                     "/"

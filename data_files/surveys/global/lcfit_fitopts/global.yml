@@ -13,22 +13,18 @@ GLOBAL:
     MWEBV:                      1.0      MWEBV_SCALE 0.95  MWEBV_SHIFT  0.00
     HST_cal:                    1.0      MAGOBS_SHIFT_ZP_PARAMS 0 0.00714 0
     zshift:                     0.4      REDSHIFT_FINAL_SHIFT 0.0001
-    VPEC:                       1.0      VPEC_FILE '$DES_ROOT/simlibs/VPEC_LOWZ_sys.TXT' # Should split this out into DES and LOWZ exclusions
-    3sigignore:                 1.0      SNCID_IGNORE_FILE $DES3YR/config/3sigignore.list # Should split this out into DES and LOWZ exclusions
+    VPEC:                       1.0      VPEC_FILE '$DES_ROOT/simlibs/VPEC_sys.TXT' # Combines lowz and Foundation
 
 FOUNDATION:
     # Name                      # scale  # command and arguments
-    PS1_wave_g_SURVCAL:         1.0      KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_g.fits'  # Would be good to not point to FOUNDATION_ROOT
-    PS1_wave_r_SURVCAL:         1.0      KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_r.fits'
-    PS1_wave_i_SURVCAL:         1.0      KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_i.fits'
-    PS1_wave_z_SURVCAL:         1.0      KCOR_FILE '$FOUNDATION_ROOT/kcor/PS1/PS1_DS18/kcor_PS1_none_z.fits'
-    PS1_ZP_g_SURVCAL:           1.0      MAGOBS_SHIFT_ZP 'g 0.003'
-    PS1_ZP_r_SURVCAL:           1.0      MAGOBS_SHIFT_ZP 'r 0.003'
-    PS1_ZP_i_SURVCAL:           1.0      MAGOBS_SHIFT_ZP 'i 0.003'
-    PS1_ZP_z_SURVCAL:           1.0      MAGOBS_SHIFT_ZP 'z 0.003'
-# Should we add FILTER_LAMSHIFT in as well?
-#    - /VPEC]                  VPEC_FILE '$FOUNDATION_USERS/djones/FoundationCosmo/vpec_sys0.1.list'
-# Should move the VPEC in GLOBAl into LOWZ, and have VPEC in Foundation separately
+    PS1_wave_g_SURVCAL:         0.7      FILTER_LAMSHIFT 'g 10'  # 10 Angstrom wavelength shift
+    PS1_wave_r_SURVCAL:         0.7      FILTER_LAMSHIFT 'r 10'
+    PS1_wave_i_SURVCAL:         0.7      FILTER_LAMSHIFT 'i 10'
+    PS1_wave_z_SURVCAL:         0.7      FILTER_LAMSHIFT 'z 10'
+    PS1_ZP_g_SURVCAL:           0.3      MAGOBS_SHIFT_ZP 'g 0.01'
+    PS1_ZP_r_SURVCAL:           0.3      MAGOBS_SHIFT_ZP 'r 0.01'
+    PS1_ZP_i_SURVCAL:           0.3      MAGOBS_SHIFT_ZP 'i 0.01'
+    PS1_ZP_z_SURVCAL:           0.3      MAGOBS_SHIFT_ZP 'z 0.01'
 
 DES:
     # Name                      # scale  # command and arguments
@@ -83,5 +79,4 @@ DES3YR_LOWZ_COMBINED:
     lowz_CFAS_WAVE_c_survcal:   0.7      FILTER_LAMSHIFT  'c 10'
     lowz_CFAS_WAVE_d_survcal:   0.7      FILTER_LAMSHIFT  'd 10'
     lowz_CFAS_WAVE_e_survcal:   0.7      FILTER_LAMSHIFT  'e 10'
-    danlowzsys:                 1.0      SNCID_IGNORE_FILE $DES3YR/config/pantheonlowzignore.list
 

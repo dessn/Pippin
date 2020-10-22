@@ -42,6 +42,7 @@ class BiasCor(ConfigBasedExecutable):
         self.output["blind"] = self.blind
         self.genversions = [m.output["genversion"] for m in self.merged_data]
         self.num_verions = [len(m.output["fitres_dirs"]) for m in self.merged_data]
+        self.output["fitopt_files"] = [m.output["fitopt_file"] for m in self.merged_data]
         self.genversion = "_".join(self.sim_names) + ("" if self.classifier is None else "_" + self.classifier.name)
 
         self.config_filename = f"{self.name}.input"  # Make sure this syncs with the tmp file name

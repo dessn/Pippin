@@ -20,7 +20,7 @@ class CreateCov(ConfigBasedExecutable):
     CREATE_COV:
         label:
             OPTS:
-              SYS_SCALE: location of sys_scale.LIST file (relative to create_cov dir by default)
+              SYS_SCALE: location of the fitopts file with scales in it
               FITOPT_SCALES:  # Optional dict to scale fitopts
                     fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
               MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom, scale defaults to one
@@ -53,7 +53,7 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = get_data_loc(options.get("SYS_SCALE", "surveys/global/lcfit_fitopts/global.yml"))
+        self.sys_file_in = self.get_sys_file_in()
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
@@ -90,6 +90,22 @@ else
     echo FAILURE > {done_file}
 fi
 """
+
+    def get_sys_file_in(self):
+        set_file = self.options.get("SYS_SCALE")
+        if set_file is not None:
+            self.logger.debug(f"Explicit SYS_SCALE file specified: {set_file}")
+            path = get_data_loc(set_file)
+            if path is None:
+                raise ValueError(f"Unable to resolve path to {set_file}")
+        else:
+            self.logger.debug("Searching for SYS_SCALE source from biascor task")
+            fitopt_files = self.biascor_dep.output["fitopt_files"]
+            assert len(set(fitopt_files)) == 1, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
+            path = fitopt_files[0]
+        self.options["SYS_SCALE"] = path  # Save to options so its serialised out
+        self.logger.info(f"Setting systematics scaling file to {path}")
+        return path
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):

@@ -669,7 +669,7 @@ CREATE_COV:
     MASK: some_biascor_task
     OPTS:
       INI_DIR: /path/to/your/own/dir/of/cosmomc/templates # Defaults to cosmomc_templates, which you can exploit using DATA_DIRS
-      SYS_SCALE: surveys/global/lcfit_fitopts/scale.list  # Location of systematic scaling file
+      SYS_SCALE: surveys/global/lcfit_fitopts/global.yml  # Location of systematic scaling file, same as the FITOPTS file.
       FITOPT_SCALES:  # Optional
         FITOPT_LABEL: some_scale  # Note this is a partial match, ie SALT2: 1.0 would apply to all SALT2 cal fitopts
        MUOPT_SCALES:
@@ -677,6 +677,9 @@ CREATE_COV:
        COVOPTS:  # Optional, and you'll always get an 'ALL' covopt. List format please
           - "[NOSYS] [=DEFAULT,=DEFAULT]"  # This syntax is explained below
 ```
+
+If you don't specify `SYS_SCALE`, Pippin will search the LCFIT tasks from the BIASCOR dependency and if all LCFIT tasks
+have the same fitopt file, it will use that.
 
 The `COVOPTS` section is a bit odd. In the square brackets first, we have the label that will be assigned and used
 in the plotting output later. The next set of square backets is a two-tuple, and it applies to `[fitopts,muopts]` in 
