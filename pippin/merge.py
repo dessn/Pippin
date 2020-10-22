@@ -50,6 +50,7 @@ class Merger(Task):
         self.output["sim_name"] = self.lc_fit["sim_name"]
         self.output["lcfit_name"] = self.lc_fit["name"]
         self.output["genversion"] = self.lc_fit["genversion"]
+        self.output["fitopt_file"] = self.lc_fit.get("fitopt_file")
 
         self.suboutput_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.suboutput_dir, "ALL.DONE")
