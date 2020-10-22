@@ -378,12 +378,11 @@ if __name__ == "__main__":
         df_all = load_file(wfit_file)
         for name, df in df_all.groupby("name"):
             if df.shape[0] > 1:
-                pass
-                # plot_single_file(name, df)
+                plot_single_file(name, df)
             else:
                 logging.info(f"Group {name} has df shape {str(df.shape)}")
-            # plot_all_files(df_all)
-            # plot_scatter_comp(df_all)
+            plot_all_files(df_all)
+            plot_scatter_comp(df_all)
 
         # Plot hubble diagrams
         m0diff_file = args.get("M0DIFF_PARSED")
