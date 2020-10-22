@@ -53,13 +53,13 @@ class CreateCov(ConfigBasedExecutable):
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
-        self.sys_file_in = self.get_sys_file_in()
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
         self.binned = options.get("BINNED", True)
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
+        self.sys_file_in = self.get_sys_file_in()
         self.output["blind"] = self.biascor_dep.output["blind"]
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
