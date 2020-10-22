@@ -39,8 +39,8 @@ def load_file(file):
 
 def plot_single_file(source_file, df):
     logging.info(f"Plotting single file {source_file}")
-    name = os.path.basename(os.path.dirname(os.path.dirname(source_file)))
-    output_file = name + ".png"
+    name = os.path.basename(os.path.dirname(os.path.abspath(source_file)))
+    output_file = name + "_wfit.png"
     logging.info(f"Creating wfit plot output to {output_file}")
 
     c = ChainConsumer()
@@ -54,8 +54,8 @@ def plot_single_file(source_file, df):
 
 
 def plot_all_files(df_all):
-    logging.info("Plotting all files")
     output_file = "all_biascor_results.png"
+    logging.info(f"Plotting all fits to {output_file}")
 
     c = ChainConsumer()
     labels = [r"$\Omega_m$", "$w$", r"$\sigma_{int}$"]
@@ -100,6 +100,9 @@ def plot_scatter_comp(df_all):
         bins = np.linspace(min_w, max_w, num_bins)
         lim = (min_w - 0.001, max_w + 0.001)
 
+        if n == 1:
+            logging.info("Only one version found, nothing to scatter against")
+            return
         fig, axes = plt.subplots(nrows=n, ncols=n, figsize=(2 * n, 2 * n), sharex=True)
         for i, label1 in enumerate(labels):
             for j, label2 in enumerate(labels):
@@ -167,6 +170,12 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
 
     ol = dfm.ol_ref.unique()[0]
     w = dfm.w_ref.unique()[0]
+    if np.isnan(ol):
+        logging.info("Setting ol = 0.689")
+        ol = 0.689
+    if np.isnan(w):
+        logging.info("Setting w = -1")
+        w = -1
     alpha = 0
     beta = 0
     sigint = 0
@@ -235,6 +244,10 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     x_ticks_mt = tranz(x_ticks_m)
 
     fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [1.5, 1], "hspace": 0})
+    logging.info(f"Hubble plot prob colour given by column {prob_col_name}")
+
+    if prob_col_name.upper().startswith("PROB"):
+        df[prob_col_name] = df[prob_col_name].clip(0, 1)
 
     for resid, ax in enumerate(axes):
         ax.tick_params(which="major", direction="inout", length=4)
@@ -339,9 +352,16 @@ def make_m0diff_plot(m0diff_file):
         for label, df2 in dfg2:
             if not isinstance(label, str):
                 label = " ".join(list(label)).replace("_", " ")
-            ax.plot(df2.z, df2.MUDIF, label=label)
+            if "DEFAULT DEFAULT" in label.upper():
+                ls = ":"
+            else:
+                ls = "-"
+            ax.plot(df2.z, df2.MUDIF, label=label, ls=ls)
 
-        ax.legend()
+        if len(dfg2) > 10:
+            ax.legend(bbox_to_anchor=(0.5, -0.1), ncol=2)
+        else:
+            ax.legend()
         ax.set_title(name)
         ax.set_xlabel("z")
         ax.set_ylabel("Delta mu")
@@ -358,11 +378,12 @@ if __name__ == "__main__":
         df_all = load_file(wfit_file)
         for name, df in df_all.groupby("name"):
             if df.shape[0] > 1:
-                plot_single_file(name, df)
+                pass
+                # plot_single_file(name, df)
             else:
                 logging.info(f"Group {name} has df shape {str(df.shape)}")
-            plot_all_files(df_all)
-            plot_scatter_comp(df_all)
+            # plot_all_files(df_all)
+            # plot_scatter_comp(df_all)
 
         # Plot hubble diagrams
         m0diff_file = args.get("M0DIFF_PARSED")
