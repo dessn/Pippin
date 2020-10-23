@@ -89,7 +89,6 @@ def get_arguments():
 
 
 def parse_chains(basename, outname, args, index):
-
     logging.info("Loading in data from original CosmoMC files")
     param_file = os.path.join(basename) + ".paramnames"
     chain_files = get_chain_files(basename)
@@ -145,7 +144,8 @@ if __name__ == "__main__":
                     key = name
                 if key not in biases:
                     biases[key] = b
-                    b += 1
+                    if not args.get("SINGULAR_BLIND"):
+                        b += 1
                 bias_index = biases[key]
                 parse_chains(basename, outname, args, bias_index)
 

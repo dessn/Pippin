@@ -54,6 +54,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.plot_code_dir = os.path.join(os.path.dirname(inspect.stack()[0][1]), "external")
 
         self.covopts = options.get("COVOPTS")
+        self.singular_blind = options.get("SINGULAR_BLIND", False)
         if isinstance(self.covopts, str):
             self.covopts = [self.covopts]
 
@@ -219,6 +220,7 @@ fi
                 "PRIOR": self.options.get("PRIOR"),
                 "NAMES": self.names,
                 "CONTOUR_COVOPTS": self.covopts,
+                "SINGULAR_BLIND": self.singular_blind,
             },
             "BIASCOR": {
                 "WFIT_SUMMARY_INPUT": self.wsummary_files,
