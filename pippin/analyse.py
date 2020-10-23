@@ -200,7 +200,7 @@ fi
                     if fitopt_num == 0:
                         fitopt = "DEFAULT"
                     else:
-                        fitopt = b.output["fitopt_index"][fitopt_num - 1]
+                        fitopt = b.output["fitopt_index"][fitopt_num]
 
                     self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
 
