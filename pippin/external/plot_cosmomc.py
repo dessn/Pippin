@@ -63,7 +63,7 @@ if __name__ == "__main__":
 
             num_parsed = len(args.get("PARSED_FILES"))
             for index, (basename, covopt) in enumerate(zip(args.get("PARSED_FILES"), args.get("PARSED_COVOPTS"))):
-                if covopt not in plot_covopts:
+                if plot_covopts is not None and covopt not in plot_covopts:
                     continue
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
