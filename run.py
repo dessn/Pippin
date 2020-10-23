@@ -47,7 +47,7 @@ def setup_logging(config_filename, logging_folder, args):
     handlers = [logging.StreamHandler(), message_store]
     handlers[0].setLevel(level)
     if not args.check:
-        handlers.append(logging.FileHandler(logging_filename))
+        handlers.append(logging.FileHandler(logging_filename, mode="w"))
         handlers[-1].setLevel(logging.DEBUG)
     logging.basicConfig(level=level, format=fmt, handlers=handlers)
 
