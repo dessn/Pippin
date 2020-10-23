@@ -281,7 +281,7 @@ class Manager:
                             self.num_jobs_queue_gpu += t.num_jobs
                         else:
                             self.num_jobs_queue += t.num_jobs
-                        self.logger.notice(f"LAUNCHED: {t} with total {self.num_jobs_queue} jobs")
+                        self.logger.notice(f"LAUNCHED: {t} with total jobs now {self.num_jobs_queue}")
                         running_tasks.append(t)
                         completed = False
                         try:
