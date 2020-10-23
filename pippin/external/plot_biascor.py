@@ -353,10 +353,17 @@ def make_m0diff_plot(m0diff_file):
             if not isinstance(label, str):
                 label = " ".join(list(label)).replace("_", " ")
             if "DEFAULT DEFAULT" in label.upper():
-                ls = ":"
+                ls = "--"
+                alpha = 1.0
+                zorder = 10
+                c = "k"
             else:
                 ls = "-"
-            ax.plot(df2.z, df2.MUDIF, label=label, ls=ls)
+                alpha = 0.4
+                zorder = 1
+                c = None
+
+            ax.plot(df2.z, df2.MUDIF, label=label, ls=ls, alpha=alpha, zorder=zorder, c=c, lw=1)
 
         if len(dfg2) > 10:
             ax.legend(bbox_to_anchor=(0.5, -0.1), ncol=2)
