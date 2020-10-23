@@ -120,6 +120,8 @@ fi
         return self.check_for_job(squeue, self.job_name)
 
     def get_scales_from_fitopt_file(self):
+        if self.sys_file_in is None:
+            return {}
         self.logger.debug(f"Loading sys scaling from {self.sys_file_in}")
         yaml = read_yaml(self.sys_file_in)
         raw = {k: float(v.split(maxsplit=1)[0]) for _, d in yaml.items() for k, v in d.items()}
