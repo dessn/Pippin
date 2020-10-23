@@ -134,8 +134,13 @@ if __name__ == "__main__":
                     name = os.path.basename(basename).replace("_", " ")
 
                 # Do smarter biascor
+                # eg name might be "(SN) ALL 5YR SCATTER"
                 if ")" in name:
                     key = name.split(")", 1)[1]
+                    # Key would now be " ALL 5YR SCATTER"
+                    # Now also remove the COVOPT from the name
+                    key = " ".join(key.split()[:-1])
+                    # Key would now be " ALL 5YR"
                 else:
                     key = name
                 if key not in biases:
