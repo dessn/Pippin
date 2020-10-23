@@ -174,7 +174,7 @@ fi
         for name in config.get("DATAPREP", []):
             output_dir = f"{base_output_dir}/{stage_number}_DATAPREP/{name}"
             options = config["DATAPREP"][name].get("OPTS")
-            if options is None:
+            if options is None and config["DATAPREP"][name].get("EXTERNAL") is None:
                 Task.fail_config(f"DATAPREP task {name} needs to specify OPTS!")
             s = DataPrep(name, output_dir, config["DATAPREP"][name], options, global_config)
             Task.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
