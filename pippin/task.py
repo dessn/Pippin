@@ -42,7 +42,7 @@ class Task(ABC):
                 self.external = os.path.join(self.external, "config.yml")
             logging.debug(f"External config file path resolved to {self.external}")
             with open(self.external, "r") as f:
-                external_config = yaml.safe_load(f)
+                external_config = yaml.load(f, Loader=yaml.Loader)
                 conf = external_config.get("CONFIG", {})
                 conf.update(self.config)
                 self.config = conf
