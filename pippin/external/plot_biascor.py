@@ -346,9 +346,11 @@ def make_m0diff_plot(m0diff_file):
             label_cols = ["muopt", "fitopt"]
         else:
             label_cols = ["fitopt"]
+        base = df.loc[(df.muopt_num == 0) & (df.fitopt_num == 0), :].copy()
 
         # Now group again and plot out the m0diff
         dfg2 = df.groupby(label_cols)
+
         for label, df2 in dfg2:
             if not isinstance(label, str):
                 label = " ".join(list(label)).replace("_", " ")
@@ -362,8 +364,9 @@ def make_m0diff_plot(m0diff_file):
                 alpha = 0.4
                 zorder = 1
                 c = None
+            diff = df2.MUDIF.to_numpy() - base.MUDIF.to_numpy()
 
-            ax.plot(df2.z, df2.MUDIF, label=label, ls=ls, alpha=alpha, zorder=zorder, c=c, lw=1)
+            ax.plot(df2.z, diff, label=label, ls=ls, alpha=alpha, zorder=zorder, c=c, lw=1)
 
         if len(dfg2) > 10:
             ax.legend(bbox_to_anchor=(0.5, -0.1), ncol=2)
