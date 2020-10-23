@@ -190,10 +190,16 @@ COSMOMC:
   SN_OMW:
     OPTS:
       INI: sn_omw.ini
+      COVOPTS: [ALL, NOSYS]
+
+  PRIOR:
+    OPTS:
+      INI: sn_prior_omw.ini
 
 ANALYSE:
   5YR_COMBINED:
-    MASK_COSMOMC: OMW
-    OPTS:
-      COVOPTS: [ALL, NOSYS]
+    MASK_COSMOMC: SN_OMW
     MASK_BIASCOR: 5YR
+
+  5YR_ERRBUDGET:
+    MASK_COSMOMC: PRIOR
