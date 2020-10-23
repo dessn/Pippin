@@ -1,10 +1,28 @@
 DATAPREP:
   DATALOWZ:  # lowz combined sample
-    EXTERNAL: $PIPPIN_OUTPUT/REF_DATA/0_DATAPREP/DATALOWZ
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DES3YR_LOWZ_COMBINED_FITS
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True
+
   DATAFOUND:  # Foundation sample
-    EXTERNAL: $PIPPIN_OUTPUT/REF_DATA/0_DATAPREP/DATAFOUND
+    OPTS:
+      RAW_DIR: $SNDATA_ROOT/lcmerge/Foundation_DR1
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True
+
   DATADES5YR:  # 5 yr photometry sample
-    EXTERNAL: $PIPPIN_OUTPUT/REF_DATA/0_DATAPREP/DATADES5YR
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: True
+
 
 SIM:
   DESSIMBIAS5YRIA_C11:
