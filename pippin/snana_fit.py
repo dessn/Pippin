@@ -299,7 +299,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
     def check_issues(self):
         log_files = [] + self.log_files
-        log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
+        if os.path.exists(self.lc_log_dir):
+            log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
 
         self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
         return Task.FINISHED_FAILURE
