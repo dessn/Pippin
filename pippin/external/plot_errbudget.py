@@ -92,15 +92,21 @@ if __name__ == "__main__":
                 # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
                 dfg = df_all.groupby("name")
                 for name, df in dfg:
+                    logging.info(f"Determining error budget for {name}")
                     output_filename = f"errbudget_{name}.txt".replace(" ", "_")
+
+                    nosys_mask = df.covopt.str.upper().isin(["NOSYS", "NO_SYS", "STAT", "STATONLY", "STAT_ONLY"])
+                    assert nosys_mask.sum() == 1, f"Multiple potential no systematic covopts found for name {name}, this is an issue"
 
                     avg_cols = [c for c in df.columns if c.endswith(" avg")]
                     std_cols = [c for c in df.columns if c.endswith(" std")]
                     delta_cols = [c.replace(" avg", " delta") for c in df.columns if c.endswith(" avg")]
                     contrib_cols = [c.replace(" std", " contrib") for c in df.columns if c.endswith(" std")]
 
-                    df[delta_cols] = df.loc[:, avg_cols] - df.loc[:, avg_cols].iloc[0, :]
-                    df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - df.loc[:, std_cols].iloc[0, :] ** 2)
+                    df[delta_cols] = df.loc[:, avg_cols] - df.loc[nosys_mask, avg_cols].to_numpy()
+
+                    min_var = (df.loc[nosys_mask, std_cols].to_numpy()) ** 2
+                    df[contrib_cols] = np.sqrt(df.loc[:, std_cols] ** 2 - min_var)
 
                     df = df.reindex(sorted(df.columns)[::-1], axis=1)
                     df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
@@ -111,7 +117,7 @@ if __name__ == "__main__":
                     pd.set_option("display.width", 2000)
 
                     with open(rep_file, "w") as f:
-                        f.write(df.__repr__())
+                        f.write(df.reset_index(drop=True).__repr__())
 
     except Exception as e:
         logging.exception(e, exc_info=True)
