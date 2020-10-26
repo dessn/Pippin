@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
                     prior = norm.pdf(chain[:, om_index], loc=0.3, scale=prior)
                     weights *= prior
-                if num_parsed > 10:
+                if num_parsed > 30:
                     name = "CosmoMC Fit"
                 c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=-likelihood, shift_params=shift_params, linestyle=linestyle)
 
