@@ -181,8 +181,36 @@ CREATE_COV:
         - "[LOWZ] [+LOWZ,=DEFAULT]"
         - "[PS1] [+PS1,=DEFAULT]"
 
+  SALT2:
+    OPTS:
+      INI: sn_prior_omw.ini
+      FITOPT_SCALES:
+        SALT20_cal: 1.0
+        SALT21_cal: 1.0
+        SALT22_cal: 1.0
+        SALT23_cal: 1.0
+        SALT24_cal: 1.0
+        SALT25_cal: 1.0
+        SALT26_cal: 1.0
+        SALT27_cal: 1.0
+        SALT28_cal: 1.0
+        SALT29_cal: 1.0
+      COVOPTS:
+        - "[SALT20_cal] [=SALT20_cal,=DEFAULT]"
+        - "[SALT21_cal] [=SALT21_cal,=DEFAULT]"
+        - "[SALT22_cal] [=SALT22_cal,=DEFAULT]"
+        - "[SALT23_cal] [=SALT23_cal,=DEFAULT]"
+        - "[SALT24_cal] [=SALT24_cal,=DEFAULT]"
+        - "[SALT25_cal] [=SALT25_cal,=DEFAULT]"
+        - "[SALT26_cal] [=SALT26_cal,=DEFAULT]"
+        - "[SALT27_cal] [=SALT27_cal,=DEFAULT]"
+        - "[SALT28_cal] [=SALT28_cal,=DEFAULT]"
+        - "[SALT29_cal] [=SALT29_cal,=DEFAULT]"
+
+
 COSMOMC:
   SN_OMW:
+    MASK: ALL
     OPTS:
       INI: sn_omw.ini
       COVOPTS: [ALL, NOSYS]
