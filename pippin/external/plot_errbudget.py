@@ -105,6 +105,11 @@ if __name__ == "__main__":
                     df = df.reindex(sorted(df.columns)[::-1], axis=1)
                     df.to_latex(output_filename, index=False, escape=False, float_format="%0.3f")
                     rep_file = output_filename.replace(".txt", "_repr.txt")
+
+                    pd.set_option("display.max_rows", 500)
+                    pd.set_option("display.max_columns", 500)
+                    pd.set_option("display.width", 2000)
+
                     with open(rep_file, "w") as f:
                         f.write(df.__repr__())
 

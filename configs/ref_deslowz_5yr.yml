@@ -196,6 +196,7 @@ CREATE_COV:
         SALT28_cal: 1.0
         SALT29_cal: 1.0
       COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
         - "[SALT20_cal] [=SALT20_cal,=DEFAULT]"
         - "[SALT21_cal] [=SALT21_cal,=DEFAULT]"
         - "[SALT22_cal] [=SALT22_cal,=DEFAULT]"
