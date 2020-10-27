@@ -1,7 +1,7 @@
 import argparse
 import logging
 import shutil
-
+from functools import reduce
 import numpy as np
 import os
 import pandas as pd
@@ -50,11 +50,11 @@ def load_data(path):
     # Sort to ensure direct subtraction comparison
     if "CID" in df.columns:
         df = df.sort_values(["zHD", "CID"])
+        df = df.set_index(["IDSURVEY", "CID"])
+        df = df.rename(columns={"zHD": "z"})
+
     elif "z" in df.columns:
         df = df.sort_values("z")
-    # The FITRES and M0DIF files have different column names
-    if "CID" in df.columns:
-        df = df.rename(columns={"zHD": "z"})
 
     df = df.loc[:, ["z", "MU", "MUERR"]]
     return df
@@ -67,7 +67,21 @@ def get_data_files(folder, individual):
         if (not individual and ".M0DIF" in file) or (individual and ".FITRES" in file and "MUOPT" in file):
             label = file.replace(".gz", "").replace(".M0DIF", "").replace(".FITRES", "")
             result[label] = load_data(folder / file)
+
+    if individual:
+        result = get_common_set_of_sne(result)
+
     return result
+
+
+def get_common_set_of_sne(datadict):
+
+    combined = reduce(lambda l, r: l.join(r, how="inner", rsuffix="_"), list(datadict.values()))
+    logging.info(f"Common set of SN have {combined.index.shape} events")
+    for label, df in datadict.items():
+        datadict[label] = df.loc[combined.index, :]
+
+    return datadict
 
 
 def get_fitopt_muopt_from_name(name):
@@ -103,7 +117,7 @@ def get_cov_from_diff(df1, df2, scale):
 
     # Determine the gradient using simple linear regression
     reg = LinearRegression()
-    weights = 1 / np.sqrt(0.003 ** 2 + df1["MUERR"] ** 2 + df2["MUERR"] ** 2)
+    weights = 1 / np.sqrt(0.003 ** 2 + df1["MUERR"].to_numpy() ** 2 + df2["MUERR"].to_numpy() ** 2)
     mask = np.isfinite(weights)
     reg.fit(df1.loc[mask, ["z"]], diff[mask], sample_weight=weights[mask])
     coef = reg.coef_[0]
