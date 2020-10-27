@@ -17,7 +17,7 @@ DATAPREP:
 
   DATADES5YR:  # 5 yr photometry sample
     OPTS:
-      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_forcePhoto_real_snana_tex
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_specType_forcePhoto_real_snana_text
       TYPES:
         IA: [1, 101]
         NONIA: [120, 130, 20, 30, 105, 106]
