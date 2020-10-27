@@ -142,7 +142,6 @@ CREATE_COV:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
         - "[SCATTER] [=DEFAULT,+SCATTER]"
-        - "[CLASSIFICATION] [=DEFAULT,+CLAS]"
         - "[SALT2] [+SALT2,=DEFAULT]"
         - "[survcal] [+SURVCAL,=DEFAULT]"
         - "[DES] [+DES,=DEFAULT]"
