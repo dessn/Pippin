@@ -72,6 +72,7 @@ def plot_all_files(df_all):
         data.append([name, df["w"].mean(), df["w"].std(), df["w_sig"].mean()])
     wdf = pd.DataFrame(data, columns=["name", "mean_w", "scatter_mean_w", "mean_std_w"])
     wdf.to_csv(output_file.replace(".png", ".csv"), index=False, float_format="%0.4f")
+    c.configure(statistics="mean")
     c.plotter.plot_summary(errorbar=True, filename=output_file)
 
 
@@ -208,8 +209,12 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
                 contam_data = f"$R_{{CC, data}} = {v:0.4f} (\\approx {int(n)} SN)$"
             if "scalePCC" in line and "+-" in line:
                 scalepcc = "scalePCC = $" + line.split("=")[-1].strip().replace("+-", r"\pm") + "$"
-    prob_label = prob_col_name.replace("PROB_", "").replace("_", " ")
-    label = "\n".join([num_sn, alpha, beta, sigint, gamma, scalepcc, contam_true, contam_data, f"Classifier = {prob_label}"])
+    if prob_col_name is not None:
+        prob_label = prob_col_name.replace("PROB_", "").replace("_", " ")
+        classifier_text = f"Classifier = {prob_label}"
+    else:
+        classifier_text = "No Classification"
+    label = "\n".join([num_sn, alpha, beta, sigint, gamma, scalepcc, contam_true, contam_data, classifier_text])
     label = label.replace("\n\n", "\n").replace("\n\n", "\n")
     dfz = df["zHD"]
     zs = np.linspace(dfz.min(), dfz.max(), 500)
@@ -246,8 +251,9 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     fig, axes = plt.subplots(figsize=(7, 5), nrows=2, sharex=True, gridspec_kw={"height_ratios": [1.5, 1], "hspace": 0})
     logging.info(f"Hubble plot prob colour given by column {prob_col_name}")
 
-    if prob_col_name.upper().startswith("PROB"):
-        df[prob_col_name] = df[prob_col_name].clip(0, 1)
+    if prob_col_name is not None:
+        if prob_col_name.upper().startswith("PROB"):
+            df[prob_col_name] = df[prob_col_name].clip(0, 1)
 
     for resid, ax in enumerate(axes):
         ax.tick_params(which="major", direction="inout", length=4)
@@ -272,7 +278,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         if subsec:
             ax.axvline(tranz(n_thresh), c="#888888", alpha=0.4, zorder=0, lw=0.7, ls="--")
 
-        if df[prob_col_name].min() >= 1.0:
+        if prob_col_name is None or df[prob_col_name].min() >= 1.0:
             cc = df["IDSURVEY"]
             vmax = None
             color_prob = False
