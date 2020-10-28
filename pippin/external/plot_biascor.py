@@ -253,6 +253,8 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
 
     if prob_col_name is not None:
         if prob_col_name.upper().startswith("PROB"):
+            mask_no_prob = df[prob_col_name] < -1
+            df.loc[mask_no_prob, prob_col_name] = 1.0
             df[prob_col_name] = df[prob_col_name].clip(0, 1)
 
     for resid, ax in enumerate(axes):
