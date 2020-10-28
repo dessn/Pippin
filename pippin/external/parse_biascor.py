@@ -126,7 +126,7 @@ def parse_fitres(args):
     for name, num, muopt, muopt_num, fitopt, fitopt_num, path in m0diffs:
         path = path.replace(".M0DIF", ".FITRES")
         logging.info(f"Attempting to parse file {path}")
-        use_cols = ["CID", "IDSURVEY", "zHD", "mb", "x1", "c", "MU", "MUERR"]
+        use_cols = ["CID", "IDSURVEY", "zHD", "mB", "x1", "c", "MU", "MUERR"]
 
         df = pd.read_csv(path, delim_whitespace=True, comment="#", usecols=use_cols)
         df["name"] = name
