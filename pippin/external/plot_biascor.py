@@ -154,7 +154,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     logging.info(f"Making Hubble plot from FITRES file {fitres_file} and M0DIF file {m0diff_file}")
     # Note that the fitres file has mu and fit 0, m0diff will have to select down to it
 
-    name, sim_num, *_ = fitres_file.split("_")
+    name, sim_num, *_ = fitres_file.split("__")
     sim_num = int(sim_num)
 
     df = pd.read_csv(fitres_file, delim_whitespace=True, comment="#")
