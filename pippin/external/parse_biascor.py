@@ -117,6 +117,34 @@ def parse_m0diffs(args):
     save_blind(df_all, args, m0diff_out)
 
 
+def parse_fitres(args):
+    m0diffs = args.get("M0DIFF_INPUTS")
+    fites_out = args.get("M0DIFF_PARSED").replace("m0diffs", "fitres")
+
+    df_all = None
+
+    for name, num, muopt, muopt_num, fitopt, fitopt_num, path in m0diffs:
+        path = path.replace(".M0DIF", ".FITRES")
+        logging.info(f"Attempting to parse file {path}")
+        use_cols = ["CID", "IDSURVEY", "zHD", "mb", "x1", "c", "MU", "MUERR"]
+
+        df = pd.read_csv(path, delim_whitespace=True, comment="#", usecols=use_cols)
+        df["name"] = name
+        df["sim_num"] = num
+        df["muopt"] = muopt
+        df["muopt_num"] = muopt_num
+        df["fitopt"] = fitopt
+        df["fitopt_num"] = fitopt_num
+
+        if df_all is None:
+            df_all = df
+        else:
+            df_all = pd.concat([df_all, df])
+
+    logging.info(f"Saving combined fitres to {fites_out}")
+    save_blind(df_all, args, fites_out)
+
+
 if __name__ == "__main__":
     setup_logging()
     args = get_arguments()
@@ -127,6 +155,7 @@ if __name__ == "__main__":
 
         parse_fitres_files(args)
         parse_m0diffs(args)
+        parse_fitres(args)
         logging.info(f"Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
