@@ -119,8 +119,7 @@ def parse_m0diffs(args):
 
 def parse_fitres(args):
     m0diffs = args.get("M0DIFF_INPUTS")
-    fites_out = args.get("M0DIFF_PARSED").replace("m0diffs", "fitres")
-
+    fites_out = args.get("FITRES_COMBINED")
     df_all = None
 
     for name, num, muopt, muopt_num, fitopt, fitopt_num, path in m0diffs:

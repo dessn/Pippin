@@ -117,6 +117,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.biascor_m0diffs = []
         self.biascor_m0diff_output = "all_biascor_m0diffs.csv"
+        self.biascor_fitres_combined = "all_biascor_fitres.csv.gz"
 
         self.slurm = """#!/bin/bash
 #SBATCH --job-name={job_name}
@@ -230,6 +231,7 @@ fi
                 "FITRES_PARSED": self.biascor_fitres_output_files,
                 "M0DIFF_INPUTS": self.biascor_m0diffs,
                 "M0DIFF_PARSED": self.biascor_m0diff_output,
+                "FITRES_COMBINED": self.biascor_fitres_combined,
             },
             "OUTPUT_NAME": self.name,
             "BLIND": self.blind_params,
