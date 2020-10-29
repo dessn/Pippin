@@ -111,13 +111,11 @@ class Manager:
                 if dep not in done_tasks:
                     can_run = False
             if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
-                self.logger.warning(
-                    f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue_gpu} already running"
-                )
+                self.logger.warning(f"Cant submit {t} because GPU NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}")
                 can_run = False
 
             if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
-                self.logger.warning(f"Cant submit {t} because num jobs {t.num_jobs} would take us over the limit with {self.num_jobs_queue} already running")
+                self.logger.warning(f"Cant submit {t} because NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue}/{self.max_jobs_in_queue}")
                 can_run = False
 
             if can_run:
@@ -279,9 +277,13 @@ class Manager:
                     if started:
                         if t.gpu:
                             self.num_jobs_queue_gpu += t.num_jobs
+                            message = (
+                                f"LAUNCHED: {t} with {t.num_jobs} GPU NUM_JOBS. Total GPU NUM_JOBS now {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}"
+                            )
                         else:
                             self.num_jobs_queue += t.num_jobs
-                        self.logger.notice(f"LAUNCHED: {t} with total jobs now {self.num_jobs_queue}")
+                            message = f"LAUNCHED: {t} with {t.num_jobs} NUM_JOBS. Total NUM_JOBS now {self.num_jobs_queue}/{self.max_jobs_in_queue}"
+                        self.logger.notice(message)
                         running_tasks.append(t)
                         completed = False
                         try:
@@ -311,7 +313,7 @@ class Manager:
                 squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True).splitlines()]
                 n = len(squeue)
                 if n == 0 or n > self.max_jobs:
-                    self.logger.debug(f"Squeue is reporting {n} jobs in the queue... this is either 0 or toeing the line as to too many")
+                    self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
 
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 
@@ -325,7 +327,7 @@ class Manager:
                 self.num_jobs_queue -= t.num_jobs
             if result == Task.FINISHED_SUCCESS:
                 running_tasks.remove(t)
-                self.logger.notice(f"FINISHED: {t}, total jobs now {self.num_jobs_queue}")
+                self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
                 done_tasks.append(t)
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
