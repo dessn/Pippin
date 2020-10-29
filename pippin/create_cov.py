@@ -100,7 +100,7 @@ fi
                 raise ValueError(f"Unable to resolve path to {set_file}")
         else:
             self.logger.debug("Searching for SYS_SCALE source from biascor task")
-            fitopt_files = self.biascor_dep.output["fitopt_files"]
+            fitopt_files = [f for f in self.biascor_dep.output["fitopt_files"] if f is not None]
             assert len(set(fitopt_files)) == 1, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
             path = fitopt_files[0]
         self.options["SYS_SCALE"] = path  # Save to options so its serialised out
