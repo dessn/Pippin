@@ -7,7 +7,7 @@ import numpy as np
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml, make_tarfile
 from pippin.merge import Merger
 from pippin.task import Task
 
@@ -180,6 +180,10 @@ class BiasCor(ConfigBasedExecutable):
             if os.path.exists(self.done_file):
                 os.remove(self.done_file)
             # Remove the output not just the done file
+            tar_file = os.path.join(self.output_dir, "initial_bbc.tar.gz")
+            self.logger.debug(f"Making tar of inital BBC run to {tar_file}")
+            make_tarfile(tar_file, self.fit_output_dir)
+            self.logger.debug(f"Removing old output dir: {self.fit_output_dir}")
             shutil.rmtree(self.fit_output_dir)
 
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
