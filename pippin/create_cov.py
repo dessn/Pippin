@@ -101,8 +101,11 @@ fi
         else:
             self.logger.debug("Searching for SYS_SCALE source from biascor task")
             fitopt_files = [f for f in self.biascor_dep.output["fitopt_files"] if f is not None]
-            assert len(set(fitopt_files)) == 1, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
-            path = fitopt_files[0]
+            assert len(set(fitopt_files)) < 2, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
+            if fitopt_files:
+                path = fitopt_files[0]
+            else:
+                path = None
         self.options["SYS_SCALE"] = path  # Save to options so its serialised out
         self.logger.info(f"Setting systematics scaling file to {path}")
         return path
