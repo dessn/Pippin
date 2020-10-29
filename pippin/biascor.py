@@ -182,6 +182,8 @@ class BiasCor(ConfigBasedExecutable):
             # Remove the output not just the done file
             tar_file = os.path.join(self.output_dir, "initial_bbc.tar.gz")
             self.logger.debug(f"Making tar of inital BBC run to {tar_file}")
+            if os.path.exists(tar_file):
+                os.remove(tar_file)
             make_tarfile(tar_file, self.fit_output_dir)
             self.logger.debug(f"Removing old output dir: {self.fit_output_dir}")
             shutil.rmtree(self.fit_output_dir)
