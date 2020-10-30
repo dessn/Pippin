@@ -75,11 +75,12 @@ def get_data_files(folder, individual):
 
 
 def get_common_set_of_sne(datadict):
-
-    combined = reduce(lambda l, r: l.join(r, how="inner", rsuffix="_"), list(datadict.values()))
-    logging.info(f"Common set of SN have {combined.index.shape} events")
+    for v in datadict.values():
+        print(v.index)
+    index = reduce(lambda l, r: l.index.intersection(r.index), list(datadict.values()))
+    logging.info(f"Common set of SN have {index.shape} events")
     for label, df in datadict.items():
-        datadict[label] = df.loc[combined.index, :]
+        datadict[label] = df.loc[index, :]
 
     return datadict
 
