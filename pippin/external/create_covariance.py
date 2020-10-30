@@ -49,6 +49,7 @@ def load_data(path):
 
     # Sort to ensure direct subtraction comparison
     if "CID" in df.columns:
+        df["CID"] = df["CID"].astype(str)
         df = df.sort_values(["zHD", "CID"])
         df = df.set_index(["IDSURVEY", "CID"])
         df = df.rename(columns={"zHD": "z"})
@@ -57,7 +58,6 @@ def load_data(path):
         df = df.sort_values("z")
 
     df = df.loc[:, ["z", "MU", "MUERR"]]
-    print(type(df))
     return df
 
 
