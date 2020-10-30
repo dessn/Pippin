@@ -138,6 +138,7 @@ fi
         self.yaml["INPUT_DIR"] = self.biascor_dep.output["fit_output_dir"]
         self.yaml["OUTDIR"] = self.config_dir
         self.yaml["VERSION"] = self.biascor_dep.output["subdirs"][self.index]
+        self.yaml["MUOPT_SCALES"] = self.biascor_dep.output["muopt_scales"]
         self.yaml["COVOPTS"] = self.options.get("COVOPTS", [])
 
         # Load in sys file, add muopt arguments if needed

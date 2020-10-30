@@ -127,7 +127,7 @@ def get_cov_from_diff(df1, df2, scale):
     return cov, (coef, mean_abs_deviation, max_abs_deviation)
 
 
-def get_contributions(m0difs, fitopt_scales, muopt_labels):
+def get_contributions(m0difs, fitopt_scales, muopt_labels, muopt_scales):
     """ Gets a dict mapping 'FITOPT_LABEL|MUOPT_LABEL' to covariance)"""
     result, slopes = {}, []
 
@@ -138,10 +138,12 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
         # Get label and scale for FITOPTS and MUOPTS. Note 0 index is DEFAULT
         if f == 0:
             fitopt_label = "DEFAULT"
-            scale = 1.0
+            fitopt_scale = 1.0
         else:
-            fitopt_label, scale = fitopt_scales[f]
+            fitopt_label, fitopt_scale = fitopt_scales[f]
         muopt_label = muopt_labels[m] if m else "DEFAULT"
+        muopt_scale = muopt_scales.get(muopt_label, 1.0)
+        logging.debug(f"FITOPT {f} has scale {fitopt_scale}, MUOPT {m} has scale {muopt_scale}")
 
         # Depending on f and m, compute the contribution to the covariance matrix
         if f == 0 and m == 0:
@@ -151,11 +153,11 @@ def get_contributions(m0difs, fitopt_scales, muopt_labels):
         elif m > 0:
             # This is a muopt, to compare it against the MUOPT000 for the same FITOPT
             df_compare = m0difs[get_name_from_fitopt_muopt(f, 0)]
-            cov, summary = get_cov_from_diff(df, df_compare, scale)
+            cov, summary = get_cov_from_diff(df, df_compare, fitopt_scale * muopt_scale)
         else:
             # This is a fitopt with MUOPT000, compare to base file
             df_compare = m0difs[get_name_from_fitopt_muopt(0, 0)]
-            cov, summary = get_cov_from_diff(df, df_compare, scale)
+            cov, summary = get_cov_from_diff(df, df_compare, fitopt_scale)
 
         result[f"{fitopt_label}|{muopt_label}"] = cov
         slopes.append([name, fitopt_label, muopt_label, *summary])
@@ -396,6 +398,7 @@ def create_covariance(config, args):
     fitopt_scales = get_fitopt_scales(submit_info, sys_scale)
     # Also need to get the FITOPT labels from the original LCFIT directory
     muopt_labels = {int(x.replace("MUOPT", "")): l for x, l, _ in submit_info.get("MUOPT_OUT_LIST", [])}
+    muopt_scales = config["MUOPT_SCALES"]
 
     # Load in all the data
     data = get_data_files(data_dir, args.unbinned)
@@ -404,7 +407,7 @@ def create_covariance(config, args):
     data, base = filter_nans(data)
 
     # Now that we have the data, figure out how each much each FITOPT/MUOPT pair contributes to cov
-    contributions, summary = get_contributions(data, fitopt_scales, muopt_labels)
+    contributions, summary = get_contributions(data, fitopt_scales, muopt_labels, muopt_scales)
 
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
