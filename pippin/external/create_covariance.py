@@ -77,11 +77,17 @@ def get_data_files(folder, individual):
 
 def get_common_set_of_sne(datadict):
 
-    inds = [df.index for df in datadict.values()]
-    index = reduce(lambda l, r: l.intersection(r), inds)
-    logging.info(f"Common set of SN have {index.shape} events")
+    combined = None
     for label, df in datadict.items():
-        datadict[label] = df.loc[index, :]
+        if combined is None:
+            combined = df.index
+        else:
+            combined = combined.intersection(df.index)
+        logging.debug(f"Common set from {label} has {combined.shape[0]} elements")
+        assert combined.shape[0], "You have no common supernova. Please check this"
+    logging.info(f"Common set of SN have {combined.shape[0]} events")
+    for label, df in datadict.items():
+        datadict[label] = df.loc[combined, :]
 
     return datadict
 
