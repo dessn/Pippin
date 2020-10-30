@@ -636,6 +636,7 @@ BIASCOR:
   MUOPTS:
       C11:
         SIMFILE_BIASCOR: [D_DESBIASSYS_C11, L_LOWZBIASSYS_C11]
+        SCALE: 0.5 # Defaults to 1.0 scale, used by CREATE_COV to determine covariance matrix contribution
         
   # Generic OPTS that can modify the base file and overwrite properties
   OTPS:
