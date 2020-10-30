@@ -339,7 +339,7 @@ class BiasCor(ConfigBasedExecutable):
         muopt_prob_cols = {"DEFAULT": self.probability_column_name}
         for label in self.muopt_order:
             value = self.muopts[label]
-            scale = 1.0
+            muopt_scales[label] = value.get("SCALE", 1.0)
             mu_str = f"/{label}/ "
             if value.get("SIMFILE_BIASCOR"):
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
@@ -360,12 +360,9 @@ class BiasCor(ConfigBasedExecutable):
                     if opt2 == "PROB_IA":
                         opt2 = "varname_pIa"
                     mu_str += f"CUTWIN {opt2} {opt_value}"
-                elif opt.upper() == "SCALE":
-                    scale = float(opt_value)
                 else:
                     mu_str += f"{opt}={opt_value} "
             muopts.append(mu_str)
-            muopt_scales[label] = scale
         if muopts:
             self.yaml["CONFIG"]["MUOPT"] = muopts
 
