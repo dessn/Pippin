@@ -70,7 +70,7 @@ class Task(ABC):
     def write_config(self):
         content = {"CONFIG": self.config, "OUTPUT": self.output}
         with open(self.config_file, "w") as f:
-            yaml.dump(content, f)
+            yaml.dump(content, f, sort_keys=False)
 
     def load_config(self):
         with open(self.config_file, "r") as f:
