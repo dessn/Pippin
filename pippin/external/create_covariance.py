@@ -241,7 +241,11 @@ def write_dataset(path, data_file, cov_file, template_path):
             f_out.write(f_in.read().format(data_file=data_file, cov_file=cov_file))
 
 
-def write_data(path, base):
+def write_data(path, base, cosmomc_format=True):
+    if not cosmomc_format:
+        base[["z", "MU", "MUERR"]].to_csv(path, sep=" ", index=True, float_format="%.5f")
+        return
+
     zs = base["z"].to_numpy()
     mu = base["MU"].to_numpy()
     mbs = -19.36 + mu
@@ -269,12 +273,16 @@ def write_cosmomc_output(config, covs, base):
     # Copy INI files. Create covariance matrices. Create .dataset. Modifying INI files to point to resources
     out = Path(config["OUTDIR"]) / "cosmomc"
     data_file = out / f"data.txt"
+    data_file_wCID = out / f"data_wCID.txt"
     dataset_template = Path(config["COSMOMC_TEMPLATES"]) / config["DATASET_FILE"]
     dataset_files = []
     os.makedirs(out, exist_ok=True)
 
     # Create lcparam file
     write_data(data_file, base)
+
+    # Create supplementary file for people to merge covmat with fitres
+    write_data(data_file_wCID, base, cosmomc_format=False)
 
     # Create covariance matrices and datasets
     for i, (label, cov) in enumerate(covs):
