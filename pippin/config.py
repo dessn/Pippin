@@ -184,8 +184,8 @@ def chown_dir(directory):
     try:
         groupinfo = grp.getgrnam(global_config["SNANA"]["group"])
         group_id = groupinfo.gr_gid
-        shutil.chown(directory, group=global_config["SNANA"]["group"])
-        os.chmod(directory, 0o770)
+        os.chown(directory, -1, group_id)
+        os.chmod(directory, 0o2775)
     except Exception as e:
         logger.exception(f"Chown error: {directory}")
         return
