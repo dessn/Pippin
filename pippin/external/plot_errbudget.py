@@ -92,6 +92,8 @@ if __name__ == "__main__":
                 # At this point, we have all the loaded in to a single dataframe, and now we group by name, compute the metrics, and save to file
                 dfg = df_all.groupby("name")
                 for name, df in dfg:
+                    if "SN" not in name.upper():
+                        continue
                     logging.info(f"Determining error budget for {name}")
                     output_filename = f"errbudget_{name}.txt".replace(" ", "_")
 
