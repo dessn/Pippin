@@ -173,7 +173,7 @@ def chown_file(path):
         logger.debug(f"Did not chown {path}")
 
 
-def chown_dir(directory):
+def chown_dir(directory, walk=True):
     try:
         import grp
     except ModuleNotFoundError:
@@ -189,21 +189,22 @@ def chown_dir(directory):
     except Exception as e:
         logger.exception(f"Chown error: {directory}")
         return
-    for root, dirs, files in os.walk(directory):
-        for d in dirs:
-            if not os.path.islink(os.path.join(root, d)):
-                try:
-                    os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
-                    os.chmod(os.path.join(root, d), 0o2775)
-                except Exception as e:
-                    logger.warning(f"Chown error: {os.path.join(root, d)}")
-        for f in files:
-            if not os.path.islink(os.path.join(root, f)):
-                try:
-                    os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
-                    os.chmod(os.path.join(root, f), 0o664)
-                except Exception as e:
-                    logger.warning(f"Chown error: {os.path.join(root, f)}")
+    if walk:
+        for root, dirs, files in os.walk(directory):
+            for d in dirs:
+                if not os.path.islink(os.path.join(root, d)):
+                    try:
+                        os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
+                        os.chmod(os.path.join(root, d), 0o2775)
+                    except Exception as e:
+                        logger.warning(f"Chown error: {os.path.join(root, d)}")
+            for f in files:
+                if not os.path.islink(os.path.join(root, f)):
+                    try:
+                        os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
+                        os.chmod(os.path.join(root, f), 0o664)
+                    except Exception as e:
+                        logger.warning(f"Chown error: {os.path.join(root, f)}")
 
 
 def ensure_list(a):

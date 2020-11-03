@@ -3,7 +3,7 @@ import os
 import yaml
 import logging
 import coloredlogs
-from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config
+from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config, chown_dir
 from pippin.manager import Manager
 from colorama import init
 
@@ -86,6 +86,8 @@ def run(args):
 
     if not args.check:
         mkdirs(logging_folder)
+    if os.path.exists(logging_folder):
+        chown_dir(logging_folder, walk=False)
 
     message_store, logging_filename = setup_logging(config_filename, logging_folder, args)
 
