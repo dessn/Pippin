@@ -87,7 +87,10 @@ def run(args):
     if not args.check:
         mkdirs(logging_folder)
     if os.path.exists(logging_folder):
-        chown_dir(logging_folder, walk=False)
+        chown_dir(logging_folder, walk=args.permission)
+
+    if args.permission:
+        return
 
     message_store, logging_filename = setup_logging(config_filename, logging_folder, args)
 
@@ -116,6 +119,7 @@ def get_args():
     parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
     parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
+    parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
 
     return parser.parse_args()
 
