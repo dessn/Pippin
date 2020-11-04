@@ -130,6 +130,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
   -c, --check        Check that the input config is valid but don't actually run any tasks.
   -s, --start        Start at this task and refresh everything after it. Number of string accepted
   -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
+  -p, --permission   Fix permissions and groups on all output, don't rerun
 ```
 
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
