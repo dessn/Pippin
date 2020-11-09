@@ -52,12 +52,12 @@ def load_data(path):
         df["CID"] = df["CID"].astype(str)
         df = df.sort_values(["zHD", "CID"])
         df = df.set_index(["IDSURVEY", "CID"])
-        df = df.rename(columns={"zHD": "z"})
+        df = df.rename(columns={"zHD": "z", "MUMODEL": "MUREF"})
 
     elif "z" in df.columns:
         df = df.sort_values("z")
 
-    df = df.loc[:, ["z", "MU", "MUERR"]]
+    df = df.loc[:, ["z", "MU", "MUERR", "MUREF"]]
     return df
 
 
@@ -119,7 +119,7 @@ def get_fitopt_scales(lcfit_info, sys_scales):
 def get_cov_from_diff(df1, df2, scale):
     """ Returns both the covariance contribution and summary stats (slope and mean abs diff) """
     assert df1["MU"].size == df2["MU"].size, "Oh no, looks like you have a different number of bins/supernova for your systematic and this is not good."
-    diff = scale * (df1["MU"].to_numpy() - df2["MU"].to_numpy())
+    diff = scale * ((df1["MU"] - df1["MUREF"]) - (df2["MU"] - df2["MUREF"])).to_numpy()
     diff[~np.isfinite(diff)] = 0
     cov = diff[:, None] @ diff[None, :]
 
