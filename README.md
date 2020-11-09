@@ -481,7 +481,7 @@ CLASSIFICATION:
       MODEL: SNN_TRAIN  # Havent shown this defined. Or /somepath/to/model.pt
       VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
       REDSHIFT: True  # Use redshift info when classifying. Defaults to True.
-      NORM: global  # How to normalise LCs. Other options are "perfilter" or "cosmo".  
+      NORM: cosmo_quantile  # How to normalise LCs. Other options are "perfilter", "cosmo", "global" or "cosmo_quantile".  
 ```
 
 #### SNIRF Classifier

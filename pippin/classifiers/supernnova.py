@@ -27,7 +27,7 @@ class SuperNNovaClassifier(Classifier):
                 VARIANT: vanilla  #  a variant to train. "vanilla", "variational", "bayesian". Defaults to "vanilla"
                 MODEL: someName # exact name of training classification task
                 REDSHIFT: True # Use spec redshift, defaults to True
-                NORM: global # Global is default, can also pick cosmo or perfilter
+                NORM: global # Global is default, can also pick cosmo or perfilter or cosmo_quantile
 
     OUTPUTS:
     ========
@@ -54,7 +54,13 @@ class SuperNNovaClassifier(Classifier):
         self.clean = config.get("CLEAN", True)
         self.validate_model()
 
-        assert self.norm in ["global", "cosmo", "perfilter", "none"], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter'"
+        assert self.norm in [
+            "global",
+            "cosmo",
+            "perfilter",
+            "cosmo_quantile",
+            "none",
+        ], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """#!/bin/bash
 
