@@ -196,6 +196,8 @@ def get_cov_from_covopt(covopt, contributions, base):
     # legacy, but dont want to make too many people change how they are doing things
     # in one go
     label, fitopt_filter, muopt_filter = re.findall(r"\[(.*)\] \[(.*),(.*)\]", covopt)[0]
+    fitopt_filter = fitopt_filter.strip()
+    muopt_filter = muopt_filter.strip()
     logging.debug(f"Computing cov for COVOPT {label} with FITOPT filter '{fitopt_filter}' and MUOPT filter '{muopt_filter}'")
 
     final_cov = None
