@@ -674,6 +674,7 @@ CREATE_COV:
       SYS_SCALE: surveys/global/lcfit_fitopts/global.yml  # Location of systematic scaling file, same as the FITOPTS file.
       SINGULAR_BLIND: False # Defaults to False, whether different contours will have different shifts applied
       BINNED: True  # Whether to bin the SN or not for the covariance matrx. Defaults to True
+      SUBTRACT_VPEC: False # Subtract VPEC contribution to MUERR if True. Used when BINNED: False
       FITOPT_SCALES:  # Optional
         FITOPT_LABEL: some_scale  # Note this is a partial match, ie SALT2: 1.0 would apply to all SALT2 cal fitopts
        MUOPT_SCALES:

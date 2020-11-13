@@ -20,6 +20,7 @@ class CreateCov(ConfigBasedExecutable):
     CREATE_COV:
         label:
             OPTS:
+              SUBTRACT_VPEC: False # Subtract VPEC contribution from MUERR if True
               SYS_SCALE: location of the fitopts file with scales in it
               FITOPT_SCALES:  # Optional dict to scale fitopts
                     fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
@@ -56,7 +57,8 @@ class CreateCov(ConfigBasedExecutable):
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
-        self.binned = options.get("BINNED", True)
+        self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
+        self.binned = options.get("BINNED", not self.subtract_vpec)
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.sys_file_in = self.get_sys_file_in()
@@ -83,7 +85,7 @@ class CreateCov(ConfigBasedExecutable):
 
 cd {output_dir}
 source activate
-python {path_to_code}/create_covariance.py {unbinned} {input_file}
+python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
 else
@@ -156,6 +158,7 @@ fi
             "input_file": self.input_file,
             "output_dir": self.output_dir,
             "unbinned": "" if self.binned else "-u",
+            "subtract_vpec": "" if not self.subtract_vpec else "-s",
         }
         final_slurm = self.slurm.format(**format_dict)
 

@@ -30,10 +30,14 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("input", help="the name of the yml config file to run.")
     parser.add_argument("-u", "--unbinned", help="Utilise individual SN instead of binning", action="store_true")
-    return parser.parse_args()
+    parser.add_argument("-s", "--subtract_vpec", help="Subtract VPEC from MUERR. Forces unbinned", action="store_true")
+    args = parser.parse_args()
+    if args.subtract_vpec:
+        args.unbinned = True
+    return args
 
 
-def load_data(path):
+def load_data(path, args):
     if not os.path.exists(path):
         raise ValueError(f"Cannot load data from {path} - it doesnt exist")
     df = pd.read_csv(path, delim_whitespace=True, comment="#")
@@ -53,7 +57,10 @@ def load_data(path):
         df = df.sort_values(["zHD", "CID"])
         df = df.set_index(["IDSURVEY", "CID"])
         df = df.rename(columns={"zHD": "z", "MUMODEL": "MUREF"})
-
+        if args.subtract_vpec:
+            assert "MUERR_VPEC" in df.columns, f"Cannot subtract VPEC contribution as column 'MUERR_VPEC' doesn't exist in path {path}"
+            df["MUERR"] = np.sqrt(df["MUERR"] ** 2 - df["MUERR_VPEC"] ** 2)
+            logging.debug("Subtracted MUERR_VPEC from MUERR")
     elif "z" in df.columns:
         df = df.sort_values("z")
 
@@ -61,15 +68,15 @@ def load_data(path):
     return df
 
 
-def get_data_files(folder, individual):
+def get_data_files(folder, args):
     logging.debug(f"Loading all data files in {folder}")
     result = {}
     for file in sorted(os.listdir(folder)):
-        if (not individual and ".M0DIF" in file) or (individual and ".FITRES" in file and "MUOPT" in file):
+        if (not args.unbinned and ".M0DIF" in file) or (args.unbinned and ".FITRES" in file and "MUOPT" in file):
             label = file.replace(".gz", "").replace(".M0DIF", "").replace(".FITRES", "")
-            result[label] = load_data(folder / file)
+            result[label] = load_data(folder / file, args)
 
-    if individual:
+    if args.unbinned:
         result = get_common_set_of_sne(result)
 
     return result
