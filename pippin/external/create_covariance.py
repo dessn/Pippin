@@ -426,7 +426,7 @@ def create_covariance(config, args):
     muopt_scales = config["MUOPT_SCALES"]
 
     # Load in all the data
-    data = get_data_files(data_dir, args.unbinned)
+    data = get_data_files(data_dir, args)
 
     # Filter data to remove rows with infinite error
     data, base = filter_nans(data)
