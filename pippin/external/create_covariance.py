@@ -64,7 +64,6 @@ def load_data(path, args, config):
         elif config.get("CALIBRATORS"):
             calib_mask = df["CID"].isin(config.get("CALIBRATORS"))
             df.loc[calib_mask, "MUERR"] = np.sqrt(df.loc[calib_mask, "MUERR"] ** 2 - df.loc[calib_mask, "MUERR_VPEC"] ** 2)
-
     elif "z" in df.columns:
         df = df.sort_values("z")
 
@@ -214,7 +213,7 @@ def get_cov_from_covopt(covopt, contributions, base, calibrators):
     final_cov = None
 
     if calibrators:
-        mask_calib = base["CID"].isin(calibrators)
+        mask_calib = base.reset_index()["CID"].isin(calibrators)
 
     for key, cov in contributions.items():
         fitopt_label, muopt_label = key.split("|")
