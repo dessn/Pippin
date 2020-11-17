@@ -64,6 +64,7 @@ class CreateCov(ConfigBasedExecutable):
         self.sys_file_in = self.get_sys_file_in()
         self.output["blind"] = self.biascor_dep.output["blind"]
         self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
+        self.calibration_set = options.get("CALIBRATORS", [])
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
         self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
@@ -142,6 +143,7 @@ fi
         self.yaml["VERSION"] = self.biascor_dep.output["subdirs"][self.index]
         self.yaml["MUOPT_SCALES"] = self.biascor_dep.output["muopt_scales"]
         self.yaml["COVOPTS"] = self.options.get("COVOPTS", [])
+        self.yaml["CALIBRATORS"] = self.calibration_set
 
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords

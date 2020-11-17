@@ -37,7 +37,7 @@ def get_args():
     return args
 
 
-def load_data(path, args):
+def load_data(path, args, config):
     if not os.path.exists(path):
         raise ValueError(f"Cannot load data from {path} - it doesnt exist")
     df = pd.read_csv(path, delim_whitespace=True, comment="#")
@@ -61,6 +61,10 @@ def load_data(path, args):
             assert "MUERR_VPEC" in df.columns, f"Cannot subtract VPEC contribution as column 'MUERR_VPEC' doesn't exist in path {path}"
             df["MUERR"] = np.sqrt(df["MUERR"] ** 2 - df["MUERR_VPEC"] ** 2)
             logging.debug("Subtracted MUERR_VPEC from MUERR")
+        elif config.get("CALIBRATORS"):
+            calib_mask = df["CID"].isin(config.get("CALIBRATORS"))
+            df.loc[calib_mask, "MUERR"] = np.sqrt(df.loc[calib_mask, "MUERR"] ** 2 - df.loc[calib_mask, "MUERR_VPEC"] ** 2)
+
     elif "z" in df.columns:
         df = df.sort_values("z")
 
@@ -68,13 +72,13 @@ def load_data(path, args):
     return df
 
 
-def get_data_files(folder, args):
+def get_data_files(folder, args, config):
     logging.debug(f"Loading all data files in {folder}")
     result = {}
     for file in sorted(os.listdir(folder)):
         if (not args.unbinned and ".M0DIF" in file) or (args.unbinned and ".FITRES" in file and "MUOPT" in file):
             label = file.replace(".gz", "").replace(".M0DIF", "").replace(".FITRES", "")
-            result[label] = load_data(folder / file, args)
+            result[label] = load_data(folder / file, args, config)
 
     if args.unbinned:
         result = get_common_set_of_sne(result)
@@ -197,7 +201,7 @@ def apply_filter(string, pattern):
         raise ValueError(f"Unable to parse COVOPT matching pattern {pattern}")
 
 
-def get_cov_from_covopt(covopt, contributions, base):
+def get_cov_from_covopt(covopt, contributions, base, calibrators):
     # Covopts will come in looking like "[cal] [+cal,=DEFAULT]"
     # We have to parse this. Eventually can make this structured and move away from
     # legacy, but dont want to make too many people change how they are doing things
@@ -209,12 +213,20 @@ def get_cov_from_covopt(covopt, contributions, base):
 
     final_cov = None
 
+    if calibrators:
+        mask_calib = base["CID"].isin(calibrators)
+
     for key, cov in contributions.items():
         fitopt_label, muopt_label = key.split("|")
         if apply_filter(fitopt_label, fitopt_filter) and apply_filter(muopt_label, muopt_filter):
             if final_cov is None:
                 final_cov = cov.copy()
             else:
+                # If we have calibrators and this is a VPEC term, filter out calib
+                if calibrators and (apply_filter(fitopt_label, "+VPEC") or apply_filter(muopt_label, "+VPEC")):
+                    cov.loc[mask_calib, :] = 0
+                    cov.loc[:, mask_calib] = 0
+
                 final_cov += cov
 
     assert final_cov is not None, f"No systematics matched COVOPT {label} with FITOPT filter '{fitopt_filter}' and MUOPT filter '{muopt_filter}'!"
@@ -426,7 +438,7 @@ def create_covariance(config, args):
     muopt_scales = config["MUOPT_SCALES"]
 
     # Load in all the data
-    data = get_data_files(data_dir, args)
+    data = get_data_files(data_dir, args, config)
 
     # Filter data to remove rows with infinite error
     data, base = filter_nans(data)
@@ -437,7 +449,7 @@ def create_covariance(config, args):
     # For each COVOPT, we want to find the contributions which match to construct covs for each COVOPT
     logging.info("Computing covariance for COVOPTS")
     covopts = ["[ALL] [,]"] + config["COVOPTS"]  # Adds the covopt to compute everything
-    covariances = [get_cov_from_covopt(c, contributions, base) for c in covopts]
+    covariances = [get_cov_from_covopt(c, contributions, base, config.get("CALIBRATORS")) for c in covopts]
 
     write_cosmomc_output(config, covariances, base)
     write_summary_output(config, covariances, base)
