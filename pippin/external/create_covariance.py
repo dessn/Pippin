@@ -224,8 +224,8 @@ def get_cov_from_covopt(covopt, contributions, base, calibrators):
                 # If we have calibrators and this is a VPEC term, filter out calib
                 if calibrators and (apply_filter(fitopt_label, "+VPEC") or apply_filter(muopt_label, "+VPEC")):
                     cov2 = cov.copy()
-                    cov2.loc[mask_calib, :] = 0
-                    cov2.loc[:, mask_calib] = 0
+                    cov2[mask_calib, :] = 0
+                    cov2[:, mask_calib] = 0
                     final_cov += cov2
                 else:
                     final_cov += cov
