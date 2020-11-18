@@ -55,7 +55,6 @@ def load_data(path, args, config):
     if "CID" in df.columns:
         df["CID"] = df["CID"].astype(str)
         df = df.sort_values(["zHD", "CID"])
-        df = df.set_index(["IDSURVEY", "CID"])
         df = df.rename(columns={"zHD": "z", "MUMODEL": "MUREF"})
         if args.subtract_vpec:
             assert "MUERR_VPEC" in df.columns, f"Cannot subtract VPEC contribution as column 'MUERR_VPEC' doesn't exist in path {path}"
@@ -64,6 +63,7 @@ def load_data(path, args, config):
         elif config.get("CALIBRATORS"):
             calib_mask = df["CID"].isin(config.get("CALIBRATORS"))
             df.loc[calib_mask, "MUERR"] = np.sqrt(df.loc[calib_mask, "MUERR"] ** 2 - df.loc[calib_mask, "MUERR_VPEC"] ** 2)
+        df = df.set_index(["IDSURVEY", "CID"])
     elif "z" in df.columns:
         df = df.sort_values("z")
 
