@@ -148,8 +148,8 @@ fi
 
         val_p = self.options.get("PHOTFLAG_DETECT")
         val_c = self.options.get("CUTWIN_SNR_NODETECT")
-        photflag = f"     PHOTFLAG = {val_p}" if val_p else ""
-        cutwin = f"     CUTWIN_SNR_NODETECT = {val_c}" if val_c else ""
+        photflag = f"PHOTFLAG = {val_p}" if val_p else ""
+        cutwin = f"CUTWIN_SNR_NODETECT = {val_c}" if val_c else ""
         command_string = self.clump_command.format(
             genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin
         )
