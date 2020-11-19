@@ -116,6 +116,9 @@ fi
 
      PHOTFLAG_MSKREJ   = 1016 !PHOTFLAG eliminate epoch that has errors, not LC 
 
+     {photflag}
+     {cutwin_snr_nodetect}
+
   &END
 """
 
@@ -143,7 +146,13 @@ fi
 
     def _run(self, force_refresh):
 
-        command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd)
+        val_p = self.options.get("PHOTFLAG_DETECT")
+        val_c = self.options.get("CUTWIN_SNR_NODETECT")
+        photflag = f"     PHOTFLAG: {val_p}" if val_p else ""
+        cutwin = f"     CUTWIN_SNR_NODETECT: {val_c}" if val_c else ""
+        command_string = self.clump_command.format(
+            genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin=cutwin
+        )
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
