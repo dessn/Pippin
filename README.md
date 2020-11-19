@@ -373,6 +373,9 @@ DATAPREP:
       # are some subtle differences
       SIM: False
 
+      # The method of estimating peak mjd values. Don't ask me what numbers mean what, ask Rick.
+      OPT_SETPKMJD: 16
+
 ```
 
 ### Simulation

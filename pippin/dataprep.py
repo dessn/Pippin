@@ -49,6 +49,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
         self.output_info = os.path.join(self.output_dir, f"{self.genversion}.YAML")
         self.output["genversion"] = self.genversion
+        self.opt_setpkmjd = options.get("OPT_SETPKMJD", 16)
         self.output["data_path"] = self.data_path
         self.output["photometry_dirs"] = [get_output_loc(self.raw_dir)]
         self.output["sim_folders"] = [get_output_loc(self.raw_dir)]
@@ -104,7 +105,7 @@ fi
   &SNLCINP
 
      ! For SNN-integration:
-     OPT_SETPKMJD = 16
+     OPT_SETPKMJD = {opt_setpkmjd}
      SNTABLE_LIST = 'SNANA(text:key)'
      TEXTFILE_PREFIX = '{genversion}'
      OPT_YAML = 1
@@ -142,7 +143,7 @@ fi
 
     def _run(self, force_refresh):
 
-        command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path)
+        command_string = self.clump_command.format(genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd)
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
