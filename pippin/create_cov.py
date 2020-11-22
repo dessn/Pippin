@@ -53,7 +53,7 @@ class CreateCov(ConfigBasedExecutable):
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
-        self.batch_mem = options.get("BATCH_MEM", '4GB') 
+        self.batch_mem = options.get("BATCH_MEM", "4GB")
 
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
@@ -163,7 +163,7 @@ fi
             "output_dir": self.output_dir,
             "unbinned": "" if self.binned else "-u",
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
-            "batch_mem": self.batch_mem
+            "batch_mem": self.batch_mem,
         }
         final_slurm = self.slurm.format(**format_dict)
 
