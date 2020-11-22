@@ -53,6 +53,8 @@ class CreateCov(ConfigBasedExecutable):
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
         self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
 
+        self.batch_mem = options.get("BATCH_MEM", '4GB') 
+
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
@@ -82,7 +84,7 @@ class CreateCov(ConfigBasedExecutable):
 #SBATCH --partition=broadwl
 #SBATCH --output={log_file}
 #SBATCH --account=pi-rkessler
-#SBATCH --mem=4GB
+#SBATCH --mem={batch_mem}
 
 cd {output_dir}
 source activate
