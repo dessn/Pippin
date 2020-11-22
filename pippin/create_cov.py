@@ -163,6 +163,7 @@ fi
             "output_dir": self.output_dir,
             "unbinned": "" if self.binned else "-u",
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
+            "batch_mem": self.batch_mem
         }
         final_slurm = self.slurm.format(**format_dict)
 
