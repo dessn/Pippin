@@ -5,7 +5,7 @@ import tempfile
 import json
 
 from pippin.base import ConfigBasedExecutable
-from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml
+from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml, get_config
 from pippin.task import Task
 
 
@@ -42,6 +42,9 @@ class SNANASimulation(ConfigBasedExecutable):
         self.data_dirs = global_config["DATA_DIRS"]
         base_file = get_data_loc(combine)
         super().__init__(name, output_dir, config, base_file, ": ")
+
+        # Check for any replacements
+        self.yaml["PATH_SNDATA_SIM"] = get_config().get("SNANA").get("sim_dir")
 
         self.genversion = self.config["GENVERSION"]
         if len(self.genversion) < 30:

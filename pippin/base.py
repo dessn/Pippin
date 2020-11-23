@@ -1,6 +1,5 @@
 from abc import ABC
 
-from pippin.config import get_config
 from pippin.task import Task
 import yaml
 
@@ -13,11 +12,6 @@ class ConfigBasedExecutable(Task, ABC):
         with open(base_file, "r") as f:
             self.base = list(f.read().splitlines())
             self.logger.debug(f"Loaded base file from {self.base_file}")
-
-        # Check for any replacements
-        for index, line in enumerate(self.base):
-            if "{scrath_simdir}" in line:
-                self.base[index] = line.replace("{scratch_simdir}", get_config().get("SNANA", "sim_dir"))
 
         # Check to see if any of the input is YAML by searching for an END_YAML tag
         for index, line in enumerate(self.base):
