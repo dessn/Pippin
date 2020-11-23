@@ -44,7 +44,7 @@ def get_config(initial_path=None, overwrites=None):
     if initial_path is None:
         filename = os.path.abspath(os.path.join(this_dir, "cfg.yml"))
     else:
-        filename = initial_path
+        filename = os.path.expandvars(initial_path)
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
     with open(filename, "r") as f:
         config = yaml.safe_load(f)

@@ -78,7 +78,13 @@ def run(args):
     if config.get("GLOBALS") is not None:
         logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
 
-    global_config = get_config(initial_path=args.config, overwrites=overwrites)
+    cfg = None
+    if config.get("GLOBAL"):
+        cfg = config.get("GLOBAL").get("CFG_PATH")
+    if cfg is None:
+        cfg = args.config
+
+    global_config = get_config(initial_path=cfg, overwrites=overwrites)
 
     config_filename = os.path.basename(args.yaml).split(".")[0].upper()
     output_dir = get_output_dir()

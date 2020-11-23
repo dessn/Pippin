@@ -267,6 +267,13 @@ GLOBAL:
     - /some/new/directory/with/your/files/in/it
 ```
 
+**I want to use a different cfg.yml file!**
+
+```yaml
+GLOBAL:
+  CFG_PATH: /your/path/here
+```
+
 **I don't want to run this massive jobs again! Let me use external results!**
 
 Good news, everyone! Not only is there a dedicated config file for globally useful tasks, but its easier than ever to slow them
