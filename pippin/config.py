@@ -48,7 +48,7 @@ def get_config(initial_path=None, overwrites=None):
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
     with open(filename, "r") as f:
         config = yaml.safe_load(f)
-    logging.info(f"Loaded in cfg from {filename}")
+    print(f"Loaded in cfg from {filename}")
     if overwrites is not None:
         config = merge_dict(config, overwrites)
 
