@@ -492,6 +492,8 @@ CLASSIFICATION:
       VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
       REDSHIFT: True  # Use redshift info when classifying. Defaults to True.
       NORM: cosmo_quantile  # How to normalise LCs. Other options are "perfilter", "cosmo", "global" or "cosmo_quantile".  
+      CYCLIC: True  # Defaults to True for vanilla and variational model
+      SEED: 0  # Sets random seed. Defaults to 0.
 ```
 
 #### SNIRF Classifier
