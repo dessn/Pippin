@@ -51,6 +51,8 @@ class SuperNNovaClassifier(Classifier):
         self.variant = options.get("VARIANT", "vanilla").lower()
         self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
         self.norm = options.get("NORM", "cosmo")
+        self.cyclic = options.get("CYCLIC", True)
+        self.seed = options.get("SEED", 0)
         self.clean = config.get("CLEAN", True)
         self.validate_model()
 
@@ -79,12 +81,12 @@ module load cuda
 echo `which python`
 cd {path_to_classifier}
 echo "#################TIMING  Starting here:   `date`"
-python run.py --data --sntypes '{sntypes}' --phot_reject PHOTFLAG --phot_reject_list 8 16 32 64 128 256 512  --redshift_label REDSHIFT_FINAL --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {test_or_train}
+python run.py --data --sntypes '{sntypes}' --phot_reject PHOTFLAG --phot_reject_list 8 16 32 64 128 256 512  --redshift_label REDSHIFT_FINAL --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {seed} {test_or_train}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 else
     echo "#################TIMING  Database done now, starting classifier:   `date`"
-    python run.py {cuda} {cyclic} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {command}
+    python run.py {cuda} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {seed} {command}
     if [ $? -eq 0 ]; then
         {clean_command}
         echo SUCCESS > {done_file2}
@@ -190,7 +192,7 @@ echo "#################TIMING  Classifier finished:   `date`"
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
-        cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] else ""
+        cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] and self.cyclic else ""
         variant = f"--model {self.variant}"
         if self.variant == "bayesian":
             variant += " --num_inference_samples 20"
@@ -224,6 +226,7 @@ echo "#################TIMING  Classifier finished:   `date`"
             "gres": "#SBATCH --gres=gpu:1" if self.gpu else "",
             "cuda": "--use_cuda" if self.gpu else "",
             "clean_command": f"rm -rf {self.dump_dir}/processed" if self.clean else "",
+            "seed": f"--seed {self.seed}" if self.seed else "",
         }
 
         slurm_output_file = self.output_dir + "/job.slurm"
