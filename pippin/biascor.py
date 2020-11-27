@@ -263,7 +263,7 @@ class BiasCor(ConfigBasedExecutable):
 
         return result, index_map
 
-    def write_input(self, force_refresh):
+    def write_input(self):
 
         if self.merged_iasim is not None:
             for m in self.merged_iasim:
@@ -371,9 +371,8 @@ class BiasCor(ConfigBasedExecutable):
         final_output = self.get_output_string()
 
         new_hash = self.get_hash_from_string(final_output)
-        old_hash = self.get_old_hash()
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating results")
 
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -391,10 +390,10 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug("Hash check passed, not rerunning")
             return False
 
-    def _run(self, force_refresh):
+    def _run(self):
         if self.blind:
             self.logger.info("NOTE: This run is being BLINDED")
-        regenerating = self.write_input(force_refresh)
+        regenerating = self.write_input()
         if regenerating:
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Will check for done file at {self.done_file}")

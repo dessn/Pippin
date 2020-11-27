@@ -44,24 +44,9 @@ class UnityClassifier(Classifier):
     def get_unique_name(self):
         return "UNITY"
 
-    def check_regenerate(self, force_refresh):
-
+    def classify(self):
         new_hash = self.get_hash_from_string(self.name)
-        old_hash = self.get_old_hash(quiet=True)
-
-        if new_hash != old_hash:
-            self.logger.info("Hash check failed, regenerating")
-            return new_hash
-        elif force_refresh:
-            self.logger.debug("Force refresh, regenerating")
-            return new_hash
-        else:
-            self.logger.info("Hash check passed, not rerunning")
-            return False
-
-    def classify(self, force_refresh):
-        new_hash = self.check_regenerate(force_refresh)
-        if new_hash:
+        if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             try:
@@ -123,11 +108,11 @@ class UnityClassifier(Classifier):
                     self.passed = "SUCCESS" in f.read()
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
-    def train(self, force_refresh):
-        return self.classify(force_refresh)
+    def train(self):
+        return self.classify()
 
-    def predict(self, force_refresh):
-        return self.classify(force_refresh)
+    def predict(self):
+        return self.classify()
 
     @staticmethod
     def get_requirements(config):

@@ -64,8 +64,33 @@ class Task(ABC):
         self.display_threshold = 0
         self.gpu = False
 
+        self.force_refresh = False
+        self.force_ignore = False
+
         self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
         self.config_file = os.path.join(output_dir, "config.yml")
+
+    def set_force_refresh(self, force_refresh):
+        self.force_refresh = force_refresh
+
+    def set_force_ignore(self, force_ignore):
+        self.force_ignore = force_ignore
+
+    def _check_regenerate(self, new_hash):
+        if self.force_ignore:
+            self.logger.debug("Force ignore is set, returning regenerate=False")
+            return False
+        elif self.force_refresh:
+            self.logger.debug("Force refresh is set, returning regenerate=True")
+            return True
+        else:
+            hash_are_different = new_hash != self.get_old_hash()
+            if hash_are_different:
+                self.logger.debug(f"Hashes are different, regenerating")
+                return True
+            else:
+                self.logger.debug(f"Hashes are the same, not regenerating")
+                return False
 
     def write_config(self):
         content = {"CONFIG": self.config, "OUTPUT": self.output}

@@ -170,9 +170,8 @@ fi
         final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
-        old_hash = self.get_old_hash()
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating and launching task")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)

@@ -117,17 +117,17 @@ echo "#################TIMING  Classifier finished:   `date`"
         pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(ending)][0]
         return model_file, os.path.join(saved_dir, pred_file)
 
-    def train(self, force_refresh):
-        return self.classify(True, force_refresh)
+    def train(self):
+        return self.classify(True)
 
-    def predict(self, force_refresh):
-        return self.classify(False, force_refresh)
+    def predict(self):
+        return self.classify(False)
 
     def get_types(self):
         t = self.get_simulation_dependency().output
         return t["types"]
 
-    def classify(self, training, force_refresh):
+    def classify(self, training):
         model = self.options.get("MODEL")
         model_path = ""
         if not training:
@@ -233,10 +233,9 @@ echo "#################TIMING  Classifier finished:   `date`"
         self.logger.info(f"Running SuperNNova, slurm job outputting to {slurm_output_file}")
         slurm_text = self.slurm.format(**format_dict)
 
-        old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_string(slurm_text)
 
-        if not force_refresh and new_hash == old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.info("Hash check passed, not rerunning")
             self.should_be_done()
         else:

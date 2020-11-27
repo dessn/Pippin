@@ -242,9 +242,8 @@ fi
             final_slurm = self.slurm.format(**format_dict)
 
             new_hash = self.get_hash_from_string(final_slurm + " ".join(ini_filecontents))
-            old_hash = self.get_old_hash()
 
-            if force_refresh or new_hash != old_hash:
+            if self._check_regenerate(new_hash):
                 self.logger.debug("Regenerating and launching task")
                 shutil.rmtree(self.output_dir, ignore_errors=True)
                 mkdirs(self.output_dir)

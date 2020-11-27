@@ -55,12 +55,12 @@ class NearestNeighborClassifier(Classifier):
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
-    def train(self, force_refresh):
+    def train(self):
         # Created April 2019 by R.Kessler
         # Train nearest nbr.
         self.setup()
         # prepare new split-and_fit NML file with extra NNINP namelist
-        new_hash, self.train_info_local = self.prepare_train_job(force_refresh)
+        new_hash, self.train_info_local = self.prepare_train_job()
         self.output["model_filename"] = self.outfile_train
         if new_hash is None:
             return True
@@ -71,7 +71,7 @@ class NearestNeighborClassifier(Classifier):
         self.run_train_job()
         return True
 
-    def prepare_train_job(self, force_refresh):
+    def prepare_train_job(self):
         self.logger.debug("Preparing NML file for Nearest Neighbour training")
         fit_output = self.get_fit_dependency()
         self.num_jobs = self.get_fit_dependency(output=False).num_jobs
@@ -137,10 +137,9 @@ class NearestNeighborClassifier(Classifier):
             f.write("\n&END\n")
 
         input_files = [nml_file_train1]
-        old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_files(input_files)
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
@@ -211,7 +210,7 @@ class NearestNeighborClassifier(Classifier):
             else:
                 return 0
 
-    def predict(self, force_refresh):
+    def predict(self):
         self.setup()
 
         model = self.options.get("MODEL")
@@ -227,10 +226,8 @@ class NearestNeighborClassifier(Classifier):
             self.logger.error(f"Cannot find {model_path}")
             return False
 
-        old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_string(self.name + model_path)
-
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating")
 
             if os.path.exists(self.output_dir):

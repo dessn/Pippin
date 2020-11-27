@@ -180,7 +180,7 @@ fi
                         return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
-    def _run(self, force_refresh):
+    def _run(self):
 
         # Get the m0diff files for everything
         for b in self.biascor_deps:
@@ -248,9 +248,8 @@ fi
         final_slurm = self.get_slurm_raw().format(**format_dict)
 
         new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))
-        old_hash = self.get_old_hash()
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating and launching task")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)

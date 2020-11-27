@@ -101,7 +101,6 @@ class Aggregator(Task):
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def check_regenerate(self, force_refresh):
-        new_hash = self.get_hash_from_string(self.name + str(self.include_type) + str(self.plot))
         old_hash = self.get_old_hash(quiet=True)
 
         if new_hash != old_hash:
@@ -227,9 +226,9 @@ class Aggregator(Task):
         self.logger.debug(f"Reading calibration curves from {path}")
         return df
 
-    def _run(self, force_refresh):
-        new_hash = self.check_regenerate(force_refresh)
-        if new_hash:
+    def _run(self,):
+        new_hash = self.get_hash_from_string(self.name + str(self.include_type) + str(self.plot))
+        if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
 

@@ -233,7 +233,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         return f"'{test}'{comment}"
         return value
 
-    def write_nml(self, force_refresh):
+    def write_nml(self):
 
         # Parse config, first SNLCINP and then FITINP
         for key, value in self.config.get("SNLCINP", {}).items():
@@ -262,9 +262,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         # We want to do our hashing check here
         string_to_hash = self.get_output_string()
         new_hash = self.get_hash_from_string(string_to_hash)
-        old_hash = self.get_old_hash()
-        regenerate = force_refresh or (old_hash is None or old_hash != new_hash)
-
+        regenerate = self._check_regenerate(new_hash)
         if regenerate:
             self.logger.info(f"Running Light curve fit. Removing output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -281,8 +279,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         return regenerate, new_hash
 
-    def _run(self, force_refresh):
-        regenerate, new_hash = self.write_nml(force_refresh)
+    def _run(self):
+        regenerate, new_hash = self.write_nml()
         if not regenerate:
             self.should_be_done()
             return True

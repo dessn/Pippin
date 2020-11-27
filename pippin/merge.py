@@ -129,7 +129,7 @@ class Merger(Task):
             self.logger.debug(f"Copying file {fitres_file} to {outdir}")
             shutil.copy(fitres_file, outdir)
 
-    def _run(self, force_refresh):
+    def _run(self):
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
@@ -147,9 +147,7 @@ class Merger(Task):
             ]
 
         new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
-        old_hash = self.get_old_hash()
-
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             self.logger.debug("Regenerating, running combine_fitres")
             try:

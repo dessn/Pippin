@@ -45,6 +45,7 @@ class Manager:
         self.start = None
         self.finish = None
         self.force_refresh = False
+        self.force_ignore_stage = None
 
     def get_force_refresh(self, task):
         if self.start is None:
@@ -60,8 +61,25 @@ class Manager:
         self.logger.debug(f"Start set! Task {task} has index {index}, start index set {self.start}, so returning {force}")
         return force
 
+    def get_force_ignore(self, task):
+        if self.force_ignore_stage is None:
+            return False
+        index = None
+        for i, t in enumerate(self.task_order):
+            if isinstance(task, t):
+                index = i
+        if index is None:
+            self.logger.error(f"Task {task} did not match any class in the task order!")
+            assert index is not None
+        force_ignore = index <= self.force_ignore_stage
+        self.logger.debug(f"Task {task} has index {index}, ignore index is {self.force_ignore_stage}, so returning force_ignore={force_ignore}")
+        return force_ignore
+
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
+
+    def set_force_ignore_stage(self, force_ignore_stage):
+        self.force_ignore_stage = self.resolve_stage(force_ignore_stage)
 
     def set_start(self, stage):
         self.start = self.resolve_stage(stage)
@@ -270,7 +288,9 @@ class Manager:
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
                     try:
-                        started = t.run(self.get_force_refresh(t))
+                        t.set_force_refresh(self.get_force_refresh(t))
+                        t.set_force_ignore(self.get_force_ignore(t))
+                        started = t.run()
                     except Exception as e:
                         self.logger.exception(e, exc_info=True)
                         started = False

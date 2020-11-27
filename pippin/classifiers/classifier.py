@@ -44,19 +44,17 @@ class Classifier(Task):
         self.output["index"] = index
 
     @abstractmethod
-    def predict(self, force_refresh):
+    def predict(self):
         """ Predict probabilities for given dependencies
 
-        :param force_refresh: to force refresh and rerun - do not pass hash checks
         :return: true or false for success in launching the job
         """
         pass
 
     @abstractmethod
-    def train(self, force_refresh):
+    def train(self):
         """ Train a model to file for given dependencies
 
-        :param force_refresh: to force refresh and rerun - do not pass hash checks
         :return: true or false for success in launching the job
         """
         pass
@@ -104,11 +102,11 @@ class Classifier(Task):
                 return t
         return None
 
-    def _run(self, force_refresh):
+    def _run(self):
         if self.mode == Classifier.TRAIN:
-            return self.train(force_refresh)
+            return self.train()
         elif self.mode == Classifier.PREDICT:
-            return self.predict(force_refresh)
+            return self.predict()
 
     def get_unique_name(self):
         name = self.name

@@ -110,6 +110,7 @@ def run(args):
     manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
+    manager.set_force_ignore_stage(args.ignore)
     manager.execute(args.check)
     chown_file(logging_filename)
     return manager
@@ -126,7 +127,7 @@ def get_args():
     parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
-
+    parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less", default=None)
     return parser.parse_args()
 
 

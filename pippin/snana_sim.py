@@ -182,7 +182,7 @@ class SNANASimulation(ConfigBasedExecutable):
         else:
             self.sim_folders = [os.path.join(base, genversion)]
 
-    def write_input(self, force_refresh):
+    def write_input(self):
         # As Pippin only does one GENVERSION at a time, lets extract it first, and also the config
         c = self.yaml["CONFIG"]
         d = self.yaml["GENVERSION_LIST"][0]
@@ -307,8 +307,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # Get current hash
         new_hash = self.get_hash_from_files(output_files)
-        old_hash = self.get_old_hash()
-        regenerate = force_refresh or (old_hash is None or old_hash != new_hash)
+        regenerate = self._check_regenerate(new_hash)
 
         if regenerate:
             self.logger.info(f"Running simulation")
@@ -329,9 +328,9 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir_obj.cleanup()
         return regenerate, new_hash
 
-    def _run(self, force_refresh):
+    def _run(self):
 
-        regenerate, new_hash = self.write_input(force_refresh)
+        regenerate, new_hash = self.write_input()
         if not regenerate:
             self.should_be_done()
             return True

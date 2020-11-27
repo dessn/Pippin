@@ -77,7 +77,7 @@ python SNIRF.py {command_opts}
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
-    def classify(self, force_refresh, command):
+    def classify(self, command):
         format_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
@@ -87,10 +87,9 @@ python SNIRF.py {command_opts}
         }
         slurm_script = self.slurm.format(**format_dict)
 
-        old_hash = self.get_old_hash()
         new_hash = self.get_hash_from_string(slurm_script)
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating")
 
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -116,7 +115,7 @@ python SNIRF.py {command_opts}
         )
         return leaf_opts
 
-    def predict(self, force_refresh):
+    def predict(self):
         self.setup()
         model = self.options.get("MODEL")
         if model is None:
@@ -147,9 +146,9 @@ python SNIRF.py {command_opts}
             f"--done_file {self.done_file} "
             f"--use_filenames "
         )
-        return self.classify(force_refresh, command)
+        return self.classify(command)
 
-    def train(self, force_refresh):
+    def train(self):
         self.setup()
         command = (
             f"--nc 4 "
@@ -165,7 +164,7 @@ python SNIRF.py {command_opts}
             f"--done_file {self.done_file} "
             f"--use_filenames "
         )
-        return self.classify(force_refresh, command)
+        return self.classify(command)
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):

@@ -144,7 +144,7 @@ fi
                     return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_name)
 
-    def _run(self, force_refresh):
+    def _run(self):
 
         val_p = self.options.get("PHOTFLAG_DETECT")
         val_c = self.options.get("CUTWIN_SNR_NODETECT")
@@ -157,9 +157,8 @@ fi
         final_slurm = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(command_string + final_slurm)
-        old_hash = self.get_old_hash()
 
-        if force_refresh or new_hash != old_hash:
+        if self._check_regenerate(new_hash):
             self.logger.debug("Regenerating and launching task")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
