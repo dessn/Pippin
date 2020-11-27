@@ -40,7 +40,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         if self.base_file is None:
             Task.fail_config(f"Base file {base} cannot be found for task {name}")
 
-        self.convert_base_file()
         super().__init__(name, output_dir, config, self.base_file, " = ", dependencies=[sim_task])
 
         self.sim_task = sim_task
@@ -152,14 +151,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["fitopt_map"] = mapped
         self.output["fitopt_index"] = mapped2
         self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
-
-    def convert_base_file(self):
-        self.logger.debug(f"Translating base file {self.base_file}")
-        try:
-            subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
-        except FileNotFoundError:
-            # For testing, this wont exist
-            pass
 
     def get_sim_dependency(self):
         for t in self.dependencies:

@@ -16,7 +16,6 @@ class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
         self.base_file = base
-        self.convert_base_file()
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
@@ -112,14 +111,6 @@ class BiasCor(ConfigBasedExecutable):
             os.path.join(m, f"{self.name}_{(str(int(os.path.basename(m))) + '_') if os.path.basename(m).isdigit() else ''}hubble.png")
             for m in self.output["m0dif_dirs"]
         ]
-
-    def convert_base_file(self):
-        self.logger.debug(f"Translating base file {self.base_file}")
-        try:
-            subprocess.run(["submit_batch_jobs.sh", "--opt_translate", "10", os.path.basename(self.base_file)], cwd=os.path.dirname(self.base_file))
-        except FileNotFoundError:
-            # For testing, this wont exist
-            pass
 
     def get_blind(self, config, options):
         if "BLIND" in config:
