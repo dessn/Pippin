@@ -131,6 +131,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
   -s, --start        Start at this task and refresh everything after it. Number of string accepted
   -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
   -p, --permission   Fix permissions and groups on all output, don't rerun
+  -i, --ignore       Do NOT regenerate/run tasks up to and including this stage.
 ```
 
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
@@ -273,6 +274,12 @@ GLOBAL:
 GLOBAL:
   CFG_PATH: /your/path/here
 ```
+**Stop rerunning my sims!**
+
+For big biascor sims it can be frustrating if you're trying to tweak biascor or later stages and sims kick off
+because of some trivial change. So use the `--ignore` ro `-i` command to ignore any undone tasks or tasks with 
+hash disagreements in previous stages. To clarify, even tasks that do not have a hash, and have never been submitted, will
+not be run if that stage is set to be ignored.  
 
 **I don't want to run this massive jobs again! Let me use external results!**
 
