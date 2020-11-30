@@ -197,7 +197,7 @@ fi
 
         return input_files
 
-    def _run(self, force_refresh):
+    def _run(self):
 
         if self.static:
             self.logger.info("CMB only constraints detected, copying static files")
@@ -209,9 +209,8 @@ fi
             else:
 
                 new_hash = self.get_hash_from_string(cosmomc_static_loc)
-                old_hash = self.get_old_hash()
 
-                if force_refresh or new_hash != old_hash:
+                if self._check_regenerate(new_hash):
                     self.logger.debug("Regenerating and copying static chains")
                     shutil.rmtree(self.chain_dir, ignore_errors=True)
                     shutil.copytree(cosmomc_static_loc, self.chain_dir)
