@@ -235,8 +235,7 @@ echo "#################TIMING  Classifier finished:   `date`"
 
         new_hash = self.get_hash_from_string(slurm_text)
 
-        if self._check_regenerate(new_hash):
-            self.logger.info("Hash check passed, not rerunning")
+        if not self._check_regenerate(new_hash):
             self.should_be_done()
         else:
             self.logger.info("Rerunning. Cleaning output_dir")

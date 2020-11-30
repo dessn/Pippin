@@ -148,7 +148,7 @@ class Task(ABC):
                 self.logger.error(f"No hash found for {self} in {self.hash_file}")
             else:
                 self.logger.debug(f"No hash found for {self}")
-        return None
+        return "_NONE_"
 
     def get_hash_from_files(self, output_files):
         string_to_hash = ""
@@ -160,8 +160,7 @@ class Task(ABC):
 
     def get_hash_from_string(self, string_to_hash):
         hashes = sorted([dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies])
-        replace_none = ["_NONE_" if x is None else x for x in hashes]
-        string_to_hash += " ".join(replace_none)
+        string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         return new_hash
