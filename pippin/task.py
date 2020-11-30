@@ -77,14 +77,18 @@ class Task(ABC):
         self.force_ignore = force_ignore
 
     def _check_regenerate(self, new_hash):
+        hash_are_different = new_hash != self.get_old_hash()
+
         if self.force_ignore:
-            self.logger.debug("Force ignore is set, returning regenerate=False")
+            if hash_are_different:
+                self.logger.warning(f"Warning, hashes are different for {self}, but force_ignore is True so regenerate=False")
+            else:
+                self.logger.debug("Hashes agree and force_ignore is set, returning regenerate=False")
             return False
         elif self.force_refresh:
             self.logger.debug("Force refresh is set, returning regenerate=True")
             return True
         else:
-            hash_are_different = new_hash != self.get_old_hash()
             if hash_are_different:
                 self.logger.debug(f"Hashes are different, regenerating")
                 return True
@@ -156,7 +160,8 @@ class Task(ABC):
 
     def get_hash_from_string(self, string_to_hash):
         hashes = sorted([dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies])
-        string_to_hash += " ".join(hashes)
+        replace_none = ["_NONE_" if x is None else x for x in hashes]
+        string_to_hash += " ".join(replace_none)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         return new_hash
