@@ -173,9 +173,9 @@ class Task(ABC):
     def add_dependency(self, task):
         self.dependencies.append(task)
 
-    def run(self, force_refresh):
+    def run(self):
         if self.external is not None:
-            if os.path.exists(self.output_dir) and not force_refresh:
+            if os.path.exists(self.output_dir) and not self.force_refresh:
                 self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
             else:
                 if os.path.exists(self.output_dir):
@@ -185,7 +185,7 @@ class Task(ABC):
                 shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
             return True
 
-        return self._run(force_refresh)
+        return self._run()
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
         assert len(error_match) >= 1, "You need to specify what string to search for. I have nothing."
@@ -253,7 +253,7 @@ class Task(ABC):
         return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=match_none)
 
     @abstractmethod
-    def _run(self, force_refresh):
+    def _run(self):
         """ Execute the primary function of the task
 
         :param force_refresh: to force refresh and rerun - do not pass hash checks
