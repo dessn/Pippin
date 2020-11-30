@@ -100,19 +100,6 @@ class Aggregator(Task):
                 self.logger.warning(f"Task has not set passed and has no done file at {self.done_file}, returning failure")
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
-    def check_regenerate(self, force_refresh):
-        old_hash = self.get_old_hash(quiet=True)
-
-        if new_hash != old_hash:
-            self.logger.info("Hash check failed, regenerating")
-            return new_hash
-        elif force_refresh:
-            self.logger.debug("Force refresh deteted")
-            return new_hash
-        else:
-            self.logger.info("Hash check passed, not rerunning")
-            return False
-
     def get_underlying_sim_task(self):
         check = []
         for task in self.dependencies:

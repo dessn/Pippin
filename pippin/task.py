@@ -141,7 +141,7 @@ class Task(ABC):
                 return old_hash
         else:
             if required:
-                self.logger.error(f"No hash found for {self}")
+                self.logger.error(f"No hash found for {self} in {self.hash_file}")
             else:
                 self.logger.debug(f"No hash found for {self}")
         return None
