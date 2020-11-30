@@ -769,6 +769,17 @@ ANALYSE:
 
 ![Developer Documentation Below](doc/developer.jpg)
 
+
+## Coding style
+
+Please, for the love of god, don't code this up in vim/emacs on a terminal connection. Use a proper IDE (I recommend
+PyCharm or VSCode), and **install the Black extensiion**! I have Black set up in PyCharm as a file watcher, and all
+python files, on save, are automatically formatted. Use 160 characters a linewidth. Here is the Black file watcher config:
+
+![Black config](doc/black.jpg)
+
+If everyone does this, then all files should remain consistent across different users.
+
 ## Testing valid config in Pippin
 
 <details>
@@ -797,8 +808,9 @@ Alright there, you want to add a new task to Pippin? Great. Here's what you've g
 2. Figure out where it goes - in `manager.py` at the top you can see the current stages in Pippin. You'll probably need to figure out where it should go. 
 Once you have figured it out, import the task and slot it in.
 3. Back in your new class that extends Task, you'll notice you have a few methods to implement:
-    1. `_run(force_refresh)`: Kick the task off, report True or False for successful kicking off. Determine if you need to rerun the task using both a hash and `force_refresh`. 
-    To help with determining the hash, there are a few hand functions: `get_hash_from_string`, `save_hash`, `get_hash_from_files`, `get_old_hash`. See, for example, the Analyse 
+    1. `_run()`: Kick the task off, report True or False for successful kicking off. 
+    To help with determining the hash and whether the task shoudl run, there are a few handy functions:
+     `_check_regenerate`, `get_hash_from_string`, `save_hash`, `get_hash_from_files`, `get_old_hash`. See, for example, the Analyse 
     task for an example on how I use these.
     2. `_check_completion(squeue)`: Check to see if the task (whether its being rerun or not) is done. 
     Normally I do this by checking for a done file, which contains either SUCCESS or FAILURE. For example, if submitting a script to a queuing system, I might have this after the primary command:
