@@ -152,7 +152,7 @@ fi
         sys_scale = {**self.get_scales_from_fitopt_file(), **self.options.get("FITOPT_SCALES", {})}
         return sys_scale
 
-    def _run(self, force_refresh):
+    def _run(self):
         sys_scale = self.calculate_input()
         format_dict = {
             "job_name": self.job_name,
