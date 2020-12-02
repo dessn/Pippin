@@ -16,7 +16,6 @@ def plot_corr(df, output_dir, index):
     fig, ax = plt.subplots(figsize=(8, 6))
     df = df.dropna()
     sb.heatmap(df.corr(), ax=ax, vmin=0, vmax=1, annot=True)
-    plt.show()
     if output_dir:
         filename = os.path.join(output_dir, f"plt_corr_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
@@ -39,7 +38,6 @@ def plot_prob_acc(df, output_dir, index):
     ax.legend(loc=4, frameon=False, markerfirst=False)
     ax.set_xlabel("Reported confidence")
     ax.set_ylabel("Actual chance of being Ia")
-    plt.show()
     if output_dir:
         filename = os.path.join(output_dir, f"plt_prob_acc_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
@@ -95,7 +93,6 @@ def plot_thresholds(df, output_dir, index):
 
     ax.set_xlabel("Classification probability threshold")
     ax.legend(loc=3, frameon=False, ncol=2)
-    plt.show()
     if output_dir:
         filename = os.path.join(output_dir, f"plt_thresholds_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
@@ -125,7 +122,6 @@ def plot_pr(df, output_dir, index):
     ax.set_ylabel("Recall (aka efficiency)")
     ax.set_title("PR Curve")
     ax.legend(frameon=False, loc=3)
-    plt.show()
     if output_dir:
         filename = os.path.join(output_dir, f"plt_pr_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
@@ -154,7 +150,6 @@ def plot_roc(df, output_dir, index):
     ax.set_ylabel("True Positive Rate")
     ax.set_title("ROC Curve")
     ax.legend(frameon=False, loc=4)
-    plt.show()
     if output_dir:
         filename = os.path.join(output_dir, f"plt_roc_{index}.png")
         fig.savefig(filename, transparent=True, dpi=300, bbox_inches="tight")
