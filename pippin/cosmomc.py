@@ -119,7 +119,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 module unload openmpi
-module load intelmpi/5.1+intel-16.0
+module load intelmpi/2019.up7+intel-19.1.1
 module load cfitsio/3
 module load mkl
 
