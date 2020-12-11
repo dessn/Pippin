@@ -51,7 +51,7 @@ class CreateCov(ConfigBasedExecutable):
         self.global_config = get_config()
         self.index = index
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
-        #self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
+        #self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external/")
         self.path_to_code = '' #Now maintained by SNANA which puts it in the path.
 
         self.batch_mem = options.get("BATCH_MEM", "4GB")
@@ -89,7 +89,7 @@ class CreateCov(ConfigBasedExecutable):
 
 cd {output_dir}
 source activate
-python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
+python {path_to_code}create_covariance.py {unbinned} {subtract_vpec} {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
 else
