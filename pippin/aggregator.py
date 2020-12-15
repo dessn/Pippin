@@ -318,6 +318,9 @@ class Aggregator(Task):
                 if df.shape[0] == 0:
                     self.logger.warning("Oh no, dataframe doesnt have any rows. What is going on? What strange data format is this?")
                     self.output["empty_agg"] = True
+                if df.shape[0] == 1:
+                    self.logger.warning("Oh no, dataframe only has one row. See below.")
+                    self.logger.info(df)
 
                 if has_nonia and has_ia:
                     self.save_calibration_curve(df, self.output_cals[index])
