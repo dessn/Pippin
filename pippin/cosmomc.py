@@ -118,10 +118,9 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-module unload openmpi
-module load intelmpi/2019.up7+intel-19.1.1
-module load cfitsio/3
-module load mkl
+module unload intelmpi
+module load mkl/11.3
+module load intelmpi/2018.4.274+intel-18.0.5
 
 PARAMS=`expr ${{SLURM_ARRAY_TASK_ID}} - 1`
 
