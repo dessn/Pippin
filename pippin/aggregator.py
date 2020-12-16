@@ -266,12 +266,23 @@ class Aggregator(Task):
                     process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
                     output2 = process.stdout.decode("ascii").split("\n")
                     output += [x for x in output2 if x]
-                    if "_" in output[0]: #check if photometry is in filename
-                        snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
-                        snid = [x[1:] if x.startswith("0") else x for x in snid]
-                    else: 
-                        snid = [x.split()[0].split(".")[0] for x in output]
-                        snid = [x[1:] if x.startswith("0") else x for x in snid]
+
+                    cmd = "zgrep TYPE *.txt | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
+                    output3 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output3 if x]
+
+
+                    if len(output) == 0:
+                        snid = []
+                    else:
+                        if "_" in output[0]: #check if photometry is in filename
+                            snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
+                        else: 
+                            snid = [x.split()[0].split(".")[0] for x in output]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
 
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
@@ -322,9 +333,6 @@ class Aggregator(Task):
                 if df.shape[0] == 0:
                     self.logger.warning("Oh no, dataframe doesnt have any rows. What is going on? What strange data format is this?")
                     self.output["empty_agg"] = True
-                else:
-                    self.logger.warning("Checking dataframe")
-                    self.logger.info(df)
 
                 if has_nonia and has_ia:
                     self.save_calibration_curve(df, self.output_cals[index])
