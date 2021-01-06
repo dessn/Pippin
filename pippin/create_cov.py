@@ -28,7 +28,8 @@ class CreateCov(ConfigBasedExecutable):
                 exact_muopt_name: float
               COVOPTS:  # optional, note you'll get an 'ALL' covopt no matter what
                 - "[NOSYS] [=DEFAULT,=DEFAULT]"  # syntax for Dan&Dillons script. [label] [fitopts_to_match,muopts_to_match]. Does partial matching. =Default means dont do that systematic type
-
+              CUSTOM_SLURM: path_to_slurm_template
+              JOB_MAX_WALLTIME: 00:10:00
     OUTPUTS:
     ========
         name : name given in the yml
@@ -61,6 +62,10 @@ class CreateCov(ConfigBasedExecutable):
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
         self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
+        self.unbinned_covmat_addin = options.get("UNBINNED_COVMAT_ADDIN", [])
+
+
+        
         self.binned = options.get("BINNED", not self.subtract_vpec)
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
@@ -77,18 +82,15 @@ class CreateCov(ConfigBasedExecutable):
         self.output["covopts"] = covopts_map
         self.output["index"] = index
         self.output["bcor_name"] = self.biascor_dep.name
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=00:10:00
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem={batch_mem}
 
+        self.job_max_walltime = options.get("JOB_MAX_WALLTIME", "00:10:00")
+
+        self.custom_slurm = options.get("CUSTOM_SLURM", os.path.dirname(inspect.stack()[0][1]) + "/external/createcov_slurm.job")
+        self.slurm = open(self.custom_slurm,'r').read()
+
+#python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
+        self.slurm += """
 cd {output_dir}
-source activate
 python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
@@ -96,6 +98,8 @@ else
     echo FAILURE > {done_file}
 fi
 """
+
+    
 
     def get_sys_file_in(self):
         set_file = self.options.get("SYS_SCALE")
@@ -165,6 +169,7 @@ fi
             "unbinned": "" if self.binned else "-u",
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
             "batch_mem": self.batch_mem,
+            "job_max_walltime": self.job_max_walltime,
         }
         final_slurm = self.slurm.format(**format_dict)
 
