@@ -86,7 +86,7 @@ class CreateCov(ConfigBasedExecutable):
         self.job_max_walltime = options.get("JOB_MAX_WALLTIME", "00:10:00")
 
         self.custom_slurm = options.get("CUSTOM_SLURM", os.path.dirname(inspect.stack()[0][1]) + "/external/createcov_slurm.job")
-        self.slurm = open(self.custom_slurm,'r').read()
+        self.slurm = open(os.path.expandvars(self.custom_slurm),'r').read()
 
 #python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
         self.slurm += """

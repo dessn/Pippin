@@ -22,7 +22,8 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
                 INI: sn_cmb_omw  # should match the filename of at a file in the pippin/data_files/cosmomc_templates directory
                 COVOPTS: [ALL, NOSYS]  # Optional, covopts from CREATE_COV step to run against. If you leave this blank, you get them all. Exact matching.
                 NUM_WALKERS: 8  # Optional, defaults to eight.
-
+                JOB_MAX_WALLTIME: 34:00:00
+                CUSTOM_SLURM: path_to_slurm_template
     OUTPUTS
     =======
 
@@ -104,24 +105,13 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             )
         self.output["cosmology_params"] = ps[final]
 
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=34:00:00
-###SBATCH --nodes=1
-#SBATCH --ntasks={num_walkers}
-#SBATCH --array=1-{num_jobs}
-#SBATCH --cpus-per-task=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=20GB
 
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+        self.job_max_walltime = options.get("JOB_MAX_WALLTIME", "34:00:00")
 
-module unload intelmpi
-module load mkl/11.3
-module load intelmpi/2018.4.274+intel-18.0.5
+        self.custom_slurm = options.get("CUSTOM_SLURM", os.path.dirname(inspect.stack()[0][1]) + "/external/cosmomc_slurm.job")
+        self.slurm = open(os.path.expandvars(self.custom_slurm),'r').read()
 
+        self.slurm += """
 PARAMS=`expr ${{SLURM_ARRAY_TASK_ID}} - 1`
 
 INI_FILES=({ini_files})
@@ -236,6 +226,7 @@ fi
                 "ini_files": " ".join(self.ini_files),
                 "num_jobs": len(self.ini_files),
                 "num_walkers": self.num_walkers,
+                "job_max_walltime": self.job_max_walltime,
             }
             final_slurm = self.slurm.format(**format_dict)
 
