@@ -86,7 +86,9 @@ class CreateCov(ConfigBasedExecutable):
         self.job_max_walltime = options.get("JOB_MAX_WALLTIME", "00:10:00")
 
 
+
         self.job = """
+source activate
 cd {output_dir}
 python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
 if [ $? -eq 0 ]; then
@@ -95,23 +97,48 @@ else
     echo FAILURE > {done_file}
 fi
 """
-        self.batch_info = options.get("BATCH_INFO").split()
-        if self.batch_info[2] != 1:
-            self.logger.info(f"Setting NCORES to 1 for create_cov jobs")
+        self.batch_info = options.get("BATCH_INFO")
+        self.preserve = False
 
-        self.slurm =open(os.path.expandvars(self.batch_info[1]),'r').read()
+        if not self.batch_info: #preserve old functionality
+            self.preserve = True
+            self.slurm = """#!/bin/bash
+#SBATCH --job-name={job_name}
+#SBATCH --time=00:10:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --partition=broadwl
+#SBATCH --output={log_file}
+#SBATCH --account=pi-rkessler
+#SBATCH --mem={batch_mem}
+cd {output_dir}
+source activate
+python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file}
+else
+    echo FAILURE > {done_file}
+fi
+"""
 
-        REPLACE_KEY_DICT = { 'REPLACE_NAME':self.job_name,  
-                             'REPLACE_MEM':self.batch_mem,
-                             'REPLACE_LOGFILE':self.logfile, 
-                             'REPLACE_JOB':self.job,
-                             'REPLACE_WALLTIME':self.job_max_walltime, 
-                             'REPLACE_NTASK':1,  
-                             'REPLACE_CPU_PER_TASK':1,
-        }
+        else:
+            self.batch_info = self.batch_info.split()
+            if self.batch_info[2] != 1:
+                self.logger.info(f"Setting NCORES to 1 for create_cov jobs")
 
-        for REPLACE_KEY,REPLACE_VALUE in REPLACE_KEY_DICT.items():
-            self.slurm = self.slurm.replace(REPLACE_KEY,str(REPLACE_VALUE))
+            self.slurm =open(os.path.expandvars(self.batch_info[1]),'r').read()
+
+            REPLACE_KEY_DICT = { 'REPLACE_NAME':self.job_name,  
+                                 'REPLACE_MEM':self.batch_mem,
+                                 'REPLACE_LOGFILE':self.logfile, 
+                                 'REPLACE_JOB':self.job,
+                                 'REPLACE_WALLTIME':self.job_max_walltime, 
+                                 'REPLACE_NTASK':1,  
+                                 'REPLACE_CPU_PER_TASK':1,
+                             }
+
+            for REPLACE_KEY,REPLACE_VALUE in REPLACE_KEY_DICT.items():
+                self.slurm = self.slurm.replace(REPLACE_KEY,str(REPLACE_VALUE))
 
         
 #python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
@@ -176,20 +203,34 @@ fi
 
     def _run(self):
         sys_scale = self.calculate_input()
-        format_dict = {
-            #"job_name": self.job_name,
-            #"log_file": self.logfile,
-            "done_file": self.done_file,
-            "path_to_code": self.path_to_code,
-            "input_file": self.input_file,
-            "output_dir": self.output_dir,
-            "unbinned": "" if self.binned else "-u",
-            "subtract_vpec": "" if not self.subtract_vpec else "-s",
-            #"batch_mem": self.batch_mem,
-            #"job_max_walltime": self.job_max_walltime,
-        }
+        if self.preserve:
+            format_dict = {
+                "job_name": self.job_name,  
+                "log_file": self.logfile,
+                "done_file": self.done_file,
+                "path_to_code": self.path_to_code,
+                "input_file": self.input_file,
+                "output_dir": self.output_dir,
+                "unbinned": "" if self.binned else "-u",
+                "subtract_vpec": "" if not self.subtract_vpec else "-s",
+                "batch_mem": self.batch_mem,
+                "job_max_walltime": self.job_max_walltime,
+            }
+        else:
+            format_dict = {
+                #"job_name": self.job_name,
+                #"log_file": self.logfile,
+                "done_file": self.done_file,
+                "path_to_code": self.path_to_code,
+                "input_file": self.input_file,
+                "output_dir": self.output_dir,
+                "unbinned": "" if self.binned else "-u",
+                "subtract_vpec": "" if not self.subtract_vpec else "-s",
+                #"batch_mem": self.batch_mem,
+                #"job_max_walltime": self.job_max_walltime,
+            }
+
         final_slurm = self.slurm.format(**format_dict)
-        print(final_slurm)
         final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
