@@ -133,7 +133,7 @@ def plot_histograms(data, sims, types, figname):
                 dist_error = np.sqrt((data_dist * data_err) ** 2 + (sim_dist * sim_err) ** 2)
                 dist_diff = data_dist - sim_dist
 
-                chi2 = ((dist_diff / dist_error) ** 2).sum()
+                chi2 = np.nansum(((dist_diff / dist_error) ** 2))
                 ndof = len(bc)
                 red_chi2 = chi2 / ndof
 
