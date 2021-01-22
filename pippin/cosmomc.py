@@ -104,18 +104,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             )
         self.output["cosmology_params"] = ps[final]
 
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=34:00:00
-###SBATCH --nodes=1
-#SBATCH --ntasks={num_walkers}
-#SBATCH --array=1-{num_jobs}
-#SBATCH --cpus-per-task=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=20GB
-
+        self.slurm = """{sbatch_header}
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 module unload openmpi
@@ -227,10 +216,23 @@ fi
             ini_filecontents = self.get_ini_file()
             if ini_filecontents is None:
                 return False
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
+            header_dict = {
+                    "job-name": self.job_name,
+                    "time": "34:00:00",
+                    "ntasks": str(self.num_walkers),
+                    "array": str(1-len(self.ini_files)),
+                    "cpus-per-task": "1",
+                    "output": self.logfile,
+                    "mem-per-cpu": f"{int(20/self.num_walkers)}GB"
+                    }
+            self.update_header(header_dict)
 
             format_dict = {
-                "job_name": self.job_name,
-                "log_file": self.logfile,
+                "sbatch_header": self.sbatch_header,
                 "done_files": " ".join(self.done_files),
                 "path_to_cosmomc": self.path_to_cosmomc,
                 "output_dir": self.output_dir,

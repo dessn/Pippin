@@ -1,0 +1,38 @@
+
+DATAPREP:
+  DATA5YR:
+    OPTS:
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
+      TYPES:
+        IA: [101, 1]
+        NONIA: [20, 30, 120, 130]
+      BLIND: False
+      OPT_SETPKMJD: 16
+      PHOTFLAG_DETECT: 4096
+      CUTWIN_SNR_NODETECT: -100, 10
+SIM:
+  TRAINDES_AM:
+    IA_G10:
+      BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des5yr.input
+      GENMODEL:  SALT2.P18_UV2IR
+      GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
+    II_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_ii_maria_li_revised.input
+      DNDZ: 0.7*CC_S15
+    Ibc_TEMPLATES:
+      BASE: surveys/des/sims_cc/sn_ibc_maria_li_revised.input
+      DNDZ: 0.3*CC_S15
+    GLOBAL:
+      NGEN_UNIT: .1
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE 5
+ 
+
+CLASSIFICATION:
+  AM_SNN_z:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: train
+    MASK_SIM: TRAINDES_AM
+    OPTS:
+      NORM: cosmo
+      REDSHIFT: True
+

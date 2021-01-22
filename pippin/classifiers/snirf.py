@@ -55,17 +55,8 @@ class SnirfClassifier(Classifier):
         self.fitres_filename = None
         self.fitres_file = None
 
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=15:00:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --partition=broadwl
-#SBATCH --output=output.log
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=14GB
-
+        
+        self.slurm = """{sbatch_header}
 source activate {conda_env}
 echo `which python`
 cd {path_to_classifier}
@@ -78,8 +69,24 @@ python SNIRF.py {command_opts}
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
     def classify(self, command):
+        if self.gpu:
+            self.sbatch_header = self.sbatch_gpu_header
+        else:
+            self.sbatch_header = self.sbatch_cpu_header
+
+        header_dict = {
+                    "job-name": self.job_base_name,
+                    "output": "output.log",
+                    "time": "15:00:00",
+                    "mem-per-cpu": "3GB",
+                    "ntasks": "1",
+                    "cpus-per-task": "4"
+                }
+
+        self.update_header(header_dict)
+
         format_dict = {
-            "job_name": self.job_base_name,
+            "sbatch_header": self.sbatch_header,
             "conda_env": self.conda_env,
             "path_to_classifier": self.path_to_classifier,
             "command_opts": command,

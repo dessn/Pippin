@@ -33,3 +33,8 @@ OUTPUT:
 #  output_dir: output
   ping_frequency: 30
   max_ping_frequency: 300
+
+SBATCH:
+  cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE
+  gpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE
+  clean: True

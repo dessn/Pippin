@@ -76,15 +76,7 @@ class CreateCov(ConfigBasedExecutable):
         self.output["covopts"] = covopts_map
         self.output["index"] = index
         self.output["bcor_name"] = self.biascor_dep.name
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=00:10:00
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem={batch_mem}
+        self.slurm = """{sbatch_header}
 
 cd {output_dir}
 source activate
@@ -154,16 +146,26 @@ fi
 
     def _run(self):
         sys_scale = self.calculate_input()
+        if self.gpu:
+            self.sbatch_header = self.sbatch_gpu_header
+        else:
+            self.sbatch_header = self.sbatch_cpu_header
+        header_dict = {
+                "job_name": self.job_name,
+                "time": "00:10:00",
+                "ntasks-per-node": 1,
+                "output": self.logfile,
+                "mem-per-cpu": str(self.batch_mem)
+                }
+        self.update_header(header_dict)
         format_dict = {
-            "job_name": self.job_name,
-            "log_file": self.logfile,
+            "sbatch_header": self.sbatch_header,
             "done_file": self.done_file,
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
             "output_dir": self.output_dir,
             "unbinned": "" if self.binned else "-u",
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
-            "batch_mem": self.batch_mem,
         }
         final_slurm = self.slurm.format(**format_dict)
 
