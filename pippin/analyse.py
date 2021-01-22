@@ -239,7 +239,7 @@ fi
                     "ntasks": "1",
                     "cpus-per-task": "1",
                     "output": self.logfile,
-                    "mem-per-cpu": "20"
+                    "mem-per-cpu": "20GB"
                 } 
         if self.gpu:
             self.sbatch_header = self.sbatch_gpu_header

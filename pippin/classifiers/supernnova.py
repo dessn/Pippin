@@ -201,11 +201,9 @@ echo "#################TIMING  Classifier finished:   `date`"
                 "job-name": self.job_base_name,
                 "time": "23:00:00",
                 "ntasks": "1",
-                "partition": "gpu2" if self.gpu else "broadwl",
                 "output": "output.log",
                 "cpus-per-task": "1",
                 "mem-per-cpu": "32GB",
-                "gres": "gpu:1" if self.gpu else None
                 }
         self.update_header(header_dict)
 
