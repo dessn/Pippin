@@ -90,12 +90,15 @@ class Task(ABC):
             line = f"#SBATCH --{key}={value}"
             if f'--{key}=' in self.sbatch_header:
                 idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
-                if value == "":
+                if value == "" or value is None:
                     del lines[idx]
                 else:
                     lines[idx] = line
             else:
-                lines.append(line)
+                if value == "" or value is None:
+                    continue
+                else:
+                    lines.append(line)
         self.sbatch_header = '\n'.join(lines)
         self.logger.debug("Updated header")
 

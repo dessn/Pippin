@@ -64,17 +64,7 @@ class SuperNNovaClassifier(Classifier):
             "none",
         ], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
-        self.slurm = """#!/bin/bash
-
-#SBATCH --job-name={job_name}
-#SBATCH --time=23:00:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --partition={partition}
-#SBATCH --output=output.log
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=32GB
-{gres}
+        self.slurm = """{sbatch_header}
 
 source activate {conda_env}
 module load cuda
@@ -202,8 +192,25 @@ echo "#################TIMING  Classifier finished:   `date`"
             clump_txt = ""
         else:
             clump_txt = f"--photo_window_files {clump}"
+        if self.gpu:
+            self.sbatch_header = self.sbatch_gpu_header
+        else:
+            self.sbatch_header = self.sbatch_cpu_header
+
+        header_dict = {
+                "job-name": self.job_base_name,
+                "time": "23:00:00",
+                "ntasks": "1",
+                "partition": "gpu2" if self.gpu else "broadwl",
+                "output": "output.log",
+                "cpus-per-task": "1",
+                "mem-per-cpu": "32GB",
+                "gres": "gpu:1" if self.gpu else None
+                }
+        self.update_header(header_dict)
 
         format_dict = {
+            "sbatch_header": self.sbatch_header,
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
             "photometry_dir": light_curve_dir,

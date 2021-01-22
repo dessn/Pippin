@@ -37,6 +37,8 @@ class Manager:
         self.max_jobs_in_queue = int(self.global_config["QUEUE"]["max_jobs_in_queue"])
         self.max_jobs_in_queue_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs_in_queue"])
 
+        self.logger.debug(self.global_config.keys())
+
         self.sbatch_cpu_path = get_data_loc(self.global_config["SBATCH"]["cpu_location"])
         with open(self.sbatch_cpu_path, 'r') as f:
             self.sbatch_cpu_header = f.read()
@@ -306,7 +308,6 @@ class Manager:
                     self.tasks.remove(t)
                     self.logger.notice(f"LAUNCHING: {t}")
                     try:
-                        print("PA TEST")
                         t.set_force_refresh(self.get_force_refresh(t))
                         t.set_force_ignore(self.get_force_ignore(t))
                         t.set_sbatch_cpu_header(self.sbatch_cpu_header)
