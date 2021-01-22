@@ -374,9 +374,9 @@ class SNANASimulation(ConfigBasedExecutable):
                 y = read_yaml(self.total_summary)
                 if "MERGE" in y.keys():
                     for i, row in enumerate(y["MERGE"]):
-                        if len(row) == 6: # Old version for backward compatibility
+                        if len(row) == 6: # Old version for backward compatibility (before 15/01/2021)
                             state, iver, version, ngen, nwrite, cpu = row
-                        else: # New MERGE.LOG syntax
+                        else: # New MERGE.LOG syntax (after 15/01/2021)
                             state, iver, version, ngen, nwrite, nspec, cpu = row
                         if cpu < 60:
                             units = "minutes"
