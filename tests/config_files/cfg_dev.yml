@@ -29,7 +29,12 @@ CosmoMC:
   static_loc: cosmomc_static_chains
 
 OUTPUT:
-  output_dir: tmp_output
-  # output_dir = output
+  output_dir: tmp_output 
+#  output_dir: output
   ping_frequency: 30
   max_ping_frequency: 300
+
+SBATCH:
+  cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE
+  gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
+  clean: True
