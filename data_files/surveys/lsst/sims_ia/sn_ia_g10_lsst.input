@@ -5,7 +5,6 @@ GENMODEL:  SALT2.WFIRST-H17
 GENMODEL_EXTRAP_LATETIME: $PLASTICC_MODELS/SNIa_Extrap_LateTime_2expon.TEXT
 
 GENMAG_SMEAR_MODELNAME: G10
-
 # Use rate assumption from Housell 2017 (WFIRST sims)
 DNDZ: POWERLAW2 2.5E-5  1.5 0.0 1.0    # from Didlay 2008
 DNDZ: POWERLAW2 9.7E-5 -0.5 1.0 3.0    # high-z extenstion from Lou
