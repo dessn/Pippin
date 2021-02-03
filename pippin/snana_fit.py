@@ -232,6 +232,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
         for key, value in self.options.items():
+            print(key,value)
             self.yaml["CONFIG"][key] = value
 
         self.compute_fitopts()
