@@ -1,0 +1,13 @@
+#!/bin/bash
+
+#SBATCH --partition=broadwl
+#SBATCH --account=pi-rkessler
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1 
+
+#SBATCH --job-name={job_name}
+#SBATCH --time={job_max_walltime}
+#SBATCH --output={log_file}
+#SBATCH --mem={batch_mem} 
+
+source activate

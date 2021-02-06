@@ -1,3 +1,4 @@
+import inspect
 import shutil
 import subprocess
 import os
@@ -22,7 +23,8 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
                 INI: sn_cmb_omw  # should match the filename of at a file in the pippin/data_files/cosmomc_templates directory
                 COVOPTS: [ALL, NOSYS]  # Optional, covopts from CREATE_COV step to run against. If you leave this blank, you get them all. Exact matching.
                 NUM_WALKERS: 8  # Optional, defaults to eight.
-
+                JOB_MAX_WALLTIME: 34:00:00
+                CUSTOM_SLURM: path_to_slurm_template
     OUTPUTS
     =======
 
@@ -225,6 +227,7 @@ fi
                 "ini_files": " ".join(self.ini_files),
                 "num_jobs": len(self.ini_files),
                 "num_walkers": self.num_walkers,
+                "job_max_walltime": self.job_max_walltime,
             }
 
             format_dict = {

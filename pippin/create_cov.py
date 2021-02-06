@@ -28,7 +28,8 @@ class CreateCov(ConfigBasedExecutable):
                 exact_muopt_name: float
               COVOPTS:  # optional, note you'll get an 'ALL' covopt no matter what
                 - "[NOSYS] [=DEFAULT,=DEFAULT]"  # syntax for Dan&Dillons script. [label] [fitopts_to_match,muopts_to_match]. Does partial matching. =Default means dont do that systematic type
-
+              BATCH_INFO: sbatch $SBATCH_TEMPLATES/blah.TEMPLATE 1
+              JOB_MAX_WALLTIME: 00:10:00
     OUTPUTS:
     ========
         name : name given in the yml
@@ -51,7 +52,8 @@ class CreateCov(ConfigBasedExecutable):
         self.global_config = get_config()
         self.index = index
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
-        self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external")
+        #self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external/")
+        self.path_to_code = '$SNANA_DIR/util/' #Now maintained by SNANA
 
         self.batch_mem = options.get("BATCH_MEM", "4GB")
 
@@ -60,6 +62,10 @@ class CreateCov(ConfigBasedExecutable):
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
         self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
+        self.unbinned_covmat_addin = options.get("UNBINNED_COVMAT_ADDIN", [])
+
+
+        
         self.binned = options.get("BINNED", not self.subtract_vpec)
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
@@ -78,7 +84,6 @@ class CreateCov(ConfigBasedExecutable):
         self.output["bcor_name"] = self.biascor_dep.name
         self.slurm = """{sbatch_header}
         {task_setup}
-
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
 else
@@ -144,6 +149,7 @@ fi
 
     def _run(self):
         sys_scale = self.calculate_input()
+<<<<<<< HEAD
         if self.gpu:
             self.sbatch_header = self.sbatch_gpu_header
         else:
@@ -169,7 +175,36 @@ fi
             "task_setup": self.update_setup(setup_dict, self.task-setup['analyse'])    
                 }
         final_slurm = self.slurm.format(**format_dict)
+=======
+        if self.preserve:
+            format_dict = {
+                "job_name": self.job_name,  
+                "log_file": self.logfile,
+                "done_file": self.done_file,
+                "path_to_code": self.path_to_code,
+                "input_file": self.input_file,
+                "output_dir": self.output_dir,
+                "unbinned": "" if self.binned else "-u",
+                "subtract_vpec": "" if not self.subtract_vpec else "-s",
+                "batch_mem": self.batch_mem,
+                "job_max_walltime": self.job_max_walltime,
+            }
+        else:
+            format_dict = {
+                #"job_name": self.job_name,
+                #"log_file": self.logfile,
+                "done_file": self.done_file,
+                "path_to_code": self.path_to_code,
+                "input_file": self.input_file,
+                "output_dir": self.output_dir,
+                "unbinned": "" if self.binned else "-u",
+                "subtract_vpec": "" if not self.subtract_vpec else "-s",
+                #"batch_mem": self.batch_mem,
+                #"job_max_walltime": self.job_max_walltime,
+            }
+>>>>>>> 5fbb4d57f7be98b1eb65433987a07c26a90cd217
 
+        final_slurm = self.slurm.format(**format_dict)
         final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)

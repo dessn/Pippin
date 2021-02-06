@@ -267,9 +267,24 @@ class Aggregator(Task):
                     output2 = process.stdout.decode("ascii").split("\n")
                     output += [x for x in output2 if x]
 
-                    snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
-                    snid = [x[1:] if x.startswith("0") else x for x in snid]
+                    cmd = "zgrep TYPE *.txt | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
+                    output3 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output3 if x]
+
+
+                    if len(output) == 0:
+                        snid = []
+                    else:
+                        if "_" in output[0]: #check if photometry is in filename
+                            snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
+                        else: 
+                            snid = [x.split()[0].split(".")[0] for x in output]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
+
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
                     type_df[self.id] = type_df[self.id].astype(str).str.strip()
                     type_df.drop_duplicates(subset=self.id, inplace=True)
