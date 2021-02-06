@@ -120,7 +120,7 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.biascor_fitres_combined = "all_biascor_fitres.csv.gz"
 
         self.slurm = """{sbatch_header}
-cd {output_dir}
+        {task_setup}
 
 """
 
@@ -246,7 +246,15 @@ fi
         else:
             self.sbatch_header = self.sbatch_cpu_header
         self.update_header(header_dict)
-        format_dict = {"sbatch_header": self.sbatch_header, "output_dir": self.output_dir, "input_yml": input_yml_file}
+        setup_dict = {
+                "output_dir": self.output_dir
+                }
+
+        format_dict = {
+                "sbatch_header": self.sbatch_header,
+                "task_setup": self.update_setup(setup_dict, self.task_setup['analyse']),
+                "input_yml": input_yml_file
+                }
         final_slurm = self.get_slurm_raw().format(**format_dict)
 
         new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))

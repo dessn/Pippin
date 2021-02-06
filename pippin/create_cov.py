@@ -77,10 +77,8 @@ class CreateCov(ConfigBasedExecutable):
         self.output["index"] = index
         self.output["bcor_name"] = self.biascor_dep.name
         self.slurm = """{sbatch_header}
+        {task_setup}
 
-cd {output_dir}
-source activate
-python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
 if [ $? -eq 0 ]; then
     echo SUCCESS > {done_file}
 else
@@ -158,8 +156,7 @@ fi
                 "mem-per-cpu": str(self.batch_mem)
                 }
         self.update_header(header_dict)
-        format_dict = {
-            "sbatch_header": self.sbatch_header,
+        setup_dict = {
             "done_file": self.done_file,
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
@@ -167,6 +164,10 @@ fi
             "unbinned": "" if self.binned else "-u",
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
         }
+        format_dict = {
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task-setup['analyse'])    
+                }
         final_slurm = self.slurm.format(**format_dict)
 
         final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm

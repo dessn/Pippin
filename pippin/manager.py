@@ -63,11 +63,11 @@ class Manager:
         self.force_ignore_stage = None
 
     def load_task_setup(self):
+        tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov']
         self.task_setup = {}
-        with open(get_data_loc(f"{self.setup_task_location}/cosmomc"), 'r') as f:
-            self.task_setup['cosmomc'] = f.read()
-        with open(get_data_loc(f"{self.setup_task_location}/snirf"), 'r') as f:
-            self.task_setup['snirf'] = f.read()
+        for task in tasks:
+            with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
+                self.task_setup[task] = f.read()
 
     def get_force_refresh(self, task):
         if self.start is None:

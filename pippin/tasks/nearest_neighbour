@@ -1,0 +1,5 @@
+source activate {conda_env}
+echo `which python`
+cd {path_to_classifier}
+python nearest_neighbor_code.py {command_opts}
+

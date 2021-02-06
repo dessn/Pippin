@@ -57,11 +57,8 @@ class NearestNeighborPyClassifier(Classifier):
         self.validate_model()
 
         self.slurm = """{sbatch_header}
+        {task_setup}
 
-source activate {conda_env}
-echo `which python`
-cd {path_to_classifier}
-python nearest_neighbor_code.py {command_opts}
 if [ $? -ne 0 ]; then
     echo FAILURE > {done_file}
 fi
@@ -89,14 +86,19 @@ fi
                 }
         self.update_header(header_dict)
 
-        format_dict = {
-            "sbatch_header": self.sbatch_header,
+        setup_dict = {
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
             "path_to_classifier": self.path_to_classifier,
             "command_opts": command,
             "done_file": self.done_file,
         }
+
+        format_dict = {
+                "sbatch_header": self.sbatch_header,
+                "task_setup": self.update_setup(setup_dict, self.task_setup['nearest_neighbour'])
+                }
+
         slurm_script = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(slurm_script)

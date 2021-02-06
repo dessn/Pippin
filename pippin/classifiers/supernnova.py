@@ -65,26 +65,8 @@ class SuperNNovaClassifier(Classifier):
         ], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
         assert self.variant in ["vanilla", "variational", "bayesian"], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """{sbatch_header}
+        {task_setup}
 
-source activate {conda_env}
-module load cuda
-echo `which python`
-cd {path_to_classifier}
-echo "#################TIMING  Starting here:   `date`"
-python run.py --data --sntypes '{sntypes}' --phot_reject PHOTFLAG --phot_reject_list 8 16 32 64 128 256 512  --redshift_label REDSHIFT_FINAL --dump_dir {dump_dir} --raw_dir {photometry_dir} {fit_dir} {phot} {clump} {norm} {seed} {test_or_train}
-if [ $? -ne 0 ]; then
-    echo FAILURE > {done_file2}
-else
-    echo "#################TIMING  Database done now, starting classifier:   `date`"
-    python run.py {cuda} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {seed} {command}
-    if [ $? -eq 0 ]; then
-        {clean_command}
-        echo SUCCESS > {done_file2}
-    else
-        echo FAILURE > {done_file2}
-    fi
-fi
-echo "#################TIMING  Classifier finished:   `date`"
         """
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
@@ -207,8 +189,7 @@ echo "#################TIMING  Classifier finished:   `date`"
                 }
         self.update_header(header_dict)
 
-        format_dict = {
-            "sbatch_header": self.sbatch_header,
+        setup_dict = {
             "conda_env": self.conda_env,
             "dump_dir": self.dump_dir,
             "photometry_dir": light_curve_dir,
@@ -233,6 +214,11 @@ echo "#################TIMING  Classifier finished:   `date`"
             "clean_command": f"rm -rf {self.dump_dir}/processed" if self.clean else "",
             "seed": f"--seed {self.seed}" if self.seed else "",
         }
+
+        format_dict = {
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup['supernnova'])
+                }
 
         slurm_output_file = self.output_dir + "/job.slurm"
         self.logger.info(f"Running SuperNNova, slurm job outputting to {slurm_output_file}")
