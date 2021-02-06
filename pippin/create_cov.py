@@ -149,7 +149,6 @@ fi
 
     def _run(self):
         sys_scale = self.calculate_input()
-<<<<<<< HEAD
         if self.gpu:
             self.sbatch_header = self.sbatch_gpu_header
         else:
@@ -175,36 +174,7 @@ fi
             "task_setup": self.update_setup(setup_dict, self.task-setup['analyse'])    
                 }
         final_slurm = self.slurm.format(**format_dict)
-=======
-        if self.preserve:
-            format_dict = {
-                "job_name": self.job_name,  
-                "log_file": self.logfile,
-                "done_file": self.done_file,
-                "path_to_code": self.path_to_code,
-                "input_file": self.input_file,
-                "output_dir": self.output_dir,
-                "unbinned": "" if self.binned else "-u",
-                "subtract_vpec": "" if not self.subtract_vpec else "-s",
-                "batch_mem": self.batch_mem,
-                "job_max_walltime": self.job_max_walltime,
-            }
-        else:
-            format_dict = {
-                #"job_name": self.job_name,
-                #"log_file": self.logfile,
-                "done_file": self.done_file,
-                "path_to_code": self.path_to_code,
-                "input_file": self.input_file,
-                "output_dir": self.output_dir,
-                "unbinned": "" if self.binned else "-u",
-                "subtract_vpec": "" if not self.subtract_vpec else "-s",
-                #"batch_mem": self.batch_mem,
-                #"job_max_walltime": self.job_max_walltime,
-            }
->>>>>>> 5fbb4d57f7be98b1eb65433987a07c26a90cd217
 
-        final_slurm = self.slurm.format(**format_dict)
         final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
