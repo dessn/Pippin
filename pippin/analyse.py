@@ -119,18 +119,8 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.biascor_m0diff_output = "all_biascor_m0diffs.csv"
         self.biascor_fitres_combined = "all_biascor_fitres.csv.gz"
 
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=1:00:00
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=20GB
-
-cd {output_dir}
+        self.slurm = """{sbatch_header}
+        {task_setup}
 
 """
 
@@ -243,8 +233,28 @@ fi
                 "IA_TYPES": types,
             },
         }
+        header_dict = {
+                    "job-name": self.job_name,
+                    "time": "1:00:00",
+                    "ntasks": "1",
+                    "cpus-per-task": "1",
+                    "output": self.logfile,
+                    "mem-per-cpu": "20GB"
+                } 
+        if self.gpu:
+            self.sbatch_header = self.sbatch_gpu_header
+        else:
+            self.sbatch_header = self.sbatch_cpu_header
+        self.update_header(header_dict)
+        setup_dict = {
+                "output_dir": self.output_dir
+                }
 
-        format_dict = {"job_name": self.job_name, "log_file": self.logfile, "output_dir": self.output_dir, "input_yml": input_yml_file}
+        format_dict = {
+                "sbatch_header": self.sbatch_header,
+                "task_setup": self.update_setup(setup_dict, self.task_setup['analyse']),
+                "input_yml": input_yml_file
+                }
         final_slurm = self.get_slurm_raw().format(**format_dict)
 
         new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))

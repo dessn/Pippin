@@ -8,7 +8,7 @@ from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file
+from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file, get_data_loc
 from pippin.cosmomc import CosmoMC
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -37,6 +37,21 @@ class Manager:
         self.max_jobs_in_queue = int(self.global_config["QUEUE"]["max_jobs_in_queue"])
         self.max_jobs_in_queue_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs_in_queue"])
 
+        self.logger.debug(self.global_config.keys())
+
+        self.sbatch_cpu_path = get_data_loc(self.global_config["SBATCH"]["cpu_location"])
+        with open(self.sbatch_cpu_path, 'r') as f:
+            self.sbatch_cpu_header = f.read()
+        self.sbatch_gpu_path = get_data_loc(self.global_config["SBATCH"]["gpu_location"])
+        with open(self.sbatch_gpu_path, 'r') as f:
+            self.sbatch_gpu_header = f.read()
+        self.sbatch_clean = self.global_config["SBATCH"]["gpu_location"]
+        if self.sbatch_clean:
+            self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
+            self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
+        self.setup_task_location = self.global_config["SETUP"]["location"]
+        self.load_task_setup()
+
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
         self.num_jobs_queue = 0
@@ -46,6 +61,13 @@ class Manager:
         self.finish = None
         self.force_refresh = False
         self.force_ignore_stage = None
+
+    def load_task_setup(self):
+        tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov']
+        self.task_setup = {}
+        for task in tasks:
+            with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
+                self.task_setup[task] = f.read()
 
     def get_force_refresh(self, task):
         if self.start is None:
@@ -80,6 +102,13 @@ class Manager:
 
     def set_force_ignore_stage(self, force_ignore_stage):
         self.force_ignore_stage = self.resolve_stage(force_ignore_stage)
+
+    def clean_header(self, header):
+        lines = header.split('\n')
+        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('xxxx' not in x)
+        lines = filter(mask, lines)
+        header = '\n'.join(lines)
+        return header
 
     def set_start(self, stage):
         self.start = self.resolve_stage(stage)
@@ -290,6 +319,9 @@ class Manager:
                     try:
                         t.set_force_refresh(self.get_force_refresh(t))
                         t.set_force_ignore(self.get_force_ignore(t))
+                        t.set_sbatch_cpu_header(self.sbatch_cpu_header)
+                        t.set_sbatch_gpu_header(self.sbatch_gpu_header)
+                        t.set_setup(self.task_setup)
                         started = t.run()
                     except Exception as e:
                         self.logger.exception(e, exc_info=True)

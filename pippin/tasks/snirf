@@ -1,0 +1,5 @@
+source activate {conda_env}
+echo `which python`
+cd {path_to_classifier}
+python SNIRF.py {command_opts}
+

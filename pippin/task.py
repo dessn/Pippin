@@ -70,11 +70,46 @@ class Task(ABC):
         self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
         self.config_file = os.path.join(output_dir, "config.yml")
 
+
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
 
     def set_force_ignore(self, force_ignore):
         self.force_ignore = force_ignore
+
+    def set_setup(self, setup):
+        self.task_setup = setup
+
+    def set_sbatch_cpu_header(self, header):
+        self.logger.debug("Set cpu header")
+        self.sbatch_cpu_header = header
+
+    def set_sbatch_gpu_header(self, header):
+        self.logger.debug("Set gpu header")
+        self.sbatch_gpu_header = header
+
+    def update_setup(self, task_setup, setup_dict):
+        return task_setup.format(**setup_dict)
+
+    def update_header(self, header_dict):
+        lines = self.sbatch_header.split('\n')
+        for key, value in header_dict.items():
+            line = f"#SBATCH --{key}={value}"
+            if f'--{key}=' in self.sbatch_header:
+                idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
+                if value == "" or value is None:
+                    del lines[idx]
+                else:
+                    lines[idx] = line
+            else:
+                if value == "" or value is None:
+                    continue
+                else:
+                    lines.append(line)
+        self.sbatch_header = '\n'.join(lines)
+        self.logger.debug("Updated header")
+
+
 
     def _check_regenerate(self, new_hash):
         hash_are_different = new_hash != self.get_old_hash()
