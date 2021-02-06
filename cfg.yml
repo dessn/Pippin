@@ -38,3 +38,7 @@ SBATCH:
   cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE
   gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
   clean: True
+
+SETUP:
+    #location: $PRODUCTS/pippin/pippin/tasks
+    location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks

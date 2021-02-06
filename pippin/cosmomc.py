@@ -105,20 +105,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["cosmology_params"] = ps[final]
 
         self.slurm = """{sbatch_header}
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
-
-module unload openmpi
-module load intelmpi/5.1+intel-16.0
-module load cfitsio/3
-module load mkl
-
-PARAMS=`expr ${{SLURM_ARRAY_TASK_ID}} - 1`
-
-INI_FILES=({ini_files})
-DONE_FILES=({done_files})
-
-cd {output_dir}
-mpirun {path_to_cosmomc}/cosmomc ${{INI_FILES[$PARAMS]}}
+        {task_setup}
 
 if [ $? -eq 0 ]; then
     echo "SUCCESS" > ${{DONE_FILES[$PARAMS]}}
@@ -231,14 +218,18 @@ fi
                     }
             self.update_header(header_dict)
 
-            format_dict = {
-                "sbatch_header": self.sbatch_header,
+            setup_dict = {
                 "done_files": " ".join(self.done_files),
                 "path_to_cosmomc": self.path_to_cosmomc,
                 "output_dir": self.output_dir,
                 "ini_files": " ".join(self.ini_files),
                 "num_jobs": len(self.ini_files),
                 "num_walkers": self.num_walkers,
+            }
+
+            format_dict = {
+                    "sbatch_header": self.sbatch_header,
+                    "task_setup": self.update_setup(setup_dict, self.task_setup['cosmomc'])
             }
             final_slurm = self.slurm.format(**format_dict)
 

@@ -70,11 +70,15 @@ class Task(ABC):
         self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
         self.config_file = os.path.join(output_dir, "config.yml")
 
+
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
 
     def set_force_ignore(self, force_ignore):
         self.force_ignore = force_ignore
+
+    def set_setup(self, setup):
+        self.task_setup = setup
 
     def set_sbatch_cpu_header(self, header):
         self.logger.debug("Set cpu header")
@@ -83,6 +87,9 @@ class Task(ABC):
     def set_sbatch_gpu_header(self, header):
         self.logger.debug("Set gpu header")
         self.sbatch_gpu_header = header
+
+    def update_setup(self, task_setup, setup_dict):
+        return task_setup.format(**setup_dict)
 
     def update_header(self, header_dict):
         lines = self.sbatch_header.split('\n')

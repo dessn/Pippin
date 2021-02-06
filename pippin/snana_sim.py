@@ -374,7 +374,10 @@ class SNANASimulation(ConfigBasedExecutable):
                 y = read_yaml(self.total_summary)
                 if "MERGE" in y.keys():
                     for i, row in enumerate(y["MERGE"]):
-                        state, iver, version, ngen, nwrite, cpu = row
+                        if len(row) == 6:
+                            state, iver, version, ngen, nwrite, cpu = row
+                        else:
+                            state, iver, version, ngen, nwrite, nspec, cpu = row
                         if cpu < 60:
                             units = "minutes"
                         else:

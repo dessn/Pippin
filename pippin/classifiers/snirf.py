@@ -57,10 +57,7 @@ class SnirfClassifier(Classifier):
 
         
         self.slurm = """{sbatch_header}
-source activate {conda_env}
-echo `which python`
-cd {path_to_classifier}
-python SNIRF.py {command_opts}
+        {task_setup}
 """
 
     def setup(self):
@@ -85,13 +82,18 @@ python SNIRF.py {command_opts}
 
         self.update_header(header_dict)
 
-        format_dict = {
-            "sbatch_header": self.sbatch_header,
+        setup_dict = {
             "conda_env": self.conda_env,
             "path_to_classifier": self.path_to_classifier,
             "command_opts": command,
             "done_file": self.done_file,
         }
+
+        format_dict = {
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup['snirf'])
+                
+                }
         slurm_script = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(slurm_script)

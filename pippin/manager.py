@@ -49,6 +49,8 @@ class Manager:
         if self.sbatch_clean:
             self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
             self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
+        self.setup_task_location = self.global_config["SETUP"]["location"]
+        self.load_task_setup()
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
         self.tasks = None
@@ -59,6 +61,13 @@ class Manager:
         self.finish = None
         self.force_refresh = False
         self.force_ignore_stage = None
+
+    def load_task_setup(self):
+        self.task_setup = {}
+        with open(get_data_loc(f"{self.setup_task_location}/cosmomc"), 'r') as f:
+            self.task_setup['cosmomc'] = f.read()
+        with open(get_data_loc(f"{self.setup_task_location}/snirf"), 'r') as f:
+            self.task_setup['snirf'] = f.read()
 
     def get_force_refresh(self, task):
         if self.start is None:
@@ -312,6 +321,7 @@ class Manager:
                         t.set_force_ignore(self.get_force_ignore(t))
                         t.set_sbatch_cpu_header(self.sbatch_cpu_header)
                         t.set_sbatch_gpu_header(self.sbatch_gpu_header)
+                        t.set_setup(self.task_setup)
                         started = t.run()
                     except Exception as e:
                         self.logger.exception(e, exc_info=True)
