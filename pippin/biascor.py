@@ -268,9 +268,9 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
-        print('MERGED DATA')
-        print(self.yaml)
-        print('------------')
+        #print('MERGED DATA')
+        #print(self.yaml)
+        #print('------------')
         self.yaml["FITOPT_MAP"], fitopt_index = self.get_fitopt_map(self.merged_data)
         self.output["fitopt_index"] = fitopt_index
 
