@@ -88,7 +88,7 @@ class Task(ABC):
         self.logger.debug("Set gpu header")
         self.sbatch_gpu_header = header
 
-    def update_setup(self, task_setup, setup_dict):
+    def update_setup(self, setup_dict, task_setup):
         return task_setup.format(**setup_dict)
 
     def update_header(self, header_dict):
