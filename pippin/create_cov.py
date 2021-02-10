@@ -171,7 +171,7 @@ fi
         }
         format_dict = {
             "sbatch_header": self.sbatch_header,
-            "task_setup": self.update_setup(setup_dict, self.task-setup['analyse'])    
+            "task_setup": self.update_setup(setup_dict, self.task_setup['create_cov'])    
                 }
         final_slurm = self.slurm.format(**format_dict)
 
