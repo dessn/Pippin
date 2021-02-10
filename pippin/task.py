@@ -89,7 +89,9 @@ class Task(ABC):
         self.sbatch_gpu_header = header
 
     def update_setup(self, setup_dict, task_setup):
-        return task_setup.format(**setup_dict)
+        setup = task_setup.format(**setup_dict)
+        self.logging.debug(f"Setup: {setup}")
+        return setup 
 
     def update_header(self, header_dict):
         lines = self.sbatch_header.split('\n')

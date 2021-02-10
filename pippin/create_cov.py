@@ -162,7 +162,6 @@ fi
                 }
         self.update_header(header_dict)
         setup_dict = {
-            "done_file": self.done_file,
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
             "output_dir": self.output_dir,
@@ -171,7 +170,8 @@ fi
         }
         format_dict = {
             "sbatch_header": self.sbatch_header,
-            "task_setup": self.update_setup(setup_dict, self.task_setup['create_cov'])    
+            "task_setup": self.update_setup(setup_dict, self.task_setup['create_cov']),
+            "done_file": self.done_file,
                 }
         final_slurm = self.slurm.format(**format_dict)
 
