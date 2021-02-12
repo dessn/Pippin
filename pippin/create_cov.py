@@ -154,7 +154,7 @@ fi
         else:
             self.sbatch_header = self.sbatch_cpu_header
         header_dict = {
-                "job_name": self.job_name,
+                "job-name": self.job_name,
                 "time": "00:10:00",
                 "ntasks-per-node": 1,
                 "output": self.logfile,
