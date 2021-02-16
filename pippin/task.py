@@ -95,12 +95,9 @@ class Task(ABC):
         replace_dict = {"job-name": "REPLACE_NAME", "output": "REPLACE_LOGFILE", "time": "REPLACE_WALLTIME", "mem-per-cpu": "REPLACE_MEM"} # Allows for replacing just the REPLACE_ key"
         for key, value in header_dict.items():
             if key in replace_dict.keys():# REPLACE_ replacements
-                self.logger.debug(f"Replacing {key}: {replace_dict[key]} -> {value}")
                 self.sbatch_header = self.sbatch_header.replace(replace_dict[key], value)
-                self.logger.debug(self.sbatch_header)
             else: # SBATCH replacements 
                 lines = self.sbatch_header.split('\n')
-                self.logger.debug(f"SBATCH replacement: {key} -> {value}")
                 line = f"#SBATCH --{key}={value}"
                 if f'--{key}=' in self.sbatch_header: # Replace the sbatch key
                     idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
