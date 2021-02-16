@@ -93,28 +93,27 @@ class Task(ABC):
 
     def update_header(self, header_dict):
         replace_dict = {"job-name": "REPLACE_NAME", "output": "REPLACE_LOGFILE", "time": "REPLACE_WALLTIME", "mem-per-cpu": "REPLACE_MEM"} # Allows for replacing just the REPLACE_ key"
-        lines = self.sbatch_header.split('\n')
         for key, value in header_dict.items():
-            line = f"#SBATCH --{key}={value}"
-            if f'--{key}=' in self.sbatch_header: # Replace the sbatch key
-                idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
-                if value == "" or value is None: # Delete the line if value is not specified
-                    del lines[idx]
-                else:
-                    lines[idx] = line
-            else:
-                if key in replace_dict.keys(): # Replace just the REPLACE_ key
-                    idx = [i for i in range(len(lines)) if replace_dict[key] in lines[i]][0]
-                    if value == "" or value is None:
+            if key in replace_dict.keys():# REPLACE_ replacements
+                self.logger.debug(f"Replacing {key}: {replace_dict[key]} -> {value}")
+                self.sbatch_header = self.sbatch_header.replace(replace_dict[key], value)
+                self.logger.debug(self.sbatch_header)
+            else: # SBATCH replacements 
+                lines = self.sbatch_header.split('\n')
+                self.logger.debug(f"SBATCH replacement: {key} -> {value}")
+                line = f"#SBATCH --{key}={value}"
+                if f'--{key}=' in self.sbatch_header: # Replace the sbatch key
+                    idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
+                    if value == "" or value is None: # Delete the line if value is not specified
                         del lines[idx]
                     else:
-                        lines[idx].replace(replace_dict[key], value)
-                else: # If it doesn't exist, either ignore it or append it
+                        lines[idx] = line
+                else:
                     if value == "" or value is None:
                         continue
                     else:
                         lines.append(line)
-        self.sbatch_header = '\n'.join(lines)
+                self.sbatch_header = '\n'.join(lines)
         self.logger.debug("Updated header")
 
 

@@ -1,4 +1,4 @@
 cd {output_dir}
 source activate
-python {path_to_code}/create_covariance.py {unbinned} {subtract_vpec} {input_file}
+python {path_to_code}create_covariance.py {unbinned} {subtract_vpec} {input_file}
 
