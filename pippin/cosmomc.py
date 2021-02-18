@@ -227,7 +227,7 @@ fi
                 "ini_files": " ".join(self.ini_files),
                 "num_jobs": len(self.ini_files),
                 "num_walkers": self.num_walkers,
-                "job_max_walltime": self.job_max_walltime,
+                #"job_max_walltime": self.job_max_walltime,
             }
 
             format_dict = {
