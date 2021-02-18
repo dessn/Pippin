@@ -8,7 +8,7 @@ if [ $? -ne 0 ]; then
     echo FAILURE > {done_file2}
 else
     echo "#################TIMING  Database done now, starting classifier:   `date`"
-    python run.py {cuda} --sntypes '{sntypes}' --done_file {done_file} --batch_size 20 --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {seed} {command}
+    python run.py {cuda} --sntypes '{sntypes}' --done_file {done_file} {batch_size} {num_layers} {hidden_dim} --dump_dir {dump_dir} {cyclic} {variant} {model} {phot} {redshift} {norm} {seed} {command}
     if [ $? -eq 0 ]; then
         {clean_command}
         echo SUCCESS > {done_file2}

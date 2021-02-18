@@ -77,6 +77,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             self.labels = [self.name + "_" + c for c in self.covopts]
             self.num_jobs = len(self.covopts)
 
+        self.logger.debug(f"Num Walkers: {self.num_walkers}") 
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
 
@@ -107,7 +108,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         self.output["cosmology_params"] = ps[final]
 
         self.slurm = """{sbatch_header}
-        {task_setup}
+{task_setup}
 
 if [ $? -eq 0 ]; then
     echo "SUCCESS" > ${{DONE_FILES[$PARAMS]}}
@@ -213,10 +214,10 @@ fi
                     "job-name": self.job_name,
                     "time": "34:00:00",
                     "ntasks": str(self.num_walkers),
-                    "array": str(1-len(self.ini_files)),
+                    "array": f"1-{len(self.ini_files)}",
                     "cpus-per-task": "1",
                     "output": self.logfile,
-                    "mem-per-cpu": f"{int(20/self.num_walkers)}GB"
+                    "mem-per-cpu": f"{max([int(20/self.num_walkers),1])}GB"
                     }
             self.update_header(header_dict)
 
@@ -227,7 +228,6 @@ fi
                 "ini_files": " ".join(self.ini_files),
                 "num_jobs": len(self.ini_files),
                 "num_walkers": self.num_walkers,
-                #"job_max_walltime": self.job_max_walltime,
             }
 
             format_dict = {

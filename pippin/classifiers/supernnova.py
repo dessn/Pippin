@@ -54,6 +54,9 @@ class SuperNNovaClassifier(Classifier):
         self.cyclic = options.get("CYCLIC", True)
         self.seed = options.get("SEED", 0)
         self.clean = config.get("CLEAN", True)
+        self.batch_size = options.get("BATCH_SIZE", 128)
+        self.num_layers = options.get("NUM_LAYERS", 2)
+        self.hidden_dim = options.get("HIDDEN_DIM", 32)
         self.validate_model()
 
         assert self.norm in [
@@ -165,6 +168,9 @@ class SuperNNovaClassifier(Classifier):
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] and self.cyclic else ""
+        batch_size = f"--batch_size {self.batch_size}"
+        num_layers = f"--num_layers {self.num_layers}"
+        hidden_dim = f"--hidden_dim {self.hidden_dim}"
         variant = f"--model {self.variant}"
         if self.variant == "bayesian":
             variant += " --num_inference_samples 20"
@@ -213,6 +219,9 @@ class SuperNNovaClassifier(Classifier):
             "cuda": "--use_cuda" if self.gpu else "",
             "clean_command": f"rm -rf {self.dump_dir}/processed" if self.clean else "",
             "seed": f"--seed {self.seed}" if self.seed else "",
+            "batch_size": batch_size,
+            "num_layers": num_layers,
+            "hidden_dim": hidden_dim
         }
 
         format_dict = {
