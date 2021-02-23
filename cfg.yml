@@ -25,7 +25,7 @@ DataSkimmer:
   location: $PRODUCTS/utilities/dataskim
 
 CosmoMC:
-  location: $PRODUCTS/CosmoMC/v03/CosmoMC-master
+  location: $PRODUCTS/CosmoMC/v04/CosmoMC-master
   static_loc: cosmomc_static_chains
 
 OUTPUT:
