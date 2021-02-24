@@ -217,7 +217,7 @@ fi
                     "array": f"1-{len(self.ini_files)}",
                     "cpus-per-task": "1",
                     "output": self.logfile,
-                    "mem-per-cpu": f"{max([int(20/self.num_walkers),1])}GB"
+                    "mem-per-cpu": f"{max([int(20/self.num_walkers),4])}GB"
                     }
             self.update_header(header_dict)
 
