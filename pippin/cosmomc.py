@@ -213,7 +213,7 @@ fi
             header_dict = {
                     "job-name": self.job_name,
                     "time": "34:00:00",
-                    "ntasks": f"10",
+                    "ntasks": "10",
                     "array": f"1-{len(self.ini_files)}",
                     "cpus-per-task": "1",
                     "output": self.logfile,
