@@ -213,11 +213,11 @@ fi
             header_dict = {
                     "job-name": self.job_name,
                     "time": "34:00:00",
-                    "ntasks": f"{max([int(self.num_walkers/5),1])}",
+                    "ntasks": f"10",
                     "array": f"1-{len(self.ini_files)}",
                     "cpus-per-task": "1",
                     "output": self.logfile,
-                    "mem-per-cpu": f"{max([int(20/self.num_walkers),4])}GB"
+                    "mem-per-cpu": f"2GB"
                     }
             self.update_header(header_dict)
 
