@@ -140,6 +140,9 @@ fi
         self.yaml["VERSION"] = self.biascor_dep.output["subdirs"][self.index]
         self.yaml["MUOPT_SCALES"] = self.biascor_dep.output["muopt_scales"]
         self.yaml["COVOPTS"] = self.options.get("COVOPTS", [])
+        logging.info(self.options.get("EXTRA_COVS", []))
+        asdf
+        self.yaml["EXTRA_COVS"] = self.options.get("EXTRA_COVS", [])
         self.yaml["CALIBRATORS"] = self.calibration_set
 
         # Load in sys file, add muopt arguments if needed
