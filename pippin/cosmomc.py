@@ -77,15 +77,16 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
             self.labels = [self.name + "_" + c for c in self.covopts]
             self.num_jobs = len(self.covopts)
 
+        self.ntasks = 10
         self.logger.debug(f"Num Walkers: {self.num_walkers}") 
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
 
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
         self.chain_dict = {
-            l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)
+            l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.ntasks)
         }
-        self.base_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", "")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.num_walkers)}
+        self.base_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", "")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.ntasks)}
         self.output["chain_dir"] = self.chain_dir
         self.output["param_dict"] = self.param_dict
         self.output["chain_dict"] = self.chain_dict
@@ -213,7 +214,7 @@ fi
             header_dict = {
                     "job-name": self.job_name,
                     "time": "34:00:00",
-                    "ntasks": "10",
+                    "ntasks": f"{self.ntasks}",
                     "array": f"1-{len(self.ini_files)}",
                     "cpus-per-task": "1",
                     "output": self.logfile,
