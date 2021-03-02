@@ -19,8 +19,8 @@ from pippin.task import Task
 
 
 class Manager:
-    task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoMC, AnalyseChains]
-    stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
+    task_order = [DataPrep, SNANASimulation, CreateHeatmaps, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoMC, AnalyseChains]
+    stages = ["DATAPREP", "SIM", "CREATE_HEATMAPS", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
 
     def __init__(self, filename, config_path, config, message_store):
         self.logger = get_logger()
