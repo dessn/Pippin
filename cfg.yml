@@ -24,12 +24,8 @@ DataSkimmer:
   conda_env: snn_gpu
   location: $PRODUCTS/utilities/dataskim
 
-CreateHeatmaps:
-  conda_env: scone_cpu
-  location: $PRODUCTS/classifiers/scone
-
 SCONE:
-  conda_env: scone_gpu
+  conda_env: scone_cpu
   location: $PRODUCTS/classifiers/scone
 
 CosmoMC:
