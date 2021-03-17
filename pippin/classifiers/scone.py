@@ -40,7 +40,7 @@ class SconeClassifier(Classifier):
         self.global_config = get_config()
         self.options = options
 
-        self.conda_env = self.global_config["SCONE"]["conda_env"]
+        self.conda_env = self.global_config["SCONE"]["conda_env_cpu"] if not self.gpu else self.global_config["SCONE"]["conda_env_gpu"]
         self.path_to_classifier = self.global_config["SCONE"]["location"]
 
         self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)

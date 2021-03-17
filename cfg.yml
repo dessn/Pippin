@@ -25,7 +25,8 @@ DataSkimmer:
   location: $PRODUCTS/utilities/dataskim
 
 SCONE:
-  conda_env: scone_cpu
+  conda_env_cpu: scone_cpu
+  conda_env_gpu: scone_gpu
   location: $PRODUCTS/classifiers/scone
 
 CosmoMC:
@@ -45,4 +46,3 @@ SBATCH:
 
 SETUP:
     location: $PRODUCTS/pippin/pippin/tasks
-    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks
