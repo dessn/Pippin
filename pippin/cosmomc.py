@@ -162,10 +162,12 @@ fi
     def get_ini_file(self):
         mkdirs(self.chain_dir)
         directory = self.create_cov_dep.output["ini_dir"]
+        self.logger.debug(f"Directory: {directory}")
 
         input_files = []
         for file in self.ini_files:
             path = os.path.join(directory, file)
+            self.logger.debug(f"Path: {path}")
             if not os.path.exists(path):
                 self.logger.error(f"Cannot find the file {path}, make sure you specified a correct INI string matching an existing template")
                 return None
@@ -175,6 +177,7 @@ fi
                     f.read().format(**{"path_to_cosmomc": self.path_to_cosmomc, "ini_dir": self.create_cov_dep.output["ini_dir"], "root_dir": self.chain_dir})
                 )
 
+        self.logger.debug(f"Input Files: {input_files}")
         return input_files
 
     def _run(self):
