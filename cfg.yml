@@ -40,5 +40,5 @@ SBATCH:
   clean: True
 
 SETUP:
-    location: $PRODUCTS/pippin/pippin/tasks
-    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks
+    #location: $PRODUCTS/pippin/pippin/tasks
+    location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks
