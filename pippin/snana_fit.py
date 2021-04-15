@@ -134,7 +134,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         for label, scale_command in values.items():
                             scale, command = scale_command.split(maxsplit=1)
                             fitopt = f"/{label}/ {command}"
-                            self.logger.debug(f"Adding FITOPT from {key}: {fitopt}")
+                            self.logger.debug(f"Adding FITOPT from {key}: {fitopt} for SURVEY: {survey}")
                             fitopts.append(fitopt)
             else:
                 raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")

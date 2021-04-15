@@ -161,6 +161,8 @@ def plot_histograms(data, sims, types, figname):
 
 
 def get_means_and_errors(x, y, bins):
+    x = np.array(x)
+    y = np.array(y)
     means, *_ = binned_statistic(x, y, bins=bins, statistic="mean")
     err, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size))
 

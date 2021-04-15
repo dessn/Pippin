@@ -24,6 +24,11 @@ DataSkimmer:
   conda_env: snn_gpu
   location: $PRODUCTS/utilities/dataskim
 
+SCONE:
+  conda_env_cpu: scone_cpu
+  conda_env_gpu: scone_gpu
+  location: $PRODUCTS/classifiers/scone
+
 CosmoMC:
   location: $PRODUCTS/CosmoMC/v04/CosmoMC-master
   static_loc: cosmomc_static_chains

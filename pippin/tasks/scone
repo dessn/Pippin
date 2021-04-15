@@ -1,0 +1,21 @@
+source activate {conda_env}
+cd {path_to_classifier}
+if ! [ -f {heatmaps_path}/done.log ]; then
+    echo {heatmaps_path}/done.log
+    echo "#################TIMING  heatmap creation start:   `date`"
+    python create_heatmaps.py --config_path {config_path}
+    if ! [ $? -eq 0 ]; then
+        echo "create heatmaps FAILED"
+        echo create_heatmaps FAILURE >> {done_file}
+        exit 1
+    fi
+fi
+echo "#################TIMING  heatmap creation done now, starting classifier:   `date`"
+python run_model.py --config_path {config_path}
+if [ $? -eq 0 ]; then
+    echo classify SUCCESS >> {done_file}
+else
+    echo classify FAILURE >> {done_file}
+fi
+echo "#################TIMING  classifier finished:   `date`"
+

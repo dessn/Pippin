@@ -126,6 +126,19 @@ CLASSIFICATION:
       MODEL: SNIRFFITOPTTRAIN
       FITOPT: SALT20_cal
 
+  SCONE: # Helen's CNN classifier
+    CLASSIFIER: SconeClassifier
+    MODE: train # or predict
+    OPTS:
+      # HEATMAP CREATION OPTS
+      CATEGORICAL: True # OPTIONAL, binary or categorical classification, default: False
+      NUM_WAVELENGTH_BINS: 32 # OPTIONAL, heatmap height, default: 32
+      NUM_MJD_BINS: 180 # OPTIONAL, heatmap width, default: 180
+      REMAKE_HEATMAPS: False # OPTIONAL, SCONE does not remake heatmaps unless the 3_CLAS/heatmaps subdir doesn't exist or if this param is true, default: False
+      # MODEL OPTS
+      NUM_EPOCHS: 400 # REQUIRED, number of training epochs
+      IA_FRACTION: 0.5 # OPTIONAL, desired Ia fraction in train/validation/test sets for binary classification, default: 0.5
+
   UNITY:
     CLASSIFIER: UnityClassifier  # The unity classifier is used for spec samples - just returns 1.0 for everything.
     MODE: predict
