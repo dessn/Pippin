@@ -166,7 +166,7 @@ def get_means_and_errors(x, y, bins):
     x = np.array(x)
     y = np.array(y)
     means, *_ = binned_statistic(x, y, bins=bins, statistic="mean")
-    err, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size))
+    err, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(len(x)))
 
     std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
     std_err, *_ = binned_statistic(
@@ -174,8 +174,8 @@ def get_means_and_errors(x, y, bins):
         y,
         bins=bins,
         statistic=lambda x: np.nan
-        if x.size < 20
-        else np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
+        if len(x) < 20
+        else np.sqrt((1 / len(x)) * (moment(x, 4) - (((len(x) - 3) / (len(x) - 1)) * np.var(x) ** 2))) / (2 * np.std(x)),
     )
     return means, err, std, std_err
 
