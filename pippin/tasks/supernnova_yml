@@ -1,0 +1,20 @@
+source activate {conda_env}
+module load cuda
+echo `which python`
+cd {path_to_classifier}
+echo "#################TIMING  Starting here:   `date`"
+python run_yml.py {data_yml} --mode data
+if [ $? -ne 0 ]; then
+     echo FAILURE > {done_file2}
+else
+    echo "#################TIMING  Database done now, starting classifier:   `date`"
+    python run_yml.py {classification_yml} --mode {classification_command}
+    if [ $? -eq 0 ]; then
+        {clean_command}
+        echo SUCCESS > {done_file2}
+    else
+        echo FAILURE > {done_file2}
+    fi
+fi
+echo "#################TIMING  Classifier finished:   `date`"
+

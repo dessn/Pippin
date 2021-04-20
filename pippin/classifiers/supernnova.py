@@ -7,6 +7,7 @@ from collections import OrderedDict
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
 from pippin.task import Task
+from time import sleep
 
 
 class SuperNNovaClassifier(Classifier):
@@ -57,6 +58,27 @@ class SuperNNovaClassifier(Classifier):
         self.batch_size = options.get("BATCH_SIZE", 128)
         self.num_layers = options.get("NUM_LAYERS", 2)
         self.hidden_dim = options.get("HIDDEN_DIM", 32)
+
+        # Setup yml files
+        self.data_yml_file = options.get("DATA_YML", None)
+        self.output_data_yml = os.path.join(self.output_dir, "data.yml")
+        self.classification_yml_file = options.get("CLASSIFICATION_YML", None)
+        self.output_classification_yml = os.path.join(self.output_dir, "classification.yml")
+        # XOR - only runs if either but not both yml's are None
+        if (self.data_yml_file is None) ^ (self.classification_yml_file is None):
+            self.logger.error(f"If using yml inputs, both 'DATA_YML' (currently {self.data_yml} and 'CLASSIFICATION_YML' (currently {self.classification_yml}) must be provided")
+        elif self.data_yml_file is not None:
+            with open(self.data_yml_file, 'r') as f:
+                self.data_yml = f.read()
+            with open(self.classification_yml_file, 'r') as f:
+                self.classification_yml = f.read()
+            self.has_yml = True
+            self.variant = self.get_variant_from_yml(self.classification_yml)
+        else:
+            self.data_yml = None
+            self.classification_yml = None                
+            self.has_yml = False
+
         self.validate_model()
 
         assert self.norm in [
@@ -74,22 +96,53 @@ class SuperNNovaClassifier(Classifier):
         self.conda_env = self.global_config["SuperNNova"]["conda_env"]
         self.path_to_classifier = get_output_loc(self.global_config["SuperNNova"]["location"])
 
-    def get_model_and_pred(self):
-        model_folder = self.dump_dir + "/models"
-        files = [f for f in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, f))]
-        assert len(files) == 1, f"Did not find singular output file: {str(files)}"
-        saved_dir = os.path.abspath(os.path.join(model_folder, files[0]))
+    def get_variant_from_yml(self, yml_file):
+        if "model" in yml_file:
+            self.logger.debug("Detected model in yml file")
+            stripped = "".join(yml_file.split(' '))
+            if "model:bayesian" in stripped:
+                self.logger.debug("Detected bayesian model")
+                return "bayesian"
+            if "model:variational" in stripped:
+                self.logger.debug("Detected variational model")
+                return "variational"
+        self.logger.debug("Defaulting variant to vanilla")
+        return "vanilla"
 
-        subfiles = list(os.listdir(saved_dir))
-        model_files = [f for f in subfiles if f.endswith(".pt")]
-        if model_files:
-            model_file = os.path.join(saved_dir, model_files[0])
-            self.logger.debug(f"Found model file {model_file}")
-        else:
-            self.logger.debug("No model found. Not an issue if you've specified a model.")
-            model_file = None
-        ending = "_aggregated.pickle" if self.variant in ["variational", "bayesian"] else ".pickle"
-        pred_file = [f for f in subfiles if f.startswith("PRED") and f.endswith(ending)][0]
+    def update_yml(self):
+        replace_dict = {"DONE_FILE": self.done_file, "DUMP_DIR": self.dump_dir, "RAW_DIR": self.raw_dir}
+        for key, value in replace_dict.items():
+            self.data_yml = self.data_yml.replace(key, value)
+            self.classification_yml = self.classification_yml.replace(key, value)
+
+    def get_model_and_pred(self):
+        max_tries = 100
+        while max_tries > 0:
+            self.logger.debug(f"Max Tries: {max_tries}")
+            try:
+                model_folder = self.dump_dir + "/models"
+                files = [f for f in os.listdir(model_folder) if os.path.isdir(os.path.join(model_folder, f))]
+                assert len(files) == 1, f"Did not find singular output file: {str(files)}"
+                saved_dir = os.path.abspath(os.path.join(model_folder, files[0]))
+
+                subfiles = list(os.listdir(saved_dir))
+                model_files = [f for f in subfiles if f.endswith(".pt")]
+                if model_files:
+                    model_file = os.path.join(saved_dir, model_files[0])
+                    self.logger.debug(f"Found model file {model_file}")
+                else:
+                    self.logger.debug("No model found. Not an issue if you've specified a model.")
+                    model_file = None
+                ending = "_aggregated.pickle" if self.variant in ["variational", "bayesian"] else ".pickle"
+                pred_files = [f for f in subfiles if f.startswith("PRED") and f.endswith(ending)]
+                self.logger.debug(pred_files)
+                pred_file = pred_files[0]
+                self.logger.debug(f"Success after {100-max_tries} tries.")
+                break
+            except Exception as e:
+                self.logger.debug(e)
+                sleep(5)
+                max_tries -= 1
         return model_file, os.path.join(saved_dir, pred_file)
 
     def train(self):
@@ -165,6 +218,7 @@ class SuperNNovaClassifier(Classifier):
 
         sim_dep = self.get_simulation_dependency()
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
+        self.raw_dir = light_curve_dir
         fit = self.get_fit_dependency()
         fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] and self.cyclic else ""
@@ -184,6 +238,12 @@ class SuperNNovaClassifier(Classifier):
             self.sbatch_header = self.sbatch_gpu_header
         else:
             self.sbatch_header = self.sbatch_cpu_header
+
+        if self.has_yml:
+            self.update_yml()
+            setup_file = "supernnova_yml"
+        else:
+            setup_file = "supernnova"
 
         header_dict = {
                 "job-name": self.job_base_name,
@@ -221,12 +281,15 @@ class SuperNNovaClassifier(Classifier):
             "seed": f"--seed {self.seed}" if self.seed else "",
             "batch_size": batch_size,
             "num_layers": num_layers,
-            "hidden_dim": hidden_dim
+            "hidden_dim": hidden_dim,
+            "data_yml": self.output_data_yml,
+            "classification_yml": self.output_classification_yml,
+            "classification_command": "train_rnn" if training else "validate_rnn"
         }
 
         format_dict = {
             "sbatch_header": self.sbatch_header,
-            "task_setup": self.update_setup(setup_dict, self.task_setup['supernnova'])
+            "task_setup": self.update_setup(setup_dict, self.task_setup[setup_file])
                 }
 
         slurm_output_file = self.output_dir + "/job.slurm"
@@ -241,6 +304,12 @@ class SuperNNovaClassifier(Classifier):
             self.logger.info("Rerunning. Cleaning output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
+            if self.has_yml:
+                with open(self.output_data_yml, 'w') as f:
+                    f.write(self.data_yml)
+                with open(self.output_classification_yml, 'w') as f:
+                    f.write(self.classification_yml)
+
             self.save_new_hash(new_hash)
 
             with open(slurm_output_file, "w") as f:
@@ -281,6 +350,8 @@ class SuperNNovaClassifier(Classifier):
                 if not os.path.exists(new_pred_file):
                     with open(predictions, "rb") as f:
                         dataframe = pickle.load(f)
+                        self.logger.debug(dataframe)
+                        self.logger.debug(self.variant)
                         if self.variant in ["variational", "bayesian"]:
                             final_dataframe = dataframe[["SNID", "all_class0_median", "all_class0_std"]]
                             final_dataframe = final_dataframe.rename(
