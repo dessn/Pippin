@@ -503,6 +503,24 @@ CLASSIFICATION:
       SEED: 0  # Sets random seed. Defaults to 0.
 ```
 
+Pippin also allows for supernnova input yaml files to be passed, instead of having to define all of the options in the Pippin input yaml. This is done via:
+
+```yaml
+OPTS:
+    DATA_YML: path/to/data_input.yml
+    CLASSIFICATION_YML: path/to/classification_input.yml
+```
+
+Example input yaml files can be found [here](https://github.com/supernnova/SuperNNova/tree/master/configs_yml), with the important variation that you must have:
+
+```yaml
+raw_dir: RAW_DIR
+dump_dir: DUMP_DIR
+done_file: DONE_FILE
+```
+
+So that Pippin can automatically replace these with the appropriate directories. 
+
 #### SNIRF Classifier
 
 The [SNIRF classifier](https://github.com/evevkovacs/ML-SN-Classifier) is a random forest running off SALT2 summary
