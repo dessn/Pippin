@@ -51,22 +51,32 @@ def plot_histograms(data, sims, types, figname):
         "SNRMAX1",
         "SNRMAX2",
         "SNRMAX3",
-        "SNRMAX_g",
-        "SNRMAX_r",
-        "SNRMAX_i",
-        "SNRMAX_z",
+        #"SNRMAX_g",
+        #"SNRMAX_r",
+        #"SNRMAX_i",
+        #"SNRMAX_z",
+        ["zHD","c"],
+        ["zHD","x1"],
+        ["zHD","HOST_LOGMASS"],
         "NDOF",
-        "chi2_g",
-        "chi2_r",
-        "chi2_i",
-        "chi2_z",
+        #"chi2_g",
+        #"chi2_r",
+        #"chi2_i",
+        #"chi2_z",
         "__MUDIFF",
     ]
     restricted = ["FITCHI2", "SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "chi2_g", "chi2_r", "chi2_i", "chi2_z"]
     logs = ["SNRMAX1", "SNRMAX2", "SNRMAX3", "SNRMAX_g", "SNRMAX_r", "SNRMAX_i", "SNRMAX_z", "FITCHI2", "chi2_g", "chi2_r", "chi2_i", "chi2_z", "__MUDIFF"]
 
     cs = ["#1976D2", "#FB8C00", "#8BC34A", "#E53935", "#4FC3F7", "#43A047", "#F2D026", "#673AB7", "#FFB300", "#E91E63", "#F2D026"] * 3
-    cols = [c for c in cols if c in data[0][0].columns]
+    usecols = []
+    for c in cols:
+        if isinstance(c, list):
+            if (c[0] in data[0][0].columns) & (c[1] in data[0][0].columns):
+                usecols.append(c)
+        else:
+            if c in data[0][0].columns:
+                usecols.append(c)
 
     for c in restricted:
         for x in data + sims:
@@ -81,80 +91,124 @@ def plot_histograms(data, sims, types, figname):
     for c, ax in zip(cols, axes.flatten()):
         ax.set_axis_on()
         u = 0.95 if c in restricted else 0.99
-        minv = min([x[0][c].quantile(0.01) for x in data + sims])
-        maxv = max([x[0][c].quantile(u) for x in data + sims])
-        bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
-        bc = 0.5 * (bins[1:] + bins[:-1])
 
-        for i, (d, n) in enumerate(data):
-            hist, _ = np.histogram(d[c], bins=bins)
-            err = np.sqrt(hist)
-            area = (bins[1] - bins[0]) * hist.sum()
-            delta = (bc[1] - bc[0]) / 20
-            ax.errorbar(bc + i * delta, hist / area, yerr=err / area, fmt="o", ms=2, elinewidth=0.75, label=n)
+        #HISTOGRAM
+        if not isinstance(c, list):
+            minv = min([x[0][c].quantile(0.01) for x in data + sims])
+            maxv = max([x[0][c].quantile(u) for x in data + sims])
+            bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
+            bc = 0.5 * (bins[1:] + bins[:-1])
 
-        lw = 1 if len(sims) < 3 else 0.5
-        for index, (s, n) in enumerate(sims):
-            mask = np.isin(s["TYPE"], types)
-            ia = s[mask]
-            nonia = s[~mask]
+            for i, (d, n) in enumerate(data):
+                hist, _ = np.histogram(d[c], bins=bins)
+                err = np.sqrt(hist)
+                area = (bins[1] - bins[0]) * hist.sum()
+                delta = (bc[1] - bc[0]) / 20
+                ax.errorbar(bc + i * delta, hist / area, yerr=err / area, fmt="o", ms=2, elinewidth=0.75, label=n)
 
-            hist, _ = np.histogram(s[c], bins=bins)
-            area = (bins[1] - bins[0]) * hist.sum()
+            lw = 1 if len(sims) < 3 else 0.5
+            for index, (s, n) in enumerate(sims):
+                mask = np.isin(s["TYPE"], types)
+                ia = s[mask]
+                nonia = s[~mask]
+                if len(np.unique(s[c])) == 1:
+                    continue
+                hist, _ = np.histogram(s[c], bins=bins)
+                area = (bins[1] - bins[0]) * hist.sum()
 
-            ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=lw, color=cs[index])
-            if len(sims) == 1 and nonia.shape[0] > 10 and len(data) == 1:
-                logging.info(f"Nonia shape is {nonia.shape}")
-                ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
-                ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
+                ax.hist(s[c], bins=bins, histtype="step", weights=np.ones(s[c].shape) / area, label=n, linewidth=lw, color=cs[index])
+                if len(sims) == 1 and nonia.shape[0] > 10 and len(data) == 1:
+                    logging.info(f"Nonia shape is {nonia.shape}")
+                    ax.hist(ia[c], bins=bins, histtype="step", weights=np.ones(ia[c].shape) / area, linestyle="--", label=n + " Ia only", linewidth=1)
+                    ax.hist(nonia[c], bins=bins, histtype="step", weights=np.ones(nonia[c].shape) / area, linestyle=":", label=n + " CC only", linewidth=1)
 
-        if "MUDIFF" in c:
-            ax.set_xlabel("FAKE MUDIFF")
+            if "MUDIFF" in c:
+                ax.set_xlabel("FAKE MUDIFF")
+            else:
+                ax.set_xlabel(c)
+            if c in logs:
+                ax.set_yscale("log")
+                ax.tick_params(axis="y", which="both", labelsize=2)
+                labels = ["" for item in ax.get_yticklabels()]
+                ax.set_yticklabels(labels)
+
+            # Add the reduced chi2 value if there are only one data and one sim
+            if len(sims) < 3 and len(data) == 1:
+                data_col = data[0][0][c]
+                data_hist, _ = np.histogram(data_col, bins=bins)
+                data_err = 1 / np.sqrt(data_hist)
+                data_dist, _ = np.histogram(data_col, bins=bins, density=True)
+
+                for i, (s, n) in enumerate(sims):
+                    sim_col = s[c]
+                    
+                    sim_hist, _ = np.histogram(sim_col, bins=bins)
+                    sim_err = 1 / np.sqrt(data_hist)
+                    sim_dist, _ = np.histogram(sim_col, bins=bins, density=True)
+
+                    dist_error = np.sqrt((data_dist * data_err) ** 2 + (sim_dist * sim_err) ** 2)
+                    dist_diff = data_dist - sim_dist
+
+                    chi2 = np.nansum(((dist_diff / dist_error) ** 2))
+                    ndof = len(bc)
+                    red_chi2 = chi2 / ndof
+
+                    ax.text(
+                        0.99,
+                        0.99 - 0.1 * i,
+                        f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}",
+                        horizontalalignment="right",
+                        verticalalignment="top",
+                        transform=ax.transAxes,
+                        color=cs[i],
+                        fontsize=8,
+                    )
+            ax.set_yticklabels([])
         else:
-            ax.set_xlabel(c)
-        if c in logs:
-            ax.set_yscale("log")
-            ax.tick_params(axis="y", which="both", labelsize=2)
-            labels = ["" for item in ax.get_yticklabels()]
-            ax.set_yticklabels(labels)
-
-        # Add the reduced chi2 value if there are only one data and one sim
-        if len(sims) < 3 and len(data) == 1:
-            data_col = data[0][0][c]
-            data_hist, _ = np.histogram(data_col, bins=bins)
-            data_err = 1 / np.sqrt(data_hist)
-            data_dist, _ = np.histogram(data_col, bins=bins, density=True)
+            minv = min([x[0][c[0]].quantile(0.01) for x in data + sims])
+            maxv = max([x[0][c[0]].quantile(u) for x in data + sims])
+            bins = np.linspace(minv, maxv, 20)
 
             for i, (s, n) in enumerate(sims):
-                sim_col = s[c]
+                sim_xcol = s[c[0]]
+                sim_ycol = s[c[1]]
+                bin_medians, bin_edges, binnumber = binned_statistic(sim_xcol,
+                                                                         sim_ycol, 
+                                                                         statistic='median', 
+                                                                         bins=bins)
+                bincenters = (bin_edges[:-1]+ bin_edges[1:])/2.
+                ax.plot(bincenters,bin_medians,label=n,alpha=.9,color=cs[i])
 
-                sim_hist, _ = np.histogram(sim_col, bins=bins)
-                sim_err = 1 / np.sqrt(data_hist)
-                sim_dist, _ = np.histogram(sim_col, bins=bins, density=True)
+            for i, (d, n) in enumerate(data):
+                data_xcol = d[c[0]]
+                data_ycol = d[c[1]]
+                try:
+                    bin_medians, bin_edges, binnumber = binned_statistic(data_xcol,
+                                                                         data_ycol,
+                                                                         statistic='median',
+                                                                         bins=bins)
+                    bin_stds, bin_edges, binnumber = binned_statistic(data_xcol,
+                                                                         data_ycol,
+                                                                         statistic='std',
+                                                                         bins=bins)
+                    bin_counts, bin_edges, binnumber = binned_statistic(data_xcol,
+                                                                         data_ycol,
+                                                                         statistic='count',
+                                                                         bins=bins)
+                    
 
-                dist_error = np.sqrt((data_dist * data_err) ** 2 + (sim_dist * sim_err) ** 2)
-                dist_diff = data_dist - sim_dist
-
-                chi2 = np.nansum(((dist_diff / dist_error) ** 2))
-                ndof = len(bc)
-                red_chi2 = chi2 / ndof
-
-                ax.text(
-                    0.99,
-                    0.99 - 0.1 * i,
-                    f"{chi2:0.1f}/{ndof:d}={red_chi2:0.1f}",
-                    horizontalalignment="right",
-                    verticalalignment="top",
-                    transform=ax.transAxes,
-                    color=cs[i],
-                    fontsize=8,
-                )
-
+                    bincenters = (bin_edges[:-1]+ bin_edges[1:])/2.
+                    ax.errorbar(bincenters,bin_medians,yerr=bin_stds/np.sqrt(bin_counts),fmt='o',label=n,alpha=.9)
+                except:
+                    pass
+            ax.set_xlabel(c[0])
+            ax.set_ylabel(c[1])
+            #ax.legend()
     handles, labels = ax.get_legend_handles_labels()
     bb = (fig.subplotpars.left, fig.subplotpars.top + 0.02, fig.subplotpars.right - fig.subplotpars.left, 0.1)
-
-    for ax in axes.flatten():
-        ax.set_yticklabels([])
+        
+    #for ax in axes.flatten():
+    #    ax.set_yticklabels([])
 
     fig.legend(handles, labels, loc="upper center", ncol=4, mode="expand", frameon=False, bbox_to_anchor=bb, borderaxespad=0.0, bbox_transform=fig.transFigure)
     # plt.legend(bbox_to_anchor=(-3, 2.3, 4.0, 0.2), loc="lower left", mode="expand", ncol=3, frameon=False)
@@ -258,15 +312,18 @@ if __name__ == "__main__":
         plot_histograms(data_dfs, sim_dfs, args["IA_TYPES"], "hist.png")
         plot_redshift_evolution(data_dfs, sim_dfs, args["IA_TYPES"], "redshift.png")
 
-        fields = [(["X3", "C3"], "DEEP"), (["C1", "C2", "S1", "S2", "E1", "E2", "X1", "X2"], "SHALLOW")]
-        for f, n in fields:
-            data_masks = [np.isin(d["FIELD"], f) for d, _ in data_dfs]
-            sim_masks = [np.isin(s["FIELD"], f) for s, _ in sim_dfs]
+        try:
+            fields = [(["X3", "C3"], "DEEP"), (["C1", "C2", "S1", "S2", "E1", "E2", "X1", "X2"], "SHALLOW")]
+            for f, n in fields:
+                data_masks = [np.isin(d["FIELD"], f) for d, _ in data_dfs]
+                sim_masks = [np.isin(s["FIELD"], f) for s, _ in sim_dfs]
 
-            masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
-            masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
-            plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
-            plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
+                masked_data_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(data_dfs, data_masks)]
+                masked_sim_dfs = [(d[0].loc[m, :], d[1]) for d, m in zip(sim_dfs, sim_masks)]
+                plot_histograms(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"hist_{n}.png")
+                plot_redshift_evolution(masked_data_dfs, masked_sim_dfs, args["IA_TYPES"], f"redshift_{n}.png")
+        except:
+            logging.info(f"NO DES Fields, skipping...")
 
         logging.info(f"Finishing gracefully")
 

@@ -52,8 +52,12 @@ def read_fits(fname,drop_separators=False):
     df_header = df_header[["SNID", "SNTYPE", "PEAKMJD", "REDSHIFT_FINAL", "MWEBV"]]
     df_phot = df_phot[["SNID", "MJD", "FLT", "FLUXCAL", "FLUXCALERR"]]
     df_header = df_header.rename(columns={"SNID":"object_id", "SNTYPE": "true_target", "PEAKMJD": "true_peakmjd", "REDSHIFT_FINAL": "true_z", "MWEBV": "mwebv"})
-    df_header.replace({"true_target": 
-        {120: 42, 20: 42, 121: 42, 21: 42, 122: 42, 22: 42, 130: 62, 30: 62, 131: 62, 31: 62, 101: 90, 1: 90, 102: 52, 2: 52, 104: 64, 4: 64, 103: 95, 3: 95, 191: 67, 91: 67}}, inplace=True)
+    if "true_target" in df_header.columns:
+        print("has true target: {}".format(df_header.true_target))
+        df_header.replace({"true_target": 
+            {120: 42, 20: 42, 121: 42, 21: 42, 122: 42, 22: 42, 130: 62, 30: 62, 131: 62, 31: 62, 101: 90, 1: 90, 102: 52, 2: 52, 104: 64, 4: 64, 103: 95, 3: 95, 191: 67, 91: 67}}, inplace=True)
+    else:
+        df_header["true_target"] = len(df_header) * [0]
     df_phot = df_phot.rename(columns={"SNID":"object_id", "MJD": "mjd", "FLT": "passband", "FLUXCAL": "flux", "FLUXCALERR": "flux_err"})
     passband_dict = {"passband": {b'u ': 0, b'g ': 1, b'r ': 2, b'i ': 3, b'z ': 4, b'Y ': 5}}
     df_phot = df_phot[df_phot.passband.isin(passband_dict["passband"])]

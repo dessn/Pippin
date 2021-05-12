@@ -4,6 +4,7 @@ import subprocess
 from pathlib import Path
 import yaml
 import pandas as pd
+import re
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
@@ -30,6 +31,7 @@ class SconeClassifier(Classifier):
           REMAKE_HEATMAPS: False 
           NUM_EPOCHS: 400 
           IA_FRACTION: 0.5
+          TRAINED_MODEL: /path/to/trained/model
 
     OUTPUTS:
     ========
@@ -61,15 +63,15 @@ class SconeClassifier(Classifier):
         self.keep_heatmaps = not remake_heatmaps
 
     def classify(self, mode):
-        if self.gpu:
-            self.sbatch_header = self.sbatch_gpu_header
-        else:
-            self.sbatch_header = self.sbatch_cpu_header
+        # if self.gpu:
+        #     self.sbatch_header = self.sbatch_gpu_header
+        # else:
+        self.sbatch_header = self.sbatch_cpu_header
 
         header_dict = {
                 "job-name": self.job_base_name,
                 "output": "output.log",
-                "time": "00:55:00", # TODO: scale based on number of heatmaps
+                "time": "10:00:00", # TODO: scale based on number of heatmaps
                 "mem-per-cpu": "8GB",
                 "ntasks": "1",
                 "cpus-per-task": "4"
@@ -106,12 +108,12 @@ class SconeClassifier(Classifier):
 
         if self._check_regenerate(new_hash) or failed:
             self.logger.debug("Regenerating")
-            if not heatmaps_created:
-                shutil.rmtree(self.output_dir, ignore_errors=True)
-                mkdirs(self.output_dir)
-            else:
-                for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
-                    os.remove(f)
+            # if not heatmaps_created:
+            #     shutil.rmtree(self.output_dir, ignore_errors=True)
+            #     mkdirs(self.output_dir)
+            # else:
+            #     for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
+            #         os.remove(f)
 
             sim_dep = self.get_simulation_dependency()
             sim_dirs = sim_dep.output["photometry_dirs"]
@@ -151,14 +153,34 @@ class SconeClassifier(Classifier):
         config["Ia_fraction"] = self.options.get("IA_FRACTION", 0.5)
         config["donefile"] = self.done_file
         config["output_path"] = self.output_dir
+        config["trained_model"] = self.options.get("TRAINED_MODEL", False)
         config["mode"] = mode
-        config["sn_type_id_to_name"] = {42: "SNII",
-          52: "SNIax",
-          62: "SNIbc",
-          67: "SNIa-91bg",
-          64: "KN",
-          90: "SNIa",
-          95: "SLSN-1"}
+        config["sn_type_id_to_name"] ={0.0: "unknown",
+           5.0: "non",
+           23.0: "non",
+           29.0: "non",
+           32.0: "non",
+           33.0: "non",
+           39.0: "non",
+           41.0: "non",
+           42.0: "non",
+           64.0: "non",
+           66.0: "non",
+           80.0: "non",
+           81.0: "non",
+           82.0: "non",
+           90.0: "SNIa",
+           129.0: "non",
+           139.0: "non",
+           141.0: "non",
+           180.0: "non"}
+# config["sn_type_id_to_name"] = {42: "SNII",
+        #   52: "SNIax",
+        #   62: "SNIbc",
+        #   67: "SNIa-91bg",
+        #   64: "KN",
+        #   90: "SNIa",
+        #   95: "SLSN-1"}
 
         with open(config_path, "w+") as cfgfile:
             cfgfile.write(yaml.dump(config))
@@ -199,8 +221,8 @@ class SconeClassifier(Classifier):
         csv_lcdata_paths = []
 
         for path in lcdata_paths:
-            csv_metadata_path = os.path.join(output_dir, os.path.basename(path).replace("PHOT.FITS.gz", "HEAD.csv"))
-            csv_lcdata_path = os.path.join(output_dir, os.path.basename(path).replace(".FITS.gz", ".csv"))
+            csv_metadata_path = os.path.join(output_dir, re.sub("PHOT.FITS*", "HEAD.csv", os.path.basename(path)))
+            csv_lcdata_path = os.path.join(output_dir, re.sub(".FITS*", ".csv", os.path.basename(path)))
 
             if os.path.exists(csv_metadata_path) and os.path.exists(csv_lcdata_path):
                 csv_metadata_paths.append(csv_metadata_path)
