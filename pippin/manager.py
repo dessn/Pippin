@@ -63,7 +63,7 @@ class Manager:
         self.force_ignore_stage = None
 
     def load_task_setup(self):
-        tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone']
+        tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone', 'dataprep']
         self.task_setup = {}
         for task in tasks:
             with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:

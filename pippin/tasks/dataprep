@@ -1,0 +1,8 @@
+cd {path_to_task}
+snana.exe clump.nml
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file}
+else
+    echo FAILURE > {done_file}
+fi
+

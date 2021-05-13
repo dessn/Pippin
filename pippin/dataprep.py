@@ -78,24 +78,27 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
             self.types.update({n: "II"})
         self.output["types"] = self.types
 
-        self.slurm = """#!/bin/bash
-#SBATCH --job-name={job_name}
-#SBATCH --time=0:20:00
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --partition=broadwl
-#SBATCH --output={log_file}
-#SBATCH --account=pi-rkessler
-#SBATCH --mem=2GB
+        self.slurm = """{sbatch_header}
+        {task_setup}"""
 
-cd {path_to_task}
-snana.exe clump.nml
-if [ $? -eq 0 ]; then
-    echo SUCCESS > {done_file}
-else
-    echo FAILURE > {done_file}
-fi
-"""
+#        self.slurm = """#!/bin/bash
+##SBATCH --job-name={job_name}
+##SBATCH --time=0:20:00
+##SBATCH --nodes=1
+##SBATCH --ntasks-per-node=1
+##SBATCH --partition=broadwl
+##SBATCH --output={log_file}
+##SBATCH --account=pi-rkessler
+##SBATCH --mem=2GB
+#
+#cd {path_to_task}
+#snana.exe clump.nml
+#if [ $? -eq 0 ]; then
+#    echo SUCCESS > {done_file}
+#else
+#    echo FAILURE > {done_file}
+#fi
+#"""
         self.clump_command = """#
 # Obtaining Clump fit
 # to run:
@@ -153,7 +156,28 @@ fi
         command_string = self.clump_command.format(
             genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin
         )
-        format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
+        header_dict = {
+                "job-name": self.job_name,
+                "time": "0:20:00",
+                "ntasks": "1",
+                "cpus-per-task": "1",
+                "output": self.logfile,
+                "mem-per-cpu": "2GB"
+                }
+        if self.gpu:
+            self.sbatch_header = self.sbatch_gpu_header
+        else:
+            self.sbatch_header = self.sbatch_cpu_header
+        self.update_header(header_dict)
+        setup_dict = {
+                "path_to_task": self.path_to_task,
+                "done_file": self.done_file
+                }
+        format_dict = {
+                "sbatch_header": self.sbatch_header,
+                "task_setup": self.update_setup(setup_dict, self.task_setup['dataprep'])
+                }
+        #format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(command_string + final_slurm)
