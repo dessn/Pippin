@@ -162,6 +162,10 @@ class Classifier(Task):
             else:
                 mode = Classifier.PREDICT
 
+            # Validate that train is not used on certain classifiers
+            if mode == Classifier.TRAIN:
+                assert name not in ["PerfectClassifier", "UnityClassifier", "FitProbClassifier"], f"Can not use train mode with {name}"
+
             needs_sim, needs_lc = cls.get_requirements(options)
 
             runs = []
