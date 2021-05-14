@@ -50,6 +50,7 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.output_info = os.path.join(self.output_dir, f"{self.genversion}.YAML")
         self.output["genversion"] = self.genversion
         self.opt_setpkmjd = options.get("OPT_SETPKMJD", 16)
+        self.photflag_mskrej = options.get("PHOTFLAG_MSKREJ", 1016)
         self.output["data_path"] = self.data_path
         self.output["photometry_dirs"] = [get_output_loc(self.raw_dir)]
         self.output["sim_folders"] = [get_output_loc(self.raw_dir)]
@@ -114,7 +115,7 @@ fi
      PRIVATE_DATA_PATH = '{data_path}'
      VERSION_PHOTOMETRY = '{genversion}'
 
-     PHOTFLAG_MSKREJ   = 1016 !PHOTFLAG eliminate epoch that has errors, not LC 
+     PHOTFLAG_MSKREJ   = {photflag_mskrej} !PHOTFLAG eliminate epoch that has errors, not LC 
 
      {photflag}
      {cutwin_snr_nodetect}
@@ -151,7 +152,7 @@ fi
         photflag = f"PHOTFLAG_DETECT = {val_p}" if val_p else ""
         cutwin = f"CUTWIN_SNR_NODETECT = {val_c}" if val_c else ""
         command_string = self.clump_command.format(
-            genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin
+            genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin, photflag_mskrej=self.photflag_mskrej
         )
         format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
