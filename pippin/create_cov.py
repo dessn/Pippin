@@ -127,6 +127,7 @@ fi
             return {}
         self.logger.debug(f"Loading sys scaling from {self.sys_file_in}")
         yaml = read_yaml(self.sys_file_in)
+        yaml.pop('FLAG_USE_SAME_EVENTS')
         raw = {k: float(v.split(maxsplit=1)[0]) for _, d in yaml.items() for k, v in d.items()}
         return raw
 
