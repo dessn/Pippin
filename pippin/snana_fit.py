@@ -122,15 +122,19 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         # Determine final fitopts based on survey
         fitopts = []
+        self.use_same_events = 0
         for f in self.raw_fitopts:
+            self.logger.debug(f"DEBUG: {f}")
             if isinstance(f, str):
                 fitopts.append(f)
                 self.logger.debug(f"Adding manual fitopt: {f}")
             elif isinstance(f, dict):
                 for key, values in f.items():
+                    if key == "FLAG_USE_SAME_EVENTS":
+                        self.logger.debug(f"FLAG_USE_SAME_EVENTS: {values}")
+                        self.use_same_events = values
                     if key in ["GLOBAL", survey]:
                         assert isinstance(values, dict), "Fitopt values should be a dict of label: scale command"
-
                         for label, scale_command in values.items():
                             scale, command = scale_command.split(maxsplit=1)
                             fitopt = f"/{label}/ {command}"
@@ -140,8 +144,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
 
         # Map the fitopt outputs
+        self.logger.debug(f"USE_SAME_EVENTS: {self.use_same_events}")
         mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
         mapped2 = {0: "DEFAULT"}
+        if self.use_same_events == 1:
+            self.yaml["CONFIG"]["OPT_SNCID_LIST"] = 1
         for i, line in enumerate(fitopts):
             label = line.strip().split("/")[1]
             mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"

@@ -85,6 +85,13 @@ class BiasCor(ConfigBasedExecutable):
         self.output["muopts"] = self.muopt_order
         self.output["hubble_plot"] = self.output_plots
 
+        self.devel = self.options.get('devel', 0)
+
+        self.logger.debug(f"Devel option: {self.devel}")
+        self.do_iterate = False # Temp flag to stop iterating as BBC will reiterate natively
+        self.logger.debug(f"Do iterate: {self.do_iterate}")
+        self.logger.debug(f"SNANA_DIR: {os.environ['SNANA_DIR']}")
+
     def set_m0dif_dirs(self):
 
         versions = None
@@ -123,7 +130,8 @@ class BiasCor(ConfigBasedExecutable):
     def kill_and_fail(self):
         with open(self.kill_file, "w") as f:
             self.logger.info(f"Killing remaining jobs for {self.name}")
-            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            command = ["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)]
+            subprocess.run([' '.join(command)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
         return Task.FINISHED_FAILURE
 
     def check_issues(self, kill=True):
@@ -184,12 +192,12 @@ class BiasCor(ConfigBasedExecutable):
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                subprocess.run([' '.join(command)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
             self.logger.notice(f"RESUBMITTED: BiasCor {self.name} task")
             return 1
 
     def move_to_next_phase(self):
-        if self.consistent_sample and self.run_iteration == 0:
+        if self.do_iterate and self.consistent_sample and self.run_iteration == 0:
             self.run_iteration += 1
             with open(self.done_file_iteration, "w") as f:
                 pass
@@ -277,13 +285,6 @@ class BiasCor(ConfigBasedExecutable):
         self.set_property("simfile_biascor", self.bias_cor_fits)
         self.set_property("simfile_ccprior", self.cc_prior_fits)
         self.set_property("varname_pIa", self.probability_column_name)
-
-        existing_list = self.get_property("cid_reject_file")
-        if existing_list is None:
-            existing_list = self.reject_list
-        else:
-            existing_list += f",{self.reject_list}"
-        self.set_property("cid_reject_file", existing_list)
 
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
 
@@ -394,7 +395,7 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
             with open(self.logging_file, "w") as f:
-                subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                subprocess.run([' '.join(command)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
             chown_dir(self.output_dir)
             self.set_m0dif_dirs()
         else:
