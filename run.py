@@ -120,7 +120,8 @@ def run(args):
 
 def get_syntax():
     syntax = {}
-    with open("README.md", 'r') as f:
+    base = os.path.dirname(os.path.realpath(__file__))
+    with open(f"{base}/README.md", 'r') as f:
         readme = f.read()
     lines = readme.split('\n')
     start, end = [idx for (idx, line) in enumerate(lines) if "[//]" in line]
