@@ -107,6 +107,8 @@ def run(args):
         logging.debug(f"Data directory {i + 1} set as {d}")
         assert d is not None, "Data directory is none, which means it failed to resolve. Check the error message above for why."
 
+    logging.info(f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node.")
+
     manager = Manager(config_filename, yaml_path, config, message_store)
     if args.start is not None:
         args.refresh = True
