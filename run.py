@@ -7,7 +7,6 @@ from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_co
 from pippin.manager import Manager
 from colorama import init
 
-
 class MessageStore(logging.Handler):
     store = None
 
@@ -66,6 +65,10 @@ def setup_logging(config_filename, logging_folder, args):
 
 
 def run(args):
+
+    if args is None:
+        return None
+
     init()
 
     # Load YAML config file
@@ -115,11 +118,46 @@ def run(args):
     chown_file(logging_filename)
     return manager
 
+def get_syntax():
+    syntax = {}
+    with open("README.md", 'r') as f:
+        readme = f.read()
+    lines = readme.split('\n')
+    start, end = [idx for (idx, line) in enumerate(lines) if "[//]" in line]
+    lines = lines[start:end]
+    index = [idx for (idx, line) in enumerate(lines) if "###" == line.split(' ')[0]]
+    tasks = []
+    for i in range(len(index)):
+        idx = index[i]
+        if idx != index[-1]:
+            tasks.append("\n".join(lines[idx+2:index[i+1]-1]))
+        else:
+            tasks.append("\n".join(lines[idx+2:-1]))
+    taskname = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGG", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
+    for i, name in enumerate(taskname):
+        syntax[name] = tasks[i]
+    return syntax
 
-def get_args():
+def print_syntax(s):
+    syntax = get_syntax()
+    try:
+        keys = list(syntax.keys())
+        s = int(s)
+        if s < 0 or s > len(keys) - 1:
+            raise ValueError(f"Unknown task number {s}")
+        key = keys[s]
+    except ValueError:
+        key = s
+    if key not in syntax.keys():
+        raise ValueError(f"Unknown task {key}")
+    msg = syntax[key]
+    print(msg)
+    return None
+
+def get_args(test=False):
     # Set up command line arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml")
+    parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml", type=str, nargs='*')
     parser.add_argument("--config", help="Location of global config", default=None, type=str)
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
@@ -128,7 +166,20 @@ def get_args():
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less", default=None)
-    return parser.parse_args()
+    parser.add_argument("-S", "--syntax", help="Get the syntax of the given task.", default=None, type=str)
+    args = parser.parse_args()
+
+    if args.syntax is not None:
+        s = args.syntax
+        print_syntax(s)
+        return None
+    elif not test:
+        if len(args.yaml) == 0:
+            parser.error("You must specify a yaml file!")
+        else:
+            args.yaml = args.yaml[0]
+
+    return args
 
 
 if __name__ == "__main__":

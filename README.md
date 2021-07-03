@@ -358,6 +358,8 @@ As a general note, most tasks have an `OPTS` where most details go. This is part
 that Pippin uses to determine how to construct tasks (like `MASK`, classification mode, etc) are top level, and the Task itself gets passed everything
 inside `OPTS` to use however it wants. 
 
+[//]: # (Start of Task specification)
+
 ### Data Preparation
 
 The DataPrep task is simple - it is mostly a pointer for Pippin towards an external directory that contains
@@ -784,6 +786,7 @@ ANALYSE:
       ADDITIONAL_SCRIPTS: /somepath/to/your/script.py  # Should take the input.yml as an argument
 ```
 
+[//]: # (End of Task specification)
 
 ![Developer Documentation Below](doc/developer.jpg)
 
