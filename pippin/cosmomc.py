@@ -101,7 +101,7 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
         )
         # TODO: Better logic here please
         final = self.ini_prefix.split("_")[-1]
-        ps = {"omw": ["omegam", "w"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
+        ps = {"omw": ["omegam", "w"], "flatomol": ["omegam", "omegal"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
         if final not in ps.keys():
             self.fail_config(
                 f"The filename passed in ({self.ini_prefix}) needs to have format 'components_cosmology.ini', where the cosmology is omw, omol, wnu or wwa. Is this a custom file?"
