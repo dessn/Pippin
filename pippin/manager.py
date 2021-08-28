@@ -45,7 +45,7 @@ class Manager:
         self.sbatch_gpu_path = get_data_loc(self.global_config["SBATCH"]["gpu_location"])
         with open(self.sbatch_gpu_path, 'r') as f:
             self.sbatch_gpu_header = f.read()
-        self.sbatch_clean = self.global_config["SBATCH"]["gpu_location"]
+        self.sbatch_clean = self.global_config["SBATCH"]["clean"]
         if self.sbatch_clean:
             self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
             self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
