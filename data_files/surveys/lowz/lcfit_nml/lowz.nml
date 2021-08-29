@@ -9,7 +9,6 @@ CONFIG:
 &SNLCINP
     USE_MINOS = F ! Set to T for final analysis
 
-    PRIVATE_DATA_PATH = '$DES_ROOT/lcmerge'
     VERSION_PHOTOMETRY = 'DES3YR_LOWZ_COMBINED_FITS'
 
     PHOTFLAG_MSKREJ   = 0, 0
