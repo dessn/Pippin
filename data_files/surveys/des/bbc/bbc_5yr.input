@@ -7,9 +7,9 @@ CONFIG:
 #END_YAML
 
 varname_pIa=NN_PROB_IA
-simfile_biascor=something.FITRES
-simfile_ccprior=something.FITRES
-surveygroup_biascor='CFA3K+CFA4p1+CFA4p2+CSP+FOUNDATION(zbin=0.02),DES(zbin=0.05)'
+simfile_biascor=/global/cscratch1/sd/mvincenz/DES/MV_BBCP2/5_MERGE/MERGE_D_DESSIMBIAS5YRIA_UVIR_G10/output/PIP_MV_GLOBAL_BIASCOR_DESSIMBIAS5YRIA_UVIR_G10/FITOPT000.FITRES.gz,/global/cscratch1/sd/mvincenz/DES/MV_BBCP2/5_MERGE/MERGE_L_LOWZSIMBIAS_UVIR_G10/output/PIP_MV_GLOBAL_BIASCOR_LOWZSIMBIAS_UVIR_G10/FITOPT000.FITRES.gz,/global/cscratch1/sd/mvincenz/DES/MV_BBCP2/5_MERGE/MERGE_F_FOUNDSIMBIAS_G10/output/PIP_MV_GLOBAL_BIASCOR_FOUNDSIMBIAS_G10/FITOPT000.FITRES.gz
+simfile_ccprior=/global/cscratch1/sd/mvincenz/DES/MV_BBCP2/5_MERGE/MERGE_D_DESSIMBIAS5YRCC_V19/output/PIP_MV_GLOBAL_BIASCOR_DESSIMBIAS5YRCC_V19/FITOPT000.FITRES.gz
+surveygroup_biascor='CFA3S+CFA3K+CFA4p1+CFA4p2+CSP(zbin=0.02),FOUNDATION(zbin=0.02),DES(zbin=0.05)'
 idsurvey_list_probcc0=CFA3K,CFA4p1,CFA4p2,CSP,CFA3S,FOUNDATION
 surveygroup_biascor_abortflag=0
 prefix=None
