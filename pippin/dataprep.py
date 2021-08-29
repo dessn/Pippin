@@ -82,24 +82,6 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.slurm = """{sbatch_header}
         {task_setup}"""
 
-#        self.slurm = """#!/bin/bash
-##SBATCH --job-name={job_name}
-##SBATCH --time=0:20:00
-##SBATCH --nodes=1
-##SBATCH --ntasks-per-node=1
-##SBATCH --partition=broadwl
-##SBATCH --output={log_file}
-##SBATCH --account=pi-rkessler
-##SBATCH --mem=2GB
-#
-#cd {path_to_task}
-#snana.exe clump.nml
-#if [ $? -eq 0 ]; then
-#    echo SUCCESS > {done_file}
-#else
-#    echo FAILURE > {done_file}
-#fi
-#"""
         self.clump_command = """#
 # Obtaining Clump fit
 # to run:
