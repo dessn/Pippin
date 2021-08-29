@@ -1,0 +1,14 @@
+DES:
+    # Name                      # scale  # command and arguments
+    TESTnozband:                1.0      FILTLIST_FIT 'gri'
+    DES_ZP_g_survcal:           0.3      MAGOBS_SHIFT_ZP 'g .01'
+    DES_ZP_r_survcal:           0.2      MAGOBS_SHIFT_ZP 'r .01'
+    DES_ZP_i_survcal:           0.2      MAGOBS_SHIFT_ZP 'i .01'
+    DES_ZP_z_survcal:           0.3      MAGOBS_SHIFT_ZP 'z .01'
+    DES_wave_g_survcal:         0.6      FILTER_LAMSHIFT 'g 10'
+    DES_wave_r_survcal:         0.6      FILTER_LAMSHIFT 'r 10'
+    DES_wave_i_survcal:         0.6      FILTER_LAMSHIFT 'i 10'
+    DES_wave_z_survcal:         0.6      FILTER_LAMSHIFT 'z 10'
+    DES_noHOSTNOISE:            1.0      FUDGE_HOSTNOISE_FILE ' '
+    DES_survcal_PS1COHERENT:    1.0      MAGOBS_SHIFT_ZP 'g -0.00756 r 0.0007 i 0.00425 z -0.00208'
+
