@@ -5,6 +5,7 @@ from pathlib import Path
 import yaml
 import pandas as pd
 import re
+import numpy as np
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_output_loc, mkdirs
@@ -63,18 +64,15 @@ class SconeClassifier(Classifier):
         self.keep_heatmaps = not remake_heatmaps
 
     def classify(self, mode):
-        # if self.gpu:
-        #     self.sbatch_header = self.sbatch_gpu_header
-        # else:
-        self.sbatch_header = self.sbatch_cpu_header
+        self.sbatch_header = self.sbatch_gpu_header if self.gpu else self.sbatch_cpu_header
 
         header_dict = {
                 "job-name": self.job_base_name,
                 "output": "output.log",
-                "time": "10:00:00", # TODO: scale based on number of heatmaps
+                "time": "15:00:00", # TODO: scale based on number of heatmaps
                 "mem-per-cpu": "8GB",
                 "ntasks": "1",
-                "cpus-per-task": "4"
+                "cpus-per-task": "8"
                 }
         self.update_header(header_dict)
 
@@ -108,20 +106,20 @@ class SconeClassifier(Classifier):
 
         if self._check_regenerate(new_hash) or failed:
             self.logger.debug("Regenerating")
-            # if not heatmaps_created:
-            #     shutil.rmtree(self.output_dir, ignore_errors=True)
-            #     mkdirs(self.output_dir)
-            # else:
-            #     for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
-            #         os.remove(f)
+            if not heatmaps_created:
+                shutil.rmtree(self.output_dir, ignore_errors=True)
+                mkdirs(self.output_dir)
+            else:
+                for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
+                    os.remove(f)
 
             sim_dep = self.get_simulation_dependency()
             sim_dirs = sim_dep.output["photometry_dirs"]
             if not os.path.exists(self.csvs_path):
                 os.makedirs(self.csvs_path)
-            metadata_paths, lcdata_paths = self._fitres_to_csv(self._get_lcdata_paths(sim_dirs), self.csvs_path)
+            metadata_paths, lcdata_paths, survey_name, types = self._fitres_to_csv(self._get_lcdata_paths(sim_dirs), self.csvs_path)
 
-            self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path) # TODO: what if they don't want to train on all sims?
+            self._write_config_file(metadata_paths, lcdata_paths, survey_name, types, mode, self.config_path) # TODO: what if they don't want to train on all sims?
 
             with open(slurm_output_file, "w") as f:
                 f.write(slurm_script)
@@ -138,9 +136,14 @@ class SconeClassifier(Classifier):
 
     def train(self):
         return self.classify("train")
+    
+    def _get_types(self):
+        t = self.get_simulation_dependency().output
+        return t["types"]
 
-    def _write_config_file(self, metadata_paths, lcdata_paths, mode, config_path):
+    def _write_config_file(self, metadata_paths, lcdata_paths, survey_name, types, mode, config_path):
         config = {}
+        config["survey"] = survey_name
         config["categorical"] = self.options.get("CATEGORICAL", False)
         # TODO: replace num epochs with autostop: stop training when slope plateaus?
         # TODO: how to choose optimal batch size?
@@ -154,33 +157,35 @@ class SconeClassifier(Classifier):
         config["donefile"] = self.done_file
         config["output_path"] = self.output_dir
         config["trained_model"] = self.options.get("TRAINED_MODEL", False)
+        config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
-        config["sn_type_id_to_name"] ={0.0: "unknown",
-           5.0: "non",
-           23.0: "non",
-           29.0: "non",
-           32.0: "non",
-           33.0: "non",
-           39.0: "non",
-           41.0: "non",
-           42.0: "non",
-           64.0: "non",
-           66.0: "non",
-           80.0: "non",
-           81.0: "non",
-           82.0: "non",
-           90.0: "SNIa",
-           129.0: "non",
-           139.0: "non",
-           141.0: "non",
-           180.0: "non"}
-# config["sn_type_id_to_name"] = {42: "SNII",
-        #   52: "SNIax",
-        #   62: "SNIbc",
-        #   67: "SNIa-91bg",
-        #   64: "KN",
-        #   90: "SNIa",
-        #   95: "SLSN-1"}
+        known_types = {42: "SNII",
+          52: "SNIax",
+          62: "SNIbc",
+          67: "SNIa-91bg",
+          64: "KN",
+          90: "SNIa",
+          95: "SLSN-1"}
+        config["sn_type_id_to_name"] = {int(k):known_types[k] if k in known_types else "non" for k in types}
+        # FOR DES DATA: config["sn_type_id_to_name"] ={0.0: "unknown",
+        #    5.0: "non",
+        #    23.0: "non",
+        #    29.0: "non",
+        #    32.0: "non",
+        #    33.0: "non",
+        #    39.0: "non",
+        #    41.0: "non",
+        #    42.0: "non",
+        #    64.0: "non",
+        #    66.0: "non",
+        #    80.0: "non",
+        #    81.0: "non",
+        #    82.0: "non",
+        #    90.0: "SNIa",
+        #    129.0: "non",
+        #    139.0: "non",
+        #    141.0: "non",
+        #    180.0: "non"}
 
         with open(config_path, "w+") as cfgfile:
             cfgfile.write(yaml.dump(config))
@@ -219,6 +224,7 @@ class SconeClassifier(Classifier):
     def _fitres_to_csv(lcdata_paths, output_dir):
         csv_metadata_paths = []
         csv_lcdata_paths = []
+        object_types = []
 
         for path in lcdata_paths:
             csv_metadata_path = os.path.join(output_dir, re.sub("PHOT.FITS*", "HEAD.csv", os.path.basename(path)))
@@ -229,7 +235,8 @@ class SconeClassifier(Classifier):
                 csv_lcdata_paths.append(csv_lcdata_path)
                 continue
 
-            metadata, lcdata = read_fits(path)
+            metadata, lcdata, survey_name, types = read_fits(path)
+            object_types = np.concatenate((object_types, types))
 
             metadata.to_csv(csv_metadata_path)
             lcdata.to_csv(csv_lcdata_path)
@@ -237,7 +244,7 @@ class SconeClassifier(Classifier):
             csv_metadata_paths.append(csv_metadata_path)
             csv_lcdata_paths.append(csv_lcdata_path)
 
-        return csv_metadata_paths, csv_lcdata_paths
+        return csv_metadata_paths, csv_lcdata_paths, survey_name, np.unique(object_types)
 
     @staticmethod
     def get_requirements(options):
