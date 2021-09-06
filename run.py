@@ -139,6 +139,7 @@ def get_syntax():
     taskname = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGG", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
     for i, name in enumerate(taskname):
         syntax[name] = tasks[i]
+    syntax["options"] = f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})"
     return syntax
 
 def print_syntax(s):
@@ -169,7 +170,7 @@ def get_args(test=False):
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less", default=None)
-    parser.add_argument("-S", "--syntax", help="Get the syntax of the given task.", default=None, type=str)
+    parser.add_argument("-S", "--syntax", help="Get the syntax of the given task.", default=None, const="options", type=str, nargs='?')
     args = parser.parse_args()
 
     if args.syntax is not None:
