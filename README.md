@@ -132,6 +132,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
   -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
   -p, --permission   Fix permissions and groups on all output, don't rerun
   -i, --ignore       Do NOT regenerate/run tasks up to and including this stage.
+  -S, --syntax       If no task is given, prints out the possible tasks. If a task name or number is given, prints the docs on that task. For instance 'pippin.sh -S 0' and 'pippin.sh -S DATAPREP' will print the documentation for the DATAPREP task.
 ```
 
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
