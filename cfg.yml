@@ -42,7 +42,6 @@ OUTPUT:
 SBATCH:
   cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE
   gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
-  clean: True
 
 SETUP:
     location: $PRODUCTS/pippin/pippin/tasks

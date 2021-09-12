@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs
+from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
 from pippin.task import Task
 
 
@@ -55,6 +55,10 @@ class SnirfClassifier(Classifier):
         self.fitres_filename = None
         self.fitres_file = None
 
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
         
         self.slurm = """{sbatch_header}
         {task_setup}
@@ -66,20 +70,24 @@ class SnirfClassifier(Classifier):
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
     def classify(self, command):
-        if self.gpu:
-            self.sbatch_header = self.sbatch_gpu_header
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
         else:
-            self.sbatch_header = self.sbatch_cpu_header
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                    "job-name": self.job_base_name,
-                    "output": "output.log",
-                    "time": "15:00:00",
-                    "mem-per-cpu": "3GB",
-                    "ntasks": "1",
-                    "cpus-per-task": "4"
+                    "REPLACE_NAME": self.job_base_name,
+                    "REPLACE_LOGFILE": "output.log",
+                    "REPLACE_WALLTIME": "15:00:00",
+                    "REPLACE_MEM": "3GB",
+                    "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"]
                 }
-
+        header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
 
         setup_dict = {

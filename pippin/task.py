@@ -92,28 +92,25 @@ class Task(ABC):
         return task_setup.format(**setup_dict)
 
     def update_header(self, header_dict):
-        replace_dict = {"job-name": "REPLACE_NAME", "output": "REPLACE_LOGFILE", "time": "REPLACE_WALLTIME", "mem-per-cpu": "REPLACE_MEM"} # Allows for replacing just the REPLACE_ key"
         for key, value in header_dict.items():
-            if key in replace_dict.keys():# REPLACE_ replacements
-                self.sbatch_header = self.sbatch_header.replace(replace_dict[key], value)
-            else: # SBATCH replacements 
-                lines = self.sbatch_header.split('\n')
-                line = f"#SBATCH --{key}={value}"
-                if f'--{key}=' in self.sbatch_header: # Replace the sbatch key
-                    idx = [i for i in range(len(lines)) if f'--{key}=' in lines[i]][0]
-                    if value == "" or value is None: # Delete the line if value is not specified
-                        del lines[idx]
-                    else:
-                        lines[idx] = line
-                else:
-                    if value == "" or value is None:
-                        continue
-                    else:
-                        lines.append(line)
-                self.sbatch_header = '\n'.join(lines)
+            if key in self.sbatch_header:
+                self.sbatch_header = self.sbatch_header.replace(key, str(value))
+        append_list = header_dict.get("APPEND")
+        if append_list is not None:
+            lines = self.sbatch_header.split('\n')
+            lines += append_list
+            self.sbatch_header = '\n'.join(lines)
         self.logger.debug("Updated header")
 
+    def clean_header(self, header):
+        lines = header.split('\n')
+        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('xxxx' not in x)
+        lines = filter(mask, lines)
+        header = '\n'.join(lines)
+        return header
 
+    def compress_task(self):
+        pass
 
     def _check_regenerate(self, new_hash):
         hash_are_different = new_hash != self.get_old_hash()

@@ -5,7 +5,7 @@ import shutil
 import pickle
 from collections import OrderedDict
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, get_output_loc
+from pippin.config import chown_dir, mkdirs, get_config, get_output_loc, get_data_loc, merge_dict
 from pippin.task import Task
 from time import sleep
 
@@ -78,6 +78,11 @@ class SuperNNovaClassifier(Classifier):
             self.data_yml = None
             self.classification_yml = None                
             self.has_yml = False
+ 
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
 
         self.validate_model()
 
@@ -234,11 +239,18 @@ class SuperNNovaClassifier(Classifier):
             clump_txt = ""
         else:
             clump_txt = f"--photo_window_files {clump}"
-        if self.gpu:
-            self.sbatch_header = self.sbatch_gpu_header
+        
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
         else:
-            self.sbatch_header = self.sbatch_cpu_header
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
 
+        
         if self.has_yml:
             self.update_yml()
             setup_file = "supernnova_yml"
@@ -246,13 +258,13 @@ class SuperNNovaClassifier(Classifier):
             setup_file = "supernnova"
 
         header_dict = {
-                "job-name": self.job_base_name,
-                "time": "23:00:00",
-                "ntasks": "1",
-                "output": "output.log",
-                "cpus-per-task": "1",
-                "mem-per-cpu": "32GB",
+                "REPLACE_NAME": self.job_base_name,
+                "REPLACE_WALLTIME": "23:00:00",
+                "REPLACE_LOGFILE": "output.log",
+                "REPLACE_MEM": "32GB",
+                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"]
                 }
+        header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
 
         setup_dict = {

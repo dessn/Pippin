@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict
 from pathlib import Path
 
-from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc, read_yaml
+from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc, read_yaml, merge_dict
 from pippin.task import Task
 
 
@@ -68,6 +68,11 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         else:
             for key in self.types_dict.keys():
                 self.types_dict[key] = [int(c) for c in self.types_dict[key]]
+
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
 
         self.logger.debug(f"\tIA types are {self.types_dict['IA']}")
         self.logger.debug(f"\tNONIA types are {self.types_dict['NONIA']}")
@@ -139,18 +144,25 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         command_string = self.clump_command.format(
             genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin, photflag_mskrej=self.photflag_mskrej
         )
-        header_dict = {
-                "job-name": self.job_name,
-                "time": "0:20:00",
-                "ntasks": "1",
-                "cpus-per-task": "1",
-                "output": self.logfile,
-                "mem-per-cpu": "2GB"
-                }
-        if self.gpu:
-            self.sbatch_header = self.sbatch_gpu_header
+        
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
         else:
-            self.sbatch_header = self.sbatch_cpu_header
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
+
+        header_dict = {
+                "REPLACE_NAME": self.job_name,
+                "REPLACE_WALLTIME": "0:20:00",
+                "REPLACE_LOGFILE": self.logfile,
+                "REPLACE_MEM": "2GB",
+                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"]
+                }
+        header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
         setup_dict = {
                 "path_to_task": self.path_to_task,

@@ -8,7 +8,7 @@ import re
 import numpy as np
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs
+from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
 from pippin.task import Task
 from pippin.external.SNANA_FITS_to_pd import read_fits
 
@@ -52,6 +52,12 @@ class SconeClassifier(Classifier):
 
         self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
 
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
+
+
         self.config_path = os.path.join(self.output_dir, "model_config.yml")
         self.heatmaps_path = os.path.join(self.output_dir, "heatmaps")
         self.csvs_path = os.path.join(self.output_dir, "sim_csvs")
@@ -64,16 +70,24 @@ class SconeClassifier(Classifier):
         self.keep_heatmaps = not remake_heatmaps
 
     def classify(self, mode):
-        self.sbatch_header = self.sbatch_gpu_header if self.gpu else self.sbatch_cpu_header
-
         header_dict = {
-                "job-name": self.job_base_name,
-                "output": "output.log",
-                "time": "15:00:00", # TODO: scale based on number of heatmaps
-                "mem-per-cpu": "8GB",
-                "ntasks": "1",
-                "cpus-per-task": "8"
+                "REPLACE_NAME": self.job_base_name,
+                "REPLACE_LOGFILE": "output.log",
+                "REPLACE_WALLTIME": "15:00:00", # TODO: scale based on number of heatmaps
+                "REPLACE_MEM": "8GB",
+                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
                 }
+        header_dict = merge_dict(header_dict, self.batch_replace)
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
+        else:
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
+
         self.update_header(header_dict)
 
         setup_dict = {
