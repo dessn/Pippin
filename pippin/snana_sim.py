@@ -134,31 +134,39 @@ class SNANASimulation(ConfigBasedExecutable):
                 Task.fail_config("Your sim has no components specified! Please add something to simulate!")
 
             # Try to determine how many jobs will be put in the queue
-            try:
-                # If BATCH_INFO is set, we'll use that
-                batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
-                default_batch_info = self.yaml["CONFIG"].get("BATCH_INFO")
+            # First see if it's been explicitly set
+            num_jobs = self.options.get("NUM_JOBS")
+            if num_jobs is not None:
+                self.num_jobs = num_jobs
+                self.logger.debug(f"Num jobs set by NUM_JOBS option")
+            else:
+                try:
+                    # If BATCH_INFO is set, we'll use that
+                    batch_info = self.config.get("GLOBAL", {}).get("BATCH_INFO")
+                    default_batch_info = self.yaml["CONFIG"].get("BATCH_INFO")
 
-                # If its not set, lets check for ranseed_repeat or ranseed_change
-                if batch_info is None:
-                    ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
-                    ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
-                    default = self.yaml.get("CONFIG", {}).get("RANSEED_REPEAT")
-                    ranseed = ranseed_repeat or ranseed_change or default
+                    # If its not set, lets check for ranseed_repeat or ranseed_change
+                    if batch_info is None:
+                        ranseed_repeat = self.config.get("GLOBAL", {}).get("RANSEED_REPEAT")
+                        ranseed_change = self.config.get("GLOBAL", {}).get("RANSEED_CHANGE")
+                        default = self.yaml.get("CONFIG", {}).get("RANSEED_REPEAT")
+                        ranseed = ranseed_repeat or ranseed_change or default
 
-                    if ranseed:
-                        num_jobs = int(ranseed.strip().split()[0])
-                        self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
-                        comps = default_batch_info.strip().split()
-                        comps[-1] = str(num_jobs)
-                        self.derived_batch_info = " ".join(comps)
-                        self.num_jobs = num_jobs
-                else:
-                    # self.logger.debug(f"BATCH INFO property detected as {property}")
-                    self.num_jobs = int(default_batch_info.split()[-1])
-            except Exception:
-                self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
-                self.num_jobs = 1
+                        if ranseed:
+                            num_jobs = int(ranseed.strip().split()[0])
+                            self.logger.debug(f"Found a randseed with {num_jobs}, deriving batch info")
+                            comps = default_batch_info.strip().split()
+                            comps[-1] = str(num_jobs)
+                            self.derived_batch_info = " ".join(comps)
+                            self.num_jobs = num_jobs
+                            self.logger.debug(f"Num jobs set by RANSEED")
+                    else:
+                        # self.logger.debug(f"BATCH INFO property detected as {property}")
+                        self.num_jobs = int(default_batch_info.split()[-1])
+                        self.logger.debug(f"Num jobs set by BATCH_INFO")
+                except Exception:
+                    self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
+                    self.num_jobs = 1
 
             self.output["genversion"] = self.genversion
             self.output["genprefix"] = self.genprefix

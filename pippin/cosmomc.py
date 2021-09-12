@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import numpy as np
 
-from pippin.config import mkdirs, get_output_loc, get_data_loc
+from pippin.config import mkdirs, get_output_loc, get_data_loc, merge_dict
 from pippin.create_cov import CreateCov
 from pippin.task import Task
 
@@ -107,6 +107,11 @@ class CosmoMC(Task):  # TODO: Define the location of the output so we can run th
                 f"The filename passed in ({self.ini_prefix}) needs to have format 'components_cosmology.ini', where the cosmology is omw, omol, wnu or wwa. Is this a custom file?"
             )
         self.output["cosmology_params"] = ps[final]
+
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
 
         self.slurm = """{sbatch_header}
 {task_setup}
@@ -210,19 +215,26 @@ fi
             ini_filecontents = self.get_ini_file()
             if ini_filecontents is None:
                 return False
+
+        if self.batch_file is None:
             if self.gpu:
                 self.sbatch_header = self.sbatch_gpu_header
             else:
                 self.sbatch_header = self.sbatch_cpu_header
+        else:
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
+
+
             header_dict = {
-                    "job-name": self.job_name,
-                    "time": "34:00:00",
-                    "ntasks": f"{self.ntasks}",
-                    "array": f"1-{len(self.ini_files)}",
-                    "cpus-per-task": "1",
-                    "output": self.logfile,
-                    "mem-per-cpu": f"2GB"
+                    "REPLACE_NAME": self.job_name,
+                    "REPLACE_WALLTIME": "34:00:00",
+                    "REPLACE_LOGFILE": self.logfile,
+                    "REPLACE_MEM": "2GB",
+                    "APPEND": [f"#SBATCH --ntasks={self.ntasks}", f"#SBATCH --array=1-{len(self.ini_files)}", "#SBATCH --cpus-per-task=1"]
                     }
+            header_dict = merge_dict(header_dict, self.batch_replace)
             self.update_header(header_dict)
 
             setup_dict = {

@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs
+from pippin.config import get_config, get_output_loc, mkdirs, merge_dict, get_data_loc
 from pippin.task import Task
 
 
@@ -52,6 +52,11 @@ class NearestNeighborPyClassifier(Classifier):
 
         self.fitopt = options.get("FITOPT", "DEFAULT")
 
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
+
         self.output["predictions_filename"] = self.predictions_filename
         self.output["model_filename"] = self.output_pk_file
         self.validate_model()
@@ -71,19 +76,24 @@ fi
 
     def classify(self, command):
         self.setup()
-        if self.gpu:
-            self.sbatch_header = self.sbatch_gpu_header
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
+            else:
+                self.sbatch_header = self.sbatch_cpu_header
         else:
-            self.sbatch_header = self.sbatch_cpu_header
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                "job-name": self.job_base_name,
-                "output": "output.log",
-                "time": "00:55:00",
-                "mem-per-cpu": "8GB",
-                "ntasks": "1",
-                "cpus-per-task": "4"
+                "REPLACE_NAME": self.job_base_name,
+                "REPLACE_LOGFILE": "output.log",
+                "REPLACE_WALLTIME": "00:55:00",
+                "REPLACE_MEM": "8GB",
+                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"]
                 }
+        header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
 
         setup_dict = {

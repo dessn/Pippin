@@ -6,6 +6,7 @@ import os
 import shutil
 import stat
 import tarfile
+import gzip
 
 
 def make_tarfile(output_filename, source_dir):
@@ -212,6 +213,17 @@ def ensure_list(a):
         return a
     return [a]
 
+def generic_open(fpath, mode="r"):
+    """
+    Check that fpath exists, identify whether it is compressed or uncompressed, and open it
+    """
+    fpath = get_data_loc(fpath)
+    if not os.path.exists(fpath):
+        logging.error(f"Path doesn't exist: {fpath}")
+    if ".gz" in fpath:
+        return gzip.open(fpath, mode)        
+    else:
+        return open(fpath, mode)
 
 if __name__ == "__main__":
     c = get_config()

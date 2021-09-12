@@ -78,12 +78,20 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
-        try:
-            property = self.options.get("BATCH_INFO") or self.yaml["CONFIG"].get("BATCH_INFO")
-            self.num_jobs = int(property.split()[-1])
-        except Exception:
-            self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
-            self.num_jobs = 10
+        # First see if it's been explicitly set
+        num_jobs = self.options.get("NUM_JOBS")
+        if num_jobs is not None:
+            self.num_jobs = num_jobs
+            self.logger.debug("Num jobs set by NUM_JOBS option")
+        else:
+            try:
+                property = self.options.get("BATCH_INFO") or self.yaml["CONFIG"].get("BATCH_INFO")
+                self.num_jobs = int(property.split()[-1])
+                self.logger.debug("Num jobs set by BATCH_INFO")
+            except Exception:
+                self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
+                self.num_jobs = 10
+                self.logger.debug("Num jobs set to default")
 
     def validate_fitopts(self, config):
         # Loading fitopts

@@ -45,10 +45,8 @@ class Manager:
         self.sbatch_gpu_path = get_data_loc(self.global_config["SBATCH"]["gpu_location"])
         with open(self.sbatch_gpu_path, 'r') as f:
             self.sbatch_gpu_header = f.read()
-        self.sbatch_clean = self.global_config["SBATCH"]["clean"]
-        if self.sbatch_clean:
-            self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
-            self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
+        self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
+        self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
         self.setup_task_location = self.global_config["SETUP"]["location"]
         self.load_task_setup()
 
@@ -381,6 +379,8 @@ class Manager:
                 running_tasks.remove(t)
                 self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
                 done_tasks.append(t)
+                self.logger.debug("Compressing task")
+                t.compress_task()
             else:
                 self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
             chown_dir(t.output_dir)
