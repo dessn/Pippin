@@ -227,59 +227,59 @@ fi
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
 
-            header_dict = {
-                    "REPLACE_NAME": self.job_name,
-                    "REPLACE_WALLTIME": "34:00:00",
-                    "REPLACE_LOGFILE": self.logfile,
-                    "REPLACE_MEM": "2GB",
-                    "APPEND": [f"#SBATCH --ntasks={self.ntasks}", f"#SBATCH --array=1-{len(self.ini_files)}", "#SBATCH --cpus-per-task=1"]
-                    }
-            header_dict = merge_dict(header_dict, self.batch_replace)
-            self.update_header(header_dict)
+        header_dict = {
+            "REPLACE_NAME": self.job_name,
+            "REPLACE_WALLTIME": "34:00:00",
+            "REPLACE_LOGFILE": self.logfile,
+            "REPLACE_MEM": "2GB",
+            "APPEND": [f"#SBATCH --ntasks={self.ntasks}", f"#SBATCH --array=1-{len(self.ini_files)}", "#SBATCH --cpus-per-task=1"]
+        }
+        header_dict = merge_dict(header_dict, self.batch_replace)
+        self.update_header(header_dict)
 
-            setup_dict = {
-                "done_files": " ".join(self.done_files),
-                "path_to_cosmomc": self.path_to_cosmomc,
-                "output_dir": self.output_dir,
-                "ini_files": " ".join(self.ini_files),
-                "num_jobs": len(self.ini_files),
-                "num_walkers": self.num_walkers,
-            }
+        setup_dict = {
+            "done_files": " ".join(self.done_files),
+            "path_to_cosmomc": self.path_to_cosmomc,
+            "output_dir": self.output_dir,
+            "ini_files": " ".join(self.ini_files),
+            "num_jobs": len(self.ini_files),
+            "num_walkers": self.num_walkers,
+        }
 
-            format_dict = {
-                    "sbatch_header": self.sbatch_header,
-                    "task_setup": self.update_setup(setup_dict, self.task_setup['cosmomc'])
-            }
-            final_slurm = self.slurm.format(**format_dict)
+        format_dict = {
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup['cosmomc'])
+        }
+        final_slurm = self.slurm.format(**format_dict)
 
-            new_hash = self.get_hash_from_string(final_slurm + " ".join(ini_filecontents))
+        new_hash = self.get_hash_from_string(final_slurm + " ".join(ini_filecontents))
 
-            if self._check_regenerate(new_hash):
-                self.logger.debug("Regenerating and launching task")
-                shutil.rmtree(self.output_dir, ignore_errors=True)
-                mkdirs(self.output_dir)
-                self.save_new_hash(new_hash)
-                slurm_output_file = os.path.join(self.output_dir, "slurm.job")
-                with open(slurm_output_file, "w") as f:
-                    f.write(final_slurm)
-                for file, content in zip(self.ini_files, ini_filecontents):
-                    filepath = os.path.join(self.output_dir, file)
-                    with open(filepath, "w") as f:
-                        f.write(content)
-                mkdirs(self.chain_dir)
+        if self._check_regenerate(new_hash):
+            self.logger.debug("Regenerating and launching task")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+            self.save_new_hash(new_hash)
+            slurm_output_file = os.path.join(self.output_dir, "slurm.job")
+            with open(slurm_output_file, "w") as f:
+                f.write(final_slurm)
+            for file, content in zip(self.ini_files, ini_filecontents):
+                filepath = os.path.join(self.output_dir, file)
+                with open(filepath, "w") as f:
+                    f.write(content)
+            mkdirs(self.chain_dir)
 
-                needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
-                for d in needed_dirs:
-                    self.logger.debug(f"Creating symlink to {d} dir")
-                    original_data_dir = os.path.join(self.path_to_cosmomc, d)
-                    new_data_dir = os.path.join(self.output_dir, d)
-                    os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
+            needed_dirs = ["data", "paramnames", "camb", "batch1", "batch2", "batch3"]
+            for d in needed_dirs:
+                self.logger.debug(f"Creating symlink to {d} dir")
+                original_data_dir = os.path.join(self.path_to_cosmomc, d)
+                new_data_dir = os.path.join(self.output_dir, d)
+                os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
-                self.logger.info(f"Submitting batch job for data prep")
-                subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
-            else:
-                self.should_be_done()
-                self.logger.info("Hash check passed, not rerunning")
+            self.logger.info(f"Submitting batch job for data prep")
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+        else:
+            self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod
