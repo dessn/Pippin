@@ -65,7 +65,7 @@ def blind(chain, names, columns_to_blind, index=0):
         try:
             ii = names.index(c)
             scale = np.random.normal(loc=1, scale=0.0, size=1000)[321 + i]
-            offset = np.random.normal(loc=0, scale=0.2, size=1000)[343 + i + (index + 10)]
+            offset = np.random.normal(loc=0, scale=2., size=1000)[343 + i + (index + 10)]
             chain[:, ii] = chain[:, ii] * scale + np.std(chain[:, ii]) * offset
         except ValueError as e:
             logging.warning(f"Cannot find blinding column {c} in list of names {names}")
