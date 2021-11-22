@@ -70,7 +70,10 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         if self.blind:
             self.blind_params = ["w", "om", "ol", "omegam", "omegal"]
         else:
-            self.blind_params = []
+            if options.get("BLIND", False):
+                self.blind_params = options.get("BLIND")
+            else:
+                self.blind_params = []
         self.biascor_deps = self.get_deps(BiasCor)
         self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 
