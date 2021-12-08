@@ -55,9 +55,10 @@ CREATE_COV:
       COVOPTS:
         - "[NOSYS] [=DEFAULT,=DEFAULT]"
 
-COSMOMC:
-  SN_OMW:
-    OPTS:
-      INI: sn_omw
-      COVOPTS: [ALL, NOSYS]
-      NUM_WALKERS: 40
+COSMOFIT:
+    COSMOMC:
+      SN_OMW:
+        OPTS:
+          INI: sn_omw
+          COVOPTS: [ALL, NOSYS]
+          NUM_WALKERS: 40

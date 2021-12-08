@@ -34,8 +34,8 @@ class CosmoFit(Task):
             Task.logger.debug(f"get_task function for {fitter_name}: {fitter.get_tasks}")
             ts = fitter.get_tasks(config, prior_tasks, output_dir, stage_num, prefix, global_config)
             tasks += ts
-        if len(tasks) == 0:
-            Task.fail_config("No CosmoFit tasks generated! Something has gone wrong")
-        else:
-            Task.logger.info(f"Generated {len(tasks)} CosmoFit tasks.")
+            if len(tasks) == 0:
+                Task.fail_config("No CosmoFit tasks generated! Something has gone wrong")
+            else:
+                Task.logger.info(f"Generated {len(tasks)} CosmoFit tasks.")
         return tasks
