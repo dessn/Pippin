@@ -9,7 +9,7 @@ from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file, get_data_loc
-from pippin.cosmomc import CosmoMC
+from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
 from pippin.merge import Merger
@@ -19,8 +19,8 @@ from pippin.task import Task
 
 
 class Manager:
-    task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoMC, AnalyseChains]
-    stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
+    task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoFit, AnalyseChains]
+    stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOFIT", "ANALYSE"]
 
     def __init__(self, filename, config_path, config, message_store):
         self.logger = get_logger()
