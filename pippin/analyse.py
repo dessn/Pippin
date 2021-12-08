@@ -8,7 +8,9 @@ import numpy as np
 
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, ensure_list, get_data_loc, generic_open, merge_dict
-from pippin.cosmomc import CosmoMC
+from pippin.cosmofitters.cosmofit import CosmoFit
+from pippin.cosmofitters.cosmomc import CosmoMC
+from pippin.cosmofitters.wfit import WFit
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
 
@@ -309,18 +311,18 @@ fi
                 config = {}
             options = config.get("OPTS", {})
 
-            mask_cosmomc = config.get("MASK_COSMOMC")
+            mask_cosmofit = config.get("MASK_COSMOFIT")
             mask_biascor = config.get("MASK_BIASCOR")
             if config.get("HISTOGRAM") is not None:
                 Task.fail_config("Sorry to do this, but please change HISTOGRAM into MASK_LCFIT to bring it into line with others.")
             mask_lcfit = config.get("MASK_LCFIT")
             # TODO: Add aggregation to compile all the plots here
 
-            deps_cosmomc = Task.match_tasks_of_type(mask_cosmomc, prior_tasks, CosmoMC, match_none=False)
+            deps_cosmofit = Task.match_tasks_of_type(mask_cosmofit, prior_tasks, CosmoFit, match_none=False)
             deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor, match_none=False)
             deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit, match_none=False)
 
-            deps = deps_cosmomc + deps_biascor + deps_lcfit
+            deps = deps_cosmofit + deps_biascor + deps_lcfit
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no dependencies!")
 

@@ -7,10 +7,11 @@ import numpy as np
 
 from pippin.config import mkdirs, get_output_loc, get_data_loc, merge_dict
 from pippin.create_cov import CreateCov
+from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.task import Task
 
 
-class CosmoMC(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
+class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can run the lc fitting on it.
     """ Run cosmomc given an ini file
 
     CONFIGURATION
@@ -284,10 +285,11 @@ fi
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
         def _get_cosmomc_dir(base_output_dir, stage_number, name):
-            return f"{base_output_dir}/{stage_number}_COSMOMC/{name}"
+            return f"{base_output_dir}/{stage_number}_COSMOFIT/COSMOMC/{name}"
 
         tasks = []
         key = "COSMOMC"

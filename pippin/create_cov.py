@@ -70,6 +70,12 @@ class CreateCov(ConfigBasedExecutable):
         self.batch_replace = self.options.get("BATCH_REPLACE", {})
         
         self.binned = options.get("BINNED", not self.subtract_vpec)
+        self.rebinned_x1 = options.get("REBINNED_X1", "")
+        if self.rebinned_x1 != "":
+            self.rebinned_x1 = f"--nbin_x1 {self.rebinned_x1}"
+        self.rebinned_c = options.get("REBINNED_C", "")
+        if self.rebinned_c != "":
+            self.rebinned_c = f"--nbin_c {self.rebinned_c}"
 
         self.biascor_dep = self.get_dep(BiasCor, fail=True)
         self.sys_file_in = self.get_sys_file_in()
@@ -176,11 +182,14 @@ fi
                 }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
+        self.logger.debug(f"Binned: {self.binned}, Rebinned x1: {self.rebinned_x1}, Rebinned c: {self.rebinned_c}")
         setup_dict = {
             "path_to_code": self.path_to_code,
             "input_file": self.input_file,
             "output_dir": self.output_dir,
             "unbinned": "" if self.binned else "-u",
+            "nbin_x1": self.rebinned_x1,
+            "nbin_c": self.rebinned_c,
             "subtract_vpec": "" if not self.subtract_vpec else "-s",
         }
         format_dict = {
