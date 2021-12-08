@@ -120,8 +120,12 @@ def run(args):
     chown_file(logging_filename)
     return manager
 
-def get_syntax():
+def get_syntax(options):
     syntax = {}
+    taskname = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGG", "MERGE", "BIASCOR", "CREATE_COV", "COSMOFIT", "ANALYSE"]
+    syntax["options"] = f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})"
+    if options:
+        return syntax
     base = os.path.dirname(os.path.realpath(__file__))
     with open(f"{base}/README.md", 'r') as f:
         readme = f.read()
@@ -136,14 +140,12 @@ def get_syntax():
             tasks.append("\n".join(lines[idx+2:index[i+1]-1]))
         else:
             tasks.append("\n".join(lines[idx+2:-1]))
-    taskname = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGG", "MERGE", "BIASCOR", "CREATE_COV", "COSMOMC", "ANALYSE"]
     for i, name in enumerate(taskname):
         syntax[name] = tasks[i]
-    syntax["options"] = f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})"
     return syntax
 
 def print_syntax(s):
-    syntax = get_syntax()
+    syntax = get_syntax(s=="options")
     try:
         keys = list(syntax.keys())
         s = int(s)
