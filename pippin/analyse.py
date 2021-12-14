@@ -318,9 +318,12 @@ fi
             mask_lcfit = config.get("MASK_LCFIT")
             # TODO: Add aggregation to compile all the plots here
 
-            deps_cosmofit = Task.match_tasks_of_type(mask_cosmofit, prior_tasks, CosmoFit, match_none=False)
+            deps_cosmofit = Task.match_tasks_of_type(mask_cosmofit, prior_tasks, CosmoFit, match_none=False, allowed_failure=True)
+            Task.logger.debug(f"deps_cosmofit: {deps_cosmofit}")
             deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor, match_none=False)
+            Task.logger.debug(f"deps_biascor: {deps_biascor}")
             deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit, match_none=False)
+            Task.logger.debug(f"deps_lcfit: {deps_lcfit}")
 
             deps = deps_cosmofit + deps_biascor + deps_lcfit
             if len(deps) == 0:

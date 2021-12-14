@@ -66,5 +66,5 @@ COSMOFIT:
 
 ANALYSE:
   ALL_OMW:
-    MASK_COSMOMC: "*"
+    MASK_COSMOFIT: "*"
     MASK_BIASCOR: "*"
