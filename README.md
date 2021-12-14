@@ -155,7 +155,7 @@ The current stages are:
 * `5, MERGE`: Merging (combining classifier and FITRES output)
 * `6, BIASCOR`: Bias corrections using BBC
 * `7, CREATE_COV`: Create input files needed for CosmoMC
-* `8, COSMOMC`: Run CosmoMC and fit cosmology
+* `8, COSMOFIT`: Run CosmoMC and fit cosmology
 * `9, ANALYSE`: Create final output and plots. Includes output from CosmoMC, BBC and Light curve fitting.
 
 ### Pippin on Midway

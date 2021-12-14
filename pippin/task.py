@@ -268,7 +268,7 @@ class Task(ABC):
         return num_errors > 0
 
     @staticmethod
-    def match_tasks(mask, deps, match_none=True):
+    def match_tasks(mask, deps, match_none=True, allowed_failure=False):
         if mask is None:
             if match_none:
                 mask = ""
@@ -283,14 +283,14 @@ class Task(ABC):
 
         for m in mask:
             specific_match = [d for d in matching_deps if m in d.name]
-            if len(specific_match) == 0:
+            if len(specific_match) == 0 and not allowed_failure:
                 Task.fail_config(f"Mask '{m}' does not match any deps. Probably a typo. Available options are {deps}")
 
         return matching_deps
 
     @staticmethod
-    def match_tasks_of_type(mask, deps, *cls, match_none=True):
-        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=match_none)
+    def match_tasks_of_type(mask, deps, *cls, match_none=True, allowed_failure=False):
+        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=match_none, allowed_failure=allowed_failure)
 
     @abstractmethod
     def _run(self):
