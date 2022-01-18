@@ -3,7 +3,9 @@
 [![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/dessn/Pippin/blob/master/LICENSE)
 [![Github Issues](https://img.shields.io/github/issues/dessn/Pippin)](https://github.com/dessn/Pippin/issues)
 ![Python Version](https://img.shields.io/badge/Python-3.7%2B-red)
-[![Travis Build](https://travis-ci.com/dessn/Pippin.svg?branch=master)](https://travis-ci.com/dessn/Pippin)
+![Pippin Test](https://github.com/dessn/Pippin/actions/workflows/test-pippin/badge.svg)
+
+
 
 # Pippin
 
