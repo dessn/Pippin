@@ -811,7 +811,7 @@ run `python plot_cosmomc.py input.yml`.
 ```yaml
 ANALYSE:
   SOMELABEL:
-    MASK_COSMOMC: mask  # partial match
+    MASK_COSMOFIT: mask  # partial match
     MASK_BIASCOR: mask # partial match
     MASK_LCFIT: [D_DESSIM, D_DATADES] # Creates histograms and efficiency based off the input LCFIT_SIMNAME matches. Optional
     OPTS:
