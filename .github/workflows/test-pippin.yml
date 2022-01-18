@@ -31,11 +31,11 @@ jobs:
                 pip install -U numpy
 
             - name: Setup pippin
-              env:
-                SNANA_DIR: SNANA_DIR
               run: |
                 python setup.py sdist
 
             - name: Test pippin
               run: |
                 pytest -v .
+              env:
+                SNANA_DIR: SNANA_DIR
