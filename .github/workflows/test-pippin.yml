@@ -1,0 +1,33 @@
+name: test-pippin
+on: [push, pull-request]
+
+jobs:
+    test:
+        run-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ["3.7", "3.8", "3.9", "3.10"]
+
+        steps:
+            - name: Check out repository code
+              uses: actions/checkout@v2
+
+            - name: Setup Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v2
+              with:
+                python-version: ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip setuptools wheel
+                pip install -r requirements.txt
+                pip install -r requirements_dev.txt
+                pip install -U numpy
+
+            - name: Setup pippin
+              run: |
+                python setup.py sdist
+
+            - name: Test pippin
+              run: |
+                pytest -v .
