@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#SBATCH --partition=gpu2
+#SBATCH --gres=gpu:1
+#SBATCH --account=pi-rkessler
+#SBATCH --job-name=REPLACE_NAME
+#SBATCH --output=REPLACE_LOGFILE
+#SBATCH --time=REPLACE_WALLTIME
+#SBATCH --nodes=1
+#SBATCH --mem-per-cpu=REPLACE_MEM
+#SxxxxBATCH --exclusive
+#SxxxxxBATCH --ntasks-per-node=1
+
+echo $SLURM_JOB_ID starting execution `date` on `hostname`
+
+
+REPLACE_JOB

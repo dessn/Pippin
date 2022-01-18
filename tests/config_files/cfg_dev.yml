@@ -7,6 +7,8 @@ QUEUE:
 
 DATA_DIRS:
   - data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIRS: [option in your individual config]
+  - tests
+  - .
 
 SNANA:
   sim_dir: $SCRATCH_SIMDIR
@@ -35,10 +37,9 @@ OUTPUT:
   max_ping_frequency: 300
 
 SBATCH:
-  cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2.TEMPLATE
-  gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
+  cpu_location: prereq_files/SBATCH_Midway2b.TEMPLATE
+  gpu_location: prereq_files/SBATCH_gpu.TEMPLATE
   clean: True
 
 SETUP:
-    location: $PRODUCTS/pippin/pippin/tasks
-    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks
+    location: pippin/tasks
