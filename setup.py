@@ -13,7 +13,7 @@ setup(
     author_email="samuelreay@gmail.com",
     description="Pipeline for Supernova Cosmology",
     long_description="Pipeline for Supernova Cosmology",
-    url="https://github.com/Samreay/Pippin",
+    url="https://github.com/dessn/Pippin",
     license="MIT",
     platforms=["Linux", "Unix"],
     classifiers=[

@@ -1,10 +1,10 @@
 [![JOSS](https://joss.theoj.org/papers/10.21105/joss.02122/status.svg)](https://doi.org/10.21105/joss.02122)
 [![Zenodo](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.366608-blue)](https://zenodo.org/badge/latestdoi/162215291)
-[![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/Samreay/Pippin/blob/master/LICENSE)
-[![Github Version](https://img.shields.io/github/v/release/Samreay/Pippin)](https://github.com/Samreay/Pippin/releases)
-[![Github Issues](https://img.shields.io/github/issues/Samreay/Pippin)](https://github.com/Samreay/Pippin/issues)
+[![GitHub license](https://img.shields.io/badge/License-MIT-green)](https://github.com/dessn/Pippin/blob/master/LICENSE)
+[![Github Version](https://img.shields.io/github/v/release/dessn/Pippin)](https://github.com/dessn/Pippin/releases)
+[![Github Issues](https://img.shields.io/github/issues/dessn/Pippin)](https://github.com/dessn/Pippin/issues)
 ![Python Version](https://img.shields.io/badge/Python-3.7%2B-red)
-[![Travis Build](https://travis-ci.com/Samreay/Pippin.svg?branch=master)](https://travis-ci.com/Samreay/Pippin)
+[![Travis Build](https://travis-ci.com/dessn/Pippin.svg?branch=master)](https://travis-ci.com/dessn/Pippin)
 
 # Pippin
 
@@ -193,7 +193,7 @@ I would recommend installing this yourself because it's a great tool.
 
 ## Examples
 
-If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/Samreay/Pippin/tree/master/examples),
+If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/dessn/Pippin/tree/master/examples),
 pick the task you want to know more about, and have a look over all the options.
 
 Here is a very simple configuration file which runs a simulation, does light curve fitting, and then classifies it using the
@@ -260,7 +260,7 @@ alias sshmidway="ssh username@midway2-login1.rcc.uchicago.edu"
 **I want to modify a ton of files but don't want huge yml files, please help**
 
 You can modify input files and put them in a directory you own, and then tell Pippin to look there 
-(in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/Samreay/Pippin/blob/master/examples/global.yml),
+(in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/dessn/Pippin/blob/master/examples/global.yml),
 or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
 
 ```yaml
