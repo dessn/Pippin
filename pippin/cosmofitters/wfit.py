@@ -56,12 +56,9 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.yaml["CONFIG"]["WFITOPT"] = self.wfitopts
         self.yaml["CONFIG"]["INPDIR"] = self.create_cov_dirs
         self.yaml["CONFIG"]["OUTDIR"] = os.path.join(self.output_dir, "output")
-        batch_info = self.options.get("BATCH_INFO")
-        if batch_info is not None:
-            self.yaml["CONFIG"]["BATCH_INFO"] = batch_info
-        wfitopt_global = self.options.get("WFITOPT_GLOBAL")
-        if wfitopt_global is not None:
-            self.yaml["CONFIG"]["WFITOPT_GLOBAL"] = wfitopt_global
+        # Pass all OPTS keys through to the yaml dictionary
+        for k, v in self.options.items():
+            self.yaml["CONFIG"][k] = v
         
         final_output_for_hash = self.get_output_string()
 
