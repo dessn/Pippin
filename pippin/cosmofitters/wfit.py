@@ -58,6 +58,9 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.yaml["CONFIG"]["OUTDIR"] = os.path.join(self.output_dir, "output")
         # Pass all OPTS keys through to the yaml dictionary
         for k, v in self.options.items():
+            # Clobber WFITOPTS to WFITOPT
+            if k == "WFITOPTS":
+                k = "WFITOPT"
             self.yaml["CONFIG"][k] = v
         
         final_output_for_hash = self.get_output_string()
