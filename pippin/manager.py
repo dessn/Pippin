@@ -360,11 +360,14 @@ class Manager:
                 current_sleep_time *= 2
                 if current_sleep_time > max_sleep_time:
                     current_sleep_time = max_sleep_time
-                squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True).splitlines()]
-                n = len(squeue)
-                if n == 0 or n > self.max_jobs:
-                    self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
-
+                p = subprocess.run(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if (p.returncode != 0) or (p.stderr != ""):
+                    self.logger.error(f"Command '{p.args}' failed with exit status '{p.returncode}' and error '{p.stderr.strip()}'")
+                else:
+                    squeue = [i.strip() for i in p.stdout.splitlines()]
+                    n = len(squeue)
+                    if n == 0 or n > self.max_jobs:
+                        self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
         self.log_finals(done_tasks, failed_tasks, blocked_tasks)
 
     def check_task_completion(self, t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue):

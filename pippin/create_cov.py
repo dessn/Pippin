@@ -220,7 +220,7 @@ fi
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)
 
-            self.logger.info(f"Submitting batch job for data prep")
+            self.logger.info(f"Submitting batch job for create covariance")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.should_be_done()
