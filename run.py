@@ -4,6 +4,7 @@ import yaml
 import logging
 import coloredlogs
 import signal
+import sys
 from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config, chown_dir
 from pippin.manager import Manager
 from colorama import init
@@ -205,3 +206,4 @@ def get_args(test=False):
 if __name__ == "__main__":
     args = get_args()
     run(args)
+    sys.stdout.flush()
