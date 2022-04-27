@@ -138,7 +138,7 @@ class SNANASimulation(ConfigBasedExecutable):
             num_jobs = self.options.get("NUM_JOBS")
             if num_jobs is not None:
                 self.num_jobs = num_jobs
-                self.logger.debug(f"Num jobs set by NUM_JOBS option")
+                self.logger.debug(f"Num jobs set by NUM_JOBS option to {self.num_jobs}")
             else:
                 try:
                     # If BATCH_INFO is set, we'll use that
@@ -159,11 +159,11 @@ class SNANASimulation(ConfigBasedExecutable):
                             comps[-1] = str(num_jobs)
                             self.derived_batch_info = " ".join(comps)
                             self.num_jobs = num_jobs
-                            self.logger.debug(f"Num jobs set by RANSEED")
+                            self.logger.debug(f"Num jobs set by RANSEED to {self.num_jobs}")
                     else:
                         # self.logger.debug(f"BATCH INFO property detected as {property}")
-                        self.num_jobs = int(default_batch_info.split()[-1])
-                        self.logger.debug(f"Num jobs set by BATCH_INFO")
+                        self.num_jobs = int(batch_info.split()[-1])
+                        self.logger.debug(f"Num jobs set by BATCH_INFO to {self.num_jobs}")
                 except Exception:
                     self.logger.warning(f"Unable to determine how many jobs simulation {self.name} has")
                     self.num_jobs = 1
