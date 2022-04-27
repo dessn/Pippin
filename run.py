@@ -3,6 +3,7 @@ import os
 import yaml
 import logging
 import coloredlogs
+import signal
 from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config, chown_dir
 from pippin.manager import Manager
 from colorama import init
@@ -110,6 +111,18 @@ def run(args):
     logging.info(f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node.")
 
     manager = Manager(config_filename, yaml_path, config, message_store)
+    
+    # Gracefully hand Ctrl-c
+    if args.temp0:
+        logging.info("Opting in to t0 - graceful exits")
+        def handler(signum, frame):
+            logging.error("Ctrl-c was pressed.")
+            logging.warning("All remaining tasks will be killed and their hash reset")
+            manager.kill_remaining_tasks()
+            exit(1)
+
+        signal.signal(signal.SIGINT, handler)
+
     if args.start is not None:
         args.refresh = True
     manager.set_start(args.start)
@@ -173,6 +186,7 @@ def get_args(test=False):
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less", default=None)
     parser.add_argument("-S", "--syntax", help="Get the syntax of the given task.", default=None, const="options", type=str, nargs='?')
+    parser.add_argument("-t0", "--temp0", help="Temporarily opt in to graceful exits", action="store_true", default=False)
     args = parser.parse_args()
 
     if args.syntax is not None:

@@ -60,6 +60,11 @@ class Manager:
         self.force_refresh = False
         self.force_ignore_stage = None
 
+        self.running = []
+        self.done = []
+        self.failed = []
+        self.blocked = []
+
     def load_task_setup(self):
         tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone', 'dataprep']
         self.task_setup = {}
@@ -149,11 +154,11 @@ class Manager:
         num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT))
         return num_jobs
 
-    def get_task_to_run(self, tasks_to_run, done_tasks):
-        for t in tasks_to_run:
+    def get_task_to_run(self):
+        for t in self.tasks:
             can_run = True
             for dep in t.dependencies:
-                if dep not in done_tasks:
+                if dep not in self.done:
                     can_run = False
             if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
                 self.logger.warning(f"Cant submit {t} because GPU NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}")
@@ -167,10 +172,12 @@ class Manager:
                 return t
         return None
 
-    def fail_task(self, t, running, failed, blocked):
-        if t in running:
-            running.remove(t)
-        failed.append(t)
+    def fail_task(self, t):
+        if t in self.tasks:
+            self.tasks.remove(t)
+        if t in self.running:
+            self.running.remove(t)
+        self.failed.append(t)
         self.logger.error(f"FAILED: {t}")
         if os.path.exists(t.hash_file):
             os.remove(t.hash_file)
@@ -180,26 +187,26 @@ class Manager:
             modified = False
             for t2 in self.tasks:
                 for d in t2.dependencies:
-                    if d in failed or d in blocked:
+                    if d in self.failed or d in self.blocked:
                         self.tasks.remove(t2)
-                        blocked.append(t2)
+                        self.blocked.append(t2)
                         modified = True
                         break
 
-    def log_status(self, waiting, running, done, failed, blocked):
+    def log_status(self):
         self.logger.debug("")
         self.logger.debug(f"Status as of {time.ctime()}:")
-        self.logger.debug(f"    Waiting: {[t.name for t in waiting]}")
-        self.logger.debug(f"    Running: {[str(t) for t in running]}")
-        if done:
-            self.logger.debug(f"    Done:    {[t.name for t in done]}")
-        if failed:
-            self.logger.debug(f"    Failed:  {[t.name for t in failed]}")
-        if blocked:
-            self.logger.debug(f"    Blocked: {[t.name for t in blocked]}")
+        self.logger.debug(f"    Waiting: {[t.name for t in self.tasks]}")
+        self.logger.debug(f"    Running: {[str(t) for t in self.running]}")
+        if self.done:
+            self.logger.debug(f"    Done:    {[t.name for t in self.done]}")
+        if self.failed:
+            self.logger.debug(f"    Failed:  {[t.name for t in self.failed]}")
+        if self.blocked:
+            self.logger.debug(f"    Blocked: {[t.name for t in self.blocked]}")
         self.logger.debug("")
 
-        self.print_dashboard(waiting, running, done, failed, blocked)
+        self.print_dashboard()
 
     def get_subtasks(self, task_class, all_tasks):
         return [x for x in all_tasks if isinstance(x, task_class)]
@@ -214,22 +221,22 @@ class Manager:
         }
         return colours[status] + string + Style.RESET_ALL
 
-    def get_task_dashboard(self, task, waiting, running, done, failed, blocked):
+    def get_task_dashboard(self, task):
         status = None
-        if task in waiting:
+        if task in self.tasks:
             status = "waiting"
-        elif task in running:
+        elif task in self.running:
             status = "running"
-        elif task in done:
+        elif task in self.done:
             status = "done"
-        elif task in failed:
+        elif task in self.failed:
             status = "failed"
-        elif task in blocked:
+        elif task in self.blocked:
             status = "blocked"
         return self.get_string_with_colour(task.name, status)
 
-    def get_dashboard_line(self, stage, tasks, waiting, running, done, failed, blocked):
-        strings = [self.get_task_dashboard(task, waiting, running, done, failed, blocked) for task in tasks]
+    def get_dashboard_line(self, stage, tasks):
+        strings = [self.get_task_dashboard(task) for task in tasks]
         line_width = 160
 
         output = f"{stage:12s}"
@@ -242,8 +249,8 @@ class Manager:
 
         return output
 
-    def print_dashboard(self, waiting, running, done, failed, blocked):
-        all_tasks = waiting + running + done + failed + blocked
+    def print_dashboard(self):
+        all_tasks = self.tasks + self.running + self.done + self.failed + self.blocked
 
         self.logger.info("-------------------")
         self.logger.info("CURRENT TASK STATUS")
@@ -254,7 +261,7 @@ class Manager:
         for name, task_class in zip(Manager.stages, Manager.task_order):
             tasks = self.get_subtasks(task_class, all_tasks)
             if tasks:
-                self.get_dashboard_line(name, tasks, waiting, running, done, failed, blocked)
+                self.get_dashboard_line(name, tasks)
 
         self.logger.info("-------------------")
 
@@ -271,17 +278,13 @@ class Manager:
 
         self.num_jobs_queue = 0
         self.num_jobs_queue_gpu = 0
-        running_tasks = []
-        done_tasks = []
-        failed_tasks = []
-        blocked_tasks = []
         squeue = None
 
         if check_config:
             self.logger.notice("Config verified, exiting")
             return
 
-        self.print_dashboard(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
+        self.print_dashboard()
 
         start_sleep_time = self.global_config["OUTPUT"]["ping_frequency"]
         max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
@@ -294,22 +297,22 @@ class Manager:
             chown_file(config_file_output)
 
         # Welcome to the primary loop
-        while self.tasks or running_tasks:
+        while self.tasks or self.running:
             small_wait = False
 
             # Check status of current jobs
-            for t in running_tasks:
+            for t in self.running:
                 try:
-                    completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                    completed = self.check_task_completion(t, squeue)
                     small_wait = small_wait or completed
                 except Exception as e:
                     self.logger.exception(e, exc_info=True)
-                    self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+                    self.fail_task(t)
 
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
 
-                t = self.get_task_to_run(self.tasks, done_tasks)
+                t = self.get_task_to_run()
                 if t is not None:
                     self.logger.info("")
                     self.tasks.remove(t)
@@ -334,24 +337,24 @@ class Manager:
                             self.num_jobs_queue += t.num_jobs
                             message = f"LAUNCHED: {t} with {t.num_jobs} NUM_JOBS. Total NUM_JOBS now {self.num_jobs_queue}/{self.max_jobs_in_queue}"
                         self.logger.notice(message)
-                        running_tasks.append(t)
+                        self.running.append(t)
                         completed = False
                         try:
-                            completed = self.check_task_completion(t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue)
+                            completed = self.check_task_completion(t, squeue)
                         except Exception as e:
                             self.logger.exception(e, exc_info=True)
-                            self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+                            self.fail_task(t)
                         small_wait = small_wait or completed
                     else:
                         self.logger.error(f"FAILED TO LAUNCH: {t}")
-                        self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+                        self.fail_task(t)
                     small_wait = True
                 else:
                     break
 
             # Check quickly if we've added a new job, etc, in case of immediate failure
             if small_wait:
-                self.log_status(self.tasks, running_tasks, done_tasks, failed_tasks, blocked_tasks)
+                self.log_status()
                 current_sleep_time = start_sleep_time
                 time.sleep(0.1)
                 squeue = None
@@ -360,7 +363,7 @@ class Manager:
                 current_sleep_time *= 2
                 if current_sleep_time > max_sleep_time:
                     current_sleep_time = max_sleep_time
-                p = subprocess.run(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.run(f"squeue -h -u $USER -o '%.j'", shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if (p.returncode != 0) or (p.stderr != ""):
                     self.logger.error(f"Command '{p.args}' failed with exit status '{p.returncode}' and error '{p.stderr.strip()}'")
                 else:
@@ -368,9 +371,9 @@ class Manager:
                     n = len(squeue)
                     if n == 0 or n > self.max_jobs:
                         self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
-        self.log_finals(done_tasks, failed_tasks, blocked_tasks)
+        self.log_finals()
 
-    def check_task_completion(self, t, blocked_tasks, done_tasks, failed_tasks, running_tasks, squeue):
+    def check_task_completion(self, t, squeue):
         result = t.check_completion(squeue)
         # If its finished, good or bad, juggle tasks
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
@@ -379,18 +382,24 @@ class Manager:
             else:
                 self.num_jobs_queue -= t.num_jobs
             if result == Task.FINISHED_SUCCESS:
-                running_tasks.remove(t)
+                self.running.remove(t)
                 self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
-                done_tasks.append(t)
+                self.done.append(t)
                 self.logger.debug("Compressing task")
                 t.compress_task()
             else:
-                self.fail_task(t, running_tasks, failed_tasks, blocked_tasks)
+                self.fail_task(t)
             chown_dir(t.output_dir)
             return True
         return False
 
-    def log_finals(self, done_tasks, failed_tasks, blocked_tasks):
+    def kill_remaining_tasks(self):
+        remaining_tasks = self.tasks + self.running
+        for t in remaining_tasks:
+            self.fail_task(t)
+        self.log_finals()
+
+    def log_finals(self):
         self.logger.info("")
         self.logger.info("All tasks finished. Task summary as follows.")
 
@@ -398,19 +407,19 @@ class Manager:
         es = self.message_store.get_errors()
 
         self.logger.info("Successfully completed tasks:")
-        for t in done_tasks:
+        for t in self.done:
             self.logger.notice(f"\t{t}")
-        if not done_tasks:
+        if not self.done:
             self.logger.info("\tNo successful tasks")
         self.logger.info("Failed Tasks:")
-        for t in failed_tasks:
+        for t in self.failed:
             self.logger.error(f"\t{t}")
-        if not failed_tasks:
+        if not self.failed:
             self.logger.info("\tNo failed tasks")
         self.logger.info("Blocked Tasks:")
-        for t in blocked_tasks:
+        for t in self.blocked:
             self.logger.warning(f"\t{t}")
-        if not blocked_tasks:
+        if not self.blocked:
             self.logger.info("\tNo blocked tasks")
 
         self.logger.info("")
