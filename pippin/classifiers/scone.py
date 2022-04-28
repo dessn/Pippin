@@ -74,7 +74,7 @@ class SconeClassifier(Classifier):
                 "REPLACE_LOGFILE": "output.log",
                 "REPLACE_WALLTIME": "15:00:00", # TODO: scale based on number of heatmaps
                 "REPLACE_MEM": "8GB",
-                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
+                # "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
                 }
         header_dict = merge_dict(header_dict, self.batch_replace)
         if self.batch_file is None:
@@ -215,6 +215,7 @@ class SconeClassifier(Classifier):
                 predictions = predictions.rename(columns={"pred": self.get_prob_column_name()})
                 predictions.to_csv(pred_path, index=False)
                 self.logger.info(f"Predictions file can be found at {pred_path}")
+                self.output.update({"model_filename": self.options.get("TRAINED_MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
                 return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
 
