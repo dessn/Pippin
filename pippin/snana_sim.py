@@ -409,8 +409,14 @@ class SNANASimulation(ConfigBasedExecutable):
             s_ends = [os.path.join(self.output_dir, os.path.basename(s)) for s in self.sim_folders]
             for s, s_end in zip(self.sim_folders, s_ends):
                 if not os.path.exists(s_end):
-                    self.logger.debug(f"Linking {s} -> {s_end}")
-                    os.symlink(s, s_end, target_is_directory=True)
+                    # Check to make sure there isn't a broken symlink at s_end
+                    # os.path.exists will return false for broken symlinks, even if one exists
+                    if os.path.islink(s_end):
+                        self.logger.error(f"Symlink {s_end} exists and is pointing to a broken or missing directory")
+                        return Task.FINISHED_FAILURE
+                    else:
+                        self.logger.debug(f"Linking {s} -> {s_end}")
+                        os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
             self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
