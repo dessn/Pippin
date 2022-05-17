@@ -349,6 +349,25 @@ Finally, the way this works under the hood is simple - it copies the directory o
 "latest version" just ask the task to refresh (or delete the folder). Once it copies it, there is no normal hash checking,
 it reads in the `config.yml` file created by the task in its initial run and powers onwards.
 
+If you want to use `EXTERNAL_DIRS` with different output directory names, you will ned to inform pippin as to which `EXTERNAL_DIR` matches with which `LCFIT` task. To do so, you can make use of `EXTERNAL_MAP`, which allows you to specify a mask associated with each `LCFIT` task, selecting an `EXTERNAL_DIR` for that task.
+```yaml
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yer.nml
+    MASK: DESSIM
+    EXTERNAL_DIRS:
+      - $PIPPIN_OUTPUT/EXAMPLE_C11/2_LCFIT/DESFIT_SIM
+      - $PIPPIN_OUTPUT/EXAMPLE_G10/2_LCFIT/DESFIT_SIM
+      - $PIPPIN_OUTPUT/EXAMPLE/2_LCFIT/DESFIT_CCSIM
+    EXTERNAL_MAP:
+      # LCFIT_SIM: EXTERNAL_MASK
+      D_DESSIMBIAS5YRIA_C11: EXAMPLE_C11 # In this case we are matching to the pippin job name, as the LCFIT task name is shared between two EXTERNAL_DIRS
+      D_DESSIMBIAS5YRIA_G10: EXAMPLE_G10 # Same as C11
+      D_DESSIMBIAS5YRCC: DESFIT_CCSIM # In this case we match to the LCFIT task name, as the pippin job name (EXAMPLE) would match with the other EXTERNAL_DIRS
+
+```
+The `EXTERNAL_MAP` method should match with any pippin task which makes use of `EXTERNAL_DIRS`, and is only necessary if the `EXTERNAL_DIRS` task names do not match up.
+
 If you have any issues using this new feature, check out the `ref_des_5yr.yml` file or flick me a message.
 
 ## Tasks

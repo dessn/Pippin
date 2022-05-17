@@ -30,10 +30,23 @@ class Task(ABC):
         # Determine if this is an external (already done) job or not
         external_dirs = self.config.get("EXTERNAL_DIRS", [])
         external_names = [os.path.basename(d) for d in external_dirs]
+        external_map = self.config.get("EXTERNAL_MAP", {n: n for n in external_names})
         output_name = os.path.basename(output_dir)
+        name_match = external_map.get(output_name)
         if external_dirs:
-            if output_name in external_names:
-                self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
+            if name_match is not None:
+                matching_dirs = [d for d in external_dirs if name_match in d]
+                logging.debug(f"DELETEME name_match: {name_match}, external_map: {external_map}, match: {matching_dirs}")
+                if len(matching_dirs) == 0:
+                    logging.error(f"LCFIT task {output_name} has external mapping {name_match} but there were no matching EXTERNAL_DIRS")
+                elif len(matching_dirs) > 1:
+                    logging.error(f"LCFIT tasl {output_name} has external mapping {name_math} which matched with multiple EXTERNAL_DIRS: {matching_dirs}. Please specify an EXTERNAL_MAP which only matches a single EXTERNAL_DIR")
+                else:
+                    logging.info(f"Found external match for {output_name}")
+                    self.config["EXTERNAL"] = matching_dirs[0]
+            else:
+                logging.info(f"No external match found for {output_name}")
+
         self.external = self.config.get("EXTERNAL")
         if self.external is not None:
             logging.debug(f"External config stated to be {self.external}")
