@@ -349,7 +349,7 @@ Finally, the way this works under the hood is simple - it copies the directory o
 "latest version" just ask the task to refresh (or delete the folder). Once it copies it, there is no normal hash checking,
 it reads in the `config.yml` file created by the task in its initial run and powers onwards.
 
-If you want to use `EXTERNAL_DIRS` with different output directory names, you will ned to inform pippin as to which `EXTERNAL_DIR` matches with which `LCFIT` task. To do so, you can make use of `EXTERNAL_MAP`, which allows you to specify a mask associated with each `LCFIT` task, selecting an `EXTERNAL_DIR` for that task.
+If you want to use `EXTERNAL_DIRS` with different output directory names, you will ned to inform pippin as to which `EXTERNAL_DIR` matches with which `LCFIT` task. To do so, you can make use of `EXTERNAL_MAP`, which allows you to specify a mask associated with each `LCFIT` task, selecting an `EXTERNAL_DIR` for that task. Note that tasks which do have an exact name do not need an `EXTERNAL_MAP` entry
 ```yaml
 LCFIT:
   D:
