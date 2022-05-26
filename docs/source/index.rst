@@ -3,18 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Pippin's documentation!
+Pippin's documentation
 ==================================
+
+**Pippin** - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
