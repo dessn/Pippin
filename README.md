@@ -19,7 +19,7 @@ when running end-to-end supernova cosmology analyses.
 
 ## Table of Contents
 
-<img align="right" height="350" src="doc/meme.jpg">
+<img align="right" height="350" src="docs/_static/images/meme.jpg">
 
 - [Using Pippin](#using-pippin)
 - [Installing Pippin](#installing-it-fresh)
@@ -85,7 +85,7 @@ installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable i
 so please either set said variable or change the associated line in the `cfg.yml`. [For the morbidly curious, here
 is a very small demo video of using Pippin in the Midway environment](https://www.youtube.com/watch?v=pCaPvzFCZ-Y).
 
-![ConsoleOutput](doc/console.gif)
+![ConsoleOutput](docs/_static/images/console.gif)
 
 
 ### Creating your own configuration file
@@ -844,7 +844,7 @@ ANALYSE:
 
 [//]: # (End of Task specification)
 
-![Developer Documentation Below](doc/developer.jpg)
+![Developer Documentation Below](docs/_static/images/developer.jpg)
 
 
 ## Coding style
@@ -853,7 +853,7 @@ Please, for the love of god, don't code this up in vim/emacs on a terminal conne
 PyCharm or VSCode), and **install the Black extensiion**! I have Black set up in PyCharm as a file watcher, and all
 python files, on save, are automatically formatted. Use 160 characters a linewidth. Here is the Black file watcher config:
 
-![Black config](doc/black.jpg)
+![Black config](docs/_static/images/black.jpg)
 
 If everyone does this, then all files should remain consistent across different users.
 
