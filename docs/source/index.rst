@@ -8,7 +8,11 @@ Pippin's documentation
 
 **Pippin** - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. image:: _static/images/meme.jpg
 
+.. toctree::
+    :maxdepth: 2
+    :caption: Contents:
+
+    install
+    usage
