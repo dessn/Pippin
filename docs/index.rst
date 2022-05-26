@@ -3,8 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+#######################
 Pippin's documentation
-==================================
+#######################
+
+***These docs are a work in process***
 
 **Pippin** - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
@@ -16,3 +19,4 @@ Pippin's documentation
 
     install
     usage
+    tasks
