@@ -310,7 +310,7 @@ fi
                 for ctask in create_cov_tasks:
                     if mask not in ctask.name:
                         continue
-                    name = f"{cname}_{ctask.name}"
+                    name = f"COSMOMC_{cname}_{ctask.name}"
                     a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), config, options, global_config, dependencies=[ctask])
                     Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
                     tasks.append(a)

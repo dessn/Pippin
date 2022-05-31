@@ -100,6 +100,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         key = "WFIT"
         for name in c.get(key, []):
             config = c[key].get(name, {})
+            name = f"WFIT_{name}"
             options = config.get("OPTS", {})
 
             mask = config.get("MASK", "")
