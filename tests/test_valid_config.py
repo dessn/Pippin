@@ -215,7 +215,7 @@ def test_cosmomc_config_valid():
     assert isinstance(tasks[-1], CosmoMC)
 
     task = tasks[-1]
-    assert task.output["name"] == "SN_OMW_COVTEST_BCOR"
+    assert task.output["name"] == "COSMOMC_SN_OMW_COVTEST_BCOR"
     assert len(task.output["covopts"]) == 2
     assert "ALL" in task.output["covopts"]
     assert "NOSYS" in task.output["covopts"]
