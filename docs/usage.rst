@@ -75,6 +75,31 @@ Pippin itself can be found at ``$PIPPIN``, output at ``$PIPPIN_OUTPUT`` (which g
 
 Note that you only have 100 GB on scratch. If you fill that up and need to nuke some files, look both in ``$SCRATCH_SIMDIR`` to remove SNANA photometry and ``$PIPPIN_OUTPUT`` to remove Pippin's output. Running the ``dirusage`` command on midway will (after some time) give you a list of which directories are taking up the most space.
 
+Examples
+========
+
+If you want detailed examples of what you can do with Pippin tasks, have a look in the `examples directory <https://github.com/dessn/Pippin/tree/main/examples>`__, pick the task you want to know more about, and have a look over all the options.
+
+Here is a very simple configuration file which runs a simulation, does light curve fitting, and then classifies it useing the debug FITPROB classifier.
+
+.. code-block:: yaml
+
+    SIM:
+        DESSIM:
+            IA_G10_DES3YR:
+                BASE: surveys/des/sim_ia/sn_ia_salt2_g10_des3yr.input
+            
+        LCFIT:
+            BASEDES:
+                BASE: surveys/des/lcfit_nml/des_5yr.nml
+                    
+        CLASSIFICATION:
+            FITPROBTEST:
+                CLASSIFIER: FitProbClassifier
+                MODE: predict
+
+You can see that unless you specify a ``MASK`` on each subsequent task, Pippin will generally try and run everything on everything. So if you have two simulations defined, you don't need two light curve fitting tasks, Pippin will make one light curve fit task for each simulation, and then two classification tasks, one for each light curve fit task.
+
 Best Practice
 ==============
 
@@ -133,7 +158,7 @@ If you are finding that your config files contain lots of duplicated sections (f
 Use external results
 ---------------------
 
-Oftentimes you will want to reuse the results of one Pippin job in other Pippin jobs, for instance reusing a biascor sim so you don't need to resimulate every time. This can be accomplished via the ``EXTERNAL`` and ``EXTERNAL_DIR`` keywords.
+Often times you will want to reuse the results of one Pippin job in other Pippin jobs, for instance reusing a biascor sim so you don't need to resimulate every time. This can be accomplished via the ``EXTERNAL`` and ``EXTERNAL_DIR`` keywords.
 
 The ``EXTERNAL`` keyword is used when you only need to specify a single external result, such as when you are loading in a simulation. If that's the case you simply need to let Pippin know where the external results are located. An example loading in external biascor sims is below:
 

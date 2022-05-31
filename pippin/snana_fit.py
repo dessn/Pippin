@@ -4,6 +4,7 @@ import subprocess
 import re
 import pandas as pd
 
+
 from pippin.base import ConfigBasedExecutable
 from pippin.config import mkdirs, get_data_loc, chown_dir, read_yaml
 from pippin.dataprep import DataPrep
@@ -189,8 +190,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 d = data.groupby("TYPE").agg(num=("CID", "count"))
                 self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
                 d.to_csv(os.path.join(path, "stats.txt"))
-            except Exception:
+            except Exception as e:
                 self.logger.error(f"Cannot load {path}")
+                self.logger.debug(f"Failed with exception: {e}")
                 return False
         return True
 

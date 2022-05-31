@@ -191,6 +191,7 @@ class SconeClassifier(Classifier):
            42.0: "non",
            64.0: "non",
            66.0: "non",
+           67: "non",
            80.0: "non",
            81.0: "non",
            82.0: "non",

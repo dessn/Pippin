@@ -176,15 +176,15 @@ def get_args(test=False):
     # Set up command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("yaml", help="the name of the yml config file to run. For example: configs/default.yml", type=str, nargs='*')
-    parser.add_argument("--config", help="Location of global config", default=None, type=str)
+    parser.add_argument("--config", help="Location of global config (i.e. cfg.yml)", default=None, type=str)
     parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
-    parser.add_argument("-s", "--start", help="Stage to start and force refresh", default=None)
-    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too)", default=None)
+    parser.add_argument("-s", "--start", help="Stage to start and force refresh. Accepts either the stage number or name (i.e. 1 or SIM)", default=None)
+    parser.add_argument("-f", "--finish", help="Stage to finish at (it runs this stage too). Accepts either the stage number or name (i.e. 1 or SIM)", default=None)
     parser.add_argument("-r", "--refresh", help="Refresh all tasks, do not use hash", action="store_true")
     parser.add_argument("-c", "--check", help="Check if config is valid", action="store_true", default=False)
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
-    parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less", default=None)
-    parser.add_argument("-S", "--syntax", help="Get the syntax of the given task.", default=None, const="options", type=str, nargs='?')
+    parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less. Accepts either the stage number of name (i.e. 1 or SIM)", default=None)
+    parser.add_argument("-S", "--syntax", help="Get the syntax of the given stage. Accepts either the stage number or name (i.e. 1 or SIM). If run without argument, will tell you all stage numbers / names.", default=None, const="options", type=str, nargs='?')
     args = parser.parse_args()
 
     if args.syntax is not None:

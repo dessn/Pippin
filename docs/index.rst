@@ -19,4 +19,4 @@ Pippin's documentation
 
     install
     usage
-    tasks
+    tasks 
