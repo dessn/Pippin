@@ -22,12 +22,13 @@ class Manager:
     task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoFit, AnalyseChains]
     stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOFIT", "ANALYSE"]
 
-    def __init__(self, filename, config_path, config, message_store):
+    def __init__(self, filename, config_path, config_raw, config, message_store):
         self.logger = get_logger()
         self.task_index = {t: i for i, t in enumerate(self.task_order)}
         self.message_store = message_store
         self.filename = filename
         self.filename_path = config_path
+        self.file_raw = config_raw
         self.run_config = config
         self.global_config = get_config()
 
@@ -292,8 +293,10 @@ class Manager:
 
         config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
         if not check_config and self.filename_path != config_file_output:
-            self.logger.info(f"Saving parsed config file from {self.filename_path} to {config_file_output}")
-            shutil.copy(self.filename_path, config_file_output)
+            self.logger.info(f"Saving processed and parsed config file to {config_file_output}")
+            with open(config_file_output, 'w') as f:
+                f.write(self.file_raw)
+            #shutil.copy(self.filename_path, config_file_output)
             chown_file(config_file_output)
 
         # Welcome to the primary loop
