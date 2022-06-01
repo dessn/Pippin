@@ -14,7 +14,7 @@ Pippin's documentation
 .. image:: _static/images/meme.jpg
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
     :caption: Contents:
 
     install

@@ -38,6 +38,8 @@ Here is an exhaustive list of everything you can pass to ``OPTS``
 ``RAW_DIR``
 -----------
 
+---------------
+
 Syntax:
 
 .. code-block:: yaml
@@ -51,6 +53,8 @@ Pippin simply stores the ``RAW_DIR`` and passes it to other tasks which need it.
 
 ``OPT_SETPKMJD``
 -----------------
+
+---------------
 
 Syntax:
 
@@ -68,6 +72,8 @@ Options are chosen via a bitmask, meaning you add the associated number of each 
 ``PHOTFLAG_MSKREJ``
 -------------------
 
+---------------
+
 Syntax:
 
 .. code-block:: yaml
@@ -83,6 +89,8 @@ Details can be found in the `SNANA Manual <https://github.com/RickKessler/SNANA/
 
 ``SIM``
 --------
+
+---------------
 
 Syntax:
 
@@ -100,6 +108,8 @@ This simply passes a flag to later tasks about whether the data provided comes f
 ``BLIND``
 ---------
 
+---------------
+
 Syntax:
 
 .. code-block:: yaml
@@ -114,6 +124,9 @@ Required: ``False``
 This passes a flag throughout all of Pippin that this data should be blinded. **If working with real data, only unblind when you are absolutely certain your analysis is ready!**
 
 ``TYPES``
+---------
+
+---------------
 
 Syntax:
 
@@ -136,6 +149,8 @@ In general if a spectroscopicaly classified supernova type is given the ``SNTYPE
 ``BATCH_FILE``
 --------------
 
+---------------
+
 Syntax: 
 
 .. code-block:: yaml
@@ -145,10 +160,12 @@ Syntax:
 
 Default: ``cfg.yml`` -> ``SBATCH: cpu_location``
 
-Which SBATCH template to use. By default this will use the cpu template from the main ``cfg.yml``. More details can be found at :doc:`/usage#changing-sbatch-options`_.
+Which SBATCH template to use. By default this will use the cpu template from the main ``cfg.yml``. More details can be found at :doc:`usage#changing-sbatch-options`_.
 
 ``BATCH_REPLACE``
 ------------------
+
+---------------
 
 Syntax:
 
@@ -161,10 +178,12 @@ Syntax:
 
 Default: ``None``
 
-Overwrite certain SBATCH keys. More details can be found at :doc:`/usage#changing-sbatch-options`_.
+Overwrite certain SBATCH keys. More details can be found at :doc:`usage#changing-sbatch-options`_.
 
 ``PHOTFLAG_DETECT``
 ---------------------
+
+---------------
 
 Syntax:
 
@@ -180,14 +199,16 @@ An optional SNANA flag to add a given bit to every detection. Adding this option
 ``CUTWIN_SNR_NODETECT``
 ------------------------
 
+---------------
+
 .. code-block:: yaml
 
     OPTS:
-        CUTWIM_SNR_NODETECT: FIXME
+        CUTWIM_SNR_NODETECT: -100,10
 
 Default: ``None``
 
-FIXME
+Flag to tell SNANA to reject non-detection events with a signal to noise ratio below the min or above the max.
 
 Output
 ======

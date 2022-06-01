@@ -157,8 +157,9 @@ If you are finding that your config files contain lots of duplicated sections (f
 
 Include external aliases
 ------------------------
-**This is new and experimental, use with caution**
-*Note that this is* **not** *yaml compliant*
+**This is new and experimental, use with caution**.
+
+*Note that this is* **not** *yaml compliant*.
 
 When dealing with especially large jobs, or suites of jobs you might find yourself having very large ``ALIAS``/``ANCHOR`` blocks which are repated amongst a number of Pippin jobs. A cleaner alternative is to have a number of ``.yml`` files containing your anchors, and then ``including`` these in your input files which will run Pippin jobs. This way you can share anchors amongst multiple Pippin input files and update them all at the same time. In order to achieve this, Pippin can *preprocess* the input file to directly copy the anchor file into the job file. An example is provided below:
 
@@ -327,3 +328,45 @@ If you have external results which don't have an exact match but should still be
 
 Changing SBATCH options
 -----------------------
+
+Pippin has sensible defaults for the sbatch options of each task, however it is possible you may sometimes want to overwrite some keys, or even replace the sbatch template entirely. You can do this via the ``BATCH_REPLACE``, and ``BATCH_FILE`` options respectively.
+
+In order to overwrite the default batch keys, add the following to any task which runs a batch job:
+
+.. code-block:: yaml
+
+    BATCH_REPLACE:
+        REPLACE_KEY1: value
+        REPLACE_KEY2: value 
+
+Possible options for ``BATCH_REPLACE`` are:
+
+* ``REPLACE_NAME``: ``--job-name``
+* ``REPLACE_LOGFILE``: ``--output``
+* ``REPLACE_WALLTIME``: ``--time``
+* ``REPLACE_MEM``: ``--mem-per-cpu``
+
+Note that changing these could have unforseen consequences, so use at your own risk.
+
+If replacing these keys isn't enough, you are able to create you own sbatch templates and get Pippin to use them. This is useful if you want to change the partition, or add some additional code which runs before the Pippin job. Note that your template **must** contain the keys listed above in order to work properly. In addition you **must** have ``REPLACE_JOB`` at the bottom of your template file, otherwise Pippin will not be able to load it's jobs into your template. An example template is as follows:
+
+.. code-block:: bash
+
+    #!/bin/bash
+    
+    #SBATCH -p broadwl-lc
+    #SBATCH --account=pi-rkessler
+    #SBATCH --job-name=REPLACE_NAME
+    #SBATCH --output=REPLACE_LOGFILE
+    #SBATCH --time=REPLACE_WALLTIME
+    #SBATCH --nodes=1
+    #SBATCH --mem-per-cpu=REPLACE_MEM
+    echo $SLURM_JOB_ID starting execution `date` on `hostname`
+
+    REPLACE_JOB
+
+To have Pippin use your template, simply add the following to your task:
+
+.. code-block:: yaml
+
+    BATCH_FILE: path/to/your/batch.TEMPLATE
