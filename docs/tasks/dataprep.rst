@@ -35,10 +35,8 @@ Options
 
 Here is an exhaustive list of everything you can pass to ``OPTS``
 
-``RAW_DIR``
+RAW_DIR
 -----------
-
----------------
 
 Syntax:
 
@@ -51,10 +49,8 @@ Required: ``True``
 
 Pippin simply stores the ``RAW_DIR`` and passes it to other tasks which need it.
 
-``OPT_SETPKMJD``
+OPT_SETPKMJD
 -----------------
-
----------------
 
 Syntax:
 
@@ -69,10 +65,8 @@ This option is used by ``SNANA`` to choose how peak MJD will be estimated. In ge
 
 Options are chosen via a bitmask, meaning you add the associated number of each option you want to get your final option number. Details of the available options can be found in the `SNANA Manual <https://github.com/RickKessler/SNANA/blob/master/doc/snana_manual.pdf>`_ in sections 4.34, 5.51, and Figure 11 (as of the time of writing). The sections describe in detail how ``OPT_SETPKMJD`` is used, whilst the figure shows all possible options.
 
-``PHOTFLAG_MSKREJ``
+PHOTFLAG_MSKREJ
 -------------------
-
----------------
 
 Syntax:
 
@@ -87,10 +81,8 @@ This specifies to SNANA which observations to reject based on ``PHOTFLAG`` bits.
 
 Details can be found in the `SNANA Manual <https://github.com/RickKessler/SNANA/blob/master/doc/snana_manual.pdf>`_ in sections 12.2.6 and 12.4.9 (as of the time of writing).
 
-``SIM``
+SIM
 --------
-
----------------
 
 Syntax:
 
@@ -105,10 +97,8 @@ Required: ``True`` (if working with simulated data)
 
 This simply passes a flag to later tasks about whether the data provided comes from real photometry or simulated photometry. It is important to specify this as the distincation matters down the line.
 
-``BLIND``
+BLIND
 ---------
-
----------------
 
 Syntax:
 
@@ -123,10 +113,8 @@ Required: ``False``
 
 This passes a flag throughout all of Pippin that this data should be blinded. **If working with real data, only unblind when you are absolutely certain your analysis is ready!**
 
-``TYPES``
+TYPES
 ---------
-
----------------
 
 Syntax:
 
@@ -146,10 +134,8 @@ This is the SNANA ``SNTYPE`` of your IA and NONIA supernovae. This is mostly use
 
 In general if a spectroscopicaly classified supernova type is given the ``SNTYPE`` of ``n`` then photometrically identified supernovae of the same (suspected) type is given the ``SNTYPE`` of ``100 + n``. By default spectroscopically classified type Ia supernovae are given the ``SNTYPE`` of 1. The default ``SNTYPE`` of non-ia supernova is a bit more complicated but details can be found ``$SNDATA_ROOT/models/NON1ASED/*/NONIA.LIST``. More detail can be found in the `SNANA Manual <https://github.com/RickKessler/SNANA/blob/master/doc/snana_manual.pdf>`_ in sections 4.6 for type Ia, and 9.6 for non-ia supernovae.
 
-``BATCH_FILE``
+BATCH_FILE
 --------------
-
----------------
 
 Syntax: 
 
@@ -162,10 +148,8 @@ Default: ``cfg.yml`` -> ``SBATCH: cpu_location``
 
 Which SBATCH template to use. By default this will use the cpu template from the main ``cfg.yml``. More details can be found at :doc:`usage#changing-sbatch-options`_.
 
-``BATCH_REPLACE``
+BATCH_REPLACE
 ------------------
-
----------------
 
 Syntax:
 
@@ -180,10 +164,8 @@ Default: ``None``
 
 Overwrite certain SBATCH keys. More details can be found at :doc:`usage#changing-sbatch-options`_.
 
-``PHOTFLAG_DETECT``
+PHOTFLAG_DETECT
 ---------------------
-
----------------
 
 Syntax:
 
@@ -196,10 +178,8 @@ Default: ``None``
 
 An optional SNANA flag to add a given bit to every detection. Adding this optional flag willresult in the ``NEPOCH_DETECT`` (number of detections) and ``TLIVE_DETECT`` (time between first and last detection) columns to be added to the SNANA and FITRES tables. More details can be found in the `SNANA Manual <https://github.com/RickKessler/SNANA/blob/master/doc/snana_manual.pdf>`_ in sections 4.18.1, 4.18.6, 4.36.5, and Figure 6 (at the time of writing).
 
-``CUTWIN_SNR_NODETECT``
+CUTWIN_SNR_NODETECT
 ------------------------
-
----------------
 
 .. code-block:: yaml
 
