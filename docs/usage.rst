@@ -42,7 +42,7 @@ Command Line Arguments
 
 Pippin has a number of useful command line arguments which you can quickly reference via ``pippin.sh -h``.
 
-.. code-block:: sh
+.. code-block:: text
 
     -h, --help            show this help message and exit
     --config CONFIG       Location of global config (i.e. cfg.yml)

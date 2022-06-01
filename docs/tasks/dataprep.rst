@@ -144,7 +144,7 @@ Syntax:
 
 Default: ``cfg.yml`` -> ``SBATCH: cpu_location``
 
-Which SBATCH template to use. By default this will use the cpu template from the main ``cfg.yml``. More details can be found at :doc:`usage.html#changing-sbatch-options`_.
+Which SBATCH template to use. By default this will use the cpu template from the main ``cfg.yml``. More details can be found at :ref:`Changing SBATCH options`.
 
 BATCH_REPLACE
 ------------------
@@ -160,7 +160,7 @@ Syntax:
 
 Default: ``None``
 
-Overwrite certain SBATCH keys. More details can be found at :doc:`usage.html#changing-sbatch-options`_.
+Overwrite certain SBATCH keys. More details can be found at :ref:`Changing SBATCH options`.
 
 PHOTFLAG_DETECT
 ---------------------
