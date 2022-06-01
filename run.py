@@ -65,6 +65,49 @@ def setup_logging(config_filename, logging_folder, args):
 
     return message_store, logging_filename
 
+def load_yaml(yaml_path):
+    with open(yaml_path, 'r') as f:
+        raw = f.read()
+    logging.info("Preprocessing yaml")
+    yaml_str = preprocess(raw)
+    info = f"# Original input file: {yaml_path}\n"
+    yaml_str = info + yaml_str
+    config = yaml.safe_load(yaml_str)
+    return yaml_str, config
+
+def preprocess(raw):
+    lines = raw.split("\n")
+    # Get all lines which start with #
+    comment_lines = [line[1:] for line in lines if (len(line) > 0) and (line[0] == "#")]
+    # Now get all lines which start and end with %
+    preprocess_lines = [line for line in comment_lines if (len(line) > 0) and (line.split()[0][0] == line.split()[-1][-1] == "%")]
+    if len(preprocess_lines) == 0:
+        logging.info("No preprocessing found")
+        return raw
+    logging.debug(f"Found preprocessing lines:\n{preprocess_lines}")
+    for preprocess in preprocess_lines:
+        # Remove % from preprocess
+        preprocess = preprocess.replace("%", "")
+        # Run preprocess step
+        name, *value = preprocess.split()
+        if name == "include:":
+            logging.info(f"Including {value[0]}")
+            lines = preprocess_include(value, lines)
+            print(lines)
+        else:
+            logging.warning(f"Unknown preprocessing step: {name}, skipping")
+    yaml_str = "\n".join(lines)
+    return yaml_str
+        
+def preprocess_include(value, lines):
+    include_path = os.path.abspath(os.path.expandvars(value[0]))
+    assert os.path.exists(include_path), f"Attempting to include {include_path}, but file cannot be found."
+    with open(include_path, 'r') as f:
+        include_yaml = f.read()
+    include_yaml = include_yaml.split("\n")
+    index = [i for i, l in enumerate(lines) if value[0] in l][0]
+    info = [f"# Anchors included from {include_path}"]
+    return lines[:index] + info + include_yaml + lines[index + 1:]
 
 def run(args):
 
@@ -76,8 +119,9 @@ def run(args):
     # Load YAML config file
     yaml_path = os.path.abspath(os.path.expandvars(args.yaml))
     assert os.path.exists(yaml_path), f"File {yaml_path} cannot be found."
-    with open(yaml_path, "r") as f:
-        config = yaml.safe_load(f)
+    config_raw, config = load_yaml(yaml_path)
+    #with open(yaml_path, "r") as f:
+    #    config = yaml.safe_load(f)
 
     overwrites = config.get("GLOBAL")
     if config.get("GLOBALS") is not None:
@@ -111,7 +155,7 @@ def run(args):
 
     logging.info(f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node.")
 
-    manager = Manager(config_filename, yaml_path, config, message_store)
+    manager = Manager(config_filename, yaml_path, config_raw, config, message_store)
     
     # Gracefully hand Ctrl-c
     def handler(signum, frame):
