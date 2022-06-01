@@ -93,7 +93,6 @@ def preprocess(raw):
         if name == "include:":
             logging.info(f"Including {value[0]}")
             lines = preprocess_include(value, lines)
-            print(lines)
         else:
             logging.warning(f"Unknown preprocessing step: {name}, skipping")
     yaml_str = "\n".join(lines)
