@@ -211,13 +211,14 @@ class SconeClassifier(Classifier):
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
 
-                pred_path = os.path.join(self.output_dir, "predictions.csv")
-                predictions = pd.read_csv(pred_path)
-                predictions = predictions.rename(columns={"pred": self.get_prob_column_name()})
-                predictions.to_csv(pred_path, index=False)
-                self.logger.info(f"Predictions file can be found at {pred_path}")
-                self.output.update({"model_filename": self.options.get("TRAINED_MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
-                return Task.FINISHED_SUCCESS
+            time.sleep(30)
+            pred_path = os.path.join(self.output_dir, "predictions.csv")
+            predictions = pd.read_csv(pred_path)
+            predictions = predictions.rename(columns={"pred": self.get_prob_column_name()})
+            predictions.to_csv(pred_path, index=False)
+            self.logger.info(f"Predictions file can be found at {pred_path}")
+            self.output.update({"model_filename": self.options.get("TRAINED_MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
+            return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
 
     def _heatmap_creation_success(self):
