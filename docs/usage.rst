@@ -155,6 +155,126 @@ If you are finding that your config files contain lots of duplicated sections (f
                 <<: *LOWZSIM_IA
                 # Different options here
 
+Include external aliases
+------------------------
+**This is new and experimental, use with caution**
+*Note that this is* **not** *yaml compliant*
+
+When dealing with especially large jobs, or suites of jobs you might find yourself having very large ``ALIAS``/``ANCHOR`` blocks which are repated amongst a number of Pippin jobs. A cleaner alternative is to have a number of ``.yml`` files containing your anchors, and then ``including`` these in your input files which will run Pippin jobs. This way you can share anchors amongst multiple Pippin input files and update them all at the same time. In order to achieve this, Pippin can *preprocess* the input file to directly copy the anchor file into the job file. An example is provided below:
+
+``base_job_file.yml``
+
+.. code-block:: yaml
+
+    # Values surround by % indicate preprocessing steps.
+    # The preprocess below will copy the provided yml files into this one before this one is read in, allowing anchors to propegate into this file
+    # They will be copied in, in the order you specify, with duplicate tasks merging.
+    # Note that whitespace before or after the % is fine, as long as % is the first and last character.
+
+    # % include: path/to/anchors_sim.yml %
+    # %include: path/to/anchors_lcfit.yml%
+
+    SIM:
+      DESSIM:
+        IA_G10_DES3YR:
+          BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+        GLOBAL:
+          # Note that this anchor doesn't exist in this file
+          <<: *SIM_GLOBAL
+      LCSIM:
+        IA_G10_LOWZ:
+          BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+        GLOBAL:
+          # Note that this anchor doesn't exist in this file
+          <<: *SIM_GLOBAL
+
+    LCFIT:
+      LS:
+        BASE: surveys/lowz/lcfit_nml/lowz.nml
+        MASK: DATALOWZ
+        FITOPTS: surveys/lowz/lcfit_fitopts/lowz.yml
+        # Note that this anchor doesn't exist in this file
+        <<: *LCFIT_OPTS
+        
+      DS:
+        BASE: surveys/des/lcfit_nml/des_3yr.nml
+        MASK: DATADES
+        FITOPTS: surveys/des/lcfit_fitopts/des.yml
+        # Note that this anchor doesn't exist in this file
+        <<: *LCFIT_OPTS
+
+``anchors_sim.yml``
+
+.. code-block:: yaml
+
+    ANCHORS_SIM:
+        SIM_GLOBAL: &SIM_GLOBAL
+            W0_LAMBDA: -1.0
+            OMEGA_MATTER: 0.3
+            NGEN_UNIT: 0.1
+
+``anchors_lcfit.yml``
+
+.. code-block:: yaml
+
+    ANCHORS_LCFIT:
+        LCFIT_OPTS: &LCFIT_OPTS
+            SNLCINP:
+                USE_MINOS: F
+
+This will be preprocessed to produce the following yaml file, which pippin will then run on.
+
+``final_pippin_input.yml``
+
+.. code-block:: yaml
+
+    # Original input file: path/to/base_job_file.yml
+    # Values surround by % indicate preprocessing steps.
+    # The preprocess below will copy the provided yml files into this one before this one is read in, allowing anchors to propegate into this file
+    # They will be copied in, in the order you specify, with duplicate tasks merging.
+    # Note that whitespace before or after the % is fine, as long as % is the first and last character.
+
+    # Anchors included from path/to/anchors_sim.yml
+    ANCHORS_SIM:
+        SIM_GLOBAL: &SIM_GLOBAL
+            W0_LAMBDA: -1.0
+            OMEGA_MATTER: 0.3
+            NGEN_UNIT: 0.1
+
+    # Anchors included from path/to/anchors_lcfit.yml
+    ANCHORS_LCFIT:
+        LCFIT_OPTS: &LCFIT_OPTS
+            SNLCINP:
+                USE_MINOS: F
+      
+    SIM:
+      DESSIM:
+        IA_G10_DES3YR:
+          BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+        GLOBAL:
+          <<: *SIM_GLOBAL
+      LCSIM:
+        IA_G10_LOWZ:
+          BASE: surveys/lowz/sims_ia/sn_ia_salt2_g10_lowz.input
+        GLOBAL:
+          <<: *SIM_GLOBAL
+
+    LCFIT:
+      LS:
+        BASE: surveys/lowz/lcfit_nml/lowz.nml
+        MASK: DATALOWZ
+        FITOPTS: surveys/lowz/lcfit_fitopts/lowz.yml
+        <<: *LCFIT_OPTS
+        
+      DS:
+        BASE: surveys/des/lcfit_nml/des_3yr.nml
+        MASK: DATADES
+        FITOPTS: surveys/des/lcfit_fitopts/des.yml
+        <<: *LCFIT_OPTS
+
+Now you can include the ``anchors_sim.yml`` and ``anchors_lcfit.yml`` anchors in any pippin job you want, and need only update those anchors once. There are a few caveats to this to be aware of. The preprocessing does not checking to ensure the given file is valid yaml, it simply copies the yaml directly in. As such you should always ensure that the name of your anchor block is unique, any duplicates will mean whichever block is lowest will overwrite all other blocks of the same name. Additionally, whilst you could technically use this to store Pippin task blocks in external yml files, this is discouraged as this feature was only intended for anchors and aliases.
+
+
 Use external results
 ---------------------
 
@@ -204,3 +324,5 @@ If you have external results which don't have an exact match but should still be
                 D_DESSIMBIAS5YRIA_C11: EXAMPLE_C11 # In this case we are matching to the pippin job name, as the LCFIT task name is shared between two EXTERNAL_DIRS
                 D_DESSIMBIAS5YRIA_G10: EXAMPLE_G10 # Same as C11
                 D_DESSIMBIAS5YRCC: DESFIT_CCSIM # In this case we match to the LCFIT task name, as the pippin job name (EXAMPLE) would match with the other EXTERNAL_DIRS
+
+
