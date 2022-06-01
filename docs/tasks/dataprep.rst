@@ -109,8 +109,6 @@ Syntax:
 
 Default: ``True``
 
-Required: ``False``
-
 This passes a flag throughout all of Pippin that this data should be blinded. **If working with real data, only unblind when you are absolutely certain your analysis is ready!**
 
 TYPES

@@ -7,7 +7,7 @@
 Pippin's documentation
 #######################
 
-***These docs are a work in process***
+**These docs are a work in progress** 
 
 **Pippin** - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 

@@ -14,7 +14,7 @@
 Pippin - a pipeline designed to streamline and remove as much hassle as we can
 when running end-to-end supernova cosmology analyses.
 
-
+The (work in progress) docs can be found [here](https://pippin.readthedocs.io/en/latest/index.html).
 
 
 ## Table of Contents
