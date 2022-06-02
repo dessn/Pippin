@@ -38,25 +38,26 @@ class Task(ABC):
             if name_match is not None:
                 matching_dirs = [d for d in external_dirs if name_match in d]
                 if len(matching_dirs) == 0:
-                    logging.error(f"LCFIT task {output_name} has external mapping {name_match} but there were no matching EXTERNAL_DIRS")
-                elif len(matching_dirs) > 1:
-                    logging.error(f"LCFIT task {output_name} has external mapping {name_match} which matched with multiple EXTERNAL_DIRS: {matching_dirs}. Please specify an EXTERNAL_MAP which only matches a single EXTERNAL_DIR")
+                    self.logger.error(f"Task {output_name} has external mapping {name_match} but there were no matching EXTERNAL_DIRS")
                 else:
-                    logging.info(f"Found external match for {output_name}")
+                    if len(matching_dirs) > 1:
+                        self.logger.warning(f"Task {output_name} has external mapping {name_match} which matched with multiple EXTERNAL_DIRS: {matching_dirs}. Defaulting to {matching_dirs[0]}")
+
+                    self.logger.info(f"Found external match for {output_name}")
                     self.config["EXTERNAL"] = matching_dirs[0]
             # If you haven't specified an EXTERNAL_MAP for this output_name, check for exact match
             elif output_name in external_names:
                 self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
             else:
-                logging.info(f"No external match found for {output_name}")
+                self.logger.info(f"No external match found for {output_name}")
 
         self.external = self.config.get("EXTERNAL")
         if self.external is not None:
-            logging.debug(f"External config stated to be {self.external}")
+            self.logger.debug(f"External config stated to be {self.external}")
             self.external = get_data_loc(self.external)
             if os.path.isdir(self.external):
                 self.external = os.path.join(self.external, "config.yml")
-            logging.debug(f"External config file path resolved to {self.external}")
+            self.logger.debug(f"External config file path resolved to {self.external}")
             with open(self.external, "r") as f:
                 external_config = yaml.load(f, Loader=yaml.Loader)
                 conf = external_config.get("CONFIG", {})
@@ -230,6 +231,7 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self):
+        self.logger.debug(f"XXX Name: {self.name} External: {self.external}")
         if self.external is not None:
             if os.path.exists(self.output_dir) and not self.force_refresh:
                 self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
