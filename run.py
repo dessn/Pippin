@@ -44,13 +44,21 @@ def setup_logging(config_filename, logging_folder, args):
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
 
     logging.Logger.notice = notice
-    fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s" if args.verbose else "%(message)s"
-    handlers = [logging.StreamHandler(), message_store]
-    handlers[0].setLevel(level)
+    fmt_verbose = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
+    fmt_info = "%(message)s"
+    fmt = fmt_verbose if args.verbose else fmt_info
+
+    logger = get_logger()
+
+    handlers = [message_store]
     if not args.check:
         handlers.append(logging.FileHandler(logging_filename, mode="w"))
         handlers[-1].setLevel(logging.DEBUG)
-    logging.basicConfig(level=level, format=fmt, handlers=handlers)
+        handlers[-1].setFormatter(logging.Formatter(fmt_verbose))
+    #logging.basicConfig(level=level, format=fmt, handlers=handlers)
+
+    for h in handlers:
+       logger.addHandler(h) 
 
     coloredlogs.install(
         level=level,
@@ -60,7 +68,6 @@ def setup_logging(config_filename, logging_folder, args):
     )
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
-    logger = get_logger()
     logger.info(f"Logging streaming out, also saving to {logging_filename}")
 
     return message_store, logging_filename
