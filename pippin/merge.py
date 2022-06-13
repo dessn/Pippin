@@ -173,7 +173,7 @@ class Merger(Task):
 
                     self.save_new_hash(new_hash)
                     with open(self.done_file, "w") as f:
-                        f.write("SUCCESS")
+                        f.write("SUCCESS\n")
             except Exception as e:
                 self.logger.error("Error running merger!")
                 self.logger.error(f"Check log at {self.logfile}")
