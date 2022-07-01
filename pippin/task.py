@@ -231,8 +231,8 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self):
-        self.logger.debug(f"XXX Name: {self.name} External: {self.external}")
         if self.external is not None:
+            self.logger.debug(f"Name: {self.name} External: {self.external}")
             if os.path.exists(self.output_dir) and not self.force_refresh:
                 self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
             else:

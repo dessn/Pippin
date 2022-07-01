@@ -637,6 +637,11 @@ AGGREGATION:
     MASK_SIM: mask # Match only sim
     MASK_CLAS: mask # Match only classifier
     RECALIBRATION: SIMNAME # Optional, use this simulation to recalibrate probabilities. Default no recal.
+    # Optional, changes the probability column name of each classification task listed into the given probability column name.
+    # Note that this will crash if the same classification task is given multiple probability column names.
+    # Mostly used when you have multiple photometrically classified samples
+    MERGE_CLASSIFIERS:
+      PROB_COLUMN_NAME: [CLASS_TASK_1, CLASS_TASK_2, ...]
     OPTS:
       PLOT: True # Default True, make plots
       PLOT_ALL: False # Default False. Ie if RANSEED_CHANGE gives you 100 sims, make 100 set of plots.
@@ -681,6 +686,10 @@ BIASCOR:
     SIMFILE_CCPRIOR: DESFIT_DESSIMBIAS5YRCC
 
     # Which classifier to use. Column name in FITRES will be determined from this property.
+    # In the case of multiple classifiers this can either be
+    #    1. A list of classifiers which map to the same probability column name (as defined by MERGE_CLASSIFIERS in the AGGREGATION stage)
+    #    2. A probability column name (as defined by MERGE_CLASSIFIERS in the AGGREGATION stage)
+    # Note that this will crash if the specified classifiers do not map to the same probability column.
     CLASSIFIER: UNITY
     
     # Default False. If multiple sims (RANSEED_CHANGE), make one or all Hubble plots.
