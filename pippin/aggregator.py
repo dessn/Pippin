@@ -90,9 +90,8 @@ class Aggregator(Task):
             Task.fail_config(f"Attempting to find python file {self.python_file} but it's not there!")
 
         merge_classifiers = self.config.get("MERGE_CLASSIFIERS")
-        if merge_classifiers is None:
-            self.classifier_merge = {c.output['name']: c.get_prob_column_name() for c in self.classifiers}
-        else:
+        self.classifier_merge = {c.output['name']: c.get_prob_column_name() for c in self.classifiers}
+        if merge_classifiers is not None:
             self.classifier_merge = dict()
             for c in self.classifiers:
                 prob_col = []
