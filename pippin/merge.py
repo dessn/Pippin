@@ -27,6 +27,7 @@ class Merger(Task):
         name : name given in the yml
         output_dir: top level output directory
         classifier_names: aggregators classifier names
+        classifier_merge: Merge map of classifier task to prob column name
         sim_name: sim name being aggregated
         genversion: genverison of sim
         fitres_file: the location of the new FITOPT000.FITRES
@@ -47,6 +48,7 @@ class Merger(Task):
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
         self.output["classifier_indexes"] = self.agg["classifier_indexes"]
+        self.output["classifier_merge"] = self.agg["classifier_merge"]
         self.output["sim_name"] = self.lc_fit["sim_name"]
         self.output["lcfit_name"] = self.lc_fit["name"]
         self.output["genversion"] = self.lc_fit["genversion"]

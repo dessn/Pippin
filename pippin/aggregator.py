@@ -7,7 +7,7 @@ from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs, get_output_loc
+from pippin.config import mkdirs, get_output_loc, ensure_list
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -39,6 +39,7 @@ class Aggregator(Task):
         name : name given in the yml
         output_dir: top level output directory
         classifier_names: aggregators classifier names
+        classifier_merge: Merge map of classifier task to prob column name
         merge_predictions_filename: location of the merged csv file
         merge_key_filename: location of the merged fitres file
         sn_column_name: name of the SNID column
@@ -73,7 +74,7 @@ class Aggregator(Task):
         self.type_name = "SNTYPE"
         self.options = options
         self.include_type = bool(options.get("INCLUDE_TYPE", False))
-        self.plot = options.get("PLOT", True)
+        self.plot = options.get("PLOT", False)
         self.plot_all = options.get("PLOT_ALL", False)
         self.output["classifier_names"] = [c.name for c in self.classifiers]
         self.output["classifier_indexes"] = [c.index for c in self.classifiers]
@@ -87,6 +88,37 @@ class Aggregator(Task):
 
         if not os.path.exists(self.python_file):
             Task.fail_config(f"Attempting to find python file {self.python_file} but it's not there!")
+
+        merge_classifiers = self.config.get("MERGE_CLASSIFIERS")
+        if merge_classifiers is None:
+            self.classifier_merge = {c.output['name']: c.get_prob_column_name() for c in self.classifiers}
+        else:
+            self.classifier_merge = dict()
+            for c in self.classifiers:
+                prob_col = []
+                for prob_col_name in merge_classifiers.keys():
+                    mask_list = ensure_list(merge_classifiers[prob_col_name])
+                    match = False
+                    for m in mask_list:
+                        if match:
+                            continue
+                        else:
+                            if m in c.output['name']:
+                                match = True
+                    if match:
+                        if prob_col_name[:5] != "PROB_":
+                            prob_col_name = "PROB_" + prob_col_name
+                        prob_col.append(prob_col_name)
+                if len(prob_col) == 1:
+                    self.classifier_merge[c.output['name']] = prob_col[0]
+                else:
+                    if len(prob_col) == 0:
+                        self.classifier_merge[c.output['name']] = c.get_prob_column_name()
+                    else:
+                        Task.fail_config(f"Classifier task {c.output['name']} matched multiple MERGE_CLASSIFIERS keys: {prob_col}. Please provide more specific keys")
+        self.logger.debug(f"Classifier merge = {self.classifier_merge}")
+        self.output["classifier_merge"] = self.classifier_merge
+
 
     def _check_completion(self, squeue):
         if not self.passed:
@@ -228,19 +260,21 @@ class Aggregator(Task):
 
                 df = None
 
-                colnames = [d.get_prob_column_name() for d in relevant_classifiers]
+                colnames = [self.classifier_merge[d.name] for d in relevant_classifiers]
                 need_to_rename = len(colnames) != len(set(colnames))
-                self.logger.info("Detected duplicate probability column names, will need to rename them")
+                if need_to_rename:
+                    self.logger.info("Detected duplicate probability column names, will need to rename them")
 
                 for f, d, l in zip(prediction_files, relevant_classifiers, lcfits):
                     dataframe = self.load_prediction_file(f)
+                    dataframe = dataframe.rename(columns={d.get_prob_column_name(): self.classifier_merge[d.name]})
                     dataframe = dataframe.rename(columns={dataframe.columns[0]: self.id})
                     dataframe[self.id] = dataframe[self.id].apply(str)
                     dataframe[self.id] = dataframe[self.id].str.strip()
                     if need_to_rename and l is not None:
                         lcname = l["name"]
-                        self.logger.debug(f"Renaming column {d.get_prob_column_name()} to include LCFIT name {lcname}")
-                        dataframe = dataframe.rename(columns={d.get_prob_column_name(): d.get_prob_column_name() + "_RENAMED_" + lcname})
+                        self.logger.debug(f"Renaming column {self.classifier_merge[d.name]} to include LCFIT name {lcname}")
+                        dataframe = dataframe.rename(columns={self.classifier_merge[d.name]: self.classifier_merge[d.name] + "_RENAMED_" + lcname})
                     self.logger.debug(f"Merging on column {self.id} for file {f}")
                     if df is None:
                         df = dataframe

@@ -22,6 +22,8 @@ class BiasCor(ConfigBasedExecutable):
         self.logging_file = os.path.join(self.output_dir, "output.log")
         self.global_config = get_config()
 
+        self.prob_cols = config["PROB_COLS"]
+
         self.merged_data = config.get("DATA")
         self.merged_iasim = config.get("SIMFILE_BIASCOR")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
@@ -59,7 +61,7 @@ class BiasCor(ConfigBasedExecutable):
         if self.config.get("PROB_COLUMN_NAME") is not None:
             self.probability_column_name = self.config.get("PROB_COLUMN_NAME")
         elif self.classifier is not None:
-            self.probability_column_name = self.classifier.output["prob_column_name"]
+            self.probability_column_name = self.prob_cols[self.classifier.name]
         self.output["prob_column_name"] = self.probability_column_name
 
         if self.use_recalibrated:
@@ -341,7 +343,7 @@ class BiasCor(ConfigBasedExecutable):
             if value.get("SIMFILE_CCPRIOR"):
                 mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value.get('SIMFILE_CCPRIOR'))} "
             if value.get("CLASSIFIER"):
-                cname = value.get("CLASSIFIER").output["prob_column_name"]
+                cname = self.prob_cols[value.get("CLASSIFIER").name]
                 muopt_prob_cols[label] = cname
                 mu_str += f"varname_pIa={cname} "
             else:
@@ -406,6 +408,7 @@ class BiasCor(ConfigBasedExecutable):
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         merge_tasks = Task.get_task_of_type(prior_tasks, Merger)
+        prob_cols = {k: v for d in [t.output["classifier_merge"] for t in merge_tasks] for k, v in d.items()}
         classifier_tasks = Task.get_task_of_type(prior_tasks, Classifier)
         tasks = []
 
@@ -424,19 +427,22 @@ class BiasCor(ConfigBasedExecutable):
             # create copy to start with to keep labels if needed
             config_copy = copy.deepcopy(config)
 
-            def resolve_classifier(name):
-                task = [c for c in classifier_tasks if c.name == name]
+            # Should return a single classifier task which maps to the desired prob column
+            def resolve_classifiers(names):
+                task = [c for c in classifier_tasks if c.name in names]
                 if len(task) == 0:
-                    Task.logger.info("CLASSIFIER {name} matched no classifiers. Checking prob column names instead.")
-                    task = [c for c in classifier_tasks if c.get_prob_column_name() == name]
+                    if len(names) > 1:
+                        Task.fail_config(f"CLASSIFIERS {names} do not match any classifiers. If these are prob column names, you must specify only one!")
+                    Task.logger.info(f"CLASSIFIERS {names} matched no classifiers. Checking prob column names instead.")
+                    task = [c for c in classifier_tasks if prob_cols[c.name] in names]
                     if len(task) == 0:
-                        choices = [c.get_prob_column_name() for c in task]
-                        message = f"Unable to resolve classifier {name} from list of classifiers {classifier_tasks} using either name or prob columns {choices}"
+                        choices = [prob_cols[c.name] for c in task]
+                        message = f"Unable to resolve classifiers {names} from list of classifiers {classifier_tasks} using either name or prob columns {choices}"
                         Task.fail_config(message)
-                    if len(task) > 1:
-                        Task.fail_config(f"Got {len(task)} prob column names? How is this even possible?")
+                    else:
+                        task = [task[0]]
                 elif len(task) > 1:
-                    choices = list(set([c.get_prob_column_name() for c in task]))
+                    choices = list(set([prob_cols[c.name] for c in task]))
                     if len(choices) == 1:
                         task = [task[0]]
                     else:
@@ -454,11 +460,31 @@ class BiasCor(ConfigBasedExecutable):
                     Task.fail_config(message)
                 else:
                     if classifier_name is not None and classifier_name not in task[0].output["classifier_names"]:
-                        Task.logger.warning(
-                            f"When constructing Biascor {gname}, merge input {name} does not have classifier {classifier_name}. "
-                            f"If this is a spec confirmed sample or an EXTERNAL task, all good, else check this."
-                        )
+                        if prob_cols[classifier_name] not in [prob_cols[n] for n in task[0].output['classifier_names']]:
+                            Task.logger.warning(
+                                f"When constructing Biascor {gname}, merge input {name} does not have classifier {classifier_name}. "
+                                f"If this is a spec confirmed sample, or an EXTERNAL task, all good, else check this."
+                            )    
                     return task[0]
+
+            # Ensure classifiers point to the same prob column
+            def validate_classifiers(classifier_names):
+                prob_col = []
+                for name in classifier_names:
+                    col = prob_cols.get(name)
+                    if col is None:
+                        # Check whether it is instead the prob_col name
+                        if name in prob_cols.values():
+                            prob_col.append(name)
+                        else:
+                            Task.fail_config(f"Classifier {name} has no prob column name in {prob_cols}. This should never happen!")
+                    else:
+                        prob_col.append(col)
+                if len(set(prob_col)) > 1:
+                    Task.fail_config(f"Classifiers {classifier_names} map to different probability columns: {prob_cols}, you may need to map them to the same name via MERGE_CLASSIFIERS in the AGGREGATION stage.")
+                else:
+                    Task.logger.debug(f"Classifiers {classifier_names} map to {prob_col[0]}")
+
 
             def resolve_conf(subdict, default=None):
                 """ Resolve the sub-dictionary and keep track of all the dependencies """
@@ -469,17 +495,25 @@ class BiasCor(ConfigBasedExecutable):
                     default = {}
 
                 # Get the specific classifier
-                classifier_name = subdict.get("CLASSIFIER")  # Specific classifier name
+                classifier_names = subdict.get("CLASSIFIER")  # Specific classifier name
+                if classifier_names is not None:
+                    classifier_names = ensure_list(classifier_names)
+                    validate_classifiers(classifier_names)
+                #Task.logger.debug(f"XXX names: {classifier_names}")
+                # Only if all classifiers point to the same prob_column should you continue
                 classifier_task = None
-                if classifier_name is not None:
-                    classifier_task = resolve_classifier(classifier_name)
-                classifier_dep = classifier_task or default.get("CLASSIFIER")  # For resolving merge tasks
+                if classifier_names is not None:
+                    classifier_task = resolve_classifiers(classifier_names)
+                #Task.logger.debug(f"XXX tasks: {classifier_task}")
+                classifier_dep = classifier_task or default.get("CLASSIFIER") # For resolving merge tasks
                 if classifier_dep is not None:
                     classifier_dep = classifier_dep.name
+                #Task.logger.debug(f"XXX deps: {classifier_dep}")
                 if "CLASSIFIER" in subdict:
                     subdict["CLASSIFIER"] = classifier_task
                     if classifier_task is not None:
                         deps.append(classifier_task)
+                #Task.logger.debug(f"XXX global deps: {deps}")
 
                 # Get the Ia sims
                 simfile_ia = subdict.get("SIMFILE_BIASCOR")
@@ -515,6 +549,8 @@ class BiasCor(ConfigBasedExecutable):
             data_tasks = [resolve_merged_fitres_files(s, class_name) for s in data_names]
             deps += data_tasks
             config["DATA"] = data_tasks
+
+            config["PROB_COLS"] = prob_cols
 
             # Resolve every MUOPT
             muopts = config.get("MUOPTS", {})
