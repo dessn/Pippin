@@ -1,7 +1,8 @@
 import logging
 import shutil
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash, ensure_list, get_data_loc, read_yaml
+from pippin.config import get_logger, get_hash, ensure_list, get_data_loc, read_yaml, compress_dir, uncompress_dir
+import tarfile
 import os
 import datetime
 import numpy as np
@@ -55,16 +56,39 @@ class Task(ABC):
         if self.external is not None:
             self.logger.debug(f"External config stated to be {self.external}")
             self.external = get_data_loc(self.external)
-            if os.path.isdir(self.external):
-                self.external = os.path.join(self.external, "config.yml")
-            self.logger.debug(f"External config file path resolved to {self.external}")
-            with open(self.external, "r") as f:
-                external_config = yaml.load(f, Loader=yaml.Loader)
-                conf = external_config.get("CONFIG", {})
-                conf.update(self.config)
-                self.config = conf
-                self.output = external_config.get("OUTPUT", {})
-                self.logger.debug("Loaded external config successfully")
+            # External directory might be compressed
+            if not os.path.exists(self.external):
+                self.logger.warning(f"External config {self.external} does not exist, checking if it's compressed")
+                compressed_dir = self.external + ".tar.gz"
+                if not os.path.exists(compressed_dir):
+                    self.logger.error(f"{self.external} and {compressed_dir} do not exist")
+                else:
+                    self.external = compressed_dir
+                    self.logger.debug(f"External config file path resolved to {self.external}")
+                    with tarfile.open(self.external, "r:gz") as tar:
+                        for member in tar:
+                            if member.isfile():
+                                filename = os.path.basename(member.name)
+                                if filename != "config.yml":
+                                    continue
+                                with tar.extractfile(member) as f:
+                                    external_config = yaml.load(f, Loader=yaml.Loader)
+                                    conf = external_config.get("CONFIG", {})
+                                    conf.update(self.config)
+                                    self.config = conf
+                                    self.output = external_config.get("OUTPUT", {})
+                                    self.logger.debug("Loaded external config successfully")
+            else:
+                if os.path.isdir(self.external):
+                    self.external = os.path.join(self.external, "config.yml")
+                self.logger.debug(f"External config file path resolved to {self.external}")
+                with open(self.external, "r") as f:
+                    external_config = yaml.load(f, Loader=yaml.Loader)
+                    conf = external_config.get("CONFIG", {})
+                    conf.update(self.config)
+                    self.config = conf
+                    self.output = external_config.get("OUTPUT", {})
+                    self.logger.debug("Loaded external config successfully")
 
         self.hash = None
         self.hash_file = os.path.join(self.output_dir, "hash.txt")
@@ -126,8 +150,23 @@ class Task(ABC):
         header = '\n'.join(lines)
         return header
 
-    def compress_task(self):
-        pass
+    def compress(self):
+        if os.path.exists(self.output_dir):
+            output_file = self.output_dir + ".tar.gz"
+            compress_dir(output_file, self.output_dir)
+        for t in self.dependencies:
+            if os.path.exists(t.output_dir):
+                output_file = t.output_dir + ".tar.gz"
+                compress_dir(output_file, t.output_dir)
+
+    def uncompress(self):
+        source_file = self.output_dir + ".tar.gz"
+        if os.path.exists(source_file):
+            uncompress_dir(os.path.dirname(self.output_dir), source_file)
+        for t in self.dependencies:
+            source_file = t.output_dir + ".tar.gz"
+            if os.path.exists(source_file):
+                uncompress_dir(os.path.dirname(t.output_dir), source_file)
 
     def _check_regenerate(self, new_hash):
         hash_are_different = new_hash != self.get_old_hash()
@@ -231,6 +270,7 @@ class Task(ABC):
         self.dependencies.append(task)
 
     def run(self):
+        self.uncompress()
         if self.external is not None:
             self.logger.debug(f"Name: {self.name} External: {self.external}")
             if os.path.exists(self.output_dir) and not self.force_refresh:
@@ -239,8 +279,16 @@ class Task(ABC):
                 if os.path.exists(self.output_dir):
                     self.logger.debug(f"Removing old directory {self.output_dir}")
                     shutil.rmtree(self.output_dir, ignore_errors=True)
-                self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
-                shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
+                if ".tar.gz" in self.external:
+                    tardir = os.path.basename(self.external).replace(".tar.gz", "")
+                    self.logger.info(f"Copying files from {self.external} to {self.output_dir}")
+                            
+                    shutil.copyfile(self.external, self.output_dir + '.tar.gz')
+                    self.uncompress()
+                    shutil.move(os.path.join(os.path.dirname(self.output_dir), tardir), self.output_dir)
+                else:
+                    self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
+                    shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
             return True
 
         return self._run()

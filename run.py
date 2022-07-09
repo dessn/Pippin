@@ -178,7 +178,7 @@ def run(args):
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.set_force_ignore_stage(args.ignore)
-    manager.execute(args.check)
+    manager.execute(args.check, args.compress, args.uncompress)
     chown_file(logging_filename)
     return manager
 
@@ -235,6 +235,9 @@ def get_args(test=False):
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less. Accepts either the stage number of name (i.e. 1 or SIM)", default=None)
     parser.add_argument("-S", "--syntax", help="Get the syntax of the given stage. Accepts either the stage number or name (i.e. 1 or SIM). If run without argument, will tell you all stage numbers / names.", default=None, const="options", type=str, nargs='?')
+    command_group = parser.add_mutually_exclusive_group()
+    command_group.add_argument("-C", "--compress", help="Compress pippin output during job. Combine with -c / --check in order to compress completed pippin job.", action="store_true", default=False)
+    command_group.add_argument("-U", "--uncompress", help="Do not compress pippin output during job. Combine with -c / --check in order to uncompress completed pippin job.  Mutually exclusive with -C / --compress", action="store_true", default=False)
     args = parser.parse_args()
 
     if args.syntax is not None:
