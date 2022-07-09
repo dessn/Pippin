@@ -63,6 +63,8 @@ Pippin has a number of useful command line arguments which you can quickly refer
                           Get the syntax of the given stage. Accepts either the
                           stage number or name (i.e. 1 or SIM). If run without
                           argument, will tell you all stage numbers / names.
+    -C, --compress        Compress pippin output during job. Combine with -c / --check in order to compress completed pippin job.
+    -U, --uncompress      Do not compress pippin output during job. Combine with -c / --check in order to uncompress completed pippin job. Mutually exclusive with -C / --compress
     
 As an example, to have a verbose output configuration run and only do data preperation and simulation, you would run ``pippin.sh -vf 1 configfile.yml``.
 
