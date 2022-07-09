@@ -7,7 +7,7 @@ import numpy as np
 
 from pippin.base import ConfigBasedExecutable
 from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml, make_tarfile
+from pippin.config import chown_dir, mkdirs, get_config, ensure_list, get_data_loc, read_yaml, compress_dir
 from pippin.merge import Merger
 from pippin.task import Task
 
@@ -188,8 +188,7 @@ class BiasCor(ConfigBasedExecutable):
                 os.remove(tar_file)
 
             shutil.move(self.fit_output_dir, moved)
-            make_tarfile(tar_file, moved)
-            shutil.rmtree(moved)
+            compress_dir(tar_file, moved)
 
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Running command: {' '.join(command)}")

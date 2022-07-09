@@ -9,10 +9,17 @@ import tarfile
 import gzip
 
 
-def make_tarfile(output_filename, source_dir):
+def compress_dir(output_filename, source_dir):
+    logging.info(f"Compressing {source_dir} to {output_filename}")
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
+    shutil.rmtree(source_dir)
 
+def uncompress_dir(output_dir, source_filename):
+    logging.info(f"Uncompressing {source_filename} to {output_dir}")
+    with tarfile.open(source_filename, "r:gz") as tar:
+        tar.extractall(path=output_dir)
+    os.remove(source_filename)
 
 def singleton(fn):
     instance = None

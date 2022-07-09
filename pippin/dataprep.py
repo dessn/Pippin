@@ -1,9 +1,9 @@
 import shutil
 import subprocess
+import tarfile
 import os
 from collections import OrderedDict
 from pathlib import Path
-
 from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc, read_yaml, merge_dict
 from pippin.task import Task
 

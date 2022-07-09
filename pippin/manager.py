@@ -183,6 +183,9 @@ class Manager:
         if os.path.exists(t.hash_file):
             os.remove(t.hash_file)
 
+        if self.compress:
+            t.compress()
+
         modified = True
         while modified:
             modified = False
@@ -191,8 +194,11 @@ class Manager:
                     if d in self.failed or d in self.blocked:
                         self.tasks.remove(t2)
                         self.blocked.append(t2)
+                        if self.compress:
+                            t2.compress()
                         modified = True
                         break
+
 
     def log_status(self):
         self.logger.debug("")
@@ -266,11 +272,28 @@ class Manager:
 
         self.logger.info("-------------------")
 
-    def execute(self, check_config):
+    def compress_all(self):
+        for t in self.tasks:
+            t.compress()
+
+    def uncompress_all(self):
+        for t in self.tasks:
+            t.uncompress()
+
+    def execute(self, check_config, compress_output, uncompress_output):
         self.logger.info(f"Executing pipeline for prefix {self.prefix}")
         self.logger.info(f"Output will be located in {self.output_dir}")
         if check_config:
             self.logger.info("Only verifying config, not launching anything")
+        assert not (compress_output and uncompress_output), "-C / --compress and -U / --uncompress are mutually exclusive"
+        # Whilst compressing is being debugged, false by default
+        self.compress = False
+        if compress_output:
+            self.compress = True
+            self.logger.info("Compressing output")
+        if uncompress_output:
+            self.compress = False
+            self.logger.info("Uncompressing output")
 
         mkdirs(self.output_dir)
         c = self.run_config
@@ -281,7 +304,12 @@ class Manager:
         self.num_jobs_queue_gpu = 0
         squeue = None
 
+        
         if check_config:
+            if compress_output:
+                self.compress_all()
+            if uncompress_output:
+                self.uncompress_all()
             self.logger.notice("Config verified, exiting")
             return
 
@@ -388,11 +416,14 @@ class Manager:
                 self.running.remove(t)
                 self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
                 self.done.append(t)
-                self.logger.debug("Compressing task")
-                t.compress_task()
+                if self.compress:
+                    t.compress()
             else:
                 self.fail_task(t)
-            chown_dir(t.output_dir)
+            if os.path.exists(t.output_dir):
+                chown_dir(t.output_dir)
+            else:
+                chown_file(t.output_dir + ".tar.gz")
             return True
         return False
 
