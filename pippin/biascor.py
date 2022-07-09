@@ -284,9 +284,12 @@ class BiasCor(ConfigBasedExecutable):
         self.yaml["FITOPT_MAP"], fitopt_index = self.get_fitopt_map(self.merged_data)
         self.output["fitopt_index"] = fitopt_index
 
-        self.set_property("simfile_biascor", self.bias_cor_fits)
-        self.set_property("simfile_ccprior", self.cc_prior_fits)
-        self.set_property("varname_pIa", self.probability_column_name)
+        if self.bias_cor_fits is not None:
+            self.set_property("simfile_biascor", self.bias_cor_fits)
+        if self.cc_prior_fits is not None:
+            self.set_property("simfile_ccprior", self.cc_prior_fits)
+        if self.probability_column_name is not None:
+            self.set_property("varname_pIa", self.probability_column_name)
 
         self.yaml["CONFIG"]["OUTDIR"] = self.fit_output_dir
 
