@@ -41,40 +41,90 @@ class SconeClassifier(Classifier):
     """
 
     def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
-        self.global_config = get_config()
-        self.options = options
+      super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+      self.global_config = get_config()
+      self.options = options
 
-        self.gpu = self.options.get("GPU", True)
-        self.conda_env = self.global_config["SCONE"]["conda_env_cpu"] if not self.gpu else self.global_config["SCONE"]["conda_env_gpu"]
-        self.path_to_classifier = self.global_config["SCONE"]["location"]
+      self.gpu = self.options.get("GPU", True)
+      # self.conda_env = self.global_config["SCONE"]["conda_env_cpu"] if not self.gpu else self.global_config["SCONE"]["conda_env_gpu"]
+      self.init_env = self.global_config["SCONE"]["init_env_cpu"] if not self.gpu else self.global_config["SCONE"]["init_env_gpu"]
+      self.path_to_classifier = self.global_config["SCONE"]["location"]
 
-        self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
+      self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
 
-        self.batch_file = self.options.get("BATCH_FILE")
-        if self.batch_file is not None:
-            self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", {})
+      self.batch_file = self.options.get("BATCH_FILE")
+      if self.batch_file is not None:
+        self.batch_file = get_data_loc(self.batch_file)
+      self.batch_replace = self.options.get("BATCH_REPLACE", {})
 
+      self.config_path = os.path.join(self.output_dir, "model_config.yml")
+      self.heatmaps_path = os.path.join(self.output_dir, "heatmaps")
+      self.slurm = """{sbatch_header}
+      {task_setup}"""
 
-        self.config_path = os.path.join(self.output_dir, "model_config.yml")
-        self.heatmaps_path = os.path.join(self.output_dir, "heatmaps")
-        self.csvs_path = os.path.join(self.output_dir, "sim_csvs")
-        self.slurm = """{sbatch_header}
-        {task_setup}"""
+      self.logfile = os.path.join(self.output_dir, "output.log")
 
-        self.logfile = os.path.join(self.output_dir, "output.log")
-
-        remake_heatmaps = self.options.get("REMAKE_HEATMAPS", False)
-        self.keep_heatmaps = not remake_heatmaps
+      remake_heatmaps = self.options.get("REMAKE_HEATMAPS", False)
+      self.keep_heatmaps = not remake_heatmaps
 
     def classify(self, mode):
+      heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
+
+      failed = False
+      if os.path.exists(self.done_file):
+        self.logger.debug(f"Found done file at {self.done_file}")
+        with open(self.done_file) as f:
+          if "FAILURE" in f.read().upper():
+            failed = True
+
+      if not heatmaps_created:
+        print("heatmaps not created")
+        shutil.rmtree(self.output_dir, ignore_errors=True)
+        mkdirs(self.output_dir)
+
+        sim_dep = self.get_simulation_dependency()
+        sim_dirs = sim_dep.output["photometry_dirs"]
+
+        lcdata_paths = self._get_lcdata_paths(sim_dirs)
+        metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
+        self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path) # TODO: what if they don't want to train on all sims?
+
+        # call create_heatmaps/run.py, which sbatches X create heatmaps jobs
+        subprocess.run([f"python {os.path.join(self.path_to_classifier, 'create_heatmaps/run.py')} --config_path {self.config_path}"], shell=True)
+        time.sleep(30) # wait until jobs have been submitted
+        # TODO: check status in a different job? but what if the job doesn't run or runs after the other ones are already completed?
+        # -- otherwise if ssh connection dies the classification won't run
+        # -- any better solution than while loop + sleep?
+
+        start_sleep_time = self.global_config["OUTPUT"]["ping_frequency"]
+        max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
+        current_sleep_time = start_sleep_time
+
+        squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True).splitlines()]
+        while self.check_for_job(squeue, self.job_base_name) > 0:
+          time.sleep(current_sleep_time)
+          current_sleep_time *= 2
+          if current_sleep_time > max_sleep_time:
+            current_sleep_time = max_sleep_time
+
+        #TODO: probably some indentation problems from copypasting
+        print("heatmaps created, continuing")
+
+        self.heatmaps_path = os.path.join(self.output_dir, "heatmaps")
+        mkdirs(self.heatmaps_path)
+        for f in os.scandir(self.output_dir):
+            if f.path == self.config_path or f.path == self.done_file or f.is_dir():
+                continue
+            shutil.move(f.path, os.path.join(self.heatmaps_path, f.name))
+
+        # when all done, sbatch a gpu job for actual classification
+        #TODO: move this setup stuff to a separate function
         header_dict = {
                 "REPLACE_NAME": self.job_base_name,
                 "REPLACE_LOGFILE": "output.log",
-                "REPLACE_WALLTIME": "15:00:00", # TODO: scale based on number of heatmaps
+                "REPLACE_WALLTIME": "4:00:00", # max for gpu
                 "REPLACE_MEM": "8GB",
-                # "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
+                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
                 }
         header_dict = merge_dict(header_dict, self.batch_replace)
         if self.batch_file is None:
@@ -87,10 +137,12 @@ class SconeClassifier(Classifier):
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
+        print(self.sbatch_header)
         self.update_header(header_dict)
+        print(self.sbatch_header)
 
         setup_dict = {
-                "conda_env": self.conda_env,
+                "init_env": self.init_env,
                 "path_to_classifier": self.path_to_classifier,
                 "heatmaps_path": self.heatmaps_path,
                 "config_path": self.config_path,
@@ -107,41 +159,95 @@ class SconeClassifier(Classifier):
 
         new_hash = self.get_hash_from_string(slurm_script)
 
-        # check success of intermediate steps and don't redo them if successful
-        heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
-
-        failed = False
-        if os.path.exists(self.done_file):
-            self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
-                if "FAILURE" in f.read().upper():
-                    failed = True
-
         if self._check_regenerate(new_hash) or failed:
             self.logger.debug("Regenerating")
-            if not heatmaps_created:
-                shutil.rmtree(self.output_dir, ignore_errors=True)
-                mkdirs(self.output_dir)
-            else:
-                for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
-                    os.remove(f)
-
-            sim_dep = self.get_simulation_dependency()
-            sim_dirs = sim_dep.output["photometry_dirs"]
-
-            lcdata_paths = self._get_lcdata_paths(sim_dirs)
-            metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
-            self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path) # TODO: what if they don't want to train on all sims?
 
             with open(slurm_output_file, "w") as f:
                 f.write(slurm_script)
             self.save_new_hash(new_hash)
             self.logger.info(f"Submitting batch job {slurm_output_file}")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+
+            # TODO: no equivalent to module load esslurm on midway so have to figure out how to make this work on nersc
+            subprocess.run(f"module load esslurm && sbatch {slurm_output_file}", cwd=self.output_dir, shell=True)
+            # subprocess.run(["module"], shell=True, cwd=self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")
             self.should_be_done()
         return True
+
+        # header_dict = {
+        #         "REPLACE_NAME": self.job_base_name,
+        #         "REPLACE_LOGFILE": "output.log",
+        #         "REPLACE_WALLTIME": "15:00:00", # TODO: scale based on number of heatmaps
+        #         "REPLACE_MEM": "8GB",
+        #         # "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
+        #         }
+        # header_dict = merge_dict(header_dict, self.batch_replace)
+        # if self.batch_file is None:
+        #     if self.gpu:
+        #         self.sbatch_header = self.sbatch_gpu_header
+        #     else:
+        #         self.sbatch_header = self.sbatch_cpu_header
+        # else:
+        #     with open(self.batch_file, 'r') as f:
+        #         self.sbatch_header = f.read()
+        #     self.sbatch_header = self.clean_header(self.sbatch_header)
+
+        # self.update_header(header_dict)
+
+        # setup_dict = {
+        #         "conda_env": self.conda_env,
+        #         "path_to_classifier": self.path_to_classifier,
+        #         "heatmaps_path": self.heatmaps_path,
+        #         "config_path": self.config_path,
+        #         "done_file": self.done_file,
+        #         }
+
+        # format_dict = {
+        #         "sbatch_header": self.sbatch_header,
+        #         "task_setup": self.update_setup(setup_dict, self.task_setup['scone'])
+        #         }
+        # slurm_output_file = self.output_dir + "/job.slurm"
+        # self.logger.info(f"Running SCONE, slurm job outputting to {slurm_output_file}")
+        # slurm_script = self.slurm.format(**format_dict)
+
+        # new_hash = self.get_hash_from_string(slurm_script)
+
+        # # check success of intermediate steps and don't redo them if successful
+        # heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
+
+        # failed = False
+        # if os.path.exists(self.done_file):
+        #     self.logger.debug(f"Found done file at {self.done_file}")
+        #     with open(self.done_file) as f:
+        #         if "FAILURE" in f.read().upper():
+        #             failed = True
+
+        # if self._check_regenerate(new_hash) or failed:
+        #     self.logger.debug("Regenerating")
+        #     if not heatmaps_created:
+        #         shutil.rmtree(self.output_dir, ignore_errors=True)
+        #         mkdirs(self.output_dir)
+        #     else:
+        #         for f in [f.path for f in os.scandir(self.output_dir) if f.is_file()]:
+        #             os.remove(f)
+
+        #     sim_dep = self.get_simulation_dependency()
+        #     sim_dirs = sim_dep.output["photometry_dirs"]
+
+        #     lcdata_paths = self._get_lcdata_paths(sim_dirs)
+        #     metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
+        #     self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path) # TODO: what if they don't want to train on all sims?
+
+        #     with open(slurm_output_file, "w") as f:
+        #         f.write(slurm_script)
+        #     self.save_new_hash(new_hash)
+        #     self.logger.info(f"Submitting batch job {slurm_output_file}")
+        #     subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+        # else:
+        #     self.logger.info("Hash check passed, not rerunning")
+        #     self.should_be_done()
+        # return True
 
     def predict(self):
         return self.classify("predict")
@@ -171,6 +277,7 @@ class SconeClassifier(Classifier):
         config["trained_model"] = self.options.get("TRAINED_MODEL", False)
         config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
+        # TODO: change this to use the defaults in the file
         known_types = {42: "SNII",
           52: "SNIax",
           62: "SNIbc",
