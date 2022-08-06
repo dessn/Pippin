@@ -145,7 +145,7 @@ class Task(ABC):
 
     def clean_header(self, header):
         lines = header.split('\n')
-        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('xxxx' not in x)
+        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('Sxxx' not in x)
         lines = filter(mask, lines)
         header = '\n'.join(lines)
         return header
