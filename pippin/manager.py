@@ -70,8 +70,8 @@ class Manager:
         tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone', 'dataprep']
         self.task_setup = {}
         for task in tasks:
-            with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
-                self.task_setup[task] = f.read()
+          with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
+              self.task_setup[task] = f.read()
 
     def get_force_refresh(self, task):
         if self.start is None:
