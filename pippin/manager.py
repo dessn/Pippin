@@ -70,8 +70,6 @@ class Manager:
         tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone', 'dataprep']
         self.task_setup = {}
         for task in tasks:
-          if task == 'scone':
-            print(f"loading task setup from {get_data_loc(f'{self.setup_task_location}/{task}')}")
           with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
               self.task_setup[task] = f.read()
 

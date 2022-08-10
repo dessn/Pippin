@@ -504,6 +504,29 @@ CLASSIFICATION:
       WHATREVER_THE: CLASSIFIER_NEEDS  
 ```
 
+#### SCONE Classifier
+
+The [SCONE classifier](https://github.com/helenqu/scone) is a convolutional neural network-based classifier for supernova photometry. The model first creates "heatmaps" of flux values in wavelength-time space, then runs the neural network model on GPU (if available) to train or predict on these heatmaps. A successful run will produce `predictions.csv`, which shows the Ia probability of each SN. For debugging purposes, the model config (`model_config.yml`), Slurm job (`job.slurm`), log (`output.log`), and all the heatmaps (`heatmaps/`) can be found in the output directory. An example of how to define a SCONE classifier:
+
+```yaml
+CLASSIFICATION:
+  SNN_TEST:
+    CLASSIFIER: SuperNNovaClassifier
+    MODE: predict  # or train
+
+    # optional arguments
+    OPTS:
+      MODEL: /path/to/trained/model
+      GPU: False # defaults to True
+      CATEGORICAL: True # defaults to False (False = Ia vs. non-Ia classification)
+      SIM_FRACTION: 2 # defaults to 1, 1/SIM_FRACTION of the sims get used for classification (i.e. SIM_FRACTION=2 means 1/2 of the sims get used)
+      REMAKE_HEATMAPS: True # defaults to False (force remake heatmaps if prev run failed in an unusual way)
+      NUM_EPOCHS: 5 # defaults to 400, for training only
+      KCOR_FILE: /path/to/kcor/file # defaults to None
+      NUM_WAVELENGTH_BINS: 32 # defaults to 32, size of wavelength dimension of heatmap
+      NUM_MJD_BINS: 180 # defaults to 180, size of time dimension of heatmap
+```
+
 #### SuperNNova Classifier
 
 The [SuperNNova classifier](https://github.com/supernnova/SuperNNova) is a recurrent neural network that

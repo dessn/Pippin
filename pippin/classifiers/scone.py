@@ -103,7 +103,7 @@ class SconeClassifier(Classifier):
         # TODO: if externally specified batchfile exists, have to parse desired logfile path from it
         header_dict = {
               "REPLACE_LOGFILE": self.heatmaps_log_path,
-              "REPLACE_WALLTIME": "1:00:00",
+              "REPLACE_WALLTIME": "10:00:00", #TODO: change to scale with # of heatmaps expected
               "REPLACE_MEM": "8GB",
               "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
             }
@@ -111,7 +111,7 @@ class SconeClassifier(Classifier):
         with open(self.heatmaps_sbatch_header_path, "w+") as f:
           f.write(heatmaps_sbatch_header)
         
-        self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path) # TODO: what if they don't want to train on all sims?
+        self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path)
 
         # call create_heatmaps/run.py, which sbatches X create heatmaps jobs
         subprocess.run([f"python {Path(self.path_to_classifier) / 'create_heatmaps/run.py'} --config_path {self.config_path}"], shell=True)
