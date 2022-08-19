@@ -59,7 +59,6 @@ class SconeClassifier(Classifier):
       heatmaps_path_obj = output_path_obj / "heatmaps"
 
       self.job_base_name = output_path_obj.parents[1].name + "__" + output_path_obj.name
-      self.heatmaps_job_base_name = self.job_base_name + "__CREATE_HEATMAPS"
 
       self.batch_replace = self.options.get("BATCH_REPLACE", {})
       self.slurm = """{sbatch_header}
@@ -95,7 +94,7 @@ class SconeClassifier(Classifier):
         mkdirs(self.heatmaps_path)
 
         sim_dep = self.get_simulation_dependency()
-        sim_dirs = sim_dep.output["photometry_dirs"]
+        sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
 
         lcdata_paths = self._get_lcdata_paths(sim_dirs)
         metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
@@ -105,7 +104,6 @@ class SconeClassifier(Classifier):
               "REPLACE_LOGFILE": self.heatmaps_log_path,
               "REPLACE_WALLTIME": "10:00:00", #TODO: change to scale with # of heatmaps expected
               "REPLACE_MEM": "8GB",
-              "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
             }
         heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
         with open(self.heatmaps_sbatch_header_path, "w+") as f:
@@ -232,7 +230,7 @@ class SconeClassifier(Classifier):
         config["trained_model"] = self.options.get("MODEL", False)
         config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
-        config["job_base_name"] = self.heatmaps_job_base_name
+        config["job_base_name"] = self.job_base_name
         #FOR DES DATA: 
         # config["sn_type_id_to_name"] ={0.0: "unknown",
         #    5.0: "non",
@@ -273,7 +271,7 @@ class SconeClassifier(Classifier):
             self.logger.info(f"Predictions file can be found at {pred_path}")
             self.output.update({"model_filename": self.options.get("MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
             return Task.FINISHED_SUCCESS
-        return self.check_for_job(squeue, self.heatmaps_job_base_name) + self.check_for_job(squeue, self.job_base_name)
+        return self.check_for_job(squeue, self.job_base_name)
 
     def _heatmap_creation_success(self):
         if not os.path.exists(self.heatmaps_done_file):
