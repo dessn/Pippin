@@ -76,7 +76,7 @@ class SconeClassifier(Classifier):
 
     def make_sbatch_header(self, option_name, header_dict, use_gpu=False):
       sbatch_header_template = self.options.get(option_name)
-      sbatch_header = self.sbatch_cpu_header
+      sbatch_header = self.sbatch_gpu_header if use_gpu else self.sbatch_cpu_header
 
       if sbatch_header_template is not None:
         self.logger.debug(f"batch file found at {sbatch_header_template}")
@@ -288,9 +288,8 @@ class SconeClassifier(Classifier):
         return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
-    def _get_lcdata_paths(sim_dirs):
-        sim_paths = [f.path for sim_dir in sim_dirs for f in os.scandir(sim_dir)]
-        lcdata_paths = [path for path in sim_paths if "PHOT" in path]
+    def _get_lcdata_paths(sim_dir):
+        lcdata_paths = [f.path for f in os.scandir(sim_dir) if "PHOT" in f.path]
 
         return lcdata_paths
 
