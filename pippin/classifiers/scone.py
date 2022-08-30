@@ -231,27 +231,11 @@ class SconeClassifier(Classifier):
         config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
         config["job_base_name"] = self.job_base_name
-        #FOR DES DATA: 
-        # config["sn_type_id_to_name"] ={0.0: "unknown",
-        #    5.0: "non",
-        #    23.0: "non",
-        #    29.0: "non",
-        #    32.0: "non",
-        #    33.0: "non",
-        #    39.0: "non",
-        #    41.0: "non",
-        #    42.0: "non",
-        #    64.0: "non",
-        #    66.0: "non",
-        #    67: "non",
-        #    80.0: "non",
-        #    81.0: "non",
-        #    82.0: "non",
-        #    90.0: "SNIa",
-        #    129.0: "non",
-        #    139.0: "non",
-        #    141.0: "non",
-        #    180.0: "non"}
+
+        types = self._get_types()
+        if types is not None:
+          self.logger.info("input types from sim found, types set to {types}")
+          config["sn_type_id_to_name"] = types
 
         with open(config_path, "w+") as cfgfile:
             cfgfile.write(yaml.dump(config))
@@ -290,7 +274,6 @@ class SconeClassifier(Classifier):
     @staticmethod
     def _get_lcdata_paths(sim_dir):
         lcdata_paths = [f.path for f in os.scandir(sim_dir) if "PHOT" in f.path]
-
         return lcdata_paths
 
     @staticmethod
