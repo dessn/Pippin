@@ -87,7 +87,7 @@ def preprocess(raw):
     # Get all lines which start with #
     comment_lines = [line[1:] for line in lines if (len(line) > 0) and (line[0] == "#")]
     # Now get all lines which start and end with %
-    preprocess_lines = [line for line in comment_lines if (len(line) > 0) and (line.split()[0][0] == line.split()[-1][-1] == "%")]
+    preprocess_lines = [line for line in comment_lines if (len(line.split()) > 0) and (line.split()[0][0] == line.split()[-1][-1] == "%")]
     if len(preprocess_lines) == 0:
         logging.info("No preprocessing found")
         return raw
