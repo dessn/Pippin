@@ -104,7 +104,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
 
                 type2 = 100 + gentype
-                if "SALT2" in genmodel:
+                if "SALT" in genmodel:
                     self.base_ia.append(base_file)
                     types[gentype] = "Ia"
                     types[type2] = "Ia"
