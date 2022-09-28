@@ -25,8 +25,8 @@ DataSkimmer:
   location: $PRODUCTS/utilities/dataskim
 
 SCONE:
-  init_env_cpu: source activate scone_cpu
-  init_env_gpu: source activate scone_gpu
+  init_env_cpu: source activate scone_cpu_tf2.6
+  init_env_gpu: source activate scone_gpu_tf2.6
   location: $PRODUCTS/classifiers/scone
 
 CosmoMC:
