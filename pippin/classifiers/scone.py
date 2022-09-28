@@ -1,4 +1,3 @@
-import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -71,7 +70,7 @@ class SconeClassifier(Classifier):
       self.heatmaps_path = str(heatmaps_path_obj)
       self.heatmaps_done_file = str(heatmaps_path_obj / "done.txt")
       self.heatmaps_sbatch_header_path = str(heatmaps_path_obj / "sbatch_header.sh")
-      self.heatmaps_log_path = os.path.join(self.heatmaps_path, f"create_heatmaps__{os.path.basename(self.config_path).split('.')[0]}.log")
+      self.heatmaps_log_path = str(heatmaps_path_obj / f"create_heatmaps__{Path(self.config_path).name.split('.')[0]}.log")
 
       remake_heatmaps = self.options.get("REMAKE_HEATMAPS", False)
       self.keep_heatmaps = not remake_heatmaps
@@ -139,7 +138,7 @@ class SconeClassifier(Classifier):
 
     def classify(self, mode):
       failed = False
-      if os.path.exists(self.done_file):
+      if Path(self.done_file).exists():
           self.logger.debug(f"Found done file at {self.done_file}")
           with open(self.done_file) as f:
             if "SUCCESS" not in f.read().upper():
@@ -216,39 +215,40 @@ class SconeClassifier(Classifier):
         config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
         config["job_base_name"] = self.job_base_name
+        config["class_balanced"] = (mode == "train")
 
         types = self._get_types()
         if types is not None:
-          self.logger.info("input types from sim found, types set to {types}")
-          config["sn_type_id_to_name"] = types
+          self.logger.info(f"input types from sim found, types set to {types}")
+          config["sn_type_id_to_name"] = dict(types) # sometimes it's returned as OrderedDict, which doesn't serialize properly
 
         with open(config_path, "w+") as cfgfile:
             cfgfile.write(yaml.dump(config))
 
     def _check_completion(self, squeue):
-        if os.path.exists(self.done_file):
+        if Path(self.done_file).exists()
             self.logger.debug(f"Found done file at {self.done_file}")
             with open(self.done_file) as f:
                 if "SUCCESS" not in f.read().upper():
                     return Task.FINISHED_FAILURE
 
-            pred_path = os.path.join(self.output_dir, "predictions.csv")
+            pred_path = str(Path(self.output_dir) / "predictions.csv")
             predictions = pd.read_csv(pred_path)
             predictions = predictions[["snid", "pred_labels"]] # make sure snid is the first col
             predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
             predictions.to_csv(pred_path, index=False)
             self.logger.info(f"Predictions file can be found at {pred_path}")
-            self.output.update({"model_filename": self.options.get("MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
+            self.output.update({"model_filename": self.options.get("MODEL", str(Path(self.output_dir) / "trained_model")), "predictions_filename": pred_path})
             return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
 
     def _heatmap_creation_success(self):
-        if not os.path.exists(self.heatmaps_done_file):
+        if not Path(self.heatmaps_done_file).exists():
             return False
         with open(self.heatmaps_done_file, "r") as donefile:
             if "CREATE HEATMAPS FAILURE" in donefile.read():
                 return False
-        return os.path.exists(self.heatmaps_path) and os.path.exists(os.path.join(self.heatmaps_path, "done.log")) 
+        return Path(self.heatmaps_path).exists() and str(Path(self.heatmaps_path) / "done.log").exists()  
     
     def num_jobs_in_queue(self):
         print("rerun num jobs in queue")
@@ -258,7 +258,7 @@ class SconeClassifier(Classifier):
 
     @staticmethod
     def _get_lcdata_paths(sim_dir):
-        lcdata_paths = [f.path for f in os.scandir(sim_dir) if "PHOT" in f.path]
+        lcdata_paths = [f.path for f in Path(sim_dir).iterdir() if "PHOT" in f.path]
         return lcdata_paths
 
     @staticmethod
