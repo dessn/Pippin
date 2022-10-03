@@ -8,6 +8,7 @@ from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs, get_config, get_output_loc, get_data_loc, merge_dict
 from pippin.task import Task
 from time import sleep
+import numpy as np
 
 
 class SuperNNovaClassifier(Classifier):
@@ -58,6 +59,22 @@ class SuperNNovaClassifier(Classifier):
         self.batch_size = options.get("BATCH_SIZE", 128)
         self.num_layers = options.get("NUM_LAYERS", 2)
         self.hidden_dim = options.get("HIDDEN_DIM", 32)
+        # Must be a list
+        self.list_filters = options.get("LIST_FILTERS", None)
+        if self.list_filters is None:
+            self.list_filters = ['g', 'i', 'r', 'z']
+        assert isinstance(self.list_filters, list), f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
+        # Can either be a yml dictionary or a str filepath to a txt files containing all mappings
+        self.sntypes = options.get("SNTYPES", None)
+        if self.sntypes is None:
+            self.sntypes = {}
+        elif isinstance(self.sntypes, str):
+            sntypes_path = get_data_loc(self.sntypes)
+            assert sntypes_path is not None, f"SNTYPES: {self.sntypes} does not resolve to a path."
+            self.logger.debug(f"Reading in SNTYPES from {sntypes_path}")
+            sntypes_raw = np.loadtxt(sntypes_path, dtype=str)
+            self.sntypes = {i[0]: i[1] for i in sntypes_raw}
+        assert isinstance(self.sntypes, dict), f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
 
         # Setup yml files
         self.data_yml_file = options.get("DATA_YML", None)
@@ -174,52 +191,65 @@ class SuperNNovaClassifier(Classifier):
             self.logger.debug(f"Looking for model in {model_path}")
             assert os.path.exists(model_path), f"Cannot find {model_path}"
 
-        types = self.get_types()
-        if types is None:
-            types = OrderedDict(
-                {
-                    "1": "Ia",
-                    "0": "unknown",
-                    "2": "SNIax",
-                    "3": "SNIa-pec",
-                    "20": "SNIIP",
-                    "21": "SNIIL",
-                    "22": "SNIIn",
-                    "29": "SNII",
-                    "32": "SNIb",
-                    "33": "SNIc",
-                    "39": "SNIbc",
-                    "41": "SLSN-I",
-                    "42": "SLSN-II",
-                    "43": "SLSN-R",
-                    "80": "AGN",
-                    "81": "galaxy",
-                    "98": "None",
-                    "99": "pending",
-                    "101": "Ia",
-                    "120": "SNII",
-                    "130": "SNIbc",
-                }
-            )
+        # If you specify sntypes in the pippin input use that
+        if (self.sntypes is not None) and (len(self.sntypes) > 0):
+            types = self.sntypes
         else:
-            has_ia = False
-            has_cc = False
-            self.logger.debug(f"Input types set to {types}")
-            for key, value in types.items():
-                if value.upper() == "IA":
-                    has_ia = True
-                elif value.upper() in ["II", "IBC"]:
-                    has_cc = True
-            if not has_ia:
-                self.logger.debug("No Ia type found, injecting type")
-                types[1] = "Ia"
-                types = dict(sorted(types.items(), key=lambda x: -1 if x[0] == 1 else x[0]))
-                self.logger.debug(f"Inject types with Ias are {types}")
-            if not has_cc:
-                self.logger.debug("No cc type found, injecting type")
-                types[29] = "II"
+            # See if sntypes was defined by the SIM use that
+            # Otherwise use default
+            types = self.get_types()
+            if types is None:
+                types = OrderedDict(
+                    {
+                        "1": "Ia",
+                        "0": "unknown",
+                        "2": "SNIax",
+                        "3": "SNIa-pec",
+                        "20": "SNIIP",
+                        "21": "SNIIL",
+                        "22": "SNIIn",
+                        "29": "SNII",
+                        "32": "SNIb",
+                        "33": "SNIc",
+                        "39": "SNIbc",
+                        "41": "SLSN-I",
+                        "42": "SLSN-II",
+                        "43": "SLSN-R",
+                        "80": "AGN",
+                        "81": "galaxy",
+                        "98": "None",
+                        "99": "pending",
+                        "101": "Ia",
+                        "120": "SNII",
+                        "130": "SNIbc",
+                    }
+                )
+            else:
+                has_ia = False
+                has_cc = False
+                self.logger.debug(f"Input types set to {types}")
+                for key, value in types.items():
+                    if value.upper() == "IA":
+                        has_ia = True
+                    elif value.upper() in ["II", "IBC"]:
+                        has_cc = True
+                if not has_ia:
+                    self.logger.debug("No Ia type found, injecting type")
+                    types["1"] = "Ia"
+                    types = dict(sorted(types.items(), key=lambda x: -1 if x[0] == 1 else x[0]))
+                    self.logger.debug(f"Inject types with Ias are {types}")
+                if not has_cc:
+                    self.logger.debug("No cc type found, injecting type")
+                    types["29"] = "II"
+        # Ensure appropriate Ia types are always included
+        types["1"] = "Ia"
+        types["10"] = "Ia"
+        types["110"] = "Ia"
         str_types = json.dumps(types)
         self.logger.debug(f"Types set to {str_types}")
+
+        str_list_filters = " ".join(self.list_filters)
+        self.logger.debug(f"Filter list set to {str_list_filters}")
 
         sim_dep = self.get_simulation_dependency()
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
@@ -276,6 +306,7 @@ class SuperNNovaClassifier(Classifier):
             "job_name": self.job_base_name,
             "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
+            "list_filters": str_list_filters,
             "variant": variant,
             "cyclic": cyclic,
             "model": "" if training else f"--model_files {model_path}",
