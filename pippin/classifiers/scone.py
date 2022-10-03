@@ -226,7 +226,7 @@ class SconeClassifier(Classifier):
             cfgfile.write(yaml.dump(config))
 
     def _check_completion(self, squeue):
-        if Path(self.done_file).exists()
+        if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
             with open(self.done_file) as f:
                 if "SUCCESS" not in f.read().upper():
