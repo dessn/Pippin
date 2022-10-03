@@ -178,7 +178,8 @@ def run(args):
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
     manager.set_force_ignore_stage(args.ignore)
-    manager.execute(args.check, args.compress, args.uncompress)
+    num_errs = manager.execute(args.check, args.compress, args.uncompress)
+    manager.num_errs = num_errs
     chown_file(logging_filename)
     return manager
 
@@ -255,5 +256,7 @@ def get_args(test=False):
 
 if __name__ == "__main__":
     args = get_args()
-    run(args)
+    manager = run(args)
     sys.stdout.flush()
+    if manager.num_errs > 0:
+        raise(ValueError(f"{manager.num_errs} Errors found"))

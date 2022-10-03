@@ -402,7 +402,8 @@ class Manager:
                     n = len(squeue)
                     if n == 0 or n > self.max_jobs:
                         self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
-        self.log_finals()
+        num_errs = self.log_finals()
+        return num_errs
 
     def check_task_completion(self, t, squeue):
         result = t.check_completion(squeue)
@@ -471,3 +472,4 @@ class Manager:
 
         for w in es:
             self.logger.error(f"\t{w.message}")
+        return len(es)
