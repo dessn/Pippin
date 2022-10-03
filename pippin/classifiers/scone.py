@@ -142,37 +142,37 @@ class SconeClassifier(Classifier):
       if os.path.exists(self.done_file):
           self.logger.debug(f"Found done file at {self.done_file}")
           with open(self.done_file) as f:
-            if "FAILURE" in f.read().upper():
+            if "SUCCESS" not in f.read().upper():
               failed = True
-
-      heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
-      if not heatmaps_created:
-        self.make_heatmaps_sbatch_header()
-
-      sim_dep = self.get_simulation_dependency()
-      sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
-
-      lcdata_paths = self._get_lcdata_paths(sim_dirs)
-      metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
-
-      self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path)
-
-      slurm_script = self.make_model_sbatch_script()
-      new_hash = self.get_hash_from_string(slurm_script)
 
       if self._check_regenerate(new_hash) or failed:
         self.logger.debug("Regenerating")
+
+        heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
+        if not heatmaps_created:
+          self.make_heatmaps_sbatch_header()
+
+        sim_dep = self.get_simulation_dependency()
+        sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
+
+        lcdata_paths = self._get_lcdata_paths(sim_dirs)
+        metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
+
+        self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path, heatmaps_created)
+
+        slurm_script = self.make_model_sbatch_script()
+        new_hash = self.get_hash_from_string(slurm_script)
+
+        self.save_new_hash(new_hash)
+        self.logger.info(f"Submitting batch job {self.model_sbatch_job_path}")
+
+        # TODO: nersc needs `module load esslurm` to sbatch gpu jobs, maybe make 
+        # this shell command to a file so diff systems can define their own
+        subprocess.run([f"python {Path(self.path_to_classifier) / 'run.py'} --config_path {self.config_path}"], shell=True)
       else:
         self.logger.info("Hash check passed, not rerunning")
         self.should_be_done()
-        return True
 
-      self.save_new_hash(new_hash)
-      self.logger.info(f"Submitting batch job {self.model_sbatch_job_path}")
-
-      # TODO: nersc needs `module load esslurm` to sbatch gpu jobs, maybe make 
-      # this shell command to a file so diff systems can define their own
-      subprocess.run([f"python {Path(self.path_to_classifier) / 'run.py'} --config_path {self.config_path}"], shell=True)
       return True
 
     def predict(self):
@@ -186,7 +186,7 @@ class SconeClassifier(Classifier):
         t = self.get_simulation_dependency().output
         return t["types"]
 
-    def _write_config_file(self, metadata_paths, lcdata_paths, mode, config_path):
+    def _write_config_file(self, metadata_paths, lcdata_paths, mode, config_path, heatmaps_created):
         config = {}
 
         # environment configuration
@@ -194,16 +194,18 @@ class SconeClassifier(Classifier):
         config["init_env"] = self.init_env
 
         # info for heatmap creation
-        config["metadata_paths"] = metadata_paths
-        config["lcdata_paths"] = lcdata_paths
-        config["num_wavelength_bins"] = self.options.get("NUM_WAVELENGTH_BINS", 32)
-        config["num_mjd_bins"] = self.options.get("NUM_MJD_BINS", 180)
-        config["heatmaps_path"] = self.heatmaps_path
-        config["sbatch_header_path"] = self.heatmaps_sbatch_header_path
-        config["model_sbatch_job_path"] = self.model_sbatch_job_path
+        if not heatmaps_created:
+          config["sbatch_header_path"] = self.heatmaps_sbatch_header_path
+
         config["heatmaps_donefile"] = self.heatmaps_done_file
         config["heatmaps_logfile"] = self.heatmaps_log_path
         config["sim_fraction"] = self.options.get("SIM_FRACTION", 1) # 1/sim_fraction % of simulated SNe will be used for the model
+        config["heatmaps_path"] = self.heatmaps_path
+        config["model_sbatch_job_path"] = self.model_sbatch_job_path
+        config["num_wavelength_bins"] = self.options.get("NUM_WAVELENGTH_BINS", 32)
+        config["num_mjd_bins"] = self.options.get("NUM_MJD_BINS", 180)
+        config["metadata_paths"] = metadata_paths
+        config["lcdata_paths"] = lcdata_paths
 
         # info for classification model
         config["categorical"] = self.options.get("CATEGORICAL", False)
@@ -227,13 +229,13 @@ class SconeClassifier(Classifier):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Found done file at {self.done_file}")
             with open(self.done_file) as f:
-                if "FAILURE" in f.read().upper():
+                if "SUCCESS" not in f.read().upper():
                     return Task.FINISHED_FAILURE
 
-            time.sleep(30)
             pred_path = os.path.join(self.output_dir, "predictions.csv")
             predictions = pd.read_csv(pred_path)
-            predictions = predictions.rename(columns={"pred": self.get_prob_column_name()})
+            predictions = predictions[["snid", "pred_labels"]] # make sure snid is the first col
+            predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
             predictions.to_csv(pred_path, index=False)
             self.logger.info(f"Predictions file can be found at {pred_path}")
             self.output.update({"model_filename": self.options.get("MODEL", os.path.join(self.output_dir, "trained_model")), "predictions_filename": pred_path})
