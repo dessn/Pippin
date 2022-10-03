@@ -45,4 +45,4 @@ SBATCH:
 
 SETUP:
     location: $PRODUCTS/pippin/pippin/tasks
-    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-pa/pippin/tasks
+    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/dev/pippin-pa/pippin/tasks

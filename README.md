@@ -511,7 +511,7 @@ The [SCONE classifier](https://github.com/helenqu/scone) is a convolutional neur
 ```yaml
 CLASSIFICATION:
   SNN_TEST:
-    CLASSIFIER: SuperNNovaClassifier
+    CLASSIFIER: SconeClassifier
     MODE: predict  # or train
 
     # optional arguments
@@ -548,6 +548,8 @@ CLASSIFICATION:
       NORM: cosmo_quantile  # How to normalise LCs. Other options are "perfilter", "cosmo", "global" or "cosmo_quantile".  
       CYCLIC: True  # Defaults to True for vanilla and variational model
       SEED: 0  # Sets random seed. Defaults to 0.
+      LIST_FILTERS: ['G', 'R', 'I', 'Z'] # What filters are present in the data, defaults to ['g', 'r', 'i', 'z']
+      SNTYPES: "/path/to/sntypes.txt" # Path to a file which lists the sn type mapping to be used. Example syntax for this can be found at https://github.com/LSSTDESC/plasticc_alerts/blob/main/Examples/plasticc_schema/elasticc_origmap.txt. Alternatively, yaml dictionaries can be used to specify each sn type individually.
 ```
 
 Pippin also allows for supernnova input yaml files to be passed, instead of having to define all of the options in the Pippin input yaml. This is done via:
