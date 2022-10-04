@@ -179,7 +179,7 @@ def run(args):
     manager.set_force_refresh(args.refresh)
     manager.set_force_ignore_stage(args.ignore)
     num_errs = manager.execute(args.check, args.compress, args.uncompress)
-    manager.num_errs = num_errs
+    manager.num_errs = num_errs or 0
     chown_file(logging_filename)
     return manager
 
