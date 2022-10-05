@@ -29,8 +29,8 @@ class SconeClassifier(Classifier):
           CATEGORICAL: False
           NUM_WAVELENGTH_BINS: 32
           NUM_MJD_BINS: 180
-          REMAKE_HEATMAPS: False 
-          NUM_EPOCHS: 400 
+          REMAKE_HEATMAPS: False
+          NUM_EPOCHS: 400
           IA_FRACTION: 0.5
           MODEL: /path/to/trained/model
           SCONE_CPU_BATCH_FILE: /path/to/sbatch/template/for/scone
@@ -93,7 +93,7 @@ class SconeClassifier(Classifier):
       self.logger.info("heatmaps not created, creating now")
       shutil.rmtree(self.output_dir, ignore_errors=True)
       mkdirs(self.heatmaps_path)
-      
+
       # TODO: if externally specified batchfile exists, have to parse desired logfile path from it
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
@@ -144,34 +144,39 @@ class SconeClassifier(Classifier):
             if "SUCCESS" not in f.read().upper():
               failed = True
 
+      heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
+
+      sim_dep = self.get_simulation_dependency()
+      sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
+
+      lcdata_paths = self._get_lcdata_paths(sim_dirs)
+      metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
+
+      str_config = self._make_config(metadata_paths, lcdata_paths, mode, heatmaps_created)
+      new_hash = self.get_hash_from_string(str_config)
+
       if self._check_regenerate(new_hash) or failed:
         self.logger.debug("Regenerating")
-
-        heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
-        if not heatmaps_created:
-          self.make_heatmaps_sbatch_header()
-
-        sim_dep = self.get_simulation_dependency()
-        sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
-
-        lcdata_paths = self._get_lcdata_paths(sim_dirs)
-        metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
-
-        self._write_config_file(metadata_paths, lcdata_paths, mode, self.config_path, heatmaps_created)
-
-        slurm_script = self.make_model_sbatch_script()
-        new_hash = self.get_hash_from_string(slurm_script)
-
-        self.save_new_hash(new_hash)
-        self.logger.info(f"Submitting batch job {self.model_sbatch_job_path}")
-
-        # TODO: nersc needs `module load esslurm` to sbatch gpu jobs, maybe make 
-        # this shell command to a file so diff systems can define their own
-        subprocess.run([f"python {Path(self.path_to_classifier) / 'run.py'} --config_path {self.config_path}"], shell=True)
       else:
         self.logger.info("Hash check passed, not rerunning")
         self.should_be_done()
+        return True
 
+      if not heatmaps_created:
+        # this deletes the whole directory tree, don't write anything before this
+        self.make_heatmaps_sbatch_header()
+
+      self.save_new_hash(new_hash)
+      with open(self.config_path, "w+") as cfgfile:
+          cfgfile.write(str_config)
+
+      slurm_script = self.make_model_sbatch_script()
+
+      self.logger.info(f"Submitting batch job {self.model_sbatch_job_path}")
+
+      # TODO: nersc needs `module load esslurm` to sbatch gpu jobs, maybe make
+      # this shell command to a file so diff systems can define their own
+      subprocess.run([f"python {Path(self.path_to_classifier) / 'run.py'} --config_path {self.config_path}"], shell=True)
       return True
 
     def predict(self):
@@ -180,12 +185,12 @@ class SconeClassifier(Classifier):
     def train(self):
         return self.classify("train")
 
-   #TODO: investigate the output and use this 
+   #TODO: investigate the output and use this
     def _get_types(self):
         t = self.get_simulation_dependency().output
         return t["types"]
 
-    def _write_config_file(self, metadata_paths, lcdata_paths, mode, config_path, heatmaps_created):
+    def _make_config(self, metadata_paths, lcdata_paths, mode, heatmaps_created):
         config = {}
 
         # environment configuration
@@ -222,8 +227,7 @@ class SconeClassifier(Classifier):
           self.logger.info(f"input types from sim found, types set to {types}")
           config["sn_type_id_to_name"] = dict(types) # sometimes it's returned as OrderedDict, which doesn't serialize properly
 
-        with open(config_path, "w+") as cfgfile:
-            cfgfile.write(yaml.dump(config))
+        return yaml.dump(config)
 
     def _check_completion(self, squeue):
         if Path(self.done_file).exists():
@@ -248,8 +252,8 @@ class SconeClassifier(Classifier):
         with open(self.heatmaps_done_file, "r") as donefile:
             if "CREATE HEATMAPS FAILURE" in donefile.read():
                 return False
-        return Path(self.heatmaps_path).exists() and str(Path(self.heatmaps_path) / "done.log").exists()  
-    
+        return Path(self.heatmaps_path).exists() and (Path(self.heatmaps_path) / "done.log").exists()
+
     def num_jobs_in_queue(self):
         print("rerun num jobs in queue")
         squeue = [i.strip() for i in subprocess.check_output(f"squeue -h -u $USER -o '%.200j'", shell=True, text=True).splitlines()]
@@ -258,7 +262,7 @@ class SconeClassifier(Classifier):
 
     @staticmethod
     def _get_lcdata_paths(sim_dir):
-        lcdata_paths = [f.path for f in Path(sim_dir).iterdir() if "PHOT" in f.path]
+        lcdata_paths = [str(f.resolve()) for f in Path(sim_dir).iterdir() if "PHOT" in f.name]
         return lcdata_paths
 
     @staticmethod
