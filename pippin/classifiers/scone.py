@@ -108,7 +108,7 @@ class SconeClassifier(Classifier):
     def make_model_sbatch_script(self):
       header_dict = {
               "REPLACE_NAME": self.job_base_name,
-              "REPLACE_LOGFILE": "output.log",
+              "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
               "REPLACE_WALLTIME": "4:00:00", # max for gpu
               "REPLACE_MEM": "8GB",
               "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
@@ -224,8 +224,9 @@ class SconeClassifier(Classifier):
 
         types = self._get_types()
         if types is not None:
+          types = {int(k): v for k, v in types.items()} # sometimes the keys are strings, sometimes ints
           self.logger.info(f"input types from sim found, types set to {types}")
-          config["sn_type_id_to_name"] = dict(types) # sometimes it's returned as OrderedDict, which doesn't serialize properly
+          config["sn_type_id_to_name"] = types
 
         return yaml.dump(config)
 
