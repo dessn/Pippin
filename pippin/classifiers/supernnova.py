@@ -201,27 +201,27 @@ class SuperNNovaClassifier(Classifier):
             if types is None:
                 types = OrderedDict(
                     {
-                        "1": "Ia",
-                        "0": "unknown",
-                        "2": "SNIax",
-                        "3": "SNIa-pec",
-                        "20": "SNIIP",
-                        "21": "SNIIL",
-                        "22": "SNIIn",
-                        "29": "SNII",
-                        "32": "SNIb",
-                        "33": "SNIc",
-                        "39": "SNIbc",
-                        "41": "SLSN-I",
-                        "42": "SLSN-II",
-                        "43": "SLSN-R",
-                        "80": "AGN",
-                        "81": "galaxy",
-                        "98": "None",
-                        "99": "pending",
-                        "101": "Ia",
-                        "120": "SNII",
-                        "130": "SNIbc",
+                        1: "Ia",
+                        0: "unknown",
+                        2: "SNIax",
+                        3: "SNIa-pec",
+                        20: "SNIIP",
+                        21: "SNIIL",
+                        22: "SNIIn",
+                        29: "SNII",
+                        32: "SNIb",
+                        33: "SNIc",
+                        39: "SNIbc",
+                        41: "SLSN-I",
+                        42: "SLSN-II",
+                        43: "SLSN-R",
+                        80: "AGN",
+                        81: "galaxy",
+                        98: "None",
+                        99: "pending",
+                        101: "Ia",
+                        120: "SNII",
+                        130: "SNIbc",
                     }
                 )
             else:
@@ -235,16 +235,16 @@ class SuperNNovaClassifier(Classifier):
                         has_cc = True
                 if not has_ia:
                     self.logger.debug("No Ia type found, injecting type")
-                    types["1"] = "Ia"
+                    types[1] = "Ia"
                     types = dict(sorted(types.items(), key=lambda x: -1 if x[0] == 1 else x[0]))
                     self.logger.debug(f"Inject types with Ias are {types}")
                 if not has_cc:
                     self.logger.debug("No cc type found, injecting type")
-                    types["29"] = "II"
+                    types[29] = "II"
         # Ensure appropriate Ia types are always included
-        types["1"] = "Ia"
-        types["10"] = "Ia"
-        types["110"] = "Ia"
+        types[1] = "Ia"
+        types[10] = "Ia"
+        types[110] = "Ia"
         str_types = json.dumps(types)
         self.logger.debug(f"Types set to {str_types}")
 
