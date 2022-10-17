@@ -98,7 +98,7 @@ class SconeClassifier(Classifier):
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
             "REPLACE_WALLTIME": "10:00:00", #TODO: change to scale with # of heatmaps expected
-            "REPLACE_MEM": "8GB",
+            "REPLACE_MEM": "16GB",
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
 
@@ -109,8 +109,8 @@ class SconeClassifier(Classifier):
       header_dict = {
               "REPLACE_NAME": self.job_base_name,
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
-              "REPLACE_WALLTIME": "4:00:00", # max for gpu
-              "REPLACE_MEM": "8GB",
+              "REPLACE_MEM": "16GB",
+              "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
               "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
@@ -214,6 +214,7 @@ class SconeClassifier(Classifier):
         # info for classification model
         config["categorical"] = self.options.get("CATEGORICAL", False)
         config["num_epochs"] = self.options.get("NUM_EPOCHS", 400) # TODO: replace num epochs with autostop: stop training when slope plateaus?
+        config["batch_size"] = self.options.get("BATCH_SIZE", 32) # TODO: replace with percentage of total size?
         config["Ia_fraction"] = self.options.get("IA_FRACTION", 0.5)
         config["output_path"] = self.output_dir
         config["trained_model"] = self.options.get("MODEL", False)
