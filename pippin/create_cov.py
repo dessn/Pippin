@@ -84,13 +84,13 @@ class CreateCov(ConfigBasedExecutable):
         self.calibration_set = options.get("CALIBRATORS", [])
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
-        if self.config.get("COSMOMC", True):
+        if self.config.get("COSMOMC", False):
+            self.logger.info("Not generating cosmomc output") 
+            self.prepare_cosmomc = False
+        else:
             self.logger.info("Generating cosmomc output")
             self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
             self.prepare_cosmomc = True 
-        else:
-            self.logger.info("Not generating cosmomc output") 
-            self.prepare_cosmomc = False
         covopts_map = {"ALL": 0}
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
