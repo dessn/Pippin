@@ -148,6 +148,8 @@ class Manager:
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
             self.logger.notice(f"\t{task}")
+            self.logger.debug(f"Task {task.name} has dependencies: {task.dependencies}")
+            self.logger.debug(f"Task {task.name} has dependents: {task.dependents}")
         self.logger.info("")
         return total_tasks
 
@@ -409,6 +411,21 @@ class Manager:
         result = t.check_completion(squeue)
         # If its finished, good or bad, juggle tasks
         if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+            self.logger.debug(f"Task {t.name} has dependencies: {t.dependencies}")
+            self.logger.debug(f"Task {t.name} has dependents: {t.dependents}")
+            if len(t.dependencies) > 0:
+                for task in t.dependencies:
+                    self.logger.debug(f"Modifying dependency task {task.name}")
+                    task.dependents.remove(t)
+                    t.dependencies.remove(task)
+                    self.logger.debug(f"Task {task.name} has dependencies: {task.dependencies}")
+                    self.logger.debug(f"Task {task.name} has dependents: {task.dependents}")
+                    if len(task.dependents) == 0:
+                        if self.compress:
+                            task.compress()
+                self.logger.debug(f"Task {t.name} has dependencies: {t.dependencies}")
+                self.logger.debug(f"Task {t.name} has dependents: {t.dependents}")
+
             if t.gpu:
                 self.num_jobs_queue_gpu -= t.num_jobs
             else:
@@ -418,7 +435,8 @@ class Manager:
                 self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
                 self.done.append(t)
                 if self.compress:
-                    t.compress()
+                    if len(t.dependents) == 0:
+                        t.compress()
             else:
                 self.fail_task(t)
             if os.path.exists(t.output_dir):
