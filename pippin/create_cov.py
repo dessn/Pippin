@@ -10,6 +10,7 @@ from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
 from pippin.config import mkdirs, get_config, get_data_loc, read_yaml, merge_dict
 from pippin.task import Task
+import pippin.cosmofitters.cosmomc as cosmomc
 
 
 class CreateCov(ConfigBasedExecutable):
@@ -84,19 +85,17 @@ class CreateCov(ConfigBasedExecutable):
         self.calibration_set = options.get("CALIBRATORS", [])
         self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
 
-        prepare_cosmomc = self.config.get("COSMOMC", False)
+        self.prepare_cosmomc = self.config.get("COSMOMC", False)
 
-        if prepare_cosmomc:
-            self.logger.info("Generating cosmomc output")
-            self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
-            self.prepare_cosmomc = True 
+        if self.prepare_cosmomc:
+            self.logger.info("Generating CosmoMC output")
         else:
-            self.logger.info("Not generating cosmomc output") 
-            self.prepare_cosmomc = False
+            self.logger.info("Not generating CosmoMC output") 
         covopts_map = {"ALL": 0}
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
         self.output["covopts"] = covopts_map
+        self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
         self.output["index"] = index
         self.output["bcor_name"] = self.biascor_dep.name
         self.slurm = """{sbatch_header}
@@ -107,6 +106,13 @@ else
     echo FAILURE > {done_file}
 fi
 """
+
+    def add_dependent(self, task):
+        self.dependents.append(task)
+        if isinstance(task, cosmomc.CosmoMC):
+            self.logger.info("CosmoMC task found, CreateCov will generate CosmoMC output")
+            self.prepare_cosmomc = True
+
 
     def get_sys_file_in(self):
         set_file = self.options.get("SYS_SCALE")
@@ -164,6 +170,8 @@ fi
         self.yaml["COVOPTS"] = self.options.get("COVOPTS", [])
         self.yaml["EXTRA_COVS"] = self.options.get("EXTRA_COVS", [])
         self.yaml["CALIBRATORS"] = self.calibration_set
+
+        self.logger.debug(f"YAML: {self.yaml}")
 
         # Load in sys file, add muopt arguments if needed
         # Get the MUOPT_SCALES and FITOPT scales keywords

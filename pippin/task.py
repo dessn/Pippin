@@ -22,6 +22,9 @@ class Task(ABC):
         if dependencies is None:
             dependencies = []
         self.dependencies = dependencies
+        self.dependents = []
+        for task in dependencies:
+            task.add_dependent(self)
 
         if config is None:
             config = {}
@@ -111,6 +114,8 @@ class Task(ABC):
         self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
         self.config_file = os.path.join(output_dir, "config.yml")
 
+    def add_dependent(self, task):
+            self.dependents.append(task)
 
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
@@ -168,6 +173,7 @@ class Task(ABC):
             if os.path.exists(source_file):
                 uncompress_dir(os.path.dirname(t.output_dir), source_file)
 
+    
     def _check_regenerate(self, new_hash):
         hash_are_different = new_hash != self.get_old_hash()
 
@@ -409,6 +415,7 @@ class Task(ABC):
             self.logger.error(f"This means it probably crashed, have a look in {self.output_dir}")
             self.logger.error(f"Removing hash from {self.hash_file}")
             self.clear_hash()
+            #TODO try rerunning task
             return Task.FINISHED_FAILURE
         if self.external is None and result == Task.FINISHED_SUCCESS and not os.path.exists(self.config_file):
             self.write_config()
