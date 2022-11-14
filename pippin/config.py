@@ -155,7 +155,7 @@ def mkdirs(path):
     if not os.path.exists(path):
         parent = os.path.dirname(path)
         mkdirs(parent)
-        os.system(f"mkdir {path}")
+        os.system(f"mkdir -p {path}")
         # os.makedirs(path, exist_ok=True, mode=0o7701)
         chown_dir(path)
 
