@@ -276,7 +276,7 @@ fi
                 new_data_dir = os.path.join(self.output_dir, d)
                 os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
-            self.logger.info(f"Submitting batch job for data prep")
+            self.logger.info(f"Submitting batch job for cosmomc")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.should_be_done()
