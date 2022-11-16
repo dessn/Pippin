@@ -417,7 +417,7 @@ class Manager:
                 for task in t.dependencies:
                     self.logger.debug(f"Modifying dependency task {task.name}")
                     task.dependents.remove(t)
-                    t.dependencies.remove(task)
+                    #t.dependencies.remove(task)
                     self.logger.debug(f"Task {task.name} has dependencies: {task.dependencies}")
                     self.logger.debug(f"Task {task.name} has dependents: {task.dependents}")
                     if len(task.dependents) == 0:

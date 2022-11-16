@@ -115,7 +115,7 @@ class Task(ABC):
         self.config_file = os.path.join(output_dir, "config.yml")
 
     def add_dependent(self, task):
-            self.dependents.append(task)
+        self.dependents.append(task)
 
     def set_force_refresh(self, force_refresh):
         self.force_refresh = force_refresh
