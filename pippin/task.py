@@ -8,6 +8,8 @@ import datetime
 import numpy as np
 import yaml
 import copy
+import sys
+sys.setrecursionlimit(10000)
 
 
 class Task(ABC):
