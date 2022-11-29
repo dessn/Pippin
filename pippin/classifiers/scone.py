@@ -109,9 +109,9 @@ class SconeClassifier(Classifier):
       header_dict = {
               "REPLACE_NAME": self.job_base_name,
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
-              "REPLACE_MEM": "16GB",
+              "REPLACE_MEM": "8GB",
               "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
-              "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=8"]
+              "APPEND": ["#SBATCH --ntasks=1"] #"#SBATCH --cpus-per-task=8"]
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
 
@@ -240,9 +240,10 @@ class SconeClassifier(Classifier):
 
             pred_path = str(Path(self.output_dir) / "predictions.csv")
             predictions = pd.read_csv(pred_path)
-            predictions = predictions[["snid", "pred_labels"]] # make sure snid is the first col
-            predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
-            predictions.to_csv(pred_path, index=False)
+            if "pred_labels" in predictions.columns:
+                predictions = predictions[["snid", "pred_labels"]] # make sure snid is the first col
+                predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
+                predictions.to_csv(pred_path, index=False)
             self.logger.info(f"Predictions file can be found at {pred_path}")
             self.output.update({"model_filename": self.options.get("MODEL", str(Path(self.output_dir) / "trained_model")), "predictions_filename": pred_path})
             return Task.FINISHED_SUCCESS
