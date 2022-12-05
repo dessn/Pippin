@@ -544,7 +544,7 @@ CLASSIFICATION:
     OPTS:
       MODEL: SNN_TRAIN  # Havent shown this defined. Or /somepath/to/model.pt
       VARIANT: vanilla # or "variational" or "bayesian". Defaults to "vanilla"
-      REDSHIFT: True  # Use redshift info when classifying. Defaults to True.
+      REDSHIFT: True  # What redshift info to use when classifying. Defaults to 'zspe'. Options are [True, False, 'zpho', 'zspe', or 'none']. True and False are legacy options which map to 'zspe', and 'none' respectively.
       NORM: cosmo_quantile  # How to normalise LCs. Other options are "perfilter", "cosmo", "global" or "cosmo_quantile".  
       CYCLIC: True  # Defaults to True for vanilla and variational model
       SEED: 0  # Sets random seed. Defaults to 0.
