@@ -51,7 +51,16 @@ class SuperNNovaClassifier(Classifier):
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
         self.variant = options.get("VARIANT", "vanilla").lower()
-        self.redshift = "zspe" if options.get("REDSHIFT", True) else "none"
+        # Redshift can be True, False, 'zpho', 'zspe', or 'none'
+        redshift = options.get("REDSHIFT", 'zspe')
+        # Not sure how python deals with strings and bools, so just being careful
+        if redshift == True:
+            redshift = "zspe"
+        elif redshift == False:
+            redshift = "none"
+        if redshift not in ['zpho', 'zspe', 'none']:
+            self.logger.warning(f"Unknown redshift option ['zpho', 'zspe', 'none']")
+        self.redshift = redshift
         self.norm = options.get("NORM", "cosmo")
         self.cyclic = options.get("CYCLIC", True)
         self.seed = options.get("SEED", 0)
