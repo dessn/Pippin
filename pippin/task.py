@@ -212,6 +212,11 @@ class Task(ABC):
 
     def clear_hash(self):
         if os.path.exists(self.hash_file):
+            ext = os.path.splitext(self.hash_file)
+            old_hash_path = os.path.join(ext[0] + "_old" + ext[-1])
+            self.logger.debug(f"Copied {self.hash_file} to {old_hash_path}")
+            shutil.copyfile(self.hash_file, old_hash_path)
+            self.logger.debug(f"Removing {self.hash_file}")
             os.remove(self.hash_file)
         self.clear_config()
 
