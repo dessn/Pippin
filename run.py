@@ -128,6 +128,8 @@ def run(args):
     config_raw, config = load_yaml(yaml_path)
     #with open(yaml_path, "r") as f:
     #    config = yaml.safe_load(f)
+    #XXX Remove after debug1 finished
+    config["DEBUG1"] = args.debug1
 
     overwrites = config.get("GLOBAL")
     if config.get("GLOBALS") is not None:
@@ -236,6 +238,7 @@ def get_args(test=False):
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less. Accepts either the stage number of name (i.e. 1 or SIM)", default=None)
     parser.add_argument("-S", "--syntax", help="Get the syntax of the given stage. Accepts either the stage number or name (i.e. 1 or SIM). If run without argument, will tell you all stage numbers / names.", default=None, const="options", type=str, nargs='?')
+    parser.add_argument("--debug1", help="Enable experimental submit_batch create_covariance", action="store_true", default=False)
     command_group = parser.add_mutually_exclusive_group()
     command_group.add_argument("-C", "--compress", help="Compress pippin output during job. Combine with -c / --check in order to compress completed pippin job.", action="store_true", default=False)
     command_group.add_argument("-U", "--uncompress", help="Do not compress pippin output during job. Combine with -c / --check in order to uncompress completed pippin job.  Mutually exclusive with -C / --compress", action="store_true", default=False)

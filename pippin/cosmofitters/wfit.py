@@ -12,9 +12,10 @@ from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
 
 class WFit(ConfigBasedExecutable, CosmoFit):
-    def __init__(self, name, output_dir, create_cov_tasks, config, options, global_config):
+    def __init__(self, name, output_dir, create_cov_tasks, config, options, global_config, submit_batch_mode):
         # First check if all required options exist
         # In this case, WFITOPTS must exist with at least 1 entry
+        self.submit_batch = submit_batch_mode
 
         self.wfitopts = options.get("WFITOPTS")
         if self.wfitopts is None:
@@ -28,9 +29,15 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.num_jobs = len(self.wfitopts)
 
         self.create_cov_tasks = create_cov_tasks
-        self.logger.debug("CreateCov tasks: {self.create_cov_tasks}")
-        self.create_cov_dirs = [os.path.join(t.output_dir, "output") for t in self.create_cov_tasks]
-        self.logger.debug("CreateCov directories: {self.create_cov_dirs}")
+        self.logger.debug(f"CreateCov tasks: {self.create_cov_tasks}")
+        if self.submit_batch:
+            self.create_cov_dirs = []
+            for t in self.create_cov_tasks:
+                for cov_dir in t.cov_dir:
+                    self.create_cov_dirs.append(os.path.join(t.output_dir, "output", cov_dir))
+        else:
+            self.create_cov_dirs = [os.path.join(t.output_dir, "output") for t in self.create_cov_tasks]
+        self.logger.debug(f"CreateCov directories: {self.create_cov_dirs}")
         self.options = options
         self.global_config = global_config
         self.done_file = os.path.join(self.output_dir, "output", "ALL.DONE")
@@ -85,13 +92,14 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             
         else:
             self.should_be_done()
-            self.logger.info("Has check passed, not rerunning")
+            self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
+        submit_batch_mode = False not in [t.submit_batch for t in create_cov_tasks]
+        Task.logger.debug(f"wfit submit_batch_mode: {submit_batch_mode}")
 
         def _get_wfit_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_COSMOFIT/WFIT/{name}"
@@ -107,8 +115,8 @@ class WFit(ConfigBasedExecutable, CosmoFit):
 
             ctasks = [ctask for ctask in create_cov_tasks if mask in ctask.name]
 
-            t = WFit(name, _get_wfit_dir(base_output_dir, stage_number, name), ctasks, config, options, global_config)
-            Task.logger.info(f"Creating WFit task {name} {t.num_jobs} jobs")
+            t = WFit(name, _get_wfit_dir(base_output_dir, stage_number, name), ctasks, config, options, global_config, submit_batch_mode)
+            Task.logger.info(f"Creating WFit task {name} with {t.num_jobs} jobs")
             tasks.append(t)
 
             if len(create_cov_tasks) == 0:
