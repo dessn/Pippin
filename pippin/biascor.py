@@ -16,6 +16,7 @@ class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
         self.base_file = base
+        self.logger.debug(f"XXX base file: {base}")
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
@@ -216,9 +217,6 @@ class BiasCor(ConfigBasedExecutable):
                     self.logger.error(f"Done file reporting failure! Check log in {self.logging_file} and other logs")
                     return self.check_issues()
 
-                if not os.path.exists(self.w_summary):
-                    self.logger.error(f"Generating w summary failed, please check this: {self.output_dir}")
-                    return self.check_issues(kill=False)
                 else:
                     self.logger.debug(f"Found {self.w_summary}, task finished successfully")
                     return self.move_to_next_phase()
@@ -311,12 +309,11 @@ class BiasCor(ConfigBasedExecutable):
 
         if self.blind:
             self.set_property("blindflag", 2, assignment="=")
-            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121") + " -blind"
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
+            wstring = self.yaml["CONFIG"].get("WFITMUDIF_OPT")
+            if wstring is not None:
+                self.yaml["CONFIG"]["WFITMUDIF_OPT"] = wstring + " -blind"
         else:
             self.set_property("blindflag", 0, assignment="=")
-            w_string = self.yaml["CONFIG"].get("WFITMUDIF_OPT", "-ompri 0.311 -dompri 0.01  -wmin -1.5 -wmax -0.5 -wsteps 201 -hsteps 121")
-            self.yaml["CONFIG"]["WFITMUDIF_OPT"] = w_string
 
         # keys = [x.upper() for x in self.options.keys()]
         # if "NSPLITRAN" in keys:
