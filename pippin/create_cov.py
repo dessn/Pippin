@@ -8,7 +8,7 @@ import yaml
 
 from pippin.base import ConfigBasedExecutable
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config, get_data_loc, read_yaml, merge_dict, chown_dir
+from pippin.config import mkdirs, get_config, get_data_loc, read_yaml, merge_dict
 from pippin.task import Task
 import pippin.cosmofitters.cosmomc as cosmomc
 
@@ -41,155 +41,71 @@ class CreateCov(ConfigBasedExecutable):
 
     """
 
-    def __init__(self, name, output_dir, config, options, submit_batch_mode, global_config, dependencies=None, index=0):
-        #XXX Remove when DEBUG1 is done
-        self.submit_batch = submit_batch_mode 
+    def __init__(self, name, output_dir, config, options, global_config, dependencies=None, index=0):
 
-        if self.submit_batch:
-            self.logger.debug("Running CREATE_COV in submit_batch mode")
-            base_file = get_data_loc("create_cov/covmat.INPUT")
-            super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
-            self.options = options
-            self.global_config = global_config
-            self.done_file = os.path.join(self.output_dir, "output", "ALL.DONE")
-            self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATECOV_" + name
-            self.logfile = os.path.join(self.output_dir, "output.log")
-            self.input_name = f"{self.job_name}.INPUT"
-            self.input_file = os.path.join(self.output_dir, self.input_name)
-            
-            self.chain_dir = os.path.join(self.output_dir, "chains/")
-            self.config_dir = os.path.join(self.output_dir, "output")
-            self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
+        base_file = get_data_loc("create_cov/input_file.txt")
+        super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
 
-            self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
-            self.binned = options.get("BINNED", not self.subtract_vpec)
-            self.rebinned_x1 = options.get("REBINNED_X1", 0)
-            self.rebinned_c = options.get("REBINNED_C", 0)
-            num = 0
-            for btask in self.dependencies:
-                num += len(btask.output["subdirs"])
-            self.num_jobs = num
-            batch_info = options.get("BATCH_INFO", self.yaml["CONFIG"]["BATCH_INFO"])
-            batch_info = batch_info[:-1] + str(self.num_jobs)
-            self.batch_info = batch_info
-            self.yaml["CONFIG"]["BATCH_INFO"] = batch_info
-            self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
-            self.sys_file_in = self.get_sys_file_in()
-            self.output["blind"] = False not in [d.output["blind"] for d in self.dependencies]
-            self.calibration_set = options.get("CALIBRATORS", [])
-            self.output["hubble_plot"] = [d.output["hubble_plot"] for d in self.dependencies]
-            self.prepare_cosmomc = self.config.get("COSMOMC", False)
+        if options is None:
+            options = {}
+        self.options = options
+        self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
+        self.global_config = get_config()
+        self.index = index
+        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
+        #self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external/")
+        self.path_to_code = '$SNANA_DIR/util/' #Now maintained by SNANA
 
-            if self.prepare_cosmomc:
-                self.logger.info("Generating CosmoMC output")
-            else:
-                self.logger.info("Not generating CosmoMC output") 
-            
-            covopts_map = {"ALL": 0}
-            for i, covopt in enumerate(self.options.get("COVOPTS", [])):
-                covopts_map[covopt.split("]")[0][1:]] = i + 1
-            self.output["covopts"] = covopts_map
-            self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
-            self.output["index"] = 1
-            self.output["bcor_name"] = ", ".join([d.name for d in self.dependencies])
-            self.createcov_input_file = get_data_loc("create_cov/input_file.txt")
-            self.createcov_input = self.prepare_createcov_input()
+        self.batch_mem = options.get("BATCH_MEM", "4GB")
 
-            bbc_outdirs = self.get_bbc_outdirs() 
-            self.yaml["CONFIG"]["BBC_OUTDIR"] = bbc_outdirs
-            covmatopt, covname = self.get_covmatopt()
-            self.yaml["CONFIG"]["COVMATOPT"] = [covmatopt]
-            self.input_covmat_file = os.path.join(self.output_dir, "input_covmat_file.txt")
-            self.yaml["CONFIG"]["INPUT_COVMAT_FILE"] = self.input_covmat_file
-            self.yaml["CONFIG"]["OUTDIR"] = os.path.join(self.output_dir, "output")
-            self.cov_dir = [f"{covname}_{d.name}_OUTPUT_BBCFIT" for d in self.dependencies]
+        self.logfile = os.path.join(self.output_dir, "output.log")
+        self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
+        self.chain_dir = os.path.join(self.output_dir, "chains/")
+        self.config_dir = os.path.join(self.output_dir, "output")
+        self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
+        self.unbinned_covmat_addin = options.get("UNBINNED_COVMAT_ADDIN", [])
 
-
-        else:
-            self.logger.debug("Running CREATE_COV in script mode")
-            base_file = get_data_loc("create_cov/input_file.txt")
-            super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=dependencies)
-
-            if options is None:
-                options = {}
-            self.options = options
-            self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
-            self.global_config = get_config()
-            self.index = index
-            self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
-            #self.path_to_code = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/external/")
-            self.path_to_code = '$SNANA_DIR/util/' #Now maintained by SNANA
-
-            self.batch_mem = options.get("BATCH_MEM", "4GB")
-
-            self.logfile = os.path.join(self.output_dir, "output.log")
-            self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
-            self.chain_dir = os.path.join(self.output_dir, "chains/")
-            self.config_dir = os.path.join(self.output_dir, "output")
-            self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
-            self.unbinned_covmat_addin = options.get("UNBINNED_COVMAT_ADDIN", [])
-
-            self.batch_file = self.options.get("BATCH_FILE")
-            if self.batch_file is not None:
-                self.batch_file = get_data_loc(self.batch_file)
-            self.batch_replace = self.options.get("BATCH_REPLACE", {})
-            
-            self.rebinned_x1 = options.get("REBINNED_X1", "")
-            if self.rebinned_x1 != "":
-                self.rebinned_x1 = f"--nbin_x1 {self.rebinned_x1}"
-            self.rebinned_c = options.get("REBINNED_C", "")
-            if self.rebinned_c != "":
-                self.rebinned_c = f"--nbin_c {self.rebinned_c}"
-            self.binned = options.get("BINNED", not self.subtract_vpec)
-
-            self.biascor_dep = self.get_dep(BiasCor, fail=True)
-            self.sys_file_in = self.get_sys_file_in()
-            self.output["blind"] = self.biascor_dep.output["blind"]
-            self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
-            self.calibration_set = options.get("CALIBRATORS", [])
-            self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
-
-            self.prepare_cosmomc = self.config.get("COSMOMC", False)
-
-            if self.prepare_cosmomc:
-                self.logger.info("Generating CosmoMC output")
-            else:
-                self.logger.info("Not generating CosmoMC output") 
-            covopts_map = {"ALL": 0}
-            for i, covopt in enumerate(self.options.get("COVOPTS", [])):
-                covopts_map[covopt.split("]")[0][1:]] = i + 1
-            self.output["covopts"] = covopts_map
-            self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
-            self.output["index"] = index
-            self.output["bcor_name"] = self.biascor_dep.name
-            self.slurm = """{sbatch_header}
-            {task_setup}
-    if [ $? -eq 0 ]; then
-        echo SUCCESS > {done_file}
-    else
-        echo FAILURE > {done_file}
-    fi
-    """
-
-    def prepare_createcov_input(self):
-        with open(self.createcov_input_file, 'r') as f:
-            createcov_input_raw = list(f.read().splitlines())
-        for index, line in enumerate(createcov_input_raw):
-            if "#END_YAML" in line:
-                yaml_str = "\n".join(createcov_input_raw[:index])
-                createcov_input = yaml.safe_load(yaml_str)
-                break
-        if self.prepare_cosmomc:
-            createcov_input["COSMOMC_TEMPLATES_PATH"] = get_data_loc(self.templates_dir)
-        else:
-            createcov_input.pop("COSMOMC_TEMPLATES_PATH", None)
-        createcov_input["NAME"] = self.name
-        createcov_input["SYS_SCALE_FILE"] = self.sys_file_out
-        createcov_input["COVOPTS"] = self.options.get("COVOPTS", [])
-        createcov_input["EXTRA_COVS"] = self.options.get("EXTRA_COV", [])
-        createcov_input["CALIBRATORS"] = self.calibration_set
-        return createcov_input
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
+        self.batch_replace = self.options.get("BATCH_REPLACE", {})
         
+        self.binned = options.get("BINNED", not self.subtract_vpec)
+        self.rebinned_x1 = options.get("REBINNED_X1", "")
+        if self.rebinned_x1 != "":
+            self.rebinned_x1 = f"--nbin_x1 {self.rebinned_x1}"
+        self.rebinned_c = options.get("REBINNED_C", "")
+        if self.rebinned_c != "":
+            self.rebinned_c = f"--nbin_c {self.rebinned_c}"
+
+        self.biascor_dep = self.get_dep(BiasCor, fail=True)
+        self.sys_file_in = self.get_sys_file_in()
+        self.output["blind"] = self.biascor_dep.output["blind"]
+        self.input_file = os.path.join(self.output_dir, self.biascor_dep.output["subdirs"][index] + ".input")
+        self.calibration_set = options.get("CALIBRATORS", [])
+        self.output["hubble_plot"] = self.biascor_dep.output["hubble_plot"]
+
+        self.prepare_cosmomc = self.config.get("COSMOMC", False)
+
+        if self.prepare_cosmomc:
+            self.logger.info("Generating CosmoMC output")
+        else:
+            self.logger.info("Not generating CosmoMC output") 
+        covopts_map = {"ALL": 0}
+        for i, covopt in enumerate(self.options.get("COVOPTS", [])):
+            covopts_map[covopt.split("]")[0][1:]] = i + 1
+        self.output["covopts"] = covopts_map
+        self.output["ini_dir"] = os.path.join(self.config_dir, "cosmomc")
+        self.output["index"] = index
+        self.output["bcor_name"] = self.biascor_dep.name
+        self.slurm = """{sbatch_header}
+        {task_setup}
+if [ $? -eq 0 ]; then
+    echo SUCCESS > {done_file}
+else
+    echo FAILURE > {done_file}
+fi
+"""
 
     def add_dependent(self, task):
         self.dependents.append(task)
@@ -207,12 +123,7 @@ class CreateCov(ConfigBasedExecutable):
                 raise ValueError(f"Unable to resolve path to {set_file}")
         else:
             self.logger.debug("Searching for SYS_SCALE source from biascor task")
-            if self.submit_batch:
-                fitopt_files = []
-                for d in self.dependencies:
-                    fitopt_files += [f for f in d.output["fitopt_files"] if f is not None]
-            else:
-                fitopt_files = [f for f in self.biascor_dep.output["fitopt_files"] if f is not None]
+            fitopt_files = [f for f in self.biascor_dep.output["fitopt_files"] if f is not None]
             assert len(set(fitopt_files)) < 2, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
             if fitopt_files:
                 path = fitopt_files[0]
@@ -267,137 +178,76 @@ class CreateCov(ConfigBasedExecutable):
         sys_scale = {**self.get_scales_from_fitopt_file(), **self.options.get("FITOPT_SCALES", {})}
         return sys_scale
 
-    def get_bbc_outdirs(self):
-        bbc_outdirs = []
-        for d in self.dependencies:
-            name = d.name
-            outdir = d.fit_output_dir
-            bbc_outdir = f'/{name}/    {outdir}'
-            bbc_outdirs.append(bbc_outdir)
-        return bbc_outdirs
-
-    def get_covmatopt(self):
-        if (self.rebinned_x1 > 0) or (self.rebinned_c > 0):
-            if (self.rebinned_x1 > 0) and (self.rebinned_c > 0):
-                name = f"REBIN_{self.rebinned_x1}x{self.rebinned_c}"
-                cmd = f"--nbin_x1 {self.rebinned_x1} --nbin_c {self.rebinned_c}"
-            else:
-                self.logger.warning(f"In order to use rebinning you must specify both REBINNED_X1 and REBINNED_C")
-        elif self.subtract_vpec:
-            name = "SUBTRACTVPEC"
-            cmd = "--subtract_vpec"
-        elif self.binned:
-            name = "BINNED"
-            cmd = ""
-            covmatopt = "/BINNED/"
-        else:
-            name = "UNBINNED"
-            cmd = "--unbinned"
-        covmatopt = f"/{name}/    {cmd}"
-        return covmatopt, name
-
     def _run(self):
-        if self.submit_batch:
-            final_output_for_hash = self.get_output_string()
-            new_hash = self.get_hash_from_string(final_output_for_hash)
-            if self._check_regenerate(new_hash):
-                self.logger.debug("Regenerating and launching task")
-                shutil.rmtree(self.output_dir, ignore_errors=True)
-                mkdirs(self.output_dir)
-                self.save_new_hash(new_hash)
-                
-                sys_scale = {**self.get_scales_from_fitopt_file(), **self.options.get("FITOPT_SCALES", {})}
-                with open(self.sys_file_out, "w") as f:
-                    f.write(yaml.safe_dump(sys_scale, width=2048))
+        sys_scale = self.calculate_input()
 
-                with open(self.input_file, "w") as f:
-                    f.write(self.get_output_string())
-
-                with open(self.input_covmat_file, "w") as f:
-                    f.write(yaml.safe_dump(self.createcov_input, width=2048))
-
-                cmd = ["submit_batch_jobs.sh", os.path.basename(self.input_file)]
-                self.logger.debug(f"Submit COVMAT job: {' '.join(cmd)} in cwd: {self.output_dir}")
-                self.logger.debug(f"Logging to {self.logfile}")
-                with open(self.logfile, 'w') as f:
-                    subprocess.run(' '.join(cmd), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
-                chown_dir(self.output_dir)
+        if self.batch_file is None:
+            if self.gpu:
+                self.sbatch_header = self.sbatch_gpu_header
             else:
-                self.should_be_done()
-                self.logger.info("Hash check passed, not rerunning")
-            return True
+                self.sbatch_header = self.sbatch_cpu_header
         else:
-            sys_scale = self.calculate_input()
-
-            if self.batch_file is None:
-                if self.gpu:
-                    self.sbatch_header = self.sbatch_gpu_header
-                else:
-                    self.sbatch_header = self.sbatch_cpu_header
-            else:
-                with open(self.batch_file, 'r') as f:
-                    self.sbatch_header = f.read()
-                self.sbatch_header = self.clean_header(self.sbatch_header)
+            with open(self.batch_file, 'r') as f:
+                self.sbatch_header = f.read()
+            self.sbatch_header = self.clean_header(self.sbatch_header)
 
 
-            header_dict = {
-                    "REPLACE_NAME": self.job_name,
-                    "REPLACE_WALLTIME": "02:30:00",
-                    "REPLACE_LOGFILE": self.logfile,
-                    "REPLACE_MEM": str(self.batch_mem),
-                    "APPEND": ["#SBATCH --ntasks-per-node=1"]
-                    }
-            header_dict = merge_dict(header_dict, self.batch_replace)
-            self.update_header(header_dict)
-            self.logger.debug(f"Binned: {self.binned}, Rebinned x1: {self.rebinned_x1}, Rebinned c: {self.rebinned_c}")
-            setup_dict = {
-                "path_to_code": self.path_to_code,
-                "input_file": self.input_file,
-                "output_dir": self.output_dir,
-                "unbinned": "" if self.binned else "-u",
-                "nbin_x1": self.rebinned_x1,
-                "nbin_c": self.rebinned_c,
-                "subtract_vpec": "" if not self.subtract_vpec else "-s",
-            }
-            format_dict = {
-                "sbatch_header": self.sbatch_header,
-                "task_setup": self.update_setup(setup_dict, self.task_setup['create_cov']),
-                "done_file": self.done_file,
-                    }
-            final_slurm = self.slurm.format(**format_dict)
+        header_dict = {
+                "REPLACE_NAME": self.job_name,
+                "REPLACE_WALLTIME": "02:30:00",
+                "REPLACE_LOGFILE": self.logfile,
+                "REPLACE_MEM": str(self.batch_mem),
+                "APPEND": ["#SBATCH --ntasks-per-node=1"]
+                }
+        header_dict = merge_dict(header_dict, self.batch_replace)
+        self.update_header(header_dict)
+        self.logger.debug(f"Binned: {self.binned}, Rebinned x1: {self.rebinned_x1}, Rebinned c: {self.rebinned_c}")
+        setup_dict = {
+            "path_to_code": self.path_to_code,
+            "input_file": self.input_file,
+            "output_dir": self.output_dir,
+            "unbinned": "" if self.binned else "-u",
+            "nbin_x1": self.rebinned_x1,
+            "nbin_c": self.rebinned_c,
+            "subtract_vpec": "" if not self.subtract_vpec else "-s",
+        }
+        format_dict = {
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup['create_cov']),
+            "done_file": self.done_file,
+                }
+        final_slurm = self.slurm.format(**format_dict)
 
-            final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
+        final_output_for_hash = self.get_output_string() + yaml.safe_dump(sys_scale, width=2048) + final_slurm
 
-            new_hash = self.get_hash_from_string(final_output_for_hash)
+        new_hash = self.get_hash_from_string(final_output_for_hash)
 
-            if self._check_regenerate(new_hash):
-                self.logger.debug("Regenerating and launching task")
-                shutil.rmtree(self.output_dir, ignore_errors=True)
-                mkdirs(self.output_dir)
-                mkdirs(self.config_dir)
-                self.save_new_hash(new_hash)
-                # Write sys scales and the main input file
-                with open(self.sys_file_out, "w") as f:
-                    f.write(yaml.safe_dump(sys_scale, width=2048))
+        if self._check_regenerate(new_hash):
+            self.logger.debug("Regenerating and launching task")
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+            mkdirs(self.config_dir)
+            self.save_new_hash(new_hash)
+            # Write sys scales and the main input file
+            with open(self.sys_file_out, "w") as f:
+                f.write(yaml.safe_dump(sys_scale, width=2048))
 
-                with open(self.input_file, "w") as f:
-                    f.write(self.get_output_string())
-                # Write out slurm job script
-                slurm_output_file = os.path.join(self.output_dir, "slurm.job")
-                with open(slurm_output_file, "w") as f:
-                    f.write(final_slurm)
+            with open(self.input_file, "w") as f:
+                f.write(self.get_output_string())
+            # Write out slurm job script
+            slurm_output_file = os.path.join(self.output_dir, "slurm.job")
+            with open(slurm_output_file, "w") as f:
+                f.write(final_slurm)
 
-                self.logger.info(f"Submitting batch job for create covariance")
-                subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
-            else:
-                self.should_be_done()
-                self.logger.info("Hash check passed, not rerunning")
-            return True
+            self.logger.info(f"Submitting batch job for create covariance")
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+        else:
+            self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
+        return True
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-        #XXX Remove when DEBUG1 is done
-        submit_batch_mode = c.get("DEBUG1", False)
 
         biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
 
@@ -405,40 +255,27 @@ class CreateCov(ConfigBasedExecutable):
             return f"{base_output_dir}/{stage_number}_CREATE_COV/{name}"
 
         tasks = []
-        if submit_batch_mode:
-            for cname in c.get("CREATE_COV", []):
-                config = c["CREATE_COV"][cname]
-                if config is None:
-                    config = {}
-                options = config.get("OPTS", {})
-                mask = config.get("MASK", config.get("MASK_BIASCOR", ""))
+        for cname in c.get("CREATE_COV", []):
+            config = c["CREATE_COV"][cname]
+            if config is None:
+                config = {}
+            options = config.get("OPTS", {})
+            mask = config.get("MASK", config.get("MASK_BIASCOR", ""))
 
-                btasks = [btask for btask in biascor_tasks if mask in btask.name]
-                t = CreateCov(cname, _get_createcov_dir(base_output_dir, stage_number, cname), config, options, global_config, submit_batch_mode, dependencies=btasks)
-                Task.logger.info(f"Creating CREATECOV task {cname} with {t.num_jobs} jobs")
-                tasks.append(t)
-        else:
-            for cname in c.get("CREATE_COV", []):
-                config = c["CREATE_COV"][cname]
-                if config is None:
-                    config = {}
-                options = config.get("OPTS", {})
-                mask = config.get("MASK", config.get("MASK_BIASCOR", ""))
+            for btask in biascor_tasks:
+                if mask not in btask.name:
+                    continue
 
-                for btask in biascor_tasks:
-                    if mask not in btask.name:
-                        continue
+                num = len(btask.output["subdirs"])
+                for i in range(num):
+                    ii = "" if num == 1 else f"_{i + 1}"
 
-                    num = len(btask.output["subdirs"])
-                    for i in range(num):
-                        ii = "" if num == 1 else f"_{i + 1}"
+                    name = f"{cname}_{btask.name}{ii}"
+                    a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), config, options, global_config, dependencies=[btask], index=i)
+                    Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
+                    tasks.append(a)
 
-                        name = f"{cname}_{btask.name}{ii}"
-                        a = CreateCov(name, _get_createcov_dir(base_output_dir, stage_number, name), config, options, global_config, submit_batch_mode, dependencies=[btask], index=i)
-                        Task.logger.info(f"Creating createcov task {name} for {btask.name} with {a.num_jobs} jobs")
-                        tasks.append(a)
-
-                if len(biascor_tasks) == 0:
-                    Task.fail_config(f"Create cov task {cname} has no biascor task to run on!")
+            if len(biascor_tasks) == 0:
+                Task.fail_config(f"Create cov task {cname} has no biascor task to run on!")
 
         return tasks
