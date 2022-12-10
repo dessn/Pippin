@@ -47,7 +47,6 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 test_files/
-debug_files/
 debug/
 
 # Translations
