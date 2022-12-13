@@ -62,6 +62,7 @@ class CreateCov(ConfigBasedExecutable):
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
         self.config_dir = os.path.join(self.output_dir, "output")
+        self.wfit_inpdir = [self.config_dir]
         self.subtract_vpec = options.get("SUBTRACT_VPEC", False)
         self.unbinned_covmat_addin = options.get("UNBINNED_COVMAT_ADDIN", [])
 
