@@ -6,5 +6,5 @@ matplotlib
 astropy
 coloredlogs
 chainconsumer
-sklearn
+scikit-learn
 colorama
