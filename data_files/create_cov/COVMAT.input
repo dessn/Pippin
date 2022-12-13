@@ -1,0 +1,27 @@
+CONFIG:
+  #BATCH_INFO: sbatch [batch_template_file]  [n_core]
+  BATCH_INFO: 
+
+  # optional memory request (default is 2 GB)
+  BATCH_MEM:
+
+  # optional max walltime request (default is 24hr)
+  BATCH_WALLTIME:
+
+  # input file for create_covariance.py
+  INPUT_COVMAT_FILE:   
+
+  # define BBC outdirs; these override INPUT_DIR in the above input file.
+  # Labels are required and are part of outdir folder names; submit_batch_jobs
+  # aborts if a label is missing.
+  BBC_OUTDIR:  
+
+  # repeat job with these COVMATOPT options. While LCFIT and BBC have default 
+  # FITOPT000, there is no default here and thus an option with no arguments is 
+  # default. Each option must have label to use in outdir folder name; 
+  # submit_batch_jobs aborts if label is missing.
+  COVMATOPT:
+
+  OUTDIR: 
+
+#END_YAML

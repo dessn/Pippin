@@ -7,6 +7,7 @@ import numpy as np
 
 from pippin.config import mkdirs, get_output_loc, get_data_loc, chown_dir, read_yaml
 from pippin.create_cov import CreateCov
+from pippin.sb_create_cov import SBCreateCov
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
@@ -28,9 +29,11 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.num_jobs = len(self.wfitopts)
 
         self.create_cov_tasks = create_cov_tasks
-        self.logger.debug("CreateCov tasks: {self.create_cov_tasks}")
-        self.create_cov_dirs = [os.path.join(t.output_dir, "output") for t in self.create_cov_tasks]
-        self.logger.debug("CreateCov directories: {self.create_cov_dirs}")
+        self.logger.debug(f"CreateCov tasks: {self.create_cov_tasks}")
+        self.create_cov_dirs = []
+        for t in self.create_cov_tasks:
+            self.create_cov_dirs += t.wfit_inpdir
+        self.logger.debug(f"CreateCov directories: {self.create_cov_dirs}")
         self.options = options
         self.global_config = global_config
         self.done_file = os.path.join(self.output_dir, "output", "ALL.DONE")
@@ -91,7 +94,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
 
-        create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
+        create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov) + Task.get_task_of_type(prior_tasks, SBCreateCov)
 
         def _get_wfit_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_COSMOFIT/WFIT/{name}"
