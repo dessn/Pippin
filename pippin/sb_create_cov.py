@@ -52,15 +52,14 @@ class SBCreateCov(ConfigBasedExecutable):
         self.global_config = get_config()
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
         self.config_dir = os.path.join(self.output_dir, "output")
-        self.covmatopt = self.get_covmatopt()
         self.wfit_inpdir = []
         for d in dependencies:
             num_dirs = len(d.output["subdirs"])
             if num_dirs > 1:
                 for i in range(num_dirs):
-                    self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.covmatopt[0]}_{d.name}_OUTPUT_BBCFIT-{str(i+1).zfill(4)}"))
+                    self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_OUTPUT_BBCFIT-{str(i+1).zfill(4)}"))
             else:
-                self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.covmatopt[0]}_{d.name}_OUTPUT_BBCFIT"))
+                self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_OUTPUT_BBCFIT"))
         self.done_file = os.path.join(self.config_dir, "ALL.DONE")
         self.input_name = f"{self.job_name}.INPUT"
         self.input_file = os.path.join(self.output_dir, self.input_name)
@@ -113,7 +112,8 @@ class SBCreateCov(ConfigBasedExecutable):
         self.bbc_outdirs = self.get_bbc_outdirs()
         self.yaml["CONFIG"]["BBC_OUTDIR"] = self.bbc_outdirs
 
-        self.yaml["CONFIG"]["COVMATOPT"] = [self.covmatopt[1]]
+        self.covmatopt = self.get_covmatopt()
+        self.yaml["CONFIG"]["COVMATOPT"] = [self.covmatopt]
 
         self.yaml["CONFIG"]["OUTDIR"] = self.config_dir
 
@@ -181,18 +181,14 @@ class SBCreateCov(ConfigBasedExecutable):
             if (rebin_x1 == 0) or (rebin_c == 0):
                 Task.fail_config(f"If rebin, both REBINNED_X1 ({rebin_x1}) and REBINNED_C ({rebin_c}) must be greater than 0")
             else:
-                label = f"REBIN_{rebin_x1}x{rebin_c}"
                 cmd = f"--nbin_x1 {rebin_x1} --nbin_c {rebin_c}"
         elif self.options.get("SUBTRACT_VPEC", False):
-            label = "SUBTRACT_VPEC"
             cmd = "--subtract_vpec"
         elif self.options.get("BINNED", True):
-            label = "BINNED"
             cmd = ""
         else:
-            label = "UNBINNED"
             cmd = "--unbinned"
-        return label, f"/{label}/    {cmd}"
+        return f"/{self.name}/    {cmd}"
 
     def get_sys_file_in(self):
         set_file = self.options.get("SYS_SCALE")
