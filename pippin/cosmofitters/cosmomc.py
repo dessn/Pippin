@@ -52,7 +52,7 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
         self.create_cov_dep = self.get_dep(CreateCov)
-        self.blind = self.create_cov_dep.output["blind"] if self.create_cov_dep is not None else self.options.get("BLIND", False)
+        self.blind = np.all(self.create_cov_dep.output["blind"]) if self.create_cov_dep is not None else self.options.get("BLIND", False)
         assert isinstance(self.blind, (bool, np.bool_)), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI").replace(".ini", "")
         self.static = self.ini_prefix.replace(".ini", "") in ["cmb_omw", "cmb_omol"]

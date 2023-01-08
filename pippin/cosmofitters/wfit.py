@@ -7,7 +7,6 @@ import numpy as np
 
 from pippin.config import mkdirs, get_output_loc, get_data_loc, chown_dir, read_yaml
 from pippin.create_cov import CreateCov
-from pippin.sb_create_cov import SBCreateCov
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
@@ -94,7 +93,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
 
-        create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov) + Task.get_task_of_type(prior_tasks, SBCreateCov)
+        create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
         def _get_wfit_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_COSMOFIT/WFIT/{name}"

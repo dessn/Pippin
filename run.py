@@ -161,10 +161,6 @@ def run(args):
 
     logging.info(f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node.")
     
-    if args.debug1:
-        logging.warning("DEBUG1 enabled, this is still experimental. Please let Patrick know if anything goes wrong!")
-    config["DEBUG1"] = args.debug1
-
     manager = Manager(config_filename, yaml_path, config_raw, config, message_store)
     
     # Gracefully hand Ctrl-c
@@ -241,7 +237,6 @@ def get_args(test=False):
     parser.add_argument("-p", "--permission", help="Fix permissions and groups on all output, don't rerun", action="store_true", default=False)
     parser.add_argument("-i", "--ignore", help="Dont rerun tasks with this stage or less. Accepts either the stage number of name (i.e. 1 or SIM)", default=None)
     parser.add_argument("-S", "--syntax", help="Get the syntax of the given stage. Accepts either the stage number or name (i.e. 1 or SIM). If run without argument, will tell you all stage numbers / names.", default=None, const="options", type=str, nargs='?')
-    parser.add_argument("--debug1", help="Enable debug option 1: Move CREATE_COV over to submit_batch", action="store_true", default=False)
     command_group = parser.add_mutually_exclusive_group()
     command_group.add_argument("-C", "--compress", help="Compress pippin output during job. Combine with -c / --check in order to compress completed pippin job.", action="store_true", default=False)
     command_group.add_argument("-U", "--uncompress", help="Do not compress pippin output during job. Combine with -c / --check in order to uncompress completed pippin job.  Mutually exclusive with -C / --compress", action="store_true", default=False)
