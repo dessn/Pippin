@@ -11,7 +11,6 @@ from pippin.classifiers.classifier import Classifier
 from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file, get_data_loc
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.create_cov import CreateCov
-from pippin.sb_create_cov import SBCreateCov
 from pippin.dataprep import DataPrep
 from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
@@ -26,13 +25,6 @@ class Manager:
     def __init__(self, filename, config_path, config_raw, config, message_store):
         self.logger = get_logger()
         self.task_index = {t: i for i, t in enumerate(self.task_order)}
-        debug1 = config["DEBUG1"]
-        if debug1:
-            self.logger.warning("DEBUG1 enabled, replacing CREATE_COV with SB_CREATE_COV")
-            self.task_index[SBCreateCov] = self.task_index.pop(CreateCov)
-            ind = self.task_index[SBCreateCov]
-            Manager.task_order[ind] = SBCreateCov
-            Manager.stages[ind] = "SB_CREATE_COV"
         self.message_store = message_store
         self.filename = filename
         self.filename_path = config_path
