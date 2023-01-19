@@ -54,12 +54,8 @@ class CreateCov(ConfigBasedExecutable):
         self.config_dir = os.path.join(self.output_dir, "output")
         self.wfit_inpdir = []
         for d in dependencies:
-            num_dirs = len(d.output["subdirs"])
-            if num_dirs > 1:
-                for i in range(num_dirs):
-                    self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_OUTPUT_BBCFIT-{str(i+1).zfill(4)}"))
-            else:
-                self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_OUTPUT_BBCFIT"))
+            for subdir in d.output["subdirs"]:
+                self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_{subdir}"))
         self.done_file = os.path.join(self.config_dir, "ALL.DONE")
         self.input_name = f"{self.job_name}.INPUT"
         self.input_file = os.path.join(self.output_dir, self.input_name)

@@ -16,7 +16,6 @@ class BiasCor(ConfigBasedExecutable):
     def __init__(self, name, output_dir, config, dependencies, options, global_config):
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
         self.base_file = base
-        self.logger.debug(f"XXX base file: {base}")
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
