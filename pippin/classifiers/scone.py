@@ -97,7 +97,7 @@ class SconeClassifier(Classifier):
       # TODO: if externally specified batchfile exists, have to parse desired logfile path from it
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
-            "REPLACE_WALLTIME": "10:00:00", #TODO: change to scale with # of heatmaps expected
+            "REPLACE_WALLTIME": "20:00:00", #TODO: change to scale with # of heatmaps expected
             "REPLACE_MEM": "16GB",
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
