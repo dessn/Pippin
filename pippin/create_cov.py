@@ -79,7 +79,7 @@ class CreateCov(ConfigBasedExecutable):
             if num_jobs > 20:
                 num_jobs = 20
             BATCH_INFO = f"sbatch {BATCH_FILE} {num_jobs}"
-        BATCH_REPLACE = self.options.get("BATCH_REPLACE", {})
+        BATCH_REPLACE = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
         if BATCH_REPLACE != {}:
             BATCH_MEM = BATCH_REPLACE.get("REPLACE_MEM", "2GB")
             BATCH_WALLTIME = BATCH_REPLACE.get("REPLACE_WALLTIME", "24:00:00")

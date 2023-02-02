@@ -134,8 +134,8 @@ def run(args):
         logging.warning("Your config file has a GLOBALS section in it. If you're trying to overwrite cfg.yml, rename this to GLOBAL")
 
     cfg = None
-    if config.get("GLOBAL"):
-        cfg = config.get("GLOBAL").get("CFG_PATH")
+    if overwrites:
+        cfg = overwrites.get("CFG_PATH")
     if cfg is None:
         cfg = args.config
 
