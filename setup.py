@@ -23,7 +23,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Topic :: Utilities",
     ],
-    python_requires=">=3.7.*",
+    python_requires=">=3.7",
     packages=find_packages(),
     package_dir={"pippin": "pippin"},
     include_package_data=True,

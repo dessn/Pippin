@@ -59,7 +59,7 @@ class SconeClassifier(Classifier):
 
       self.job_base_name = output_path_obj.parents[1].name + "__" + output_path_obj.name
 
-      self.batch_replace = self.options.get("BATCH_REPLACE", {})
+      self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
       self.slurm = """{sbatch_header}
       {task_setup}"""
 
