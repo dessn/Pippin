@@ -108,7 +108,7 @@ class SuperNNovaClassifier(Classifier):
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", {})
+        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
 
         self.validate_model()
 
