@@ -43,6 +43,16 @@ class SNANALightCurveFit(ConfigBasedExecutable):
 
         super().__init__(name, output_dir, config, self.base_file, " = ", dependencies=[sim_task])
 
+        self.options = self.config.get("OPTS", {})
+
+        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
+        if batch_mem is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
+        if batch_walltime is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
+
         self.sim_task = sim_task
         self.sim_version = sim_task.output["genversion"]
         self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
@@ -77,7 +87,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 is_data = not d.output["is_sim"]
         self.output["is_data"] = is_data
 
-        self.options = self.config.get("OPTS", {})
         # Try to determine how many jobs will be put in the queue
         # First see if it's been explicitly set
         num_jobs = self.options.get("NUM_JOBS")

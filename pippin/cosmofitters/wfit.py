@@ -36,7 +36,14 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.options = options
         self.global_config = global_config
         self.done_file = os.path.join(self.output_dir, "output", "ALL.DONE")
-        
+
+        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
+        if batch_mem is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
+        if batch_walltime is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
         self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_WFIT_" + name
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.input_name = f"{self.job_name}.INPUT"

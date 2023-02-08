@@ -34,7 +34,8 @@ class Task(ABC):
         self.output = {}
 
         # Determine if this is an external (already done) job or not
-        external_dirs = self.config.get("EXTERNAL_DIRS", [])
+        external_dirs = ensure_list(self.config.get("EXTERNAL_DIRS", []))
+        self.logger.debug(f"EXTERNAL_DIRS: {external_dirs}")
         external_names = [os.path.basename(d) for d in external_dirs]
         external_map = self.config.get("EXTERNAL_MAP", {})
         output_name = os.path.basename(output_dir)
