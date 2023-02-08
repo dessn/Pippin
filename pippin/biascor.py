@@ -22,6 +22,13 @@ class BiasCor(ConfigBasedExecutable):
         self.logging_file = os.path.join(self.output_dir, "output.log")
         self.global_config = get_config()
 
+        self.batch_replace = options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
+        if batch_mem is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
+        if batch_walltime is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
         self.prob_cols = config["PROB_COLS"]
 
         self.merged_data = config.get("DATA")

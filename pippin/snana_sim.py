@@ -43,6 +43,7 @@ class SNANASimulation(ConfigBasedExecutable):
         base_file = get_data_loc(combine)
         super().__init__(name, output_dir, config, base_file, ": ")
 
+        
         # Check for any replacements
         path_sndata_sim = get_config().get("SNANA").get("sim_dir")
         self.logger.debug(f"Setting PATH_SNDATA_SIM to {path_sndata_sim}")
@@ -61,6 +62,14 @@ class SNANASimulation(ConfigBasedExecutable):
         self.reserved_top = ["GENVERSION", "GLOBAL", "OPTS", "EXTERNAL"]
         self.config_path = f"{self.output_dir}/{self.genversion}.input"  # Make sure this syncs with the tmp file name
         self.global_config = global_config
+        
+        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
+        if batch_mem is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
+        if batch_walltime is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
 
         self.sim_log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.sim_log_dir, "MERGE.LOG")
