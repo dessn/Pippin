@@ -81,14 +81,16 @@ class CreateCov(ConfigBasedExecutable):
             BATCH_INFO = f"sbatch {BATCH_FILE} {num_jobs}"
         BATCH_REPLACE = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
         if BATCH_REPLACE != {}:
-            BATCH_MEM = BATCH_REPLACE.get("REPLACE_MEM", "2GB")
-            BATCH_WALLTIME = BATCH_REPLACE.get("REPLACE_WALLTIME", "24:00:00")
+            BATCH_MEM = BATCH_REPLACE.get("REPLACE_MEM", None)
+            BATCH_WALLTIME = BATCH_REPLACE.get("REPLACE_WALLTIME", None)
         else:
-            BATCH_MEM = self.options.get("BATCH_MEM", "2GB")
-            BATCH_WALLTIME = self.options.get("BATCH_WALLTIME", "24:00:00")
+            BATCH_MEM = self.options.get("BATCH_MEM", None)
+            BATCH_WALLTIME = self.options.get("BATCH_WALLTIME", None)
         self.yaml["CONFIG"]["BATCH_INFO"] = BATCH_INFO
-        self.yaml["CONFIG"]["BATCH_MEM"] = BATCH_MEM
-        self.yaml["CONFIG"]["BATCH_WALLTIME"] = BATCH_WALLTIME
+        if BATCH_MEM is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = BATCH_MEM
+        if BATCH_WALLTIME is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = BATCH_WALLTIME
 
         # create_covariance.py input file
         self.input_covmat_file = get_data_loc("create_cov/input_file.txt") 
