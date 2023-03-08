@@ -2,12 +2,6 @@ CONFIG:
   #BATCH_INFO: sbatch [batch_template_file]  [n_core]
   BATCH_INFO: 
 
-  # optional memory request (default is 2 GB)
-  BATCH_MEM:
-
-  # optional max walltime request (default is 24hr)
-  BATCH_WALLTIME:
-
   # input file for create_covariance.py
   INPUT_COVMAT_FILE:   
 
