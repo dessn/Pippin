@@ -7,7 +7,6 @@ import os
 import datetime
 import numpy as np
 import yaml
-import copy
 import sys
 sys.setrecursionlimit(10000)
 
@@ -30,7 +29,7 @@ class Task(ABC):
 
         if config is None:
             config = {}
-        self.config = copy.deepcopy(config)
+        self.config = config 
         self.output = {}
 
         # Determine if this is an external (already done) job or not
