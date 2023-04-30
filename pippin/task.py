@@ -29,7 +29,7 @@ class Task(ABC):
 
         if config is None:
             config = {}
-        self.config = config 
+        self.config = config.copy()
         self.output = {}
 
         # Determine if this is an external (already done) job or not
