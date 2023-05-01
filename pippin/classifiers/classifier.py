@@ -239,6 +239,8 @@ class Classifier(Task):
                         else:
                             Task.fail_config(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
                     else:
+                        if len(tasks) == 0:
+                            Task.fail_config(f"Your model {model} has not yet been defined.")
                         for t in tasks:
                             if model == t.name:
                                 # deps.append(t)
