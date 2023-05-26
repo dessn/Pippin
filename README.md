@@ -510,21 +510,31 @@ The [SCONE classifier](https://github.com/helenqu/scone) is a convolutional neur
 
 ```yaml
 CLASSIFICATION:
-  SNN_TEST:
+  SCONE_TRAIN: # Helen's CNN classifier
     CLASSIFIER: SconeClassifier
-    MODE: predict  # or train
-
-    # optional arguments
+    MODE: train
     OPTS:
-      MODEL: /path/to/trained/model
-      GPU: False # defaults to True
-      CATEGORICAL: True # defaults to False (False = Ia vs. non-Ia classification)
-      SIM_FRACTION: 2 # defaults to 1, 1/SIM_FRACTION of the sims get used for classification (i.e. SIM_FRACTION=2 means 1/2 of the sims get used)
-      REMAKE_HEATMAPS: True # defaults to False (force remake heatmaps if prev run failed in an unusual way)
-      NUM_EPOCHS: 5 # defaults to 400, for training only
-      KCOR_FILE: /path/to/kcor/file # defaults to None
-      NUM_WAVELENGTH_BINS: 32 # defaults to 32, size of wavelength dimension of heatmap
-      NUM_MJD_BINS: 180 # defaults to 180, size of time dimension of heatmap
+      # HEATMAP CREATION OPTS
+      CATEGORICAL: True # OPTIONAL, binary or categorical classification, default: False
+      NUM_WAVELENGTH_BINS: 32 # OPTIONAL, heatmap height, default: 32
+      NUM_MJD_BINS: 180 # OPTIONAL, heatmap width, default: 180
+      REMAKE_HEATMAPS: False # OPTIONAL, SCONE does not remake heatmaps unless the 3_CLAS/heatmaps subdir doesn't exist or if this param is true, default: False
+      # MODEL OPTS
+      NUM_EPOCHS: 400 # REQUIRED, number of training epochs
+      IA_FRACTION: 0.5 # OPTIONAL, desired Ia fraction in train/validation/test sets for binary classification, default: 0.5
+  
+  SCONE_PREDICT: # Helen's CNN classifier
+    CLASSIFIER: SconeClassifier
+    MODE: predict
+    OPTS:
+      # HEATMAP CREATION OPTS
+      CATEGORICAL: True # OPTIONAL, binary or categorical classification, default: False
+      NUM_WAVELENGTH_BINS: 32 # OPTIONAL, heatmap height, default: 32
+      NUM_MJD_BINS: 180 # OPTIONAL, heatmap width, default: 180
+      REMAKE_HEATMAPS: False # OPTIONAL, SCONE does not remake heatmaps unless the 3_CLAS/heatmaps subdir doesn't exist or if this param is true, default: False
+      # MODEL OPTS
+      TRAINED_MODEL: "/path/to/trained/model" # REQUIRED, path to trained model that should be used for prediction
+      IA_FRACTION: 0.5 # OPTIONAL, desired Ia fraction in train/validation/test sets for binary classification, default: 0.5
 ```
 
 #### SuperNNova Classifier
