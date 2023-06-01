@@ -111,7 +111,7 @@ class SconeClassifier(Classifier):
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
               "REPLACE_MEM": "8GB",
               "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
-              "APPEND": ["#SBATCH --ntasks=1"] #"#SBATCH --cpus-per-task=8"]
+              "APPEND": ["#SBATCH --ntasks=1", "#SBATCH -A dessn", "#SBATCH -q regular"]
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
 
@@ -149,8 +149,8 @@ class SconeClassifier(Classifier):
       sim_dep = self.get_simulation_dependency()
       sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
 
-      lcdata_paths = self._get_lcdata_paths(sim_dirs)
-      metadata_paths = [path.replace("PHOT", "HEAD") for path in lcdata_paths]
+      lcdata_paths = [path for path in self._get_lcdata_paths(sim_dirs) if "PHOT.FITS" in path]
+      metadata_paths = [path.replace("PHOT.FITS", "HEAD.FITS") for path in lcdata_paths]
 
       str_config = self._make_config(metadata_paths, lcdata_paths, mode, heatmaps_created)
       new_hash = self.get_hash_from_string(str_config)

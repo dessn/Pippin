@@ -169,6 +169,10 @@ class Classifier(Task):
             needs_sim, needs_lc = cls.get_requirements(options)
 
             runs = []
+            if "COMBINE_MASK" in config:
+                lcfit_tasks = [task if task.name in config["COMBINE_MASK"] else None for task in lcfit_tasks]
+                sim_tasks = [task if task.name in config["COMBINE_MASK"] else None for task in sim_tasks]
+
             if needs_sim and needs_lc:
                 runs = [(l.dependencies[0], l) for l in lcfit_tasks]
             elif needs_sim:
