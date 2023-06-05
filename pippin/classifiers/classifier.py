@@ -69,19 +69,22 @@ class Classifier(Task):
         return True, True
 
     def get_fit_dependency(self, output=True):
+        fit_deps = []
         for t in self.dependencies:
             if isinstance(t, SNANALightCurveFit):
-                return t.output if output else t
-        return None
+                fit_deps.append(t.output) if output else fit_deps.append(t)
+        return fit_deps
 
     def get_simulation_dependency(self):
+        sim_deps = []
         for t in self.dependencies:
             if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
-                return t
-        for t in self.get_fit_dependency(output=False).dependencies:
-            if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
-                return t
-        return None
+                sim_deps.append(t)
+        for t in self.get_fit_dependency(output=False):
+            for dep in t.dependencies:
+                if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
+                    sim_deps.append(t)
+        return sim_deps
 
     def validate_model(self):
         if self.mode == Classifier.PREDICT:
@@ -112,9 +115,11 @@ class Classifier(Task):
         name = self.name
         use_sim, use_fit = self.get_requirements(self.options)
         if use_fit:
-            name += "_" + self.get_fit_dependency()["name"]
+            for t in self.get_fit_dependency():
+                name += f"_{t['name']}"
         else:
-            name += "_" + self.get_simulation_dependency().output["name"]
+            for t in self.get_simulation_dependency():
+                name += f"_{t.output['name']}"
         return name
 
     def get_prob_column_name(self):
@@ -138,11 +143,12 @@ class Classifier(Task):
             index = "" if index is None else f"_{index}"
             return f"{base_output_dir}/{stage_number}_CLAS/{clas_name}{index}{sim_name}{fit_name}{extra_name}"
 
-        def get_num_ranseed(sim_task, lcfit_task):
-            if sim_task is not None:
-                return len(sim_task.output["sim_folders"])
-            if lcfit_task is not None:
-                return len(lcfit_task.output["fitres_dirs"])
+        def get_num_ranseed(sim_tasks, lcfit_tasks):
+            num = 0
+            if len(sim_tasks) > 0:
+                return min([len(sim_task.output["sim_folders"]) for sim_task in sim_tasks])
+            if len(lcfit_tasks) > 0:
+                return min([len(lcfit_task.output["fitres_dirs"]) for lcfit_task in lcfit_tasks])
             raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
 
         tasks = []
@@ -170,58 +176,82 @@ class Classifier(Task):
 
             runs = []
             if "COMBINE_MASK" in config:
-                lcfit_tasks = [task if task.name in config["COMBINE_MASK"] else None for task in lcfit_tasks]
-                sim_tasks = [task if task.name in config["COMBINE_MASK"] else None for task in sim_tasks]
-
-            if needs_sim and needs_lc:
-                runs = [(l.dependencies[0], l) for l in lcfit_tasks]
-            elif needs_sim:
-                runs = [(s, None) for s in sim_tasks]
-            elif needs_lc:
-                runs = [(l.dependencies[0], l) for l in lcfit_tasks]
+                combined_tasks = []
+                regular_tasks = []
+                if needs_lc:
+                    for l in lcfit_tasks:
+                        if l is not None and l.name in config["COMBINE_MASK"]:
+                            combined_tasks.append((l.dependencies[0], l))
+                        if l is not None and l.name not in config["COMBINE_MASK"]:
+                            regular_tasks.append([(l.dependencies[0], l)])
+                else:
+                    for s in sim_tasks:
+                        if s is not None and s.name in config["COMBINE_MASK"]:
+                            combined_tasks.append((s, None))
+                        if s is not None and s.name not in config["COMBINE_MASK"]:
+                            regular_tasks.append([(s, None)])
+                runs = [combined_tasks] + regular_tasks
             else:
-                Task.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
+                if needs_sim and needs_lc:
+                    runs = [(l.dependencies[0], l) for l in lcfit_tasks]
+                elif needs_sim:
+                    runs = [(s, None) for s in sim_tasks]
+                else:
+                    Task.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 
             num_gen = 0
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
             mask_fit = config.get("MASK_FIT", "")
-            for s, l in runs:
-
-                sim_name = s.name if s is not None else None
-                fit_name = l.name if l is not None else None
+            mask_combined = config.get("COMBINE_MASK", "")
+            for run in runs:
                 matched_sim = True
                 matched_fit = True
-                if mask:
-                    matched_sim = matched_sim and mask in sim_name
-                if mask_sim:
-                    matched_sim = matched_sim and mask_sim in sim_name
-                if mask:
-                    matched_fit = matched_fit and mask in sim_name
-                if mask_fit:
-                    matched_fit = matched_fit and mask_sim in sim_name
-                if not matched_fit or not matched_sim:
+                matched_combined = True
+                if mask_combined:
+                    matched_combined = len(run) > 1
+                else:
+                    if len(run) > 1:
+                        Task.logger.warn(f"Classifier {name} has multiple tasks -- this should only occur when COMBINE_MASK is specified. Using first task.")
+
+                    s, l = run[0]
+                    sim_name = s.name if s is not None else None
+                    fit_name = l.name if l is not None else None
+                    if mask:
+                        matched_sim = matched_sim and mask in sim_name
+                    if mask_sim:
+                        matched_sim = matched_sim and mask_sim in sim_name
+                    if mask:
+                        matched_fit = matched_fit and mask in sim_name
+                    if mask_fit:
+                        matched_fit = matched_fit and mask_sim in sim_name
+                if not matched_fit or not matched_sim or not matched_combined:
                     continue
-                deps = []
-                if s is not None:
-                    deps.append(s)
-                if l is not None:
-                    deps.append(l)
+                sim_deps = [sim_fit_tuple[0] for sim_fit_tuple in run if sim_fit_tuple[0] is not None]
+                fit_deps = [sim_fit_tuple[1] for sim_fit_tuple in run if sim_fit_tuple[1] is not None]
 
                 model = options.get("MODEL")
 
                 # Validate to make sure training samples only have one sim.
                 if mode == Classifier.TRAIN:
-                    if s is not None:
-                        folders = s.output["sim_folders"]
-                        assert (
-                            len(folders) == 1
-                        ), f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
-                    if l is not None:
-                        folders = l.output["fitres_dirs"]
-                        assert (
-                            len(folders) == 1
-                        ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                    for s in sim_deps:
+                        if s is not None:
+                            folders = s.output["sim_folders"]
+                            assert (
+                                len(folders) == 1
+                            ), f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                    for l in fit_deps:
+                        if l is not None:
+                            folders = l.output["fitres_dirs"]
+                            assert (
+                                len(folders) == 1
+                            ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+
+                deps = sim_deps + fit_deps
+
+                sim_name = "_".join([s.name for s in sim_deps if s is not None])
+                fit_name = "_".join([l.name for l in fit_deps if l is not None])
+
                 if model is not None:
                     if "/" in model or "." in model:
                         potential_path = get_output_loc(model)
@@ -229,7 +259,7 @@ class Classifier(Task):
                             extra = os.path.basename(os.path.dirname(potential_path))
 
                             # Nasty duplicate code, TODO fix this
-                            indexes = get_num_ranseed(s, l)
+                            indexes = get_num_ranseed(sim_deps, fit_deps)
                             for i in range(indexes):
                                 num = i + 1 if indexes > 1 else None
                                 clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
@@ -252,7 +282,7 @@ class Classifier(Task):
 
                                 assert t.__class__ == cls, f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
 
-                                indexes = get_num_ranseed(s, l)
+                                indexes = get_num_ranseed(sim_deps, fit_deps)
                                 for i in range(indexes):
                                     num = i + 1 if indexes > 1 else None
                                     clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num, extra=extra)
@@ -264,10 +294,12 @@ class Classifier(Task):
                                     tasks.append(cc)
                 else:
 
-                    indexes = get_num_ranseed(s, l)
+                    indexes = get_num_ranseed(sim_deps, fit_deps)
                     for i in range(indexes):
                         num = i + 1 if indexes > 1 else None
                         clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num)
+                        print(clas_output_dir)
+                        print(deps)
                         cc = cls(clas_name, clas_output_dir, config, deps, mode, options, index=i)
                         Task.logger.info(
                             f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"

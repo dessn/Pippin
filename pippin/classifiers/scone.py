@@ -53,6 +53,7 @@ class SconeClassifier(Classifier):
       self.init_env_heatmaps = self.global_config["SCONE"]["init_env_cpu"]
       self.init_env = self.global_config["SCONE"]["init_env_cpu"] if not self.gpu else self.global_config["SCONE"]["init_env_gpu"]
       self.path_to_classifier = self.global_config["SCONE"]["location"]
+      self.combine_mask = "COMBINE_MASK" in config
 
       output_path_obj = Path(self.output_dir)
       heatmaps_path_obj = output_path_obj / "heatmaps"
@@ -97,7 +98,7 @@ class SconeClassifier(Classifier):
       # TODO: if externally specified batchfile exists, have to parse desired logfile path from it
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
-            "REPLACE_WALLTIME": "20:00:00", #TODO: change to scale with # of heatmaps expected
+            "REPLACE_WALLTIME": "12:00:00", #TODO: change to scale with # of heatmaps expected
             "REPLACE_MEM": "16GB",
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
@@ -146,8 +147,8 @@ class SconeClassifier(Classifier):
 
       heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
 
-      sim_dep = self.get_simulation_dependency()
-      sim_dirs = sim_dep.output["photometry_dirs"][self.index] # if multiple realizations, get only the current one with self.index
+      sim_deps = self.get_simulation_dependency()
+      sim_dirs = [sim_dep.output["photometry_dirs"][self.index] for sim_dep in sim_deps] if self.combine_mask else [sim_dep.output["photometry_dirs"] for sim_dep in sim_deps] # if multiple realizations, get only the current one with self.index
 
       lcdata_paths = [path for path in self._get_lcdata_paths(sim_dirs) if "PHOT.FITS" in path]
       metadata_paths = [path.replace("PHOT.FITS", "HEAD.FITS") for path in lcdata_paths]
@@ -185,10 +186,13 @@ class SconeClassifier(Classifier):
     def train(self):
         return self.classify("train")
 
-   #TODO: investigate the output and use this
     def _get_types(self):
-        t = self.get_simulation_dependency().output
-        return t["types"]
+        types = {}
+        for t in self.get_simulation_dependency():
+            for k, v in t.output['types'].items():
+                if k not in types:
+                    types[k] = v
+        return types
 
     def _make_config(self, metadata_paths, lcdata_paths, mode, heatmaps_created):
         config = {}
@@ -264,8 +268,8 @@ class SconeClassifier(Classifier):
         return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
-    def _get_lcdata_paths(sim_dir):
-        lcdata_paths = [str(f.resolve()) for f in Path(sim_dir).iterdir() if "PHOT" in f.name]
+    def _get_lcdata_paths(sim_dirs):
+        lcdata_paths = [str(f.resolve()) for sim_dir in sim_dirs for f in Path(sim_dir).iterdir() if "PHOT" in f.name]
         return lcdata_paths
 
     @staticmethod
