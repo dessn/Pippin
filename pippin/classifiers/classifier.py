@@ -193,7 +193,7 @@ class Classifier(Task):
                             regular_tasks.append([(s, None)])
                 runs = [combined_tasks] + regular_tasks
             else:
-                if needs_sim and needs_lc:
+                if needs_lc:
                     runs = [[(l.dependencies[0], l)] for l in lcfit_tasks]
                 elif needs_sim:
                     runs = [[(s, None)] for s in sim_tasks]
