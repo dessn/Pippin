@@ -6,7 +6,6 @@ from pippin.dataprep import DataPrep
 from pippin.task import Task
 from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
-import pdb
 
 class Classifier(Task):
     """ Classification task
@@ -119,7 +118,6 @@ class Classifier(Task):
                 name += f"_{t['name']}"
         else:
             for t in self.get_simulation_dependency():
-                pdb.set_trace()
                 name += f"_{t.output['name']}"
         return name
 
