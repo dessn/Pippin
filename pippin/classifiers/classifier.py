@@ -6,7 +6,7 @@ from pippin.dataprep import DataPrep
 from pippin.task import Task
 from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
-
+import pdb
 
 class Classifier(Task):
     """ Classification task
@@ -119,6 +119,7 @@ class Classifier(Task):
                 name += f"_{t['name']}"
         else:
             for t in self.get_simulation_dependency():
+                pdb.set_trace()
                 name += f"_{t.output['name']}"
         return name
 
@@ -249,8 +250,8 @@ class Classifier(Task):
 
                 deps = sim_deps + fit_deps
 
-                sim_name = "_".join([s.name for s in sim_deps if s is not None])
-                fit_name = "_".join([l.name for l in fit_deps if l is not None])
+                sim_name = "_".join([s.name for s in sim_deps if s is not None]) if len(sim_deps) > 0 else None
+                fit_name = "_".join([l.name for l in fit_deps if l is not None]) if len(fit_deps) > 0 else None
 
                 if model is not None:
                     if "/" in model or "." in model:
