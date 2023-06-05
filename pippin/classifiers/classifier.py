@@ -194,9 +194,9 @@ class Classifier(Task):
                 runs = [combined_tasks] + regular_tasks
             else:
                 if needs_sim and needs_lc:
-                    runs = [(l.dependencies[0], l) for l in lcfit_tasks]
+                    runs = [[(l.dependencies[0], l)] for l in lcfit_tasks]
                 elif needs_sim:
-                    runs = [(s, None) for s in sim_tasks]
+                    runs = [[(s, None)] for s in sim_tasks]
                 else:
                     Task.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 

@@ -148,7 +148,7 @@ class SconeClassifier(Classifier):
       heatmaps_created = self._heatmap_creation_success() and self.keep_heatmaps
 
       sim_deps = self.get_simulation_dependency()
-      sim_dirs = [sim_dep.output["photometry_dirs"][self.index] for sim_dep in sim_deps] if self.combine_mask else [sim_dep.output["photometry_dirs"] for sim_dep in sim_deps] # if multiple realizations, get only the current one with self.index
+      sim_dirs = [sim_dep.output["photometry_dirs"][self.index] for sim_dep in sim_deps]
 
       lcdata_paths = [path for path in self._get_lcdata_paths(sim_dirs) if "PHOT.FITS" in path]
       metadata_paths = [path.replace("PHOT.FITS", "HEAD.FITS") for path in lcdata_paths]
