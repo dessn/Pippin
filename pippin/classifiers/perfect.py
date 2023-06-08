@@ -1,5 +1,6 @@
 import os
 import shutil
+from collections import defaultdict
 
 import pandas as pd
 from astropy.io import fits
@@ -7,7 +8,6 @@ import numpy as np
 from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs
 from pippin.task import Task
-
 
 class PerfectClassifier(Classifier):
     """ Classification task for the SuperNNova classifier.
@@ -59,12 +59,15 @@ class PerfectClassifier(Classifier):
                 cid = "CID"
                 s = self.get_simulation_dependency()
                 df = None
-                phot_dir = s.output["photometry_dirs"][self.index]
-                headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                phot_dirs = [sim_dep.output["photometry_dirs"][self.index] for sim_dep in s]
+                headers = [os.path.join(phot_dir, a) for phot_dir in phot_dirs for a in os.listdir(phot_dir) if "HEAD" in a]
                 if not headers:
                     Task.fail_config(f"No HEAD fits files found in {phot_dir}!")
                 else:
-                    types = self.get_simulation_dependency().output["types_dict"]
+                    types = defaultdict(list)
+                    for t in self.get_simulation_dependency():
+                        for k, v in t.output['types_dict'].items():
+                            types[k] = np.unique(types[k] + v)
                     self.logger.debug(f"Input types are {types}")
 
                     for h in headers:
