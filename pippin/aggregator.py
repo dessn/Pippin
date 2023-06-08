@@ -54,7 +54,7 @@ class Aggregator(Task):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
-        self.lcfit_deps = [c.get_fit_dependency(output=False) for c in self.classifiers]
+        self.lcfit_deps = [d for c in self.classifiers for d in c.get_fit_dependency(output=False)]
         self.lcfit_names = list(set([l.output["name"] for l in self.lcfit_deps if l is not None]))
         self.output["lcfit_names"] = self.lcfit_names
         if not self.lcfit_names:
@@ -313,7 +313,7 @@ class Aggregator(Task):
                         if "_" in output[0]: #check if photometry is in filename
                             snid = [x.split()[0].split("_")[1].split(".")[0] for x in output]
                             snid = [x[1:] if x.startswith("0") else x for x in snid]
-                        else: 
+                        else:
                             snid = [x.split()[0].split(".")[0] for x in output]
                             snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
@@ -475,7 +475,7 @@ class Aggregator(Task):
                 deps = [
                     c
                     for c in classifier_tasks
-                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and c.get_simulation_dependency() == sim_task
+                    if mask in c.name and mask_clas in c.name and c.mode == Classifier.PREDICT and sim_task in c.get_simulation_dependency()
                 ]
                 if len(deps) == 0:
                     deps = [sim_task]
