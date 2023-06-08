@@ -98,7 +98,7 @@ class SconeClassifier(Classifier):
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
             "REPLACE_WALLTIME": "20:00:00", #TODO: change to scale with # of heatmaps expected
-            "REPLACE_MEM": "32GB",
+            "REPLACE_MEM": "64GB",
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
 
