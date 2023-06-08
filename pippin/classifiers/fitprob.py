@@ -41,7 +41,9 @@ class FitProbClassifier(Classifier):
         new_hash = self.get_hash_from_string(self.name)
         if self._check_regenerate(new_hash):
             mkdirs(self.output_dir)
-            input = self.get_fit_dependency()
+            input = self.get_fit_dependency()[0]
+            if len(self.get_fit_dependency()) > 1:
+                self.logger.warning(f"Found more than one fit dependency for {self.name}, possibly because COMBINE_MASK is being used. FITPROB doesn't currently support this. Using first one.")
             fitres_file = os.path.join(input["fitres_dirs"][self.index], input["fitopt_map"][self.fitopt])
             self.logger.debug(f"Looking for {fitres_file}")
             if not os.path.exists(fitres_file):

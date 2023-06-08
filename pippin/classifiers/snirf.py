@@ -59,13 +59,15 @@ class SnirfClassifier(Classifier):
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
         self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
-        
+
         self.slurm = """{sbatch_header}
         {task_setup}
 """
 
     def setup(self):
-        lcfit = self.get_fit_dependency()
+        lcfit = self.get_fit_dependency()[0]
+        if len(self.get_fit_dependency()) > 1:
+            self.logger.warning(f"Found multiple fit dependencies for SNIRF possibly because COMBINE_MASK is being used, but SNIRF does not currently support this.  Using the first one: {lcfit.name}")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
 
@@ -100,7 +102,7 @@ class SnirfClassifier(Classifier):
         format_dict = {
             "sbatch_header": self.sbatch_header,
             "task_setup": self.update_setup(setup_dict, self.task_setup['snirf'])
-                
+
                 }
         slurm_script = self.slurm.format(**format_dict)
 

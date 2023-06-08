@@ -102,9 +102,9 @@ class SuperNNovaClassifier(Classifier):
             self.variant = self.get_variant_from_yml(self.classification_yml)
         else:
             self.data_yml = None
-            self.classification_yml = None                
+            self.classification_yml = None
             self.has_yml = False
- 
+
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
@@ -183,8 +183,12 @@ class SuperNNovaClassifier(Classifier):
         return self.classify(False)
 
     def get_types(self):
-        t = self.get_simulation_dependency().output
-        return t["types"]
+        types = {}
+        for t in self.get_simulation_dependency():
+            for k, v in t.output['types'].items():
+                if k not in types:
+                    types[k] = v
+        return types
 
     def classify(self, training):
         model = self.options.get("MODEL")
@@ -260,7 +264,9 @@ class SuperNNovaClassifier(Classifier):
         str_list_filters = " ".join(self.list_filters)
         self.logger.debug(f"Filter list set to {str_list_filters}")
 
-        sim_dep = self.get_simulation_dependency()
+        sim_dep = self.get_simulation_dependency()[0] # only taking the first one because SNN internally takes a single fits dir as input
+        if len(self.get_simulation_dependency()) > 1:
+            self.logger.warning(f"Found more than one simulation dependency, possibly because COMBINE_MASK is being used. SuperNNova doesn't currently support this.  Using only the first sim dependency: {sim_dep.name}")
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
         self.raw_dir = light_curve_dir
         fit = self.get_fit_dependency()
@@ -278,7 +284,7 @@ class SuperNNovaClassifier(Classifier):
             clump_txt = ""
         else:
             clump_txt = f"--photo_window_files {clump}"
-        
+
         if self.batch_file is None:
             if self.gpu:
                 self.sbatch_header = self.sbatch_gpu_header
@@ -289,7 +295,7 @@ class SuperNNovaClassifier(Classifier):
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
-        
+
         if self.has_yml:
             self.update_yml()
             setup_file = "supernnova_yml"
