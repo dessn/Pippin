@@ -499,6 +499,7 @@ CLASSIFICATION:
     MASK: optional_mask  # Masks both sim and lcfit together, logical and
     MASK_SIM: optional_sim_only_mask
     MASK_FIT: optional_lcfit_only_mask
+    COMBINE_MASK: [SIM_IA, SIM_CC] # optional mask to combine multiple sim runs into one classification job (e.g. separate CC and Ia sims)
     OPTS:
       MODEL: file_or_label  # only needed in predict mode, how to find the trained classifier
       WHATREVER_THE: CLASSIFIER_NEEDS  
