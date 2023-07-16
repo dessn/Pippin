@@ -536,7 +536,7 @@ CLASSIFICATION:
       NUM_MJD_BINS: 180 # OPTIONAL, heatmap width, default: 180
       REMAKE_HEATMAPS: False # OPTIONAL, SCONE does not remake heatmaps unless the 3_CLAS/heatmaps subdir doesn't exist or if this param is true, default: False
       # MODEL OPTS
-      TRAINED_MODEL: "/path/to/trained/model" # REQUIRED, path to trained model that should be used for prediction
+      MODEL: "/path/to/trained/model" # REQUIRED, path to trained model that should be used for prediction
       IA_FRACTION: 0.5 # OPTIONAL, desired Ia fraction in train/validation/test sets for binary classification, default: 0.5
 ```
 
