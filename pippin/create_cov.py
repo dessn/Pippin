@@ -186,6 +186,8 @@ class CreateCov(ConfigBasedExecutable):
             cmd = ""
         else:
             cmd = "--unbinned"
+        if self.options.get("SYSTEMATIC_HD", False):
+            cmd += " --systematic_HD"
         return f"/{self.name}/    {cmd}"
 
     def get_sys_file_in(self):
