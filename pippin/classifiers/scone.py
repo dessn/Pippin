@@ -49,7 +49,7 @@ class SconeClassifier(Classifier):
       self.global_config = get_config()
       self.options = options
 
-      self.gpu = self.options.get("GPU", True)
+      self.gpu = self.options.get("GPU", False)
       self.init_env_heatmaps = self.global_config["SCONE"]["init_env_cpu"]
       self.init_env = self.global_config["SCONE"]["init_env_cpu"] if not self.gpu else self.global_config["SCONE"]["init_env_gpu"]
       self.path_to_classifier = self.global_config["SCONE"]["location"]
@@ -112,7 +112,6 @@ class SconeClassifier(Classifier):
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
               "REPLACE_MEM": "8GB",
               "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
-              "APPEND": ["#SBATCH --ntasks=1", "#SBATCH -A dessn", "#SBATCH -q regular"]
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
 

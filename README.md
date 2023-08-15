@@ -499,6 +499,7 @@ CLASSIFICATION:
     MASK: optional_mask  # Masks both sim and lcfit together, logical and
     MASK_SIM: optional_sim_only_mask
     MASK_FIT: optional_lcfit_only_mask
+    COMBINE_MASK: [SIM_IA, SIM_CC] # optional mask to combine multiple sim runs into one classification job (e.g. separate CC and Ia sims). NOTE: currently not compatible with SuperNNova/SNIRF
     OPTS:
       MODEL: file_or_label  # only needed in predict mode, how to find the trained classifier
       WHATREVER_THE: CLASSIFIER_NEEDS  
@@ -514,6 +515,7 @@ CLASSIFICATION:
     CLASSIFIER: SconeClassifier
     MODE: train
     OPTS:
+      GPU: True # OPTIONAL, default: False
       # HEATMAP CREATION OPTS
       CATEGORICAL: True # OPTIONAL, binary or categorical classification, default: False
       NUM_WAVELENGTH_BINS: 32 # OPTIONAL, heatmap height, default: 32
@@ -527,13 +529,14 @@ CLASSIFICATION:
     CLASSIFIER: SconeClassifier
     MODE: predict
     OPTS:
+      GPU: True # OPTIONAL, default: False
       # HEATMAP CREATION OPTS
       CATEGORICAL: True # OPTIONAL, binary or categorical classification, default: False
       NUM_WAVELENGTH_BINS: 32 # OPTIONAL, heatmap height, default: 32
       NUM_MJD_BINS: 180 # OPTIONAL, heatmap width, default: 180
       REMAKE_HEATMAPS: False # OPTIONAL, SCONE does not remake heatmaps unless the 3_CLAS/heatmaps subdir doesn't exist or if this param is true, default: False
       # MODEL OPTS
-      TRAINED_MODEL: "/path/to/trained/model" # REQUIRED, path to trained model that should be used for prediction
+      MODEL: "/path/to/trained/model" # REQUIRED, path to trained model that should be used for prediction
       IA_FRACTION: 0.5 # OPTIONAL, desired Ia fraction in train/validation/test sets for binary classification, default: 0.5
 ```
 
