@@ -8,6 +8,7 @@ import sys
 from pippin.config import mkdirs, get_logger, get_output_dir, chown_file, get_config, chown_dir
 from pippin.manager import Manager
 from colorama import init
+import socket
 
 class MessageStore(logging.Handler):
     store = None
@@ -77,7 +78,7 @@ def load_yaml(yaml_path):
         raw = f.read()
     logging.info("Preprocessing yaml")
     yaml_str = preprocess(raw)
-    info = f"# Original input file: {yaml_path}\n"
+    info = f"# Original input file: {yaml_path}\n# Submitted on login node: {socket.gethostname()}\n"
     yaml_str = info + yaml_str
     config = yaml.safe_load(yaml_str)
     return yaml_str, config
