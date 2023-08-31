@@ -195,7 +195,7 @@ class Aggregator(Task):
                 continue
 
             data2 = data[combined_mask]
-            truth2 = truth[combined_mask].astype(np.float)
+            truth2 = truth[combined_mask].astype(float)
 
             actual_prob, _, _ = binned_statistic(data2, truth2, bins=bins, statistic="mean")
             m = np.isfinite(actual_prob)  # All the -1 to 0 and 1 to 2 probs will be NaN
