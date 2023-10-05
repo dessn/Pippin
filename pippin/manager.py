@@ -245,15 +245,18 @@ class Manager:
             status = "blocked"
         return self.get_string_with_colour(task.name, status)
 
-    def get_dashboard_line(self, stage, tasks):
+    def get_dashboard_line(self, stage, tasks, prnt=True):
         strings = [self.get_task_dashboard(task) for task in tasks]
         line_width = 160
 
         output = f"{stage:12s}"
         for i, s in enumerate(strings):
-            if len(output + s) > line_width and i != len(strings) + 1:
-                self.logger.info(output)
-                output = " " * 12
+            if len(output.split("\n")[-1] + s) > line_width and i != len(strings) + 1:
+                if prnt:
+                    self.logger.info(output)
+                    output = " " * 12
+                else:
+                    output += "\n" + (" " * 12)
             output += s + "   "
 
         return output
@@ -285,7 +288,7 @@ class Manager:
                 for name, task_class in zip(Manager.stages, Manager.task_order):
                     tasks = self.get_subtasks(task_class, all_tasks)
                     if tasks:
-                        f.write(self.get_dashboard_line(name, tasks) + "\n")
+                        f.write(self.get_dashboard_line(name, tasks, False) + "\n")
         except:
             self.logger.warning(f"Error opening {self.dashboard}")
 
