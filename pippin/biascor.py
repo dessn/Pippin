@@ -251,10 +251,14 @@ class BiasCor(ConfigBasedExecutable):
 
         return self.check_for_job(squeue, self.job_name)
 
-    def get_simfile_biascor(self, ia_sims, fitopt_num):
+    def get_simfile_biascor(self, ia_sims, fitopt_num=None):
+        if (ia_sims is not None) and (fitopt_num is None):
+            fitopt_num = [0 for _ in ia_sims]
         return None if ia_sims is None else ",".join([os.path.join(ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
 
-    def get_simfile_ccprior(self, cc_sims, fitopt_num):
+    def get_simfile_ccprior(self, cc_sims, fitopt_num=None):
+        if (cc_sims is not None) and (fitopt_num is None):
+            fitopt_num = [0 for _ in cc_sims]
         return None if cc_sims is None else ",".join([os.path.join(cc_sims[i].output["fitres_dirs"][0], "FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
 
     def get_fitopt_map(self, datas):
@@ -371,9 +375,9 @@ class BiasCor(ConfigBasedExecutable):
             muopt_scales[label] = value.get("SCALE", 1.0)
             mu_str = f"/{label}/ "
             if value.get("SIMFILE_BIASCOR"):
-                mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'))} "
+                mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'), value.get('SIMFILE_BIASCOR_FITOPTS'))} "
             if value.get("SIMFILE_CCPRIOR"):
-                mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value.get('SIMFILE_CCPRIOR'))} "
+                mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value.get('SIMFILE_CCPRIOR'), value.get('SIMFILE_CCPRIOR_FITOPTS'))} "
             if value.get("CLASSIFIER"):
                 cname = self.prob_cols[value.get("CLASSIFIER").name]
                 muopt_prob_cols[label] = cname
