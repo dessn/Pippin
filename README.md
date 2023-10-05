@@ -720,8 +720,15 @@ BIASCOR:
     # Input Ia bias correction simulations to be concatenated
     SIMFILE_BIASCOR: [DESFIT_DESBIASCOR, LOWZFIT_LOWZBIASCOR]
 
+    # Optional, specify FITOPT to use. Defaults to 0 for each SIMFILE_BIASCOR. If using this option, you must specify a FITOPT for each SIMFILE_BIASCOR
+    SIMFILE_BIASCOR_FITOPTS: [0, 1] # FITOPT000 and FITOPT001
+
     # For surveys that have contamination, add in the cc only simulation under CCPRIOR    
     SIMFILE_CCPRIOR: DESFIT_DESSIMBIAS5YRCC
+
+    # Optional, specify FITOPT to use. Defaults to 0 for each SIMFILE_CCPRIOR. If using this option, you must specify a FITOPT for each SIMFILE_CCPRIOR
+    SIMFILE_CCPRIOR_FITOPTS: [0, 1] # FITOPT000 and FITOPT001
+
 
     # Which classifier to use. Column name in FITRES will be determined from this property.
     # In the case of multiple classifiers this can either be

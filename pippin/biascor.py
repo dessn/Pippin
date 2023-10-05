@@ -33,7 +33,26 @@ class BiasCor(ConfigBasedExecutable):
 
         self.merged_data = config.get("DATA")
         self.merged_iasim = config.get("SIMFILE_BIASCOR")
+        self.merged_iasim_fitopts = config.get("SIMFILE_BIASCOR_FITOPTS")
+        if self.merged_iasim is not None:
+            if self.merged_iasim_fitopts is None:
+                self.merged_iasim_fitopts = [0 for _ in self.merged_iasim]
+            else:
+                self.merged_iasim_fitopts = ensure_list(self.merged_iasim_fitopts)
+                assert len(self.merged_iasim_fitopts) == len(self.merged_iasim), \
+                       f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(self.merged_iasim)}), but is length {len(self.merged_iasim_fitopts)}"
+        self.logger.debug(f"SIMFILE_BIASCOR_FITOPTS: {self.merged_iasim_fitopts}")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
+        self.merged_ccsim_fitopts = config.get("SIMFILE_CCPRIOR_FITOPTS")
+        if self.merged_ccsim is not None:
+            if self.merged_ccsim_fitopts is None:
+                self.merged_ccsim_fitopts = [0 for _ in self.merged_ccsim]
+            else:
+                self.merged_ccsim_fitopts = ensure_list(self.merged_ccsim_fitopts)
+                assert len(self.merged_ccsim_fitopts) == len(self.merged_ccsim), \
+                       f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(self.merged_ccsim)}), but is length {len(self.merged_ccsim_fitopts)}"
+        self.logger.debug(f"SIMFILE_CCPRIOR_FITOPTS: {self.merged_ccsim_fitopts}")
+
         self.classifier = config.get("CLASSIFIER")
         if self.classifier is not None:
             self.config["CLASSIFIER"] = self.classifier.name
@@ -232,11 +251,11 @@ class BiasCor(ConfigBasedExecutable):
 
         return self.check_for_job(squeue, self.job_name)
 
-    def get_simfile_biascor(self, ia_sims):
-        return None if ia_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], "FITOPT000.FITRES.gz") for m in ia_sims])
+    def get_simfile_biascor(self, ia_sims, fitopt_num):
+        return None if ia_sims is None else ",".join([os.path.join(ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
 
-    def get_simfile_ccprior(self, cc_sims):
-        return None if cc_sims is None else ",".join([os.path.join(m.output["fitres_dirs"][0], "FITOPT000.FITRES.gz") for m in cc_sims])
+    def get_simfile_ccprior(self, cc_sims, fitopt_num):
+        return None if cc_sims is None else ",".join([os.path.join(cc_sims[i].output["fitres_dirs"][0], "FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
 
     def get_fitopt_map(self, datas):
         fitopts = {}
@@ -270,15 +289,23 @@ class BiasCor(ConfigBasedExecutable):
     def write_input(self):
 
         if self.merged_iasim is not None:
-            for m in self.merged_iasim:
+            for (i, m) in enumerate(self.merged_iasim):
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(f"Your IA sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
+                self.logger.debug(f"Fitres directory: {m.output['fitres_dirs'][0]}")
+                n = self.merged_iasim_fitopts[i]
+                assert os.path.exists(os.path.join(m.output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz")), f"FITOPT{n:03} does not exist for your IA sim {m}"
         if self.merged_ccsim is not None:
-            for m in self.merged_ccsim:
+            for (i, m) in enumerate(self.merged_ccsim):
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(f"Your CC sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}")
-        self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim)
-        self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim)
+                self.logger.debug(f"Fitres directory: {m.output['fitres_dirs'][0]}")
+                n = self.merged_ccsim_fitopts[i]
+                assert os.path.exists(os.path.join(m.output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz")), f"FITOPT{n:03} does not exist for your CC sim {m}"
+
+
+        self.bias_cor_fits = self.get_simfile_biascor(self.merged_iasim, self.merged_iasim_fitopts)
+        self.cc_prior_fits = self.get_simfile_ccprior(self.merged_ccsim, self.merged_ccsim_fitopts)
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
         #print('MERGED DATA')
