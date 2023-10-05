@@ -52,6 +52,7 @@ class Manager:
         self.load_task_setup()
 
         self.output_dir = os.path.join(get_output_dir(), self.filename)
+        self.dashboard = os.path.join(self.output_dir, "pippin_status.txt")
         self.tasks = None
         self.num_jobs_queue = 0
         self.num_jobs_queue_gpu = 0
@@ -254,12 +255,12 @@ class Manager:
                 self.logger.info(output)
                 output = " " * 12
             output += s + "   "
-        self.logger.info(output)
 
         return output
 
     def print_dashboard(self):
         all_tasks = self.tasks + self.running + self.done + self.failed + self.blocked
+
 
         self.logger.info("-------------------")
         self.logger.info("CURRENT TASK STATUS")
@@ -270,9 +271,23 @@ class Manager:
         for name, task_class in zip(Manager.stages, Manager.task_order):
             tasks = self.get_subtasks(task_class, all_tasks)
             if tasks:
-                self.get_dashboard_line(name, tasks)
+                self.logger.info(self.get_dashboard_line(name, tasks))
 
         self.logger.info("-------------------")
+        try:
+            with open(self.dashboard, 'w') as f:
+                f.write("-------------------\n")
+                f.write("CURRENT TASK STATUS\n")
+
+                options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
+                header = "Key: " + "  ".join([self.get_string_with_colour(o, o.lower()) for o in options])
+                f.write(header + "\n")
+                for name, task_class in zip(Manager.stages, Manager.task_order):
+                    tasks = self.get_subtasks(task_class, all_tasks)
+                    if tasks:
+                        f.write(self.get_dashboard_line(name, tasks) + "\n")
+        except:
+            self.logger.warning(f"Error opening {self.dashboard}")
 
     def compress_all(self):
         for t in self.tasks:
