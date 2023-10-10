@@ -1,0 +1,105 @@
+ALIAS:
+  GRID_G10: &grid_g10
+    GENSIGMA_SALT2ALPHA: 1E8  1E8
+    GENRANGE_SALT2ALPHA: 0.12 0.20
+    GENGRID_SALT2ALPHA: 2
+    GENSIGMA_SALT2BETA: 1E8  1E8
+    GENRANGE_SALT2BETA: 2.6  3.6
+    GENGRID_SALT2BETA: 2
+  GRID_C11: &grid_c11
+    GENSIGMA_SALT2ALPHA: 1E8  1E8
+    GENRANGE_SALT2ALPHA:  0.10 0.24
+    GENGRID_SALT2ALPHA: 2
+    GENSIGMA_SALT2BETA: 1E8  1E8
+    GENRANGE_SALT2BETA:  3.3  4.3
+    GENGRID_SALT2BETA: 2
+  NUMS: &nums
+    NGEN_UNIT: 5
+    RANSEED_REPEAT: 30 12345
+    BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 30
+
+GLOBAL:
+    BATCH_REPLACE:
+        REPLACE_WALLTIME: "24:00:00"
+
+DATAPREP:
+
+  # Load to test, but don't do anything with it
+  DATADES3YR:  # 3yr spec sample
+    OPTS:
+      RAW_DIR: $SNDATA_ROOT/lcmerge/DES-SN3YR_DES 
+      TYPES:
+        IA: [1, 101]
+        NONIA: [120, 130, 20, 30]
+      BLIND: False
+
+SIM:
+  # Load in the existing bias cor simulations
+  BIAS3YRIA_G10:
+      IA_G10_DES3YR:
+        BASE: surveys/des/sims_ia/sn_ia_salt2_g10_des3yr.input
+        <<: *grid_g10
+      GLOBAL:
+        <<: *nums
+  DESSIM:
+      IA_G10_DES3YR:
+        BASE: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/dev/bias_validation/files/base_files/sn_ia_salt2_g10_des3yr.input
+      GLOBAL:
+          W0_LAMBDA: -1.0
+          OMEGA_MATTER: 0.3
+          OMEGA_LAMBDA: 0.7
+          NGEN_UNIT: 0.1
+          RANSEED_REPEAT: 10 12345
+
+LCFIT:
+
+  DS:
+    BASE: surveys/des/lcfit_nml/des_3yr.nml
+    MASK: DESSIM
+    FITOPTS: surveys/des/lcfit_fitopts/des.yml
+    SNLCINP:
+      USE_MINOS: F
+
+  D:
+    BASE: surveys/des/lcfit_nml/des_3yr.nml
+    MASK: BIAS 
+    SNLCINP:
+        USE_MINOS: F
+
+AGGREGATION:
+  AGG:
+
+MERGE:
+  MERGE:
+
+BIASCOR:
+
+  3YR:
+    BASE: surveys/des/bbc/bbc_3yr.input
+    DATA: [DS_DESSIM]
+    SIMFILE_BIASCOR: [D_BIAS3YRIA_G10]
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 50
+      chi2max: 16
+
+CREATE_COV:
+  BINNED:
+    OPTS:
+      BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 50
+      SYS_SCALE: surveys/global/lcfit_fitopts/global.yml
+      COVOPTS:
+        - "[NOSYS] [=DEFAULT,=DEFAULT]"
+
+COSMOFIT:
+    #COSMOMC:
+    #  SN_OMW:
+    #    OPTS:
+    #      INI: sn_omw
+    #      COVOPTS: [ALL, NOSYS]
+    #      NUM_WALKERS: 40
+    WFIT:
+      SN_OMW:
+        OPTS:
+          BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE 50
+          WFITOPTS:
+            - /om_pri/ -ompri 0.31 -dompri 0.1
