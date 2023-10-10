@@ -40,7 +40,7 @@ OUTPUT:
   max_ping_frequency: 300
 
 SBATCH:
-  cpu_location: $SBATCH_TEMPLATES/SBATCH_Midway2b.TEMPLATE
+  cpu_location: $SBATCH_TEMPLATES/SBATCH_DEFAULT.TEMPLATE
   gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
 
 SETUP:
