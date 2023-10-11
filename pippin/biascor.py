@@ -259,7 +259,7 @@ class BiasCor(ConfigBasedExecutable):
     def get_simfile_ccprior(self, cc_sims, fitopt_num=None):
         if (cc_sims is not None) and (fitopt_num is None):
             fitopt_num = [0 for _ in cc_sims]
-        return None if cc_sims is None else ",".join([os.path.join(cc_sims[i].output["fitres_dirs"][0], "FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
+        return None if cc_sims is None else ",".join([os.path.join(cc_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz") for (i, n) in enumerate(fitopt_num)])
 
     def get_fitopt_map(self, datas):
         fitopts = {}
