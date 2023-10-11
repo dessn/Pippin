@@ -375,9 +375,25 @@ class BiasCor(ConfigBasedExecutable):
             muopt_scales[label] = value.get("SCALE", 1.0)
             mu_str = f"/{label}/ "
             if value.get("SIMFILE_BIASCOR"):
-                mu_str += f"simfile_biascor={self.get_simfile_biascor(value.get('SIMFILE_BIASCOR'), value.get('SIMFILE_BIASCOR_FITOPTS'))} "
+                value_simfile_biascor = value.get('SIMFILE_BIASCOR')
+                value_simfile_biascor_fitopts = value.get('SIMFILE_BIASCOR_FITOPTS')
+                if value_simfile_biascor_fitopts is None:
+                    value_simfile_biascor_fitopts = [0 for _ in value_simfile_biascor]
+                else:
+                    value_simfile_biascor_fitopts = ensure_list(value_simfile_biascor_fitopts)
+                    assert len(value_simfile_biascor_fitopts) == len(value_simfile_biascor),  \
+                        f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(value_simfile_biascor)}), but is length {len(value_simfile_biascor_fitopt)}"
+                mu_str += f"simfile_biascor={self.get_simfile_biascor(value_simfile_biascor, value_simfile_biascor_fitopts)} "
             if value.get("SIMFILE_CCPRIOR"):
-                mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value.get('SIMFILE_CCPRIOR'), value.get('SIMFILE_CCPRIOR_FITOPTS'))} "
+                value_simfile_ccprior = value.get('SIMFILE_CCPRIOR')
+                value_simfile_ccprior_fitopts = value.get('SIMFILE_CCPRIOR_FITOPTS')
+                if value_simfile_ccprior_fitopts is None:
+                    value_simfile_ccprior_fitopts = [0 for _ in value_simfile_ccprior]
+                else:
+                    value_simfile_ccprior_fitopts = ensure_list(value_simfile_ccprior_fitopts)
+                    assert len(value_simfile_ccprior_fitopts) == len(value_simfile_ccprior),  \
+                        f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(value_simfile_ccprior)}), but is length {len(value_simfile_ccprior_fitopt)}"
+                mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value_simfile_ccprior, value_simfile_ccprior_fitopts)} "
             if value.get("CLASSIFIER"):
                 cname = self.prob_cols[value.get("CLASSIFIER").name]
                 muopt_prob_cols[label] = cname
