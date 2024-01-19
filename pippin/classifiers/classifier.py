@@ -17,6 +17,7 @@ class Classifier(Task):
         MASK: TEST  # partial match on sim and classifier
         MASK_SIM: TEST  # partial match on sim name
         MASK_FIT: TEST  # partial match on lcfit name
+        COMBINE_MASK: TEST1,TEST2 # combining multiple masks (e.g. SIM_Ia,SIM_CC)
         MODE: train/predict # Some classifiers dont need training and so you can set to predict straight away
         OPTS:
           CHANGES_FOR_INDIVIDUAL_CLASSIFIERS
@@ -166,6 +167,10 @@ class Classifier(Task):
                 mode = Classifier.TRAIN
             else:
                 mode = Classifier.PREDICT
+
+            # Prevent mode = predict and SIM_FRACTION < 1
+            if mode == Classifier.PREDICT and "SIM_FRACTION" in options and options["SIM_FRACTION"] < 1:
+                Task.fail_config("SIM_FRACTION must be 1 (all sims included) for predict mode")
 
             # Validate that train is not used on certain classifiers
             if mode == Classifier.TRAIN:
