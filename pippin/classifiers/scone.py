@@ -33,6 +33,7 @@ class SconeClassifier(Classifier):
           NUM_EPOCHS: 400
           IA_FRACTION: 0.5
           MODEL: /path/to/trained/model
+          SIM_FRACTION: 1 # fraction of sims to use for training
           SCONE_CPU_BATCH_FILE: /path/to/sbatch/template/for/scone
           SCONE_GPU_BATCH_FILE: /path/to/sbatch/template/for/scone
           BATCH_REPLACE: {}
@@ -98,7 +99,7 @@ class SconeClassifier(Classifier):
       # TODO: if externally specified batchfile exists, have to parse desired logfile path from it
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
-            "REPLACE_WALLTIME": "20:00:00", #TODO: change to scale with # of heatmaps expected
+            "REPLACE_WALLTIME": "12:00:00", #TODO: change to scale with # of heatmaps expected
             "REPLACE_MEM": "64GB",
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
@@ -110,7 +111,7 @@ class SconeClassifier(Classifier):
       header_dict = {
               "REPLACE_NAME": self.job_base_name,
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
-              "REPLACE_MEM": "8GB",
+              "REPLACE_MEM": "32GB",
               "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
