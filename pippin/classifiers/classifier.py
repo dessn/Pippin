@@ -159,6 +159,8 @@ class Classifier(Task):
             name = config["CLASSIFIER"]
             cls = ClassifierFactory.get(name)
             options = config.get("OPTS", {})
+            if options == None:
+                Task.fail_config(f"Classifier {clas_name} has no OPTS specified -- either remove the OPTS keyword or specify some options under it")
             if "MODE" not in config:
                 Task.fail_config(f"Classifier task {clas_name} needs to specify MODE as train or predict")
             mode = config["MODE"].lower()
@@ -169,7 +171,7 @@ class Classifier(Task):
                 mode = Classifier.PREDICT
 
             # Prevent mode = predict and SIM_FRACTION < 1
-            if mode == Classifier.PREDICT and "SIM_FRACTION" in options and options["SIM_FRACTION"] < 1:
+            if mode == Classifier.PREDICT and options.get("SIM_FRACTION", 1) > 1:
                 Task.fail_config("SIM_FRACTION must be 1 (all sims included) for predict mode")
 
             # Validate that train is not used on certain classifiers
