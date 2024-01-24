@@ -100,7 +100,7 @@ class SconeClassifier(Classifier):
       header_dict = {
             "REPLACE_LOGFILE": self.heatmaps_log_path,
             "REPLACE_WALLTIME": "12:00:00", #TODO: change to scale with # of heatmaps expected
-            "REPLACE_MEM": "64GB",
+            "REPLACE_MEM": self.options.get("HEATMAPS_MEM", "32GB"),
           }
       heatmaps_sbatch_header = self.make_sbatch_header("HEATMAPS_BATCH_FILE", header_dict)
 
@@ -111,7 +111,7 @@ class SconeClassifier(Classifier):
       header_dict = {
               "REPLACE_NAME": self.job_base_name,
               "REPLACE_LOGFILE": str(Path(self.output_dir) / "output.log"),
-              "REPLACE_MEM": "32GB",
+              "REPLACE_MEM": self.options.get("MODEL_MEM", "64GB"),
               "REPLACE_WALLTIME": "4:00:00" if self.gpu else "12:00:00", # 4h is max for gpu
               }
       model_sbatch_header = self.make_sbatch_header("MODEL_BATCH_FILE", header_dict, use_gpu=self.gpu)
@@ -221,7 +221,7 @@ class SconeClassifier(Classifier):
         config["batch_size"] = self.options.get("BATCH_SIZE", 32) # TODO: replace with percentage of total size?
         config["Ia_fraction"] = self.options.get("IA_FRACTION", 0.5)
         config["output_path"] = self.output_dir
-        config["trained_model"] = self.options.get("MODEL", False)
+        config["trained_model"] = self.options.get("MODEL", None)
         config["kcor_file"] = self.options.get("KCOR_FILE", None)
         config["mode"] = mode
         config["job_base_name"] = self.job_base_name
