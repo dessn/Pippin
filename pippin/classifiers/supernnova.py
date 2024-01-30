@@ -270,7 +270,7 @@ class SuperNNovaClassifier(Classifier):
         light_curve_dir = sim_dep.output["photometry_dirs"][self.index]
         self.raw_dir = light_curve_dir
         fit = self.get_fit_dependency()
-        fit_dir = f"" if fit is None else f"--fits_dir {fit['fitres_dirs'][self.index]}"
+        fit_dir = f"" if ((fit is None) or (len(fit) == 0)) else f"--fits_dir {fit[self.index]['fitres_dirs']}"
         cyclic = "--cyclic" if self.variant in ["vanilla", "variational"] and self.cyclic else ""
         batch_size = f"--batch_size {self.batch_size}"
         num_layers = f"--num_layers {self.num_layers}"
