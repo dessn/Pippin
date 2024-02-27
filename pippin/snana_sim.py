@@ -1,4 +1,4 @@
-import os
+import os, sys
 import shutil
 import subprocess
 import tempfile
@@ -8,6 +8,8 @@ from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml, get_config
 from pippin.task import Task
 
+sys.path.insert(1, os.path.expandvars("$SNANA_DIR/util/submit_batch"))
+import submit_util as util
 
 class SNANASimulation(ConfigBasedExecutable):
     """ Merge fitres files and aggregator output
@@ -108,9 +110,19 @@ class SNANASimulation(ConfigBasedExecutable):
                 genmodel = genmodel or d.get("GENMODEL")
 
                 if not gentype:
-                    Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}")
+                    gentype_sublist = util.get_simInput_key_values(base_path, ['GENTYPE'])
+                    self.logger.debug(f"gentype_sublist: {gentype_sublist}")
+                    if len(gentype_sublist) == 0:
+                        Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}, or any included files")
+                    else:
+                        gentype = gentype_sublist[0]
                 if not genmodel:
-                    Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}")
+                    genmodel_sublist = util.get_simInput_key_values(base_path, ['GENMODEL'])["GENMODEL"]
+                    self.logger.debug(f"genmodel_sublist: {genmodel_sublist}")
+                    if len(genmodel_sublist) == 0:
+                        Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}, or any included files")
+                    else:
+                        genmodel = genmodel_sublist[0]
 
                 type2 = 100 + gentype
                 if "SALT" in genmodel:
