@@ -181,6 +181,18 @@ function dirusage {
 }
 ```
 
+### Pippin on Perlmutter
+
+On perlmutter, add `source /global/cfs/cdirs/lsst/groups/TD/setup_td.sh` to your `~/.bashrc` to load all the relevant paths and environment variables.
+
+This will add the `$PIPPIN_DIR` path for Pippin source code, and `$PIPPIN_OUTPUT` for the output of Pippin jobs. Additionally `pippin.sh` can be run from any directory.
+
+To load the perlmutter specific `cfg.yml` you must add the following to the start of your Pippin job:
+```yaml
+GLOBAL:
+    CFG_PATH: $SNANA_LSST_ROOT/starterKits/pippin/cfg_lsst_perlmutter.yml
+```
+
 ## Issues and Contributing to Pippin
 
 Contributing to Pippin or raising issues is easy. Here are some ways you can do it, in order of preference:
