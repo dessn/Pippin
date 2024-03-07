@@ -27,7 +27,7 @@ DataSkimmer:
 SCONE:
   init_env_cpu: source activate scone_cpu_tf2.6
   init_env_gpu: source activate scone_gpu_tf2.6
-  location: $PRODUCTS/classifiers/scone
+  location: $SCONE_DIR
 
 CosmoMC:
   location: $PRODUCTS/CosmoMC/v04/CosmoMC-master
