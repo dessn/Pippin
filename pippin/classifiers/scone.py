@@ -173,11 +173,19 @@ class SconeClassifier(Classifier):
 
       slurm_script = self.make_model_sbatch_script()
 
-      self.logger.info(f"Submitting batch job {self.model_sbatch_job_path}")
-
       # TODO: nersc needs `module load esslurm` to sbatch gpu jobs, maybe make
       # this shell command to a file so diff systems can define their own
-      subprocess.run([f"python {Path(self.path_to_classifier) / 'run.py'} --config_path {self.config_path}"], shell=True)
+      file_to_run = 'run.py'
+      if self.options.get("REFACTORED", False):
+          file_to_run = 'run_refactor.py'
+      elif self.options.get("LEGACY", False):
+          file_to_run = 'run_legacy.py'
+      path = Path(self.path_to_classifier) / file_to_run
+      path = path if path.exists() else Path(self.path_to_classifier) / 'run.py'
+      cmd = f"python {str(path)} --config_path {self.config_path}"
+      subprocess.run([cmd], shell=True)
+      self.logger.info(f"Running command: {cmd}")
+
       return True
 
     def predict(self):
