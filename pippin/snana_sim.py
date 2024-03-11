@@ -1,4 +1,4 @@
-import os, sys
+import os
 import shutil
 import subprocess
 import tempfile
@@ -7,9 +7,6 @@ import json
 from pippin.base import ConfigBasedExecutable
 from pippin.config import chown_dir, copytree, mkdirs, get_data_loc, get_hash, read_yaml, get_config
 from pippin.task import Task
-
-sys.path.insert(1, os.path.expandvars("$SNANA_DIR/util/submit_batch"))
-import submit_util as util
 
 class SNANASimulation(ConfigBasedExecutable):
     """ Merge fitres files and aggregator output
@@ -110,14 +107,14 @@ class SNANASimulation(ConfigBasedExecutable):
                 genmodel = genmodel or d.get("GENMODEL")
 
                 if not gentype:
-                    gentype_sublist = util.get_simInput_key_values(base_path, ['GENTYPE'])
+                    gentype_sublist = self.get_simInput_key_values(base_path, ['GENTYPE'])
                     self.logger.debug(f"gentype_sublist: {gentype_sublist}")
                     if len(gentype_sublist) == 0:
                         Task.fail_config(f"Cannot find GENTYPE for component {k} and base file {base_path}, or any included files")
                     else:
                         gentype = gentype_sublist[0]
                 if not genmodel:
-                    genmodel_sublist = util.get_simInput_key_values(base_path, ['GENMODEL'])["GENMODEL"]
+                    genmodel_sublist = self.get_simInput_key_values(base_path, ['GENMODEL'])["GENMODEL"]
                     self.logger.debug(f"genmodel_sublist: {genmodel_sublist}")
                     if len(genmodel_sublist) == 0:
                         Task.fail_config(f"Cannot find GENMODEL for component {k} and base file {base_path}, or any included files")
@@ -443,6 +440,70 @@ class SNANASimulation(ConfigBasedExecutable):
             return Task.FINISHED_SUCCESS
 
         return self.check_for_job(squeue, f"{self.genversion}.input-CPU")
+
+    def get_simInput_key_values(self, sim_input_file, key_list):
+
+        # Created Feb 2024 by R.Kessler
+        # Example:
+        #    input key_list = [ 'GENMODEL', 'GENRANGE_PEAKMJD' ]
+        # Search sim_input_file for these keys, and also search
+        # INCLUDE files. Sim-input format is not quite YAML,
+        # so there can be multiple values returned for a given key.
+        # Return a dictionary as follows:
+        #   { 'GENMODEL':  [ arg list ],
+        #     'GENRANGE_PEAKMJD' : [arg list] }
+        #
+        # Initial use is for pippin to read GENMODEL keys, so here
+        # is just a public place to store this utility.
+        # .xyz
+
+
+        INPUT_FILE_LIST = [ sim_input_file ]
+
+        # first find INCLUDE files and append INPUT_FILE_LIST
+        KEYLIST_INCLUDE_FILE = [ 'INPUT_INCLUDE_FILE', 'INPUT_FILE_INCLUDE' ]
+        with open(sim_input_file,"rt") as f:
+            line_list = f.readlines()
+        for line in line_list:
+            line = line.rstrip() # remove trailine space
+            wdlist = line.split()
+            if len(wdlist) < 2 : continue
+            for key in KEYLIST_INCLUDE_FILE:
+                if wdlist[0] == key + ':' :
+                    inc_file = os.path.expandvars(wdlist[1])
+                    INPUT_FILE_LIST.append(inc_file)
+        
+        # - - - - -
+        # init output dictionary 
+        key_dict = {}
+        for key in key_list:  key_dict[key] = []
+
+        #print(f" xxx util: INPUT_FILE_LIST = {INPUT_FILE_LIST}")
+
+        # loop over all of the sim-input files and search for key values
+        for inp_file in INPUT_FILE_LIST:
+            f         = open(inp_file,"rt")
+            line_list = f.readlines()
+            f.close()
+
+            #print(f" Inspect {inp_file}")
+            for line in line_list:
+                if line.isspace()   : continue
+                if line[0:1] == '#' : continue
+                line = line.rstrip()      # remove trailing space 
+                line = line.split('#')[0] # remove comments
+                wdlist = line.split()
+                if len(wdlist) < 2 : continue
+                for key in key_list:
+                    if wdlist[0] == key + ':' :
+                        args = ' '.join(wdlist[1:])
+                        #print(f" xxx load {key} with {args}")
+                        key_dict[key].append(args)
+
+        # - - - - - 
+        
+        return key_dict
+        # end get_simInput_key_values
 
     @staticmethod
     def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
