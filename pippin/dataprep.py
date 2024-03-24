@@ -40,6 +40,8 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         if self.raw_dir is None:
             Task.fail_config(f"Unable to find {self.options.get('RAW_DIR')}")
 
+        if self.raw_dir[-1] == "/":
+            self.raw_dir = self.raw_dir[:-1]
         self.genversion = os.path.basename(self.raw_dir)
         self.data_path = os.path.dirname(self.raw_dir)
         if self.unparsed_raw == "$SCRATCH_SIMDIR" or "SNDATA_ROOT/SIM" in self.raw_dir:
