@@ -514,6 +514,9 @@ CLASSIFICATION:
     COMBINE_MASK: [SIM_IA, SIM_CC] # optional mask to combine multiple sim runs into one classification job (e.g. separate CC and Ia sims). NOTE: currently not compatible with SuperNNova/SNIRF
     OPTS:
       MODEL: file_or_label  # only needed in predict mode, how to find the trained classifier
+      OPTIONAL_MASK: # mask for optional dependencies. Not all classifiers make use of this
+      OPTIONAL_MASK_SIM: # mask for optional sim dependencies. Not all classifiers make use of this
+      OPTIONAL_MASK_FIT: # mask for optional lcfit dependencies. Not all classifiers make use of this
       WHATREVER_THE: CLASSIFIER_NEEDS  
 ```
 
@@ -1000,6 +1003,13 @@ however you want.)
 You'll also notice a very simply `_check_completion` method, and a `get_requirmenets` method. The latter returns a two-tuple of booleans, indicating 
 whether the classifier needs photometry and light curve fitting results respectively. For the NearestNeighbour code, it classifies based
 only on SALT2 features, so I return `(False, True)`.
+You can also define a `get_optional_requirements` method which, like `get_requirements`, returns a two-tuple of booleans, indicating whether the classifer needs photometry and light curve fitting resulst *for this particular run*. By default, this method returns:
+- `True, True` if `OPTIONAL_MASK` set in `OPTS`
+- `True, False` if `OPTIONAL_MASK_SIM` set in `OPTS`
+- `False, True` if `OPTIONAL_MASK_FIT` set in `OPTS`
+- `False, False` otherwise.
+
+If you define your own method based on classifier specific requirements, then these `OPTIONAL_MASK*` keys can still be set to choose which tasks are optionally included. If there are not set, then the normal `MASK`, `MASK_SIM`, and `MASK_FIT` are used instead. Note that if *no* masks are set then *every* sim or lcfit task will be included.
 
 Finally, you'll need to add your classifier into the ClassifierFactory in `classifiers/factory.py`, so that I can link a class name
 in the YAML configuration to your actual class. Yeah yeah, I could use reflection or dynamic module scanning or similar, but I've had issues getting

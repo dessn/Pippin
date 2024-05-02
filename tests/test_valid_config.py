@@ -133,6 +133,22 @@ def test_classifier_lcfit_config_valid():
     assert task.output["prob_column_name"] == "PROB_FITPROBTEST"
     assert len(task.dependencies) == 2
 
+def test_classifier_sim_with_opt_lcfit_config_valid():
+    manager = get_manager(yaml="tests/config_files/valid_classify_sim_with_lcfit.yml", check=True)
+    tasks = manager.tasks
+
+    assert len(tasks) == 3
+    assert isinstance(tasks[0], SNANASimulation)
+    assert isinstance(tasks[1], SNANALightCurveFit)
+    assert isinstance(tasks[2], PerfectClassifier)
+
+    task = tasks[-1]
+    assert task.name == "PERFECT"
+    assert task.output["prob_column_name"] == "PROB_PERFECT"
+    deps = task.dependencies
+    assert len(deps) == 2
+    assert isinstance(deps[0], SNANASimulation)
+    assert isinstance(deps[1], SNANALightCurveFit)
 
 def test_agg_config_valid():
 

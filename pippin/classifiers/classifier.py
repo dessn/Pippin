@@ -14,12 +14,19 @@ class Classifier(Task):
     ==============
     CLASSIFICATION:
       label:
-        MASK: TEST  # partial match on sim and classifier
+        MASK: TEST  # partial match on sim name and lcfit name
         MASK_SIM: TEST  # partial match on sim name
         MASK_FIT: TEST  # partial match on lcfit name
-        COMBINE_MASK: TEST1,TEST2 # combining multiple masks (e.g. SIM_Ia,SIM_CC)
+        COMBINE_MASK: TEST1,TEST2 # combining multiple masks (e.g. SIM_Ia,SIM_CC) - *exact* match on sim name and lcfit name
+
         MODE: train/predict # Some classifiers dont need training and so you can set to predict straight away
         OPTS:
+          # Masks for optional dependencies. Since whether an optional dependency is allowed is classifier specific, this is a classifier opt
+          # If any are defined, they take precedence, otherwise use above masks for optional dependencies too
+          OPTIONAL_MASK: TEST
+          OPTIONAL_MASK_SIM: TEST
+          OPTIONAL_MASK_FIT: TEST
+
           CHANGES_FOR_INDIVIDUAL_CLASSIFIERS
 
     OUTPUTS:
@@ -67,6 +74,27 @@ class Classifier(Task):
         :return: a two tuple - (needs simulation photometry, needs a fitres file)
         """
         return True, True
+
+
+    @staticmethod
+    def get_optional_requirements(config):
+        """ Return what data *may* be used by the classier.
+        Default behaviour:
+            if OPTIONAL_MASK != "":
+                True, True
+            if OPTIONAL_MASK_SIM != "":
+                True, False
+            if OPTIONAL_MASK_FIT != "":
+                False, True
+
+
+        :param config: the input dictionary `OPTS` from the config file
+        :return: a two tuple - (needs simulation photomerty, needs a fitres file)
+        """
+
+        opt_sim = ("OPTIONAL_MASK" in config) or ("OPTIONAL_MASK_SIM" in config)
+        opt_fit = ("OPTIONAL_MASK" in config) or ("OPTIONAL_MASK_FIT" in config)
+        return opt_sim, opt_fit 
 
     def get_fit_dependency(self, output=True):
         fit_deps = []
@@ -180,6 +208,55 @@ class Classifier(Task):
 
             needs_sim, needs_lc = cls.get_requirements(options)
 
+            # Load in all optional tasks
+            opt_sim, opt_lc = cls.get_optional_requirements(options)
+            opt_deps = []
+            if opt_sim or opt_lc:
+                # Get all optional masks
+                mask = options.get("OPTIONAL_MASK", "") 
+                mask_sim = options.get("OPTIONAL_MASK_SIM", "")
+                mask_fit = options.get("OPTIONAL_MASK_FIT", "")
+                
+                # If no optional masks are set, use base masks
+                if not any([mask, mask_sim, mask_fit]):
+                    mask = config.get("MASK", "")
+                    mask_sim = config.get("MASK_SIM", "")
+                    mask_fit = config.get("MASK_FIT", "")
+
+                # Get optional sim tasks
+                optional_sim_tasks = []
+                if opt_sim:
+                    if not any([mask, mask_sim]):
+                        Task.logger.debug(f"No optional sim masks set, all sim tasks included as dependendencies")
+                        optional_sim_tasks = sim_tasks
+                    else:
+                        for s in sim_tasks:
+                            if mask_sim and mask_sim in s.name:
+                                optional_sim_tasks.append(s)
+                            elif mask and mask in s.name:
+                                optional_sim_tasks.append(s)
+                        if len(optional_sim_tasks) == 0:
+                            Task.logger.warn(f"Optional SIM dependency but no matching sim tasks for MASK: {mask} or MASK_SIM: {mask_sim}")
+                        else:
+                            Task.logger.debug(f"Found {len(optional_sim_tasks)} optional SIM dependencies")
+                # Get optional lcfit tasks
+                optional_lcfit_tasks = []
+                if opt_lc:
+                    if not any([mask, mask_fit]):
+                        Task.logger.debug(f"No optional lcfit masks set, all lcfit tasks included as dependendencies")
+                        optional_lcfit_tasks = lcfit_tasks
+                    else:
+                        for l in lcfit_tasks:
+                            if mask_fit and mask_fit in l.name:
+                                optional_lcfit_tasks.append(l)
+                            elif mask and mask in l.name:
+                                optional_lcfit_tasks.append(l)
+                            if len(optional_lcfit_tasks) == 0:
+                                Task.logger.warn(f"Optional LCFIT dependency but no matching lcfit tasks for MASK: {mask} or MASK_FIT: {mask_fit}")
+                            else:
+                                Task.logger.debug(f"Found {len(optional_lcfit_tasks)} optional LCFIT dependencies")
+                opt_deps = optional_sim_tasks + optional_lcfit_tasks
+
             runs = []
             if "COMBINE_MASK" in config:
                 combined_tasks = []
@@ -253,7 +330,7 @@ class Classifier(Task):
                                 len(folders) == 1
                             ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
 
-                deps = sim_deps + fit_deps
+                deps = sim_deps + fit_deps + opt_deps
 
                 sim_name = "_".join([s.name for s in sim_deps if s is not None]) if len(sim_deps) > 0 else None
                 fit_name = "_".join([l.name for l in fit_deps if l is not None]) if len(fit_deps) > 0 else None
