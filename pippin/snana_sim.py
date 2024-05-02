@@ -140,7 +140,7 @@ class SNANASimulation(ConfigBasedExecutable):
             self.output["types_dict"] = types_dict
             self.output["types"] = sorted_types
 
-            rankeys = [r for r in self.config["GLOBAL"].keys() if r.startswith("RANSEED_")]
+            rankeys = [r for r in self.config.get("GLOBAL", {}).keys() if r.startswith("RANSEED_")]
             value = int(self.config["GLOBAL"][rankeys[0]].split(" ")[0]) if rankeys else 1
             self.set_num_jobs(2 * value)
 
