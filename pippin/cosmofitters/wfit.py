@@ -115,11 +115,11 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             mask = config.get("MASK", "")
 
             ctasks = [ctask for ctask in create_cov_tasks if mask in ctask.name]
+            if len(ctasks) == 0:
+                Task.fail_config(f"WFit task {name} has no create_cov task to run on!")
 
             t = WFit(name, _get_wfit_dir(base_output_dir, stage_number, name), ctasks, config, options, global_config)
             Task.logger.info(f"Creating WFit task {name} {t.num_jobs} jobs")
             tasks.append(t)
 
-            if len(create_cov_tasks) == 0:
-                Task.fail_config(f"WFit task {name} has no create_cov task to run on!")
         return tasks
