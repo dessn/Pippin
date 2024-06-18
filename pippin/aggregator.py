@@ -256,6 +256,7 @@ class Aggregator(Task):
                 self.logger.debug(f"relevant_classifiers: {relevant_classifiers}")
 
                 prediction_files = [d.output["predictions_filename"] for d in relevant_classifiers]
+
                 lcfits = [d.get_fit_dependency() for d in relevant_classifiers]
                 self.logger.debug(f"lcfits: {lcfits}")
 

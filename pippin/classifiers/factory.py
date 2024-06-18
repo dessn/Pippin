@@ -6,6 +6,7 @@ from pippin.classifiers.supernnova import SuperNNovaClassifier
 from pippin.classifiers.fitprob import FitProbClassifier
 from pippin.classifiers.unity import UnityClassifier
 from pippin.classifiers.scone import SconeClassifier
+from pippin.classifiers.scone_refac import SconeClassifier_Refac
 
 
 class ClassifierFactory:
@@ -28,3 +29,5 @@ ClassifierFactory.add_factory(NearestNeighborPyClassifier)
 ClassifierFactory.add_factory(UnityClassifier)
 ClassifierFactory.add_factory(PerfectClassifier)
 ClassifierFactory.add_factory(SconeClassifier)
+ClassifierFactory.add_factory(SconeClassifier_Refac)
+
