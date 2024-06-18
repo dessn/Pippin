@@ -213,7 +213,7 @@ def print_syntax(s):
     syntax = get_syntax(s=="options")
     try:
         keys = list(syntax.keys())
-        s = int(s)
+        s = int(s) + 1
         if s < 0 or s > len(keys) - 1:
             raise ValueError(f"Unknown task number {s}")
         key = keys[s]
@@ -258,7 +258,8 @@ def get_args(test=False):
 
 if __name__ == "__main__":
     args = get_args()
-    manager = run(args)
-    sys.stdout.flush()
-    if manager.num_errs > 0:
-        raise(ValueError(f"{manager.num_errs} Errors found"))
+    if args is not None:
+        manager = run(args)
+        sys.stdout.flush()
+        if manager.num_errs > 0:
+            raise(ValueError(f"{manager.num_errs} Errors found"))
