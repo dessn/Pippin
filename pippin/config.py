@@ -8,7 +8,6 @@ import stat
 import tarfile
 import gzip
 
-
 def compress_dir(output_filename, source_dir):
     logging.info(f"Compressing {source_dir} to {output_filename}")
     with tarfile.open(output_filename, "w:gz") as tar:
