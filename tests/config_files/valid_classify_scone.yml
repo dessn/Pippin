@@ -1,0 +1,48 @@
+SIM:
+  EXAMPLESIM:
+    IA_G10_DES3YR:
+      BASE: surveys/sdss/sims_ia/sn_ia_g10_sdss_3yr.input
+    II:
+      BASE: surveys/sdss/sims_cc/sn_ii_templates.input
+    Ibc:
+      BASE: surveys/sdss/sims_cc/sn_ibc_templates.input
+    GLOBAL:
+      NGEN_UNIT: 1
+      RANSEED_REPEAT: 10 12345
+      SOLID_ANGLE: 10
+
+LCFIT:
+  D:
+    BASE: surveys/des/lcfit_nml/des_5yr.nml
+
+CLASSIFICATION:
+
+  LEGACY_SCONE_TRAIN:
+    CLASSIFIER: SconeClassifier
+    MODE: train
+    OPTS:
+      OPTIONAL_MASK_FIT: "D"
+      NUM_EPOCHS: 400
+
+  LEGACY_SCONE_PREDICT:
+    CLASSIFIER: SconeClassifier
+    MODE: predict
+    OPTS:
+      OPTIONAL_MASK_FIT: "D"
+      MODEL: 'LEGACY_SCONE_TRAIN'
+
+  SCONE_TRAIN:
+    CLASSIFIER: SconeClassifier
+    MODE: train
+    BASE: "/path/to/base/file"
+    OPTS:
+      OPTIONAL_MASK_FIT: "D"
+      NUM_EPOCHS: 400
+
+  SCONE_PREDICT:
+    CLASSIFIER: SconeClassifier
+    MODE: predict
+    BASE: "/path/to/base/file"
+    OPTS:
+      OPTIONAL_MASK_FIT: "D"
+      MODEL: 'SCONE_TRAIN'

@@ -26,6 +26,11 @@ DataSkimmer:
   conda_env: snn_gpu
   location: $PRODUCTS/utilities/dataskim
 
+SCONE:
+  init_env_cpu: source activate scone_cpu_tf2.6
+  init_env_gpu: source activate scone_gpu_tf2.6
+  location: $SCONE_DIR
+
 CosmoMC:
   location: $PRODUCTS/CosmoMC/v03/CosmoMC-master
   static_loc: cosmomc_static_chains
