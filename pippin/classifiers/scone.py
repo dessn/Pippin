@@ -14,7 +14,7 @@ from pippin.task import Task
 
 # =========================================
 
-SCONE_SHELL_SCRIPT = "run_refactor.py"  # top-level script under $SCONE_DIR
+SCONE_SHELL_SCRIPT = "run.py"  # top-level script under $SCONE_DIR
 
 KEYLIST_SCONE_INPUT = [ 'init_env_train', 'init_env_heatmaps', 
                         'prescale_heatmaps', 'nevt_select_heatmaps',
