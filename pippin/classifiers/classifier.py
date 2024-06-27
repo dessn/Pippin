@@ -363,7 +363,7 @@ class Classifier(Task):
                                 # deps.append(t)
                                 extra = t.get_unique_name()
 
-                                assert t.__class__ == cls, f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+                                assert isinstance(t, cls), f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
 
                                 indexes = get_num_ranseed(sim_deps, fit_deps)
                                 for i in range(indexes):
@@ -381,8 +381,6 @@ class Classifier(Task):
                     for i in range(indexes):
                         num = i + 1 if indexes > 1 else None
                         clas_output_dir = _get_clas_output_dir(base_output_dir, stage_number, sim_name, fit_name, clas_name, index=num)
-                        print(clas_output_dir)
-                        print(deps)
                         cc = cls(clas_name, clas_output_dir, config, deps, mode, options, index=i)
                         Task.logger.info(
                             f"Creating classification task {name} with {cc.num_jobs} jobs, for LC fit {fit_name} on simulation {sim_name} and index {i}"

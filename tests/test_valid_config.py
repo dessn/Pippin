@@ -7,6 +7,8 @@ from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.classifiers.fitprob import FitProbClassifier
 from pippin.classifiers.perfect import PerfectClassifier
+from pippin.classifiers.scone import SconeClassifier 
+from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 from pippin.aggregator import Aggregator
 from pippin.merge import Merger
 from pippin.biascor import BiasCor
@@ -149,6 +151,58 @@ def test_classifier_sim_with_opt_lcfit_config_valid():
     assert len(deps) == 2
     assert isinstance(deps[0], SNANASimulation)
     assert isinstance(deps[1], SNANALightCurveFit)
+
+def test_classifier_scone_valid():
+    manager = get_manager(yaml="tests/config_files/valid_classify_scone.yml", check=True)
+    tasks = manager.tasks
+
+    # 1 Sim, 1 LCFit, 4 Scone
+    assert len(tasks) == 6
+    assert isinstance(tasks[0], SNANASimulation)
+    assert isinstance(tasks[1], SNANALightCurveFit)
+    for task in tasks[2:]:
+        # isinstance => Class or Subclass
+        assert isinstance(task, SconeClassifier)
+
+    tests = [
+        {
+            'task': tasks[2],
+            'cls': SconeLegacyClassifier,
+            'attr': {
+                'name': 'LEGACY_SCONE_TRAIN',
+                'scone_input_file': None
+            }
+        },
+        {
+            'task': tasks[3],
+            'cls': SconeLegacyClassifier,
+            'attr': {
+                'name': 'LEGACY_SCONE_PREDICT',
+                'scone_input_file': None
+            }
+        },
+        {
+            'task': tasks[4],
+            'cls': SconeClassifier,
+            'attr': {
+                'name': 'SCONE_TRAIN',
+            }
+        },
+        {
+            'task': tasks[5],
+            'cls': SconeClassifier,
+            'attr': {
+                'name': 'SCONE_PREDICT',
+            }
+        }
+    ]
+
+    for test in tests:
+        task = test['task']
+        assert type(task) is test['cls']
+        for (attr, val) in test['attr'].items():
+            assert hasattr(task, attr)
+            assert getattr(task, attr) == val
 
 def test_agg_config_valid():
 
