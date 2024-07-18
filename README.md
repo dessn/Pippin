@@ -308,37 +308,51 @@ all the biascor sims are precomputed, so we can define them as external tasks li
 
 ```yaml
 SIM:
-  DESSIMBIAS5YRIA_C11:
-    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_C11
+  DESSIMBIAS5YRIA_C11: # A SIM task we don't want to rerun
+    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_C11 # The path to a matching external SIM task, which is already finished
   DESSIMBIAS5YRIA_G10:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_G10
   DESSIMBIAS5YRCC:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRCC
 ```
 
-Point to the external task output directory. In this case, we use the `EXTERNAL` keyword because each task we define has an explicit one-to-one match
-with an external task.
+Point to the external task output directory. In this case, we use the `EXTERNAL` keyword because each of the three defined tasks can only be associated with one, and only one, `EXTERNAL` task. Because `EXTERNAL` tasks are one-to-one with a defined task, the name of the defined task, and the `EXTERNAL` task do not need to match.
 
-But then say we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! Well, we set up the tasks
-in the same way as we normally would, but now there **isn't** a one-to-one mapping. See the config snippet below:
+But then say we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! However, unlike `SIM`, `LCFIT` runs multiple sub-tasks - one for each `SIM` task you are performing lightcurve fitting on.
 
 ```yaml
 LCFIT:
-  D:
+  D: # An LCFIT task we don't want to rerun
     BASE: surveys/des/lcfit_nml/des_5yr.nml
-    MASK: DESSIM
+    MASK: DESSIM # Selects a subset of SIM tasks to run lightcurve fitting on
+                 # In this case, the SIM tasks are DESSIMBIAS5YRIA_C11, DESSIMBIAS5YRIA_G10, and DESSIMBIAS5YRCC
     EXTERNAL_DIRS:
-      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_C11
+      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_C11 # Path to a previously run LCFIT sub-task
       - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_G10
       - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRCC
 ```
 
-That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point a single external directory.
-But what we can do is point to multiple! And then if the output directory matches (ie `D_DESSIMBIAS5YRIA_C11` is the base name for both a computed
-task output directory and an external task directory), it will instead use that.
+That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point a single `EXTERNAL` task. Instead, we provide an external path for each sub-task, as defined in `EXTERNAL_DIRS`. The name of each external sub-task must exactly match the `LCFIT` task name, and the `SIM` sub-task name. For example, the path to the `DESSIMBIAS5YRIA_C11` lightcurve fits, must be `D_DESSIMBIAS5YRIA_C11`.
 
-Note that you still need to point to the right base file, because Pippin still wants those details. It won't be submitted anywhere though, just
-loaded in. 
+Note that you still need to point to the right base file, because Pippin still wants those details. It won't be submitted anywhere though, just loaded in. 
+
+To use `EXTERNAL_DIRS` on pre-computed tasks that don't follow your current naming scheme (i.e the `LCFIT` task name, or the `SIM` sub-task names differ), you can make use of `EXTERNAL_MAP` to provide a mapping between the `EXTERNAL_DIR` paths, and each `LCFIT` sub-task.
+
+```yaml
+LCFIT:
+  D: # An LCFIT task we don't want to rerun
+    BASE: surveys/des/lcfit_nml/des_5yer.nml
+    MASK: DESSIM # Selects a subset of SIM tasks to run lightcurve fitting on
+    EXTERNAL_DIRS: # Paths to external LCFIT tasks, which do not have an exact match with this task
+      - $PIPPIN_OUTPUT/EXAMPLE_C11/2_LCFIT/DESFIT_SIM
+      - $PIPPIN_OUTPUT/EXAMPLE_G10/2_LCFIT/DESFIT_SIM
+      - $PIPPIN_OUTPUT/EXAMPLE/2_LCFIT/DESFIT_CCSIM
+    EXTERNAL_MAP:
+      # LCFIT_SIM: EXTERNAL_MASK
+      D_DESSIMBIAS5YRIA_C11: EXAMPLE_C11 # In this case we are matching to the pippin job name, as the LCFIT task name is shared between two EXTERNAL_DIRS
+      D_DESSIMBIAS5YRIA_G10: EXAMPLE_G10 # Same as C11
+      D_DESSIMBIAS5YRCC: DESFIT_CCSIM # In this case we match to the LCFIT task name, as the pippin job name (EXAMPLE) would match with the other EXTERNAL_DIRS
+```
 
 The flexibility of `EXTERNAL_DIRS` means you can mix both precomputed and non-precomputed tasks together. Take this classificaiton task:
 
@@ -361,25 +375,6 @@ simulation tasks (such as running on the data) using the pretrained model `model
 Finally, the way this works under the hood is simple - it copies the directory over explicitly. And it will only copy once, so if you want the 
 "latest version" just ask the task to refresh (or delete the folder). Once it copies it, there is no normal hash checking,
 it reads in the `config.yml` file created by the task in its initial run and powers onwards.
-
-If you want to use `EXTERNAL_DIRS` with different output directory names, you will ned to inform pippin as to which `EXTERNAL_DIR` matches with which `LCFIT` task. To do so, you can make use of `EXTERNAL_MAP`, which allows you to specify a mask associated with each `LCFIT` task, selecting an `EXTERNAL_DIR` for that task. Note that tasks which do have an exact name do not need an `EXTERNAL_MAP` entry
-```yaml
-LCFIT:
-  D:
-    BASE: surveys/des/lcfit_nml/des_5yer.nml
-    MASK: DESSIM
-    EXTERNAL_DIRS:
-      - $PIPPIN_OUTPUT/EXAMPLE_C11/2_LCFIT/DESFIT_SIM
-      - $PIPPIN_OUTPUT/EXAMPLE_G10/2_LCFIT/DESFIT_SIM
-      - $PIPPIN_OUTPUT/EXAMPLE/2_LCFIT/DESFIT_CCSIM
-    EXTERNAL_MAP:
-      # LCFIT_SIM: EXTERNAL_MASK
-      D_DESSIMBIAS5YRIA_C11: EXAMPLE_C11 # In this case we are matching to the pippin job name, as the LCFIT task name is shared between two EXTERNAL_DIRS
-      D_DESSIMBIAS5YRIA_G10: EXAMPLE_G10 # Same as C11
-      D_DESSIMBIAS5YRCC: DESFIT_CCSIM # In this case we match to the LCFIT task name, as the pippin job name (EXAMPLE) would match with the other EXTERNAL_DIRS
-
-```
-The `EXTERNAL_MAP` method should match with any pippin task which makes use of `EXTERNAL_DIRS`, and is only necessary if the `EXTERNAL_DIRS` task names do not match up.
 
 If you have any issues using this new feature, check out the `ref_des_5yr.yml` file or flick me a message.
 
