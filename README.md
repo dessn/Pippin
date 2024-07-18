@@ -316,9 +316,9 @@ SIM:
     EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRCC
 ```
 
-Point to the external task output directory. In this case, we use the `EXTERNAL` keyword because each of the three defined tasks can only be associated with one, and only one, `EXTERNAL` task. Because `EXTERNAL` tasks are one-to-one with a defined task, the name of the defined task, and the `EXTERNAL` task do not need to match.
+In this case, we use the `EXTERNAL` keyword because each of the three defined tasks can only be associated with one, and only one, `EXTERNAL` task. Because `EXTERNAL` tasks are one-to-one with a defined task, the name of the defined task, and the `EXTERNAL` task do not need to match.
 
-But then say we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! However, unlike `SIM`, `LCFIT` runs multiple sub-tasks - one for each `SIM` task you are performing lightcurve fitting on.
+Suppose we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! However, unlike `SIM`, `LCFIT` runs multiple sub-tasks - one for each `SIM` task you are performing lightcurve fitting on.
 
 ```yaml
 LCFIT:
@@ -332,7 +332,7 @@ LCFIT:
       - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRCC
 ```
 
-That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point a single `EXTERNAL` task. Instead, we provide an external path for each sub-task, as defined in `EXTERNAL_DIRS`. The name of each external sub-task must exactly match the `LCFIT` task name, and the `SIM` sub-task name. For example, the path to the `DESSIMBIAS5YRIA_C11` lightcurve fits, must be `D_DESSIMBIAS5YRIA_C11`.
+That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point to a single `EXTERNAL` task. Instead, we provide an external path for each sub-task, as defined in `EXTERNAL_DIRS`. The name of each external sub-task must exactly match the `LCFIT` task name, and the `SIM` sub-task name. For example, the path to the `DESSIMBIAS5YRIA_C11` lightcurve fits, must be `D_DESSIMBIAS5YRIA_C11`.
 
 Note that you still need to point to the right base file, because Pippin still wants those details. It won't be submitted anywhere though, just loaded in. 
 
