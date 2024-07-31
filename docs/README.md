@@ -6,6 +6,23 @@
 ![Python Version](https://img.shields.io/badge/Python-3.7%2B-red)
 ![Pippin Test](https://github.com/dessn/Pippin/actions/workflows/test-pippin.yml/badge.svg)
 
+# Pippin
+
+Pippin - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
+
+![A Really Funny Meme](_static/images/meme.jpg)
+
+## Table of Contents
+```{toctree}
+:maxdepth: 2
+
+self
+src/install.md
+src/usage.md
+src/tasks.md
+src/dev.md
+```
+
 ## Tasks
 
 Pippin is essentially a wrapper around many different tasks. In this section, 
