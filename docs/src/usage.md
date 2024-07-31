@@ -1,10 +1,10 @@
 # Using Pippin
 
-```{figure} ../_static/images/console.gif
+:::{figure} ../_static/images/console.gif
 :alt: Console Output
 
 The console output from a succesfull Pippin run. Follow these instructions and you too can witness a beautiful wall of green text!
-```
+:::
 
 Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on midway and use SNANA, this script will be on your path already. To use Pippin, all you need is a config file ready to go. I've got a bunch of mine and some general ones in the `configs` directory, but you can put yours wherever you want. I recommend adding your initials to the front of the file to make it obvious in the shared output directory which folders as yours.
 
@@ -13,11 +13,12 @@ If you have `example.yml` as your config file and want pippin to run it, easy: `
 The file name that you pass in should contain a run configuration. Note that this is different to the global software configuration file `cfg.yml`, and remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location, so please either set said variable or change the associated line in the `cfg.yml`.
 
 <details>
-
-    <summary>For the morbidly curious, here's a small demo video of using Pippin in the Midway environment</summary>
+  <summary>For the morbidly curious, here's a small demo video of using Pippin in the Midway environment</summary>
 
 ```{eval-rst}
 .. youtube:: pCaPvzFCZ-Y
+    :width: 100%
+    :align: center
 ```
 
 </details>
@@ -40,7 +41,7 @@ LCFIT:
     LCFIT_CONFIG: HERE
 ```
 
-Configuration detail for each tasks can be found in the <project:./tasks.md> section, with example config files available in the [examples directory](../../examples/)
+Configuration detail for each tasks can be found in the <project:./tasks.md> section, with example config files available in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples)
 
 ## What If I change my config file?
 
@@ -54,7 +55,7 @@ finished successfully the last time it was run, the task is not re-executed. You
 
 On top of this, Pippin has a few command line arguments, which you can detail with `pippin.sh -h`, but I'll also detail here:
 
-```bash
+```
   -h                 Show the help menu
   -v, --verbose      Verbose. Shows debug output. I normally have this option enabled.
   -r, --refresh      Refresh/redo - Rerun tasks that completed in a previous run even if the inputs haven't changed.
@@ -69,7 +70,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
 For an example, to have a verbose output configuration run and only do data preparation and simulation, 
 you would run
 
-`pippin.sh -vf 1 configfile.yml`
+`pippin.sh -v -f 1 configfile.yml`
 
 
 ## Stages in Pippin
@@ -101,7 +102,7 @@ photometry and `$PIPPIN_OUTPUT` to remove Pippin's output. I'd recommend adding 
 calculate directory size so you know what's taking the most space. After adding this and sourcing it, just put `dirusage` into the terminal
 in both of those locations and see what's eating your quota.
 
-```bash
+```sh
 function dirusage {
     for file in $(ls -l | grep $USER | awk '{print $NF}')
     do
@@ -124,7 +125,7 @@ GLOBAL:
 
 ## Examples
 
-If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](../../examples/), pick the task you want to know more about, and have a look over all the options.
+If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples), pick the task you want to know more about, and have a look over all the options.
 
 Here is a very simple configuration file which runs a simulation, does light curve fitting, and then classifies it using the debug FITPROB classifier.
 
@@ -429,8 +430,7 @@ REPLACE_JOB
 To have Pippin use your template, simply add the following to your task:
 
 ```yaml
-
-    BATCH_FILE: path/to/your/batch.TEMPLATE
+BATCH_FILE: path/to/your/batch.TEMPLATE
 ```
 
 ## FAQ
@@ -441,7 +441,7 @@ Feel free to send me the log and stack, and I'll see what I can do turn the exce
 
 ### I want to modify a ton of files but don't want huge yml files, please help
 
-You can modify input files and put them in a directory you own, and then tell Pippin to look there (in addition to the default location) when its constructing your tasks. To do this, see [this example here](../../examples/global.yml), or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
+You can modify input files and put them in a directory you own, and then tell Pippin to look there (in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples/global.yml), or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
 
 ```yaml
 GLOBAL:

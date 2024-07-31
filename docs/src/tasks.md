@@ -4,7 +4,9 @@ Pippin is essentially a wrapper around many different tasks. In this section, I'
 
 As a general note, most tasks have an ``OPTS`` section where most details go. This is partially historical, but essentially properties that Pippin uses to determine how to construct tasks (like ``MASK``, classification mode, etc) are top level, and the Task itself gets passed everything inside OPTS to use however it wants.
 
-```{toctree}
+:::{toctree}
+:maxdepth: 1
+
 tasks/dataprep.md
 tasks/sim.md
 tasks/lcfit.md
@@ -15,4 +17,4 @@ tasks/biascor.md
 tasks/createcov.md
 tasks/cosmofit.md
 tasks/analyse.md
-```
+:::

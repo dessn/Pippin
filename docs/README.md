@@ -14,21 +14,21 @@ Pippin - a pipeline designed to streamline and remove as much hassle as we can w
 
 ## Table of Contents
 
-```{toctree}
+:::{toctree}
 :maxdepth: 2
 :hidden:
 
 self
-```
+:::
 
-```{toctree}
+:::{toctree}
 :maxdepth: 2
 
 src/install.md
 src/usage.md
 src/tasks.md
 src/dev.md
-```
+:::
 
 ## Tasks
 
