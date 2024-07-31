@@ -24,7 +24,7 @@ author = 'Samuel Hinton, Patrick Armstrong, Dillon Brout, et. al.'
 
 # -- General configuration ---------------------------------------------------
 
-root_doc = "README"
+root_doc = "README.md"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
