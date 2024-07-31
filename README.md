@@ -14,7 +14,7 @@ Pippin - a pipeline designed to streamline and remove as much hassle as we can w
 
 ## Table of Contents
 
-* [Installation](docs/src/install.md)
-* [Using Pippin](docs/src/usage.md)
-* [Tasks](docs/src/tasks.md)
-* [Pippin Development](docs/src/dev.md)
+* [Installation](https://pippin.readthedocs.io/en/latest/src/install.html)
+* [Using Pippin](https://pippin.readthedocs.io/en/latest/src/usage.html)
+* [Tasks](https://pippin.readthedocs.io/en/latest/src/tasks.html)
+* [Pippin Development](https://pippin.readthedocs.io/en/latest/src/dev.html)
