@@ -11,7 +11,6 @@
 Pippin - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
 ```{toctree}
-:hidden:
 :maxdepth: 2
 src/install.md
 src/usage.md
@@ -21,34 +20,11 @@ src/dev.md
 
 ## Table of Contents
 
-<img align="right" height="350" src="_static/images/meme.jpg">
+![A Really Funny Meme](_static/images/meme.jpg")
 
-- [FAQ](#faq)
-- [Tasks](#tasks)
-    - [DataPrep](#data-preparation)
-    - [Simulation](#simulation)
-    - [Light Curve Fit](#light-curve-fit)
-    - [Classification](#classification)
-    - [Aggregation](#aggregation)
-    - [Merging](#merging)
-    - [Bias Corrections](#bias-corrections)
-    - [Create Covariance](#create-covariance)
-    - [CosmoFit](#cosmofit)
-    - [Analyse](#analyse)
 - [Contributing to Pippin](#issues-and-contributing-to-pippin)
 - [Adding a new Task](#adding-a-new-task)
 - [Adding a new classifier](#adding-a-new-classifier)
-
-## Issues and Contributing to Pippin
-
-Contributing to Pippin or raising issues is easy. Here are some ways you can do it, in order of preference:
-
-1. Submit an [issue on Github](https://github.com/samreay/Pippin), and then submit a pull request to fix that issue.
-2. Submit an [issue on Github](https://github.com/samreay/Pippin), and then wait until I have time to look at it. Hopefully thats quickly, but no guarantees.
-3. Email me with a feature request
-
-If you do want to contribute code, fantastic. [Please note that all code in Pippin is subject to the Black formatter](https://black.readthedocs.io/en/stable/). 
-I would recommend installing this yourself because it's a great tool.
 
 ## Tasks
 
