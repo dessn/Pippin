@@ -1,4 +1,4 @@
-# Bias Corrections
+# 6. BIASCOR
 
 With all the probability goodness now in the FITRES files, we can move onto calculating bias corrections. For spec-confirmed surveys, you only need a Ia sample for bias corrections. For surveys with contamination, you will also need a CC only simulation/lcfit result. For each survey being used (as we would often combine lowz and highz surveys), you can specify inputs like below.
 

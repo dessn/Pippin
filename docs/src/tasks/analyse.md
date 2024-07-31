@@ -1,4 +1,4 @@
-# 9. Analyse
+# 9. ANALYSE
 
 The final step in the Pippin pipeline is the Analyse task. It creates a final output directory, moves relevant files into it, and generates extra plots. It will save out compressed CosmoMC chains and the plotting scripts (so you can download the entire directory and customise it without worrying about pointing to external files), it will copy in Hubble diagrams, and - depending on if you've told it to, will make histogram comparison plots between data and sim. Oh and also redshift evolution plots. The scripts which copy/compress/rename external files into the analyse directory are generally named `parse_*.py`. So `parse_cosmomc.py` is the script which finds, reads and compresses the MCMC chains from CosmoMC into the output directory. Then `plot_cosmomc.py` reads those compressed files to make the plots. 
 
