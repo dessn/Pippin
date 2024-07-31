@@ -1,12 +1,26 @@
 # Using Pippin
 
+```{figure} ../_static/images/console.gif
+:alt: Console Output
+
+The console output from a succesfull Pippin run. Follow these instructions and you too can witness a beautiful wall of green text!
+```
+
 Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on midway and use SNANA, this script will be on your path already. To use Pippin, all you need is a config file ready to go. I've got a bunch of mine and some general ones in the `configs` directory, but you can put yours wherever you want. I recommend adding your initials to the front of the file to make it obvious in the shared output directory which folders as yours.
 
 If you have `example.yml` as your config file and want pippin to run it, easy: `pippin.sh example.yml`
 
-The file name that you pass in should contain a run configuration. Note that this is different to the global software configuration file `cfg.yml`, and remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location, so please either set said variable or change the associated line in the `cfg.yml`. [For the morbidly curious, here is a very small demo video of using Pippin in the Midway environment](https://www.youtube.com/watch?v=pCaPvzFCZ-Y).
+The file name that you pass in should contain a run configuration. Note that this is different to the global software configuration file `cfg.yml`, and remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location, so please either set said variable or change the associated line in the `cfg.yml`.
 
-![ConsoleOutput](../_static/images/console.gif)
+<details>
+
+    <summary>For the morbidly curious, here's a small demo video of using Pippin in the Midway environment</summary>
+
+```{eval-rst}
+.. youtube:: pCaPvzFCZ-Y
+```
+
+</details>
 
 ## Creating your own configuration file
 

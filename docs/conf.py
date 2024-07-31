@@ -32,7 +32,8 @@ root_doc = "index"
 extensions = [
     'sphinx_rtd_theme',
     'sphinx_rtd_dark_mode',
-    'myst_parser'
+    'myst_parser',
+    'sphinxcontrib.youtube',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

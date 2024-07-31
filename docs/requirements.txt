@@ -2,3 +2,4 @@ sphinx<8
 sphinx_rtd_theme
 sphinx-rtd-dark-mode
 myst-parser
+sphinxcontrib-youtube

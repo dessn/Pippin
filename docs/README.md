@@ -13,10 +13,17 @@ Pippin - a pipeline designed to streamline and remove as much hassle as we can w
 ![A Really Funny Meme](_static/images/meme.jpg)
 
 ## Table of Contents
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+```
+
 ```{toctree}
 :maxdepth: 2
 
-self
 src/install.md
 src/usage.md
 src/tasks.md
