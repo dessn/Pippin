@@ -10,7 +10,7 @@ Contributing to Pippin or raising issues is easy. Here are some ways you can do 
 
 If you do want to contribute code, fantastic. [Please note that all code in Pippin is subject to the Black formatter](https://black.readthedocs.io/en/stable/). I would recommend installing this yourself because it's a great tool.
 
-![Developer Documentation Below](_static/images/developer.jpg)
+![Developer Documentation Below](../_static/images/developer.jpg)
 
 ## Coding style
 
@@ -18,7 +18,7 @@ Please, for the love of god, don't code this up in vim/emacs on a terminal conne
 PyCharm or VSCode), and **install the Black extensiion**! I have Black set up in PyCharm as a file watcher, and all
 python files, on save, are automatically formatted. Use 160 characters a linewidth. Here is the Black file watcher config:
 
-![Black config](_static/images/black.jpg)
+![Black config](../_static/images/black.jpg)
 
 If everyone does this, then all files should remain consistent across different users.
 
