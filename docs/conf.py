@@ -31,8 +31,19 @@ root_doc = "index"
 # ones.
 extensions = [
     'sphinx_rtd_theme',
-    'myst_parser'
+    'sphinx_rtd_dark_mode',
+    'myst_parser',
+    'sphinxcontrib.youtube',
 ]
+
+myst_enable_extensions = [
+    "substitution",
+    "colon_fence",
+]
+
+myst_substitutions = {
+    "patrick": "[Patrick Armstrong](https://github.com/OmegaLambda1998)"
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

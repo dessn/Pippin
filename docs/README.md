@@ -10,11 +10,22 @@
 
 Pippin - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
-![A Really Funny Meme](docs/_static/images/meme.jpg)
+![A Really Funny Meme](_static/images/meme.jpg)
 
 ## Table of Contents
 
-* [Installation](https://pippin.readthedocs.io/en/latest/src/install.html)
-* [Using Pippin](https://pippin.readthedocs.io/en/latest/src/usage.html)
-* [Tasks](https://pippin.readthedocs.io/en/latest/src/tasks.html)
-* [Pippin Development](https://pippin.readthedocs.io/en/latest/src/dev.html)
+:::{toctree}
+:maxdepth: 2
+:hidden:
+
+self
+:::
+
+:::{toctree}
+:maxdepth: 2
+
+src/install.md
+src/usage.md
+src/tasks.md
+src/dev.md
+:::
