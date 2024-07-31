@@ -1,35 +1,37 @@
 # 0. DATAPREP
 
-The DataPrep task is simple - it is mostly a pointer for Pippin towards an external directory that contains some photometry, to say we're going to make use of it. Normally this means data files, though you can also use it to point to simulations that have already been run to save yourself the hassle of rerunning them. The other thing the DataPrep task will do is run the new method of determining a viable initial guess for the peak time, which will be used by the light curve fitting task down the road.
-
-It does this by generating a `clump.nml` file and running `snana.exe clump.nml`.
+The DataPrep task is simple - it is mostly a pointer for Pippin towards an external directory that contains some photometry, to say we're going to make use of it. Normally this means data files, though you can also use it to point to simulations that have already been run to save yourself the hassle of rerunning them.  The other thing the DataPrep task will do is run the new method of determining a viable initial guess for the peak time, which will be used by the light curve fitting task down the road.
 
 ## Example
 
 ```yaml
 DATAPREP:
-    SOMENAME:
-        OPTS:
+  SOMENAME:
+    OPTS:
+    
+      # Location of the photometry files
+      RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
       
-        # Location of the photometry files
-        RAW_DIR: $DES_ROOT/lcmerge/DESALL_forcePhoto_real_snana_fits
-                    
-        # Specify which types are confirmed Ia's, confirmed CC or unconfirmed. Used by ML down the line
-        TYPES:
-            IA: [101, 1]
-            NONIA: [20, 30, 120, 130]
+      # Specify which types are confirmed Ia's, confirmed CC or unconfirmed. Used by ML down the line
+      TYPES:
+        IA: [101, 1]
+        NONIA: [20, 30, 120, 130]
 
-        # Blind the data. Defaults to True if SIM:True not set
-        BLIND: False
-                                                            
-        # Defaults to False. Important to set this flag if analysing a sim in the same way as data, as there
-        # are some subtle differences
-        SIM: False
+      # Blind the data. Defaults to True if SIM:True not set
+      BLIND: False
+      
+      # Defaults to False. Important to set this flag if analysing a sim in the same way as data, as there
+      # are some subtle differences
+      SIM: False
+
+      # The method of estimating peak mjd values. Don't ask me what numbers mean what, ask Rick.
+      OPT_SETPKMJD: 16
+
 ```
 
 ## Options
 
-Here is an exhaustive list of everything you can pass to `OPTS`
+Here is an exhaustive list of everything you can pass to `OPTS`.
 
 ### RAW_DIR
 

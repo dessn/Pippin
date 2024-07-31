@@ -1,16 +1,12 @@
 # Using Pippin
 
-:::{figure} ../_static/images/console.gif
+```{figure} ../_static/images/console.gif
 :alt: Console Output
 
 The console output from a succesfull Pippin run. Follow these instructions and you too can witness a beautiful wall of green text!
-:::
+```
 
-Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on midway and use SNANA, this script will be on your path already. To use Pippin, all you need is a config file ready to go. I've got a bunch of mine and some general ones in the `configs` directory, but you can put yours wherever you want. I recommend adding your initials to the front of the file to make it obvious in the shared output directory which folders as yours.
-
-If you have `example.yml` as your config file and want pippin to run it, easy: `pippin.sh example.yml`
-
-The file name that you pass in should contain a run configuration. Note that this is different to the global software configuration file `cfg.yml`, and remember to ensure that your `cfg.yml` file is set up properly and that you know where you want your output to be installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location, so please either set said variable or change the associated line in the `cfg.yml`.
+Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on Midway and use SNANA, this script will be in your path already. To use Pippin, all you need is a config file, examples of which can be found in the [configs directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/configs). Given the config file `example.yml`, simply run `pippin.sh example.yml` to invoke Pippin. This will create a new folder in the `OUTPUT: output_dir` path defined in the global [cfg.yml](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/cfg.yml) file. By default, this is set to the `$PIPPIN_OUTPUT` environment variable, so please either set said variable or change the associated line in the `cfg.yml`.
 
 <details>
   <summary>For the morbidly curious, here's a small demo video of using Pippin in the Midway environment</summary>
@@ -25,7 +21,7 @@ The file name that you pass in should contain a run configuration. Note that thi
 
 ## Creating your own configuration file
 
-Each configuration file is represented by a yaml dictionary linking each stage (see stage declaration section below) to a dictionary of tasks, the key being the unique name for the task and the value being its specific task configuration.
+Each configuration file is represented by a yaml dictionary linking each stage to a dictionary of tasks, the key being the unique name for the task and the value being its specific task configuration.
 
 For example, to define a configuration with two simulations and one light curve fitting task (resulting in 2 output simulations and 2 output light curve tasks - one for each simulation), a user would define:
 
@@ -41,7 +37,7 @@ LCFIT:
     LCFIT_CONFIG: HERE
 ```
 
-Configuration detail for each tasks can be found in the <project:./tasks.md> section, with example config files available in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples)
+Configuration detail for each tasks can be found in the <project:./tasks.md> section, with stage-specific example config files available in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples)
 
 ## What If I change my config file?
 
@@ -79,16 +75,16 @@ You may have noticed above that each stage has a numeric idea for convenience an
 
 The current stages are:
 
-* <project:./tasks/dataprep.md> Data preparation
-* <project:./tasks/sim.md>: Simulation
-* <project:./tasks/lcfit.md>: Light curve fitting
-* <project:./tasks/classify.md>: Classification (training and testing)
-* <project:./tasks/agg.md>: Aggregation (comparing classifiers)
-* <project:./tasks/merge.md>: Merging (combining classifier and FITRES output)
-* <project:./tasks/biascor.md>: Bias corrections using BBC
-* <project:./tasks/createcov.md>: Determine the systematic covariance matrix
-* <project:./tasks/cosmofit.md>: Fit hubble diagram and produce cosmological constraint
-* <project:./tasks/analyse.md>: Create final output and plots. 
+- <project:./tasks/dataprep.md>: Data preparation
+- <project:./tasks/sim.md>: Simulation
+- <project:./tasks/lcfit.md>: Light curve fitting
+- <project:./tasks/classify.md>: Classification (training and testing)
+- <project:./tasks/agg.md>: Aggregation (comparing classifiers)
+- <project:./tasks/merge.md>: Merging (combining classifier and FITRES output)
+- <project:./tasks/biascor.md>: Bias corrections using BBC
+- <project:./tasks/createcov.md>: Determine the systematic covariance matrix
+- <project:./tasks/cosmofit.md>: Fit hubble diagram and produce cosmological constraint
+- <project:./tasks/analyse.md>: Create final output and plots. 
 
 ## Pippin on Midway
 

@@ -23,7 +23,7 @@ When it comes to installing SNANA, the best method is to already have it install
 2. Create a GPU conda env for it: `conda create --name snn_gpu --file env/conda_env_gpu_linux64.txt`
 3. Activate environment and install natsort: `conda activate snn_gpu` and `conda install --yes natsort`
 
-Then, in the Pippin global configuration file, `[cfg.yml](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/cfg.yml)` in the top level directory, ensure that the `SuperNNova: location` path is pointing to where you just cloned SNN into. You will need to install the other external software packages if you want to use them, and you do not need to install any package you do not explicitly request in a config file[^2].
+Then, in the Pippin global configuration file, [cfg.yml](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/cfg.yml) in the top level directory, ensure that the `SuperNNova: location` path is pointing to where you just cloned SNN into. You will need to install the other external software packages if you want to use them, and you do not need to install any package you do not explicitly request in a config file[^2].
 
 [^1]: {{patrick}}: I am ***eventually*** going to attempt to create an SNANA docker image, but that's likely far down the line.
 [^2]: {{patrick}}: If Pippin is complaining about a missing software package which you aren't using, please file an issue.
