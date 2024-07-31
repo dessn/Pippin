@@ -11,6 +11,8 @@
 Pippin - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
 
 ```{toctree}
+:hidden:
+:maxdepth: 2
 src/install.md
 src/usage.md
 src/tasks.md
