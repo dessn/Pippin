@@ -24,13 +24,14 @@ author = 'Samuel Hinton, Patrick Armstrong, Dillon Brout, et. al.'
 
 # -- General configuration ---------------------------------------------------
 
-root_doc = "index"
+root_doc = "README"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
     'sphinx_rtd_theme',
+    'sphinx_rtd_dark_mode',
     'myst_parser'
 ]
 

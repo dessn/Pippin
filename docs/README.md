@@ -8,17 +8,19 @@
 
 # Pippin
 
-Pippin - a pipeline designed to streamline and remove as much hassle as we can
-when running end-to-end supernova cosmology analyses.
+Pippin - a pipeline designed to streamline and remove as much hassle as we can when running end-to-end supernova cosmology analyses.
+
+```{toctree}
+install.md
+usage.md
+tasks.md
+dev.md
+```
 
 ## Table of Contents
 
-<img align="right" height="350" src="docs/_static/images/meme.jpg">
+<img align="right" height="350" src="_static/images/meme.jpg">
 
-- [Using Pippin](#using-pippin)
-- [Installing Pippin](#installing-it-fresh)
-- [Contributing to Pippin](#issues-and-contributing-to-pippin)
-- [Examples](#examples)
 - [FAQ](#faq)
 - [Tasks](#tasks)
     - [DataPrep](#data-preparation)
@@ -31,161 +33,9 @@ when running end-to-end supernova cosmology analyses.
     - [Create Covariance](#create-covariance)
     - [CosmoFit](#cosmofit)
     - [Analyse](#analyse)
+- [Contributing to Pippin](#issues-and-contributing-to-pippin)
 - [Adding a new Task](#adding-a-new-task)
 - [Adding a new classifier](#adding-a-new-classifier)
-
-
-## Installing it fresh
-
-If you're using a pre-installed version of Pippin - like the one on Midway, ignore this.
-
-If you're not, installing Pippin is simple.
-
-1. Checkout Pippin
-2. Ensure you have the dependencies install (`pip install -r requirements.txt`) and that your python version is 3.7+.
-3. Celebrate
-
-There is no need to attempt to install Pippin like a package (no `python setup.py install`), just run from the clone.
-
-Now, Pippin also interfaces with other tasks: SNANA and machine learning classifiers mostly. I'd highly recommend 
-running on a high performance computer with SNANA already installed, but if you want to take a crack at installing it,
-[you can find the docoumentation here](https://github.com/RickKessler/SNANA).
-
-I won't cover installing SNANA here, hopefully you already have it. But to install the classifiers, we'll take
-[SuperNNova](https://github.com/supernnova/SuperNNova) as an example. To install that, find a good place for it and:
-
-1. Checkout `https://github.com/SuperNNova/SuperNNova`
-2. Create a GPU conda env for it: `conda create --name snn_gpu --file env/conda_env_gpu_linux64.txt`
-3. Activate environment and install natsort: `conda activate snn_gpu` and `conda install --yes natsort`
-
-Then, in the Pippin global configuration file `cfg.yml` in the top level directory, ensure that the SNN path in Pippin is
-pointing to where you just cloned SNN into. You will need to install the other external software packages
-if you want to use them, and you do not need to install any package you do not explicitly request in a config file.
-
-## Using Pippin
-
-Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on midway and use SNANA, this
-script will be on your path already. To use Pippin, all you need is a config file ready to go. I've got a bunch of mine and 
-some general ones in the `configs` directory, but you can put yours wherever you want. I recommend adding your initials to the 
-front of the file to make it obvious in the shared output directory which folders as yours.
-
-If you have `example.yml` as your config file and want pippin to run it, easy:
-`pippin.sh example.yml`
-
-The file name that you pass in should contain a run configuration. Note that this is different to the global software
-configuration file `cfg.yml`, and remember to ensure that your `cfg.yml` file is set up properly and that you know 
-where you want your output to be
-installed. By default, I assume that the `$PIPPIN_OUTPUT` environment variable is set as the output location,
-so please either set said variable or change the associated line in the `cfg.yml`. [For the morbidly curious, here
-is a very small demo video of using Pippin in the Midway environment](https://www.youtube.com/watch?v=pCaPvzFCZ-Y).
-
-![ConsoleOutput](docs/_static/images/console.gif)
-
-
-### Creating your own configuration file
-
-Each configuration file is represented by a yaml dictionary linking each stage (see stage declaration section below) to 
-a dictionary of tasks, the key being the unique name for the task and the value being its specific task configuration.
-
-For example, to define a configuration with two simulations and one light curve fitting task (resulting in 2 output simulations and
-2 output light curve tasks - one for each simulation), a user would define:
-
-```yaml
-SIM:
-  SIM_NAME_1:
-    SIM_CONFIG: HERE
-  SIM_NAME_2:
-    SIM_CONFIG: HERE
-    
-LCFIT:
-  LCFIT_NAME_1:
-    LCFIT_CONFIG: HERE
-```
-
-How to configure each task is also detail below on a task-by-task basis, or you can see examples in the `examples`
- directory for each task.
- 
- 
-### What If I change my config file?
-
-Happens all the time, don't even worry about it. Just start Pippin again and run the file again. Pippin will detect
-any changes in your configuration by hashing all the input files to a specific task. So this means, even if you're 
-config file itself doesn't change, changes to an input file it references (for example, the default DES simulation
-input file) would result in Pippin rerunning that task. If it cannot detect anything has changed, and if the task
-finished successfully the last time it was run, the task is not re-executed. You can force re-execution of tasks using the `-r` flag.
-
-
-### Command Line Arguments
-
-On top of this, Pippin has a few command line arguments, which you can detail with `pippin.sh -h`, but I'll also detail here:
-
-```bash
-  -h                 Show the help menu
-  -v, --verbose      Verbose. Shows debug output. I normally have this option enabled.
-  -r, --refresh      Refresh/redo - Rerun tasks that completed in a previous run even if the inputs haven't changed.
-  -c, --check        Check that the input config is valid but don't actually run any tasks.
-  -s, --start        Start at this task and refresh everything after it. Number of string accepted
-  -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
-  -p, --permission   Fix permissions and groups on all output, don't rerun
-  -i, --ignore       Do NOT regenerate/run tasks up to and including this stage.
-  -S, --syntax       If no task is given, prints out the possible tasks. If a task name or number is given, prints the docs on that task. For instance 'pippin.sh -S 0' and 'pippin.sh -S DATAPREP' will print the documentation for the DATAPREP task.
-```
-
-For an example, to have a verbose output configuration run and only do data preparation and simulation, 
-you would run
-
-`pippin.sh -vf 1 configfile.yml`
-
-
-### Stages in Pippin
-
-You may have noticed above that each stage has a numeric idea for convenience and lexigraphical sorting.
-
-The current stages are:
-
-* `0, DATAPREP` Data preparation
-* `1, SIM`: Simulation
-* `2, LCFIT`: Light curve fitting
-* `3, CLASSIFY`: Classification (training and testing)
-* `4, AGG`: Aggregation (comparing classifiers)
-* `5, MERGE`: Merging (combining classifier and FITRES output)
-* `6, BIASCOR`: Bias corrections using BBC
-* `7, CREATE_COV`: Create input files needed for CosmoMC
-* `8, COSMOFIT`: Run CosmoMC and fit cosmology
-* `9, ANALYSE`: Create final output and plots. Includes output from CosmoMC, BBC and Light curve fitting.
-
-### Pippin on Midway
-
-On midway, sourcing the SNANA setup will add environment variables and Pippin to your path.
-
-Pippin itself can be found at `$PIPPIN`, output at `$PIPPIN_OUTPUT` (which goes to a scratch directory), and `pippin.sh` will automatically work from
-any location.
-
-Note that you only have 100 GB on scratch. If you fill that up and need to nuke some files, look both in `$SCRATCH_SIMDIR` to remove SNANA 
-photometry and `$PIPPIN_OUTPUT` to remove Pippin's output. I'd recommend adding this to your `~/.bashrc` file to scan through directories you own and 
-calculate directory size so you know what's taking the most space. After adding this and sourcing it, just put `dirusage` into the terminal
-in both of those locations and see what's eating your quota.
-
-```bash
-function dirusage {
-    for file in $(ls -l | grep $USER | awk '{print $NF}')
-    do
-        du -sh "$file"
-    done
-}
-```
-
-### Pippin on Perlmutter
-
-On perlmutter, add `source /global/cfs/cdirs/lsst/groups/TD/setup_td.sh` to your `~/.bashrc` to load all the relevant paths and environment variables.
-
-This will add the `$PIPPIN_DIR` path for Pippin source code, and `$PIPPIN_OUTPUT` for the output of Pippin jobs. Additionally `pippin.sh` can be run from any directory.
-
-To load the perlmutter specific `cfg.yml` you must add the following to the start of your Pippin job:
-```yaml
-GLOBAL:
-    CFG_PATH: $SNANA_LSST_ROOT/starterKits/pippin/cfg_lsst_perlmutter.yml
-```
 
 ## Issues and Contributing to Pippin
 
@@ -197,180 +47,6 @@ Contributing to Pippin or raising issues is easy. Here are some ways you can do 
 
 If you do want to contribute code, fantastic. [Please note that all code in Pippin is subject to the Black formatter](https://black.readthedocs.io/en/stable/). 
 I would recommend installing this yourself because it's a great tool.
-
-
-## Examples
-
-If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/dessn/Pippin/tree/master/examples),
-pick the task you want to know more about, and have a look over all the options.
-
-Here is a very simple configuration file which runs a simulation, does light curve fitting, and then classifies it using the
-debug FITPROB classifier.
-
-```yaml
-SIM:
-  DESSIM:
-    IA_G10_DES3YR:
-      BASE: surveys/des/sim_ia/sn_ia_salt2_g10_des3yr.input
-
-LCFIT:
-  BASEDES:
-    BASE: surveys/des/lcfit_nml/des_5yr.nml
-  
-CLASSIFICATION:
-  FITPROBTEST:
-    CLASSIFIER: FitProbClassifier
-    MODE: predict
-```
-
-You can see that unless you specify a `MASK` on each subsequent task, Pippin will generally try and run everything on everything. So if you have two
-simulations defined, you don't need two light curve fitting tasks, Pippin will make one light curve fit task for each simulation, and then two classification tasks,
-one for each light curve fit task.
-
-### Anchoring in YAML files
-
-If you are finding that your config files contain lots of duplicated sections (for example, many simulations configured
-almost the same way but with one differnece), consider using YAML anchors. [See this blog post](https://blog.daemonl.com/2016/02/yaml.html)
-for more detail. You can define your anchors in the main config section, or add a new section (like SIM, LCFIT, CLASSIFICATION). So long as it doesn't
-match a Pippin keyword for each stage, you'll be fine. I recommend `ANCHORS:` at the top of the file, all of those will work.
-
-
-## FAQ
-
-**Pippin is crashing on some task and the error message isn't useful**
-
-Feel free to send me the log and stack, and I'll see what I can do turn the exception into something
-more human-readable.
-
-**I want Pippin to run after I log out** 
-
-Rather than redirecting Pippin output to a file or running it in the background, I *highly recommend* you run
-Pippin in a `screen` session. 
-
-For example, if you are doing machine-learning testing, you may create a new screen session called `ml` 
-by running `screen -S ml`. It will then launch a new instance of bash for you to play around in. conda **will not work out of the box**. To make
-it work again, run `conda deactivate` and then `conda activate`, and you can check this works by running `which python` and 
-verifying its pointing to the miniconda install. You can then run Pippin as per normal: `pippin.sh -v your_job.yml` and get the coloured output. 
-To leave the screen session, but *still keep Pippin running even after you log out*, press `Ctrl-A, Ctrl-D`. As in one, and then the other, not `Ctrl-A-D`. 
-This will detach from your screen session but keep it running. Just going `Ctrl_D` will disconnect and shut it down. To get back into your screen session,
-simply run `screen -r ml` to reattach. You can see your screen
-sessions using `screen -ls`. 
-
-You may notice if you log in and out of midway that your screen sessions might not show up. This is because midway has multiple head nodes, and
-your screen session exists only on one of them. This is why when I ssh to midway I specify a specific login node instead
-of being assigned one. To make it simpler, I'd recommend setting up
-an alias like so to either `login1` or `login2`:
-
-```yaml
-alias sshmidway="ssh username@midway2-login1.rcc.uchicago.edu"
-```
-
-**I want to modify a ton of files but don't want huge yml files, please help**
-
-You can modify input files and put them in a directory you own, and then tell Pippin to look there 
-(in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/dessn/Pippin/blob/master/examples/global.yml),
-or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
-
-```yaml
-GLOBAL:
-  DATA_DIRS:
-    - /some/new/directory/with/your/files/in/it
-```
-
-**I want to use a different cfg.yml file!**
-
-```yaml
-GLOBAL:
-  CFG_PATH: /your/path/here
-```
-**Stop rerunning my sims!**
-
-For big biascor sims it can be frustrating if you're trying to tweak biascor or later stages and sims kick off
-because of some trivial change. So use the `--ignore` ro `-i` command to ignore any undone tasks or tasks with 
-hash disagreements in previous stages. To clarify, even tasks that do not have a hash, and have never been submitted, will
-not be run if that stage is set to be ignored.  
-
-**I don't want to run this massive jobs again! Let me use external results!**
-
-Good news, everyone! Not only is there a dedicated config file for globally useful tasks, but its easier than ever to slow them
-into your existing jobs. For useful precomputed work, such as biascor sims and trained machine learning classifiers, check out `$PIPPIN_OUTPUT/GLOBAL`.
-
-For an example on how to use these results, check out the reference 5YR analysis `ref_des_5yr.yml`.  There are in essense two ways of 
-including external tasks. Both operate the same way, one is just a bit more explicit than the other. The explicit way is when adding 
-a task that is an *exact* replica of an external task, you can just add the `EXTERNAL` keyword. For example, in the reference 5YR analysis,
-all the biascor sims are precomputed, so we can define them as external tasks like this:
-
-```yaml
-SIM:
-  DESSIMBIAS5YRIA_C11: # A SIM task we don't want to rerun
-    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_C11 # The path to a matching external SIM task, which is already finished
-  DESSIMBIAS5YRIA_G10:
-    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRIA_G10
-  DESSIMBIAS5YRCC:
-    EXTERNAL: $PIPPIN_OUTPUT/GLOBAL/1_SIM/DESSIMBIAS5YRCC
-```
-
-In this case, we use the `EXTERNAL` keyword because each of the three defined tasks can only be associated with one, and only one, `EXTERNAL` task. Because `EXTERNAL` tasks are one-to-one with a defined task, the name of the defined task, and the `EXTERNAL` task do not need to match.
-
-Suppose we don't want to recompute the light curve fits. After all, most of the time we're not changing that step anyway! However, unlike `SIM`, `LCFIT` runs multiple sub-tasks - one for each `SIM` task you are performing lightcurve fitting on.
-
-```yaml
-LCFIT:
-  D: # An LCFIT task we don't want to rerun
-    BASE: surveys/des/lcfit_nml/des_5yr.nml
-    MASK: DESSIM # Selects a subset of SIM tasks to run lightcurve fitting on
-                 # In this case, the SIM tasks are DESSIMBIAS5YRIA_C11, DESSIMBIAS5YRIA_G10, and DESSIMBIAS5YRCC
-    EXTERNAL_DIRS:
-      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_C11 # Path to a previously run LCFIT sub-task
-      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRIA_G10
-      - $PIPPIN_OUTPUT/GLOBAL/2_LCFIT/D_DESSIMBIAS5YRCC
-```
-
-That is, we have one `LCFIT` task, but because we have three sims going into it and matching the mask, we can't point to a single `EXTERNAL` task. Instead, we provide an external path for each sub-task, as defined in `EXTERNAL_DIRS`. The name of each external sub-task must exactly match the `LCFIT` task name, and the `SIM` sub-task name. For example, the path to the `DESSIMBIAS5YRIA_C11` lightcurve fits, must be `D_DESSIMBIAS5YRIA_C11`.
-
-Note that you still need to point to the right base file, because Pippin still wants those details. It won't be submitted anywhere though, just loaded in. 
-
-To use `EXTERNAL_DIRS` on pre-computed tasks that don't follow your current naming scheme (i.e the `LCFIT` task name, or the `SIM` sub-task names differ), you can make use of `EXTERNAL_MAP` to provide a mapping between the `EXTERNAL_DIR` paths, and each `LCFIT` sub-task.
-
-```yaml
-LCFIT:
-  D: # An LCFIT task we don't want to rerun
-    BASE: surveys/des/lcfit_nml/des_5yer.nml
-    MASK: DESSIM # Selects a subset of SIM tasks to run lightcurve fitting on
-    EXTERNAL_DIRS: # Paths to external LCFIT tasks, which do not have an exact match with this task
-      - $PIPPIN_OUTPUT/EXAMPLE_C11/2_LCFIT/DESFIT_SIM
-      - $PIPPIN_OUTPUT/EXAMPLE_G10/2_LCFIT/DESFIT_SIM
-      - $PIPPIN_OUTPUT/EXAMPLE/2_LCFIT/DESFIT_CCSIM
-    EXTERNAL_MAP:
-      # LCFIT_SIM: EXTERNAL_MASK
-      D_DESSIMBIAS5YRIA_C11: EXAMPLE_C11 # In this case we are matching to the pippin job name, as the LCFIT task name is shared between two EXTERNAL_DIRS
-      D_DESSIMBIAS5YRIA_G10: EXAMPLE_G10 # Same as C11
-      D_DESSIMBIAS5YRCC: DESFIT_CCSIM # In this case we match to the LCFIT task name, as the pippin job name (EXAMPLE) would match with the other EXTERNAL_DIRS
-```
-
-The flexibility of `EXTERNAL_DIRS` means you can mix both precomputed and non-precomputed tasks together. Take this classificaiton task:
-
-```yaml
-CLASSIFICATION:
-  SNNTEST:
-    CLASSIFIER: SuperNNovaClassifier
-    MODE: predict
-    OPTS:
-      MODEL: $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTRAIN_DESTRAIN/model.pt
-    EXTERNAL_DIRS:
-      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRIA_C11_SNNTRAIN_DESTRAIN
-      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRIA_G10_SNNTRAIN_DESTRAIN
-      - $PIPPIN_OUTPUT/GLOBAL/3_CLAS/SNNTEST_DESSIMBIAS5YRCC_SNNTRAIN_DESTRAIN
-```
-
-It will load in the precomputed classification results for the biascor sims, and then also run and generate classification results on any other
-simulation tasks (such as running on the data) using the pretrained model `model.pt`.
-
-Finally, the way this works under the hood is simple - it copies the directory over explicitly. And it will only copy once, so if you want the 
-"latest version" just ask the task to refresh (or delete the folder). Once it copies it, there is no normal hash checking,
-it reads in the `config.yml` file created by the task in its initial run and powers onwards.
-
-If you have any issues using this new feature, check out the `ref_des_5yr.yml` file or flick me a message.
 
 ## Tasks
 
@@ -902,7 +578,7 @@ ANALYSE:
 
 [//]: # (End of Task specification)
 
-![Developer Documentation Below](docs/_static/images/developer.jpg)
+![Developer Documentation Below](_static/images/developer.jpg)
 
 
 ## Coding style
@@ -911,7 +587,7 @@ Please, for the love of god, don't code this up in vim/emacs on a terminal conne
 PyCharm or VSCode), and **install the Black extensiion**! I have Black set up in PyCharm as a file watcher, and all
 python files, on save, are automatically formatted. Use 160 characters a linewidth. Here is the Black file watcher config:
 
-![Black config](docs/_static/images/black.jpg)
+![Black config](_static/images/black.jpg)
 
 If everyone does this, then all files should remain consistent across different users.
 
