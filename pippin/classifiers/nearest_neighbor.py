@@ -9,7 +9,7 @@ from pippin.task import Task
 
 
 class NearestNeighborClassifier(Classifier):
-    """ Nearest Neighbour classifier
+    """Nearest Neighbour classifier
 
     CONFIGURATION
     =============
@@ -33,8 +33,27 @@ class NearestNeighborClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.passed = False
         self.num_jobs = 40
         self.outfile_train = f"{output_dir}/NN_trainResult.out"
@@ -53,7 +72,9 @@ class NearestNeighborClassifier(Classifier):
         lcfit = self.get_fit_dependency()
         self.fitopt = self.options.get("FITOPT", "DEFAULT")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_path = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+        self.fitres_path = os.path.abspath(
+            os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
+        )
 
     def train(self):
         # Created April 2019 by R.Kessler
@@ -89,7 +110,10 @@ class NearestNeighborClassifier(Classifier):
         nml_file_train1 = f"{temp_dir}/{genversion}-2.nml"
         nml_file_train2 = f"{self.output_dir}/{genversion}-2.nml"
 
-        train_info_local = {"outfile_NNtrain": outfile_train, "nml_file_NNtrain": nml_file_train2}
+        train_info_local = {
+            "outfile_NNtrain": outfile_train,
+            "nml_file_NNtrain": nml_file_train2,
+        }
 
         # construct sed to copy original NMLFILE and to
         #   + replace OUTDIR:
@@ -117,7 +141,9 @@ class NearestNeighborClassifier(Classifier):
 
         # make sure that the new NML file is really there
         if not os.path.isfile(nml_file_train1):
-            self.logger.error(f"Unable to create {nml_file_train1} with sed command {sed_command}")
+            self.logger.error(
+                f"Unable to create {nml_file_train1} with sed command {sed_command}"
+            )
             return None
 
         # check that expected FITRES ref file is really there.
@@ -130,7 +156,9 @@ class NearestNeighborClassifier(Classifier):
             f.write("\n# NNINP below added by prepare_NNtrainJob\n")
             f.write("\n&NNINP \n")
             f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
-            f.write("   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file))
+            f.write(
+                "   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file)
+            )
             f.write("   NEARNBR_SEPMAX_VARDEF  = '%s' \n" % self.nn_options)
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
@@ -153,7 +181,11 @@ class NearestNeighborClassifier(Classifier):
             return None, train_info_local
 
     def run_train_job(self):
-        cmd = ["split_and_fit.pl", self.train_info_local["nml_file_NNtrain"], "NOPROMPT"]
+        cmd = [
+            "split_and_fit.pl",
+            self.train_info_local["nml_file_NNtrain"],
+            "NOPROMPT",
+        ]
         self.logger.debug(f"Launching training via {cmd}")
         with open(self.logging_file, "w") as f:
             subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
@@ -182,7 +214,9 @@ class NearestNeighborClassifier(Classifier):
                         return 0
             else:
                 if os.path.exists(self.outfile_predict):
-                    self.logger.debug(f"Predictions can be found at {self.outfile_predict}")
+                    self.logger.debug(
+                        f"Predictions can be found at {self.outfile_predict}"
+                    )
                     self.output["predictions_filename"] = self.outfile_predict
                     return Task.FINISHED_SUCCESS
                 else:
@@ -193,8 +227,12 @@ class NearestNeighborClassifier(Classifier):
                 with open(self.logging_file, "r") as f:
                     output_error = False
                     for line in f.read().splitlines():
-                        if ("ERROR" in line or ("ABORT" in line and " 0 " not in line)) and not output_error:
-                            self.logger.error(f"Fatal error in light curve fitting. See {self.logging_file} for details.")
+                        if (
+                            "ERROR" in line or ("ABORT" in line and " 0 " not in line)
+                        ) and not output_error:
+                            self.logger.error(
+                                f"Fatal error in light curve fitting. See {self.logging_file} for details."
+                            )
                             output_error = True
                         if output_error:
                             self.logger.info(f"Excerpt: {line}")
@@ -214,10 +252,14 @@ class NearestNeighborClassifier(Classifier):
         self.setup()
 
         model = self.options.get("MODEL")
-        assert model is not None, "If TRAIN is not specified, you have to point to a model to use"
+        assert (
+            model is not None
+        ), "If TRAIN is not specified, you have to point to a model to use"
         for t in self.dependencies:
             if model == t.name:
-                self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
+                self.logger.debug(
+                    f"Found task dependency {t.name} with model file {t.output['model_filename']}"
+                )
                 model = t.output["model_filename"]
 
         model_path = get_output_loc(model)
@@ -241,7 +283,12 @@ class NearestNeighborClassifier(Classifier):
             cmd_job = "%s %s %s" % (job_name, inArgs, outArgs)
             self.logger.debug(f"Executing command {cmd_job}")
             with open(self.logging_file, "w") as f:
-                val = subprocess.run(cmd_job.split(" "), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+                val = subprocess.run(
+                    cmd_job.split(" "),
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=self.output_dir,
+                )
                 with open(self.done_file, "w") as f:
                     if val.returncode == 0:
                         f.write("SUCCESS")

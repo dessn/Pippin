@@ -30,7 +30,6 @@ class SNANALightCurveFit(ConfigBasedExecutable):
     """
 
     def __init__(self, name, output_dir, sim_task, config, global_config):
-
         self.config = config
         self.global_config = global_config
 
@@ -41,11 +40,15 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         if self.base_file is None:
             Task.fail_config(f"Base file {base} cannot be found for task {name}")
 
-        super().__init__(name, output_dir, config, self.base_file, " = ", dependencies=[sim_task])
+        super().__init__(
+            name, output_dir, config, self.base_file, " = ", dependencies=[sim_task]
+        )
 
         self.options = self.config.get("OPTS", {})
 
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
         batch_mem = self.batch_replace.get("REPLACE_MEM", None)
         if batch_mem is not None:
             self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
@@ -58,7 +61,10 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.config_path = self.output_dir + "/FIT_" + self.sim_version + ".nml"
         self.lc_output_dir = os.path.join(self.output_dir, "output")
         self.lc_log_dir = os.path.join(self.lc_output_dir, "SPLIT_JOBS_LCFIT")
-        self.fitres_dirs = [os.path.join(self.lc_output_dir, os.path.basename(s)) for s in self.sim_task.output["sim_folders"]]
+        self.fitres_dirs = [
+            os.path.join(self.lc_output_dir, os.path.basename(s))
+            for s in self.sim_task.output["sim_folders"]
+        ]
 
         self.logging_file = self.config_path.replace(".nml", ".LOG")
         self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
@@ -95,11 +101,15 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.logger.debug("Num jobs set by NUM_JOBS option")
         else:
             try:
-                property = self.options.get("BATCH_INFO") or self.yaml["CONFIG"].get("BATCH_INFO")
+                property = self.options.get("BATCH_INFO") or self.yaml["CONFIG"].get(
+                    "BATCH_INFO"
+                )
                 self.num_jobs = int(property.split()[-1])
                 self.logger.debug("Num jobs set by BATCH_INFO")
             except Exception:
-                self.logger.warning("Could not determine BATCH_INFO for job, setting num_jobs to 10")
+                self.logger.warning(
+                    "Could not determine BATCH_INFO for job, setting num_jobs to 10"
+                )
                 self.num_jobs = 10
                 self.logger.debug("Num jobs set to default")
 
@@ -118,13 +128,19 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             potential_path = get_data_loc(f)
             if potential_path is not None and os.path.exists(potential_path):
                 if has_file:
-                    raise ValueError("It seems that you're trying to load in two files for the FITOPTS! Please specify only one file path!")
+                    raise ValueError(
+                        "It seems that you're trying to load in two files for the FITOPTS! Please specify only one file path!"
+                    )
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 y = read_yaml(potential_path)
-                assert isinstance(y, dict), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                assert isinstance(
+                    y, dict
+                ), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
                 has_file = True
                 self.raw_fitopts.append(y)
-                self.logger.debug(f"Loaded a fitopt dictionary file from {potential_path}")
+                self.logger.debug(
+                    f"Loaded a fitopt dictionary file from {potential_path}"
+                )
                 self.output["fitopt_file"] = potential_path
             else:
                 assert f.strip().startswith(
@@ -134,7 +150,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 self.raw_fitopts.append(f)
 
     def compute_fitopts(self):
-        """ Runs after the sim/data to locate the survey """
+        """Runs after the sim/data to locate the survey"""
 
         survey = self.get_sim_dependency()["SURVEY"]
 
@@ -152,14 +168,20 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         self.logger.debug(f"FLAG_USE_SAME_EVENTS: {values}")
                         self.use_same_events = values
                     if key in ["GLOBAL", survey]:
-                        assert isinstance(values, dict), "Fitopt values should be a dict of label: scale command"
+                        assert isinstance(
+                            values, dict
+                        ), "Fitopt values should be a dict of label: scale command"
                         for label, scale_command in values.items():
                             scale, command = scale_command.split(maxsplit=1)
                             fitopt = f"/{label}/ {command}"
-                            self.logger.debug(f"Adding FITOPT from {key}: {fitopt} for SURVEY: {survey}")
+                            self.logger.debug(
+                                f"Adding FITOPT from {key}: {fitopt} for SURVEY: {survey}"
+                            )
                             fitopts.append(fitopt)
             else:
-                raise ValueError(f"Fitopt item {f} is not a string or dictionary, what on earth is it?")
+                raise ValueError(
+                    f"Fitopt item {f} is not a string or dictionary, what on earth is it?"
+                )
 
         # Map the fitopt outputs
         self.logger.debug(f"USE_SAME_EVENTS: {self.use_same_events}")
@@ -175,7 +197,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             self.yaml["CONFIG"]["FITOPT"] = fitopts
         self.output["fitopt_map"] = mapped
         self.output["fitopt_index"] = mapped2
-        self.output["fitres_file"] = os.path.join(self.fitres_dirs[0], mapped["DEFAULT"])
+        self.output["fitres_file"] = os.path.join(
+            self.fitres_dirs[0], mapped["DEFAULT"]
+        )
 
     def get_sim_dependency(self):
         for t in self.dependencies:
@@ -184,7 +208,11 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return None
 
     def print_stats(self):
-        folders = [f for f in os.listdir(self.lc_output_dir) if os.path.isdir(self.lc_output_dir + "/" + f)]
+        folders = [
+            f
+            for f in os.listdir(self.lc_output_dir)
+            if os.path.isdir(self.lc_output_dir + "/" + f)
+        ]
         if len(folders) > 5:
             self.logger.debug(f"Have {len(folders)} folders, only showing first five!")
             folders = folders[:5]
@@ -195,9 +223,18 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 if not os.path.exists(full_path):
                     self.logger.info(f"{full_path} not found, seeing if it was gzipped")
                     full_path += ".gz"
-                data = pd.read_csv(full_path, delim_whitespace=True, comment="#", compression="infer")
+                data = pd.read_csv(
+                    full_path, delim_whitespace=True, comment="#", compression="infer"
+                )
                 d = data.groupby("TYPE").agg(num=("CID", "count"))
-                self.logger.info("Types:  " + ("  ".join([f"{k}:{v}" for k, v in zip(d.index, d["num"].values)])))
+                self.logger.info(
+                    "Types:  "
+                    + (
+                        "  ".join(
+                            [f"{k}:{v}" for k, v in zip(d.index, d["num"].values)]
+                        )
+                    )
+                )
                 d.to_csv(os.path.join(path, "stats.txt"))
             except Exception as e:
                 self.logger.error(f"Cannot load {path}")
@@ -206,7 +243,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return True
 
     def set_snlcinp(self, name, value):
-        """ Ensures the property name value pair is set in the SNLCINP section.
+        """Ensures the property name value pair is set in the SNLCINP section.
 
         Parameters
         ----------
@@ -219,7 +256,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.set_property(name, value, section_start="&SNLCINP", section_end="&END")
 
     def set_fitinp(self, name, value):
-        """ Ensures the property name value pair is set in the FITINP section.
+        """Ensures the property name value pair is set in the FITINP section.
 
         Parameters
         ----------
@@ -251,14 +288,13 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return value
 
     def write_nml(self):
-
         # Parse config, first SNLCINP and then FITINP
         for key, value in self.config.get("SNLCINP", {}).items():
             self.set_snlcinp(key, value)
         for key, value in self.config.get("FITINP", {}).items():
             self.set_fitinp(key, value)
         for key, value in self.options.items():
-            #print(key,value)
+            # print(key,value)
             self.yaml["CONFIG"][key] = value
 
         self.compute_fitopts()
@@ -274,8 +310,12 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         if isinstance(self.sim_task, DataPrep):
             data_path = self.sim_task.output["data_path"]
             if "SNDATA_ROOT/lcmerge" not in data_path:
-                self.set_snlcinp("PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'")
-            self.set_snlcinp("VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'")
+                self.set_snlcinp(
+                    "PRIVATE_DATA_PATH", f"'{self.sim_task.output['data_path']}'"
+                )
+            self.set_snlcinp(
+                "VERSION_PHOTOMETRY", f"'{self.sim_task.output['genversion']}'"
+            )
 
         # We want to do our hashing check here
         string_to_hash = self.get_output_string()
@@ -304,28 +344,49 @@ class SNANALightCurveFit(ConfigBasedExecutable):
             return True
         self.logger.info(f"Light curve fitting outputting to {self.logging_file}")
         with open(self.logging_file, "w") as f:
-            subprocess.run(["submit_batch_jobs.sh", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(
+                ["submit_batch_jobs.sh", os.path.basename(self.config_path)],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=self.output_dir,
+            )
         return True
 
     def kill_and_fail(self):
         with open(self.kill_file, "w") as f:
             self.logger.info(f"Killing remaining jobs for {self.name}")
-            subprocess.run(["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)], stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+            subprocess.run(
+                ["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=self.output_dir,
+            )
         return Task.FINISHED_FAILURE
 
     def check_issues(self):
         log_files = [] + self.log_files
         if os.path.exists(self.lc_log_dir):
-            log_files += [os.path.join(self.lc_log_dir, f) for f in os.listdir(self.lc_log_dir) if f.upper().endswith(".LOG")]
+            log_files += [
+                os.path.join(self.lc_log_dir, f)
+                for f in os.listdir(self.lc_log_dir)
+                if f.upper().endswith(".LOG")
+            ]
 
-        self.scan_files_for_error(log_files, "FATAL ERROR ABORT", "QOSMaxSubmitJobPerUserLimit", "DUE TO TIME LIMIT")
+        self.scan_files_for_error(
+            log_files,
+            "FATAL ERROR ABORT",
+            "QOSMaxSubmitJobPerUserLimit",
+            "DUE TO TIME LIMIT",
+        )
         return Task.FINISHED_FAILURE
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.info("Light curve done file found")
             if not os.path.exists(self.logging_file):
-                self.logger.info(f"{self.logging_file} not found, checking FITOPT existence")
+                self.logger.info(
+                    f"{self.logging_file} not found, checking FITOPT existence"
+                )
                 success = self.print_stats()
                 if not success:
                     return Task.FINISHED_FAILURE
@@ -336,7 +397,15 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         y = read_yaml(self.merge_log)
                         if "MERGE" in y.keys():
                             for i, row in enumerate(y["MERGE"]):
-                                state, iver, fitopt, n_all, n_snanacut, n_fitcut, cpu = row
+                                (
+                                    state,
+                                    iver,
+                                    fitopt,
+                                    n_all,
+                                    n_snanacut,
+                                    n_fitcut,
+                                    cpu,
+                                ) = row
                                 if cpu < 60:
                                     units = "minutes"
                                 else:
@@ -346,7 +415,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                                     f"LCFIT {i + 1} fit {n_all} events. {n_snanacut} passed SNANA cuts, {n_fitcut} passed fitcuts, taking {cpu:0.1f} CPU {units}"
                                 )
                         else:
-                            self.logger.error(f"File {self.merge_log} does not have a MERGE section - did it die?")
+                            self.logger.error(
+                                f"File {self.merge_log} does not have a MERGE section - did it die?"
+                            )
                             return Task.FINISHED_FAILURE
                         if "SURVEY" in y.keys():
                             self.output["SURVEY"] = y["SURVEY"]
@@ -359,7 +430,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     else:
                         return Task.FINISHED_FAILURE
                 else:
-                    self.logger.debug(f"Done file reporting failure, scanning log files in {self.lc_log_dir}")
+                    self.logger.debug(
+                        f"Done file reporting failure, scanning log files in {self.lc_log_dir}"
+                    )
                     return self.check_issues()
         elif not os.path.exists(self.merge_log):
             self.logger.error("MERGE.LOG was not created, job died on submission")
@@ -368,22 +441,40 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         return self.check_for_job(squeue, os.path.basename(self.config_path))
 
     @staticmethod
-    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+    def get_tasks(
+        config, prior_tasks, base_output_dir, stage_number, prefix, global_config
+    ):
         tasks = []
 
-        all_deps = Task.match_tasks_of_type(None, prior_tasks, DataPrep, SNANASimulation)
+        all_deps = Task.match_tasks_of_type(
+            None, prior_tasks, DataPrep, SNANASimulation
+        )
         for fit_name in config.get("LCFIT", []):
             num_matches = 0
             fit_config = config["LCFIT"][fit_name]
             mask = fit_config.get("MASK", "")
 
-            sim_tasks = Task.match_tasks_of_type(mask, prior_tasks, DataPrep, SNANASimulation)
+            sim_tasks = Task.match_tasks_of_type(
+                mask, prior_tasks, DataPrep, SNANASimulation
+            )
             for sim in sim_tasks:
                 num_matches += 1
-                fit_output_dir = f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
-                f = SNANALightCurveFit(f"{fit_name}_{sim.name}", fit_output_dir, sim, fit_config, global_config)
-                Task.logger.info(f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}")
+                fit_output_dir = (
+                    f"{base_output_dir}/{stage_number}_LCFIT/{fit_name}_{sim.name}"
+                )
+                f = SNANALightCurveFit(
+                    f"{fit_name}_{sim.name}",
+                    fit_output_dir,
+                    sim,
+                    fit_config,
+                    global_config,
+                )
+                Task.logger.info(
+                    f"Creating fitting task {fit_name} with {f.num_jobs} jobs, for simulation {sim.name}"
+                )
                 tasks.append(f)
             if num_matches == 0:
-                Task.fail_config(f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in all_deps]}")
+                Task.fail_config(
+                    f"LCFIT task {fit_name} with mask '{mask}' matched no sim_names: {[sim.name for sim in all_deps]}"
+                )
         return tasks

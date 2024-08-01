@@ -6,7 +6,7 @@ from pippin.task import Task
 
 
 class FitProbClassifier(Classifier):
-    """ FitProb classifier
+    """FitProb classifier
 
     CONFIGURATION:
     ==============
@@ -28,8 +28,27 @@ class FitProbClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
@@ -43,16 +62,24 @@ class FitProbClassifier(Classifier):
             mkdirs(self.output_dir)
             input = self.get_fit_dependency()[0]
             if len(self.get_fit_dependency()) > 1:
-                self.logger.warning(f"Found more than one fit dependency for {self.name}, possibly because COMBINE_MASK is being used. FITPROB doesn't currently support this. Using first one.")
-            fitres_file = os.path.join(input["fitres_dirs"][self.index], input["fitopt_map"][self.fitopt])
+                self.logger.warning(
+                    f"Found more than one fit dependency for {self.name}, possibly because COMBINE_MASK is being used. FITPROB doesn't currently support this. Using first one."
+                )
+            fitres_file = os.path.join(
+                input["fitres_dirs"][self.index], input["fitopt_map"][self.fitopt]
+            )
             self.logger.debug(f"Looking for {fitres_file}")
             if not os.path.exists(fitres_file):
-                self.logger.error(f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with")
+                self.logger.error(
+                    f"FITRES file could not be found at {fitres_file}, classifer has nothing to work with"
+                )
                 self.passed = False
                 return False
 
             df = pd.read_csv(fitres_file, delim_whitespace=True, comment="#")
-            df = df[["CID", "FITPROB"]].rename(columns={"FITPROB": self.get_prob_column_name()})
+            df = df[["CID", "FITPROB"]].rename(
+                columns={"FITPROB": self.get_prob_column_name()}
+            )
 
             self.logger.info(f"Saving probabilities to {self.output_file}")
             df.to_csv(self.output_file, index=False, float_format="%0.4f")

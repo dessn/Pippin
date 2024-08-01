@@ -7,7 +7,20 @@ import logging
 import seaborn as sb
 from scipy.stats import binned_statistic
 
-colours = ["#1976D2", "#8BC34A", "#E53935", "#673AB7", "#F2D026", "#9E9E9E", "#4FC3F7", "#E91E63", "#43A047", "#795548", "#333333", "#FB8C00"] * 2
+colours = [
+    "#1976D2",
+    "#8BC34A",
+    "#E53935",
+    "#673AB7",
+    "#F2D026",
+    "#9E9E9E",
+    "#4FC3F7",
+    "#E91E63",
+    "#43A047",
+    "#795548",
+    "#333333",
+    "#FB8C00",
+] * 2
 
 
 def plot_corr(df, output_dir, index):
@@ -27,12 +40,16 @@ def plot_prob_acc(df, output_dir, index):
 
     prob_bins = np.linspace(0, 1, 21)
     bin_center = 0.5 * (prob_bins[1:] + prob_bins[:-1])
-    columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+    columns = [
+        c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")
+    ]
 
     fig, ax = plt.subplots(figsize=(8, 6))
     for c, col in zip(columns, colours):
         data, truth = _get_data_and_truth(df[c], df["IA"])
-        actual_prob, _, _ = binned_statistic(data, truth.astype(np.float), bins=prob_bins, statistic="mean")
+        actual_prob, _, _ = binned_statistic(
+            data, truth.astype(np.float), bins=prob_bins, statistic="mean"
+        )
         ax.plot(bin_center, actual_prob, label=c, c=col)
     ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
     ax.legend(loc=4, frameon=False, markerfirst=False)
@@ -49,7 +66,12 @@ def _get_matrix(classified, truth):
     false_positive = classified & ~truth
     true_negative = ~classified & ~truth
     false_negative = ~classified & truth
-    return true_positives.sum(), false_positive.sum(), true_negative.sum(), false_negative.sum()
+    return (
+        true_positives.sum(),
+        false_positive.sum(),
+        true_negative.sum(),
+        false_negative.sum(),
+    )
 
 
 def _get_metrics(classified, truth):
@@ -73,7 +95,9 @@ def plot_thresholds(df, output_dir, index):
     logging.debug("Making threshold plot")
 
     thresholds = np.linspace(0.5, 0.999, 100)
-    columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+    columns = [
+        c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")
+    ]
 
     fig, ax = plt.subplots(figsize=(7, 5))
     ls = ["-", "--", ":", ":-", "-", "--", ":"]
@@ -89,7 +113,9 @@ def plot_thresholds(df, output_dir, index):
                     res[key] = []
                 res[key].append(metrics[key])
         for key, l in zip(keys, ls):
-            ax.plot(thresholds, res[key], color=col, linestyle=l, label=f"{c[5:]} {key}")
+            ax.plot(
+                thresholds, res[key], color=col, linestyle=l, label=f"{c[5:]} {key}"
+            )
 
     ax.set_xlabel("Classification probability threshold")
     ax.legend(loc=3, frameon=False, ncol=2)
@@ -103,7 +129,9 @@ def plot_pr(df, output_dir, index):
     logging.debug("Making pr plot")
 
     thresholds = np.linspace(0.01, 1, 100)
-    columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+    columns = [
+        c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")
+    ]
 
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -132,7 +160,9 @@ def plot_roc(df, output_dir, index):
     logging.debug("Making roc plot")
 
     thresholds = np.linspace(0.01, 0.999, 100)
-    columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+    columns = [
+        c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")
+    ]
 
     fig, ax = plt.subplots(figsize=(7, 5))
 
@@ -162,7 +192,9 @@ def plot_comparison(df, output_dir, index):
     df = df.sample(frac=frac)
     logging.debug("Making comparison plot")
 
-    columns = [c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")]
+    columns = [
+        c for c in df.columns if c.startswith("PROB_") and not c.endswith("_ERR")
+    ]
 
     n = len(columns)
     scale = 1.5
@@ -179,8 +211,21 @@ def plot_comparison(df, output_dir, index):
                 ax.axis("off")
                 continue
             elif i == j:
-                h, _, _ = ax.hist(df[label1], bins=bins, histtype="stepfilled", linewidth=2, alpha=0.3, color=colours[i])
-                ax.hist(df[label1], bins=bins, histtype="step", linewidth=1.5, color=colours[i])
+                h, _, _ = ax.hist(
+                    df[label1],
+                    bins=bins,
+                    histtype="stepfilled",
+                    linewidth=2,
+                    alpha=0.3,
+                    color=colours[i],
+                )
+                ax.hist(
+                    df[label1],
+                    bins=bins,
+                    histtype="step",
+                    linewidth=1.5,
+                    color=colours[i],
+                )
                 ax.set_yticklabels([])
                 ax.tick_params(axis="y", left=False)
                 ax.set_xlim(*lim)
@@ -189,7 +234,9 @@ def plot_comparison(df, output_dir, index):
                 if j == 0:
                     ax.spines["left"].set_visible(False)
                 if j == n - 1:
-                    ax.set_xlabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
+                    ax.set_xlabel(
+                        label1.replace("PROB_", "").replace("_", "\n"), fontsize=10
+                    )
                 else:
                     ax.set_xticklabels([])
             else:
@@ -204,9 +251,13 @@ def plot_comparison(df, output_dir, index):
                     ax.set_yticklabels([])
                     ax.tick_params(axis="y", left=False)
                 else:
-                    ax.set_ylabel(label1.replace("PROB_", "").replace("_", "\n"), fontsize=10)
+                    ax.set_ylabel(
+                        label1.replace("PROB_", "").replace("_", "\n"), fontsize=10
+                    )
                 if i == n - 1:
-                    ax.set_xlabel(label2.replace("PROB_", "").replace("_", "\n"), fontsize=10)
+                    ax.set_xlabel(
+                        label2.replace("PROB_", "").replace("_", "\n"), fontsize=10
+                    )
                 else:
                     ax.set_xticklabels([])
     plt.subplots_adjust(hspace=0.0, wspace=0)
@@ -217,7 +268,6 @@ def plot_comparison(df, output_dir, index):
 
 
 def plot(df, output_dir, index):
-
     plot_corr(df, output_dir, index)
     plot_prob_acc(df, output_dir, index)
     # plot_thresholds(df, output_dir, index)
@@ -236,7 +286,11 @@ if __name__ == "__main__":
 
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     logging_filename = os.path.join(args.output_dir, "output_plots.log")
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[logging.FileHandler(logging_filename), logging.StreamHandler()])
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=fmt,
+        handlers=[logging.FileHandler(logging_filename), logging.StreamHandler()],
+    )
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
     logging.info(f"Input csv is {args.mergedcsv}")

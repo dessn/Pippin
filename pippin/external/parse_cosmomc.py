@@ -21,7 +21,9 @@ def load_params(file):
 
 def load_chains(files, all_cols, use_cols=None):
     header = ["weights", "likelihood"] + all_cols
-    data = [pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files]
+    data = [
+        pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files
+    ]
 
     # Remove burn in by cutting off first 30%
     data = [d.iloc[int(d.shape[0] * 0.3) :, :] for d in data]
@@ -45,8 +47,15 @@ def get_chain_files(basename):
     folder = os.path.dirname(basename)
     logging.info(f"Looking for chains in folder {folder}")
     base = os.path.basename(basename)
-    files = [os.path.join(folder, f) for f in sorted(os.listdir(folder)) if base in f and f.endswith(".txt")]
-    fail(f"No chain files found for {os.path.join(folder, basename)}", condition=len(files) == 0)
+    files = [
+        os.path.join(folder, f)
+        for f in sorted(os.listdir(folder))
+        if base in f and f.endswith(".txt")
+    ]
+    fail(
+        f"No chain files found for {os.path.join(folder, basename)}",
+        condition=len(files) == 0,
+    )
     logging.info(f"{len(files)} chains found for basename {basename}")
     return files
 
@@ -54,7 +63,11 @@ def get_chain_files(basename):
 def setup_logging():
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("parse_cosmomc.log")])
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=fmt,
+        handlers=[handler, logging.FileHandler("parse_cosmomc.log")],
+    )
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
@@ -65,7 +78,9 @@ def blind(chain, names, columns_to_blind, index=0):
         try:
             ii = names.index(c)
             scale = np.random.normal(loc=1, scale=0.0, size=1000)[321 + i]
-            offset = np.random.normal(loc=0, scale=10.0, size=1000)[343 + i + (index + 10)]
+            offset = np.random.normal(loc=0, scale=10.0, size=1000)[
+                343 + i + (index + 10)
+            ]
             chain[:, ii] = chain[:, ii] * scale + np.std(chain[:, ii]) * offset
         except ValueError as e:
             logging.warning(f"Cannot find blinding column {c} in list of names {names}")
@@ -83,7 +98,8 @@ def get_arguments():
 
     if config.get("NAMES") is not None:
         assert len(config["NAMES"]) == len(config["INPUT_FILES"]), (
-            "You should specify one name per base file you pass in." + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
+            "You should specify one name per base file you pass in."
+            + f" Have {len(config['FILES'])} base names and {len(config['NAMES'])} names"
         )
     return config
 
@@ -99,14 +115,23 @@ def parse_chains(basename, outname, args, index):
     if blind_params:
         blind(chain, params or names, blind_params, index=index)
     labels = [
-        f"${l}" + (r"\ \mathrm{Blinded}" if blind_params is not None and u in blind_params else "") + "$"
+        f"${l}"
+        + (
+            r"\ \mathrm{Blinded}"
+            if blind_params is not None and u in blind_params
+            else ""
+        )
+        + "$"
         for u in params
         for l, n in zip(labels, names)
         if n == u
     ]
 
     # Turn into new df
-    output_df = pd.DataFrame(np.vstack((weights, likelihood, chain.T)).T, columns=["_weight", "_likelihood"] + labels)
+    output_df = pd.DataFrame(
+        np.vstack((weights, likelihood, chain.T)).T,
+        columns=["_weight", "_likelihood"] + labels,
+    )
     output_df.to_csv(outname, float_format="%0.5f", index=False)
 
     logging.info(f"Chain for {basename} has shape {chain.shape}")
@@ -123,10 +148,16 @@ if __name__ == "__main__":
 
             biases = {}
             b = 1
-            truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
+            truth = {
+                "$\\Omega_m$": 0.3,
+                "$w\\ \\mathrm{Blinded}$": -1.0,
+                "$\\Omega_\\Lambda$": 0.7,
+            }
             shift_params = truth if args.get("SHIFT") else None
 
-            for index, (basename, outname) in enumerate(zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))):
+            for index, (basename, outname) in enumerate(
+                zip(args.get("INPUT_FILES"), args.get("PARSED_FILES"))
+            ):
                 if args.get("NAMES"):
                     name = args.get("NAMES")[index].replace("_", " ")
                 else:

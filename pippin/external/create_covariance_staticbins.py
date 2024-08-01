@@ -96,7 +96,14 @@ def dataset(output_dir, base_output, strex1, strex2, sys=1):
 
     if sys == 1:
         g.write("has_mag_covmat = T\n")
-        g.write("mag_covmat_file =  " + output_dir + "/sys_" + base_output + strex1 + ".txt\n")
+        g.write(
+            "mag_covmat_file =  "
+            + output_dir
+            + "/sys_"
+            + base_output
+            + strex1
+            + ".txt\n"
+        )
         # g.write('mag_covmat_file =  '+os.getcwd()+'/'+output_dir+'/sys_'+base_output+strex1+'.txt\n')
     if sys != 1:
         g.write("has_mag_covmat = F\n")
@@ -115,15 +122,32 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
 
     headn = linef(file1, "zCMB")
     data1 = np.genfromtxt(file1, skip_header=headn, names=True, comments="#")
-    cid = np.genfromtxt(file1, skip_header=headn, usecols=(1), comments="#", dtype="str")[1:]
+    cid = np.genfromtxt(
+        file1, skip_header=headn, usecols=(1), comments="#", dtype="str"
+    )[1:]
     z1 = data1["zHD"].astype(float)
     mu = data1["MU"].astype(float)
     muerr = data1["MUERR"].astype(float)
 
-    f1 = open(output_dir + "/lcparam_" + base_output + ".txt", "w")  # this is the file for cosmomc
-    f1.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec  \n")  # standard format
+    f1 = open(
+        output_dir + "/lcparam_" + base_output + ".txt", "w"
+    )  # this is the file for cosmomc
+    f1.write(
+        "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec  \n"
+    )  # standard format
     for x in range(0, len(z1)):
-        f1.write(cid[x] + " " + str(z1[x]) + " " + str(z1[x]) + " 0.0 " + str(mu[x] - 19.35) + " " + str(muerr[x]) + " 0 0 0 0 0 0 0 0 0 0 0\n")
+        f1.write(
+            cid[x]
+            + " "
+            + str(z1[x])
+            + " "
+            + str(z1[x])
+            + " 0.0 "
+            + str(mu[x] - 19.35)
+            + " "
+            + str(muerr[x])
+            + " 0 0 0 0 0 0 0 0 0 0 0\n"
+        )
     f1.close()
     g = open(output_dir + "/" + base_output + ".dataset", "w")
     h = open(output_dir + "/" + base_output + "_nosys.dataset", "w")
@@ -189,7 +213,12 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
 
     cosmo2 = FlatLambdaCDM(H0=70, Om0=0.3)
 
-    list1, z1, mb1, mb1e = np.loadtxt(output_dir + "/lcparam_" + lc1 + ".txt", usecols=(0, 1, 4, 5), unpack=True, dtype="string")
+    list1, z1, mb1, mb1e = np.loadtxt(
+        output_dir + "/lcparam_" + lc1 + ".txt",
+        usecols=(0, 1, 4, 5),
+        unpack=True,
+        dtype="string",
+    )
     z1 = z1.astype(float)
     mb1 = mb1.astype(float)
     mb1e = mb1e.astype(float)
@@ -198,7 +227,12 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     mu_syn1 = 5.0 * (np.log10(x)) + 25.0 - 19.35
     mu1 = mb1 - mu_syn1
 
-    list2, z2, mb2, mb2e = np.loadtxt(output_dir + "/lcparam_" + lc2 + ".txt", usecols=(0, 1, 4, 5), unpack=True, dtype="string")
+    list2, z2, mb2, mb2e = np.loadtxt(
+        output_dir + "/lcparam_" + lc2 + ".txt",
+        usecols=(0, 1, 4, 5),
+        unpack=True,
+        dtype="string",
+    )
 
     z2 = z1  # using z1 so z lines up
     mb2 = mb2.astype(float)
@@ -216,10 +250,25 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     # stop
     # print z1
     # stop
-    f1 = open(output_dir + "/lcparam_" + base_output + ".txt", "w")  # this is the file for cosmomc
-    f1.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n")  # standard format
+    f1 = open(
+        output_dir + "/lcparam_" + base_output + ".txt", "w"
+    )  # this is the file for cosmomc
+    f1.write(
+        "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
+    )  # standard format
     for x in range(0, len(z1)):
-        f1.write(str(list1[x]) + " " + str(z1[x]) + " " + str(z1[x]) + " 0.0 " + str(mua[x]) + " " + str(muae[x]) + " 0 0 0 0 0 0 0 0 0 0 0 0\n")
+        f1.write(
+            str(list1[x])
+            + " "
+            + str(z1[x])
+            + " "
+            + str(z1[x])
+            + " 0.0 "
+            + str(mua[x])
+            + " "
+            + str(muae[x])
+            + " 0 0 0 0 0 0 0 0 0 0 0 0\n"
+        )
     f1.close()
     print(output_dir + "/sys_" + mat1 + ".txt")
     print(output_dir + "/sys_" + mat2 + ".txt")
@@ -255,7 +304,12 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     lists, zs, mbs, mbes, xs, mu_syns, mus = [], [], [], [], [], [], []
 
     for mat, lc in zip(mats, lcs):
-        list1, z1, mb1, mb1e = np.loadtxt(output_dir + "/lcparam_" + lc + ".txt", usecols=(0, 1, 4, 5), unpack=True, dtype="string")
+        list1, z1, mb1, mb1e = np.loadtxt(
+            output_dir + "/lcparam_" + lc + ".txt",
+            usecols=(0, 1, 4, 5),
+            unpack=True,
+            dtype="string",
+        )
         z1 = z1.astype(float)
         mb1 = mb1.astype(float)
         mb1e = mb1e.astype(float)
@@ -297,17 +351,34 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     # stop
     # print z1
     # stop
-    f1 = open(output_dir + "/lcparam_" + base_output + ".txt", "w")  # this is the file for cosmomc
-    f1.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n")  # standard format
+    f1 = open(
+        output_dir + "/lcparam_" + base_output + ".txt", "w"
+    )  # this is the file for cosmomc
+    f1.write(
+        "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
+    )  # standard format
     for x in range(0, len(zs[0])):
-        f1.write(str(lists[0][x]) + " " + str(zs[0][x]) + " " + str(zs[0][x]) + " 0.0 " + str(mua[x]) + " " + str(muae[x]) + " 0 0 0 0 0 0 0 0 0 0 0 0\n")
+        f1.write(
+            str(lists[0][x])
+            + " "
+            + str(zs[0][x])
+            + " "
+            + str(zs[0][x])
+            + " 0.0 "
+            + str(mua[x])
+            + " "
+            + str(muae[x])
+            + " 0 0 0 0 0 0 0 0 0 0 0 0\n"
+        )
     f1.close()
     # print output_dir+'/sys_'+mat1+'.txt'
     # print output_dir+'/sys_'+mat2+'.txt'
 
     syss = []
     for mat, lc in zip(mats, lcs):
-        sys1 = np.loadtxt(output_dir + "/sys_" + mat + ".txt", unpack=True, dtype="string")
+        sys1 = np.loadtxt(
+            output_dir + "/sys_" + mat + ".txt", unpack=True, dtype="string"
+        )
         sys1 = sys1.astype(float)
         syss.append(sys1)
     # print syss[0].shape
@@ -373,7 +444,13 @@ def sysmat(
 
     look_dir = os.path.join(topdir, subdir)
 
-    file_lines = sorted([os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")])
+    file_lines = sorted(
+        [
+            os.path.join(look_dir, x)
+            for x in os.listdir(look_dir)
+            if x.endswith(".M0DIF")
+        ]
+    )
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
@@ -381,11 +458,15 @@ def sysmat(
 
     if not os.path.exists(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
-        print("Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!")
+        print(
+            "Log file not there. No M0DIF files!!! This makes me sad!!! Im done here!!"
+        )
         return 0
 
     if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
-        log_lines = open(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r").readlines()
+        log_lines = open(
+            topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r"
+        ).readlines()
     print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
 
     filesize = len(file_lines)  # read in number of M0DIF files
@@ -430,7 +511,9 @@ def sysmat(
                 FITOPT_var1 = np.append(FITOPT_var1, "FITOPT" + mu_split[1])
                 FITOPT_var2 = np.append(FITOPT_var2, mu_split[2][1:-1])
 
-    if (os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE")) | ((sysfile == "NONE") & (errscales != "NONE")):
+    if (os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE")) | (
+        (sysfile == "NONE") & (errscales != "NONE")
+    ):
         if os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE"):
             if (os.path.isfile(sysfile) == False) & (sysfile != "NONE"):
                 print("That " + sysfile + " doesnt exist.  Grrrr.  Have to leave")
@@ -448,27 +531,37 @@ def sysmat(
                 SYSOPT_var3 = np.append(SYSOPT_var3, mu_split[3])
 
     if (sysfile == "NONE") & (errscales == "NONE"):
-        print("WARNING: All systematics have default scaling with no cuts.  This is really dangerous!")
+        print(
+            "WARNING: All systematics have default scaling with no cuts.  This is really dangerous!"
+        )
 
         SYSOPT_var1 = []
     if (sysfile != "NONE") & (errscales != "NONE"):
-        print("You have a list of systematics in your inFile and in your included file.  That is one two many lists.  We have to stop")
+        print(
+            "You have a list of systematics in your inFile and in your included file.  That is one two many lists.  We have to stop"
+        )
 
     topfile = os.path.join(look_dir, topfile)
     print(f"TOPFILE IS {topfile}")
 
     skipc = linef(topfile, "VARNAMES")
     if topfile != "":
-        z1, mu1, mu1e = np.loadtxt(topfile, usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
+        z1, mu1, mu1e = np.loadtxt(
+            topfile, usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1
+        )
     if topfile == "":
-        z1, mu1, mu1e = np.loadtxt(topfile, usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
+        z1, mu1, mu1e = np.loadtxt(
+            topfile, usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1
+        )
     print("topfile", topfile)
     mu1 = mu1.astype(float)
     mu1e = mu1e.astype(float)
     z1 = z1.astype(float)
     # xxa=[mu1e<90]
 
-    xxa = [mu1e < np.inf]  # CHANGED BY DILLON HERE to get covmats all the same size for multiple sims
+    xxa = [
+        mu1e < np.inf
+    ]  # CHANGED BY DILLON HERE to get covmats all the same size for multiple sims
     z1 = z1[xxa]
     mu1 = mu1[xxa]
     mu1e = mu1e[xxa]
@@ -477,10 +570,25 @@ def sysmat(
     mu_syn = 5.0 * (np.log10(x)) + 25.0 - 19.35
     mu_syn1 = mu_syn + mu1
 
-    f1 = open(output_dir + "/lcparam_" + base_output + ".txt", "w")  # this is the file for cosmomc
-    f1.write("#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n")  # standard format
+    f1 = open(
+        output_dir + "/lcparam_" + base_output + ".txt", "w"
+    )  # this is the file for cosmomc
+    f1.write(
+        "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
+    )  # standard format
     for x in range(0, len(z1)):
-        f1.write(str(x) + " " + str(z1[x]) + " " + str(z1[x]) + " 0.0 " + str(mu_syn1[x]) + " " + str(mu1e[x]) + " 0 0 0 0 0 0 0 0 0 0 0 0\n")
+        f1.write(
+            str(x)
+            + " "
+            + str(z1[x])
+            + " "
+            + str(z1[x])
+            + " 0.0 "
+            + str(mu_syn1[x])
+            + " "
+            + str(mu1e[x])
+            + " 0 0 0 0 0 0 0 0 0 0 0 0\n"
+        )
     f1.close()
     bigmatmm = np.zeros((len(z1), len(z1), sysnum + 1)) + 0.000000
 
@@ -493,7 +601,13 @@ def sysmat(
         xx1 = FITOPT_var1 == file_lines[xco].split("_")[-2]
         xx2 = MUOPT_var1 == file_lines[xco].split("_")[-1][:-6]
         skipc = linef(file_lines[xco], "VARNAMES")
-        z2, mu2, mu2e = np.loadtxt(file_lines[xco], usecols=(4, 5, 6), unpack=True, dtype="str", skiprows=skipc + 1)
+        z2, mu2, mu2e = np.loadtxt(
+            file_lines[xco],
+            usecols=(4, 5, 6),
+            unpack=True,
+            dtype="str",
+            skiprows=skipc + 1,
+        )
         print(file_lines[xco])
         mu2 = mu2.astype(float)
         mu2e = mu2e.astype(float)
@@ -526,11 +640,26 @@ def sysmat(
                     sys_ratio = float(SYSOPT_var3[y1])
                     # print sys_ratio
                     # stop
-                    print("Have a systematic from " + str(SYSOPT_var1[y1]) + str(SYSOPT_var2[y1]) + " of " + str(SYSOPT_var3[y1]))
-                    logf.write("Have a systematic from " + str(SYSOPT_var1[y1]) + str(SYSOPT_var2[y1]) + " of " + str(SYSOPT_var3[y1]) + "\n")
+                    print(
+                        "Have a systematic from "
+                        + str(SYSOPT_var1[y1])
+                        + str(SYSOPT_var2[y1])
+                        + " of "
+                        + str(SYSOPT_var3[y1])
+                    )
+                    logf.write(
+                        "Have a systematic from "
+                        + str(SYSOPT_var1[y1])
+                        + str(SYSOPT_var2[y1])
+                        + " of "
+                        + str(SYSOPT_var3[y1])
+                        + "\n"
+                    )
                     # stop
                     if comatch > 0:
-                        print("WARNING you have had multiple systematics match up!!! That is bad")
+                        print(
+                            "WARNING you have had multiple systematics match up!!! That is bad"
+                        )
                     comatch = comatch + 1
 
                     # if ((np.amax(np.absolute(z1-z2)/z1)>0.1)&(sys_ratio>0)):
@@ -583,11 +712,24 @@ def sysmat(
             if syscheck1[0] == "-":
                 print(sys_flag1)
                 print(sys_flag2)
-                print(FITOPT_var2[xx1][0], MUOPT_var2[xx2][0], (sys_flag1) & (sys_flag2))
+                print(
+                    FITOPT_var2[xx1][0], MUOPT_var2[xx2][0], (sys_flag1) & (sys_flag2)
+                )
                 # stop
             if (sys_flag1) & (sys_flag2):
                 logf.write(
-                    FITOPT_var2[xx1][0] + " " + MUOPT_var2[xx2][0] + " " + syscheck1[0:] + " " + syscheck2[0:] + " " + str(x) + " " + str(sys_ratio) + " \n"
+                    FITOPT_var2[xx1][0]
+                    + " "
+                    + MUOPT_var2[xx2][0]
+                    + " "
+                    + syscheck1[0:]
+                    + " "
+                    + syscheck2[0:]
+                    + " "
+                    + str(x)
+                    + " "
+                    + str(sys_ratio)
+                    + " \n"
                 )
                 bigmatmm[:, :, x] = np.add(bigmatmm[:, :, x], np.multiply(dmm, 1.0))
 
@@ -658,12 +800,22 @@ def makeini(outputdir, baseoutput, basedir, datasetnum=0):
     # dvin_nosn_ocmb_omol.ini
     print("we are making ini files!")
     svec = ["omw", "wwa", "omol"]
-    gvec = ["sn_", "sn_bao_", "sn_cmb_", "sn_cmb_bao_", "sn_prior_", "cmb_", "nohubble_sn_"]
+    gvec = [
+        "sn_",
+        "sn_bao_",
+        "sn_cmb_",
+        "sn_cmb_bao_",
+        "sn_prior_",
+        "cmb_",
+        "nohubble_sn_",
+    ]
     for ss in svec:
         for gg in gvec:
             if os.path.isfile(basedir + "/" + gg + ss + ".ini"):
                 g = open(basedir + "/" + gg + ss + ".ini", "r")
-                h = open(outputdir + "/" + gg + ss + "_" + str(int(datasetnum)) + ".ini", "w")
+                h = open(
+                    outputdir + "/" + gg + ss + "_" + str(int(datasetnum)) + ".ini", "w"
+                )
                 with open(basedir + "/" + gg + ss + ".ini", "r") as f:
                     content = f.readlines()
                 for x in content:
@@ -681,7 +833,6 @@ def write_done(filename, success=True):
 
 
 if __name__ == "__main__":
-
     # parse input argument(s)
     if len(sys.argv) < 3:
         raise ValueError("Must give INFILE argument\n-->ABORT")
@@ -741,14 +892,26 @@ if __name__ == "__main__":
         )
         print(FileInfo.OUTPUTDIR)
         # DILLON: I'm editing here for giving full outputdir path not relative to cwd
-        with open("/".join(FileInfo.OUTPUTDIR.split("/")[:-1]) + "/covopt.dict", "w") as f:
+        with open(
+            "/".join(FileInfo.OUTPUTDIR.split("/")[:-1]) + "/covopt.dict", "w"
+        ) as f:
             for d in range(len(FileInfo.COVOPT) + 1):
-                makeini(FileInfo.OUTPUTDIR, FileInfo.BASEOUTPUT, FileInfo.COSMOMC_TEMPLATES, datasetnum=d)
+                makeini(
+                    FileInfo.OUTPUTDIR,
+                    FileInfo.BASEOUTPUT,
+                    FileInfo.COSMOMC_TEMPLATES,
+                    datasetnum=d,
+                )
                 if d == 0:
                     covwrite = "ALLSYS"
                 else:
                     if FileInfo.COVOPT[d - 1]:
-                        covwrite = FileInfo.COVOPT[d - 1][0].replace("[", "").replace("'", "").replace("]", "")
+                        covwrite = (
+                            FileInfo.COVOPT[d - 1][0]
+                            .replace("[", "")
+                            .replace("'", "")
+                            .replace("]", "")
+                        )
                 f.write("%d\t%s\n" % (d, covwrite))
 
         print("Copying base.ini file over")

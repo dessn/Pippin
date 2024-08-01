@@ -11,7 +11,7 @@ import os
 
 
 class Merger(Task):
-    """ Merge fitres files and aggregator output
+    """Merge fitres files and aggregator output
 
     CONFIGURATION:
     ==============
@@ -57,7 +57,10 @@ class Merger(Task):
         self.suboutput_dir = os.path.join(self.output_dir, "output")
         self.done_file = os.path.join(self.suboutput_dir, "ALL.DONE")
 
-        self.fitres_outdirs = [os.path.join(self.suboutput_dir, os.path.basename(f)) for f in self.lc_fit["fitres_dirs"]]
+        self.fitres_outdirs = [
+            os.path.join(self.suboutput_dir, os.path.basename(f))
+            for f in self.lc_fit["fitres_dirs"]
+        ]
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
@@ -81,7 +84,9 @@ class Merger(Task):
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
-            self.logger.debug(f"Merger finished, see combined fitres at {self.suboutput_dir}")
+            self.logger.debug(
+                f"Merger finished, see combined fitres at {self.suboutput_dir}"
+            )
             return Task.FINISHED_SUCCESS
         else:
             output_error = False
@@ -89,7 +94,9 @@ class Merger(Task):
                 with open(self.logfile, "r") as f:
                     for line in f.read().splitlines():
                         if "ERROR" in line or "ABORT" in line:
-                            self.logger.error(f"Fatal error in combine_fitres. See {self.logfile} for details.")
+                            self.logger.error(
+                                f"Fatal error in combine_fitres. See {self.logfile} for details."
+                            )
                             output_error = True
                         if output_error:
                             self.logger.info(f"Excerpt: {line}")
@@ -98,7 +105,9 @@ class Merger(Task):
                     os.remove(self.hash_file)
                     chown_dir(self.output_dir)
             else:
-                self.logger.error("Combine task failed with no output log. Please debug")
+                self.logger.error(
+                    "Combine task failed with no output log. Please debug"
+                )
             return Task.FINISHED_FAILURE
 
     def add_to_fitres(self, fitres_file, outdir, lcfit, index=0):
@@ -121,13 +130,21 @@ class Merger(Task):
             try:
                 self.logger.debug(f"Executing command {' '.join(command)}")
                 with open(self.logfile, "w+") as f:
-                    subprocess.run(command, stdout=f, stderr=subprocess.STDOUT, cwd=outdir, check=True)
+                    subprocess.run(
+                        command,
+                        stdout=f,
+                        stderr=subprocess.STDOUT,
+                        cwd=outdir,
+                        check=True,
+                    )
 
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Error invoking command {command}")
                 raise e
         else:
-            self.logger.info("Empty aggregation result found, not invoking combine_fitres.exe")
+            self.logger.info(
+                "Empty aggregation result found, not invoking combine_fitres.exe"
+            )
             self.logger.debug(f"Copying file {fitres_file} to {outdir}")
             shutil.copy(fitres_file, outdir)
 
@@ -139,16 +156,29 @@ class Merger(Task):
         self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
 
         fitres_files, symlink_files = [], []
-        for index, (fitres_dir, outdir) in enumerate(zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)):
+        for index, (fitres_dir, outdir) in enumerate(
+            zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)
+        ):
             files = os.listdir(fitres_dir)
             fitres_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
+                (fitres_dir, outdir, f, index, self.lc_fit["name"])
+                for f in files
+                if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
             ]
             symlink_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"]) for f in files if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
+                (fitres_dir, outdir, f, index, self.lc_fit["name"])
+                for f in files
+                if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
             ]
 
-        new_hash = self.get_hash_from_string(" ".join([a + b + c + f"{d}" + e for a, b, c, d, e in (fitres_files + symlink_files)]))
+        new_hash = self.get_hash_from_string(
+            " ".join(
+                [
+                    a + b + c + f"{d}" + e
+                    for a, b, c, d, e in (fitres_files + symlink_files)
+                ]
+            )
+        )
         if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             self.logger.debug("Regenerating, running combine_fitres")
@@ -158,11 +188,18 @@ class Merger(Task):
                     mkdirs(fitres_dir)
                     for f in fitres_files:
                         if f[1] == fitres_dir:
-                            self.add_to_fitres(os.path.join(f[0], f[2]), f[1], f[4], index=f[3])
+                            self.add_to_fitres(
+                                os.path.join(f[0], f[2]), f[1], f[4], index=f[3]
+                            )
                     for s in symlink_files:
                         if s[1] == fitres_dir:
-                            self.logger.debug(f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES.gz')}")
-                            os.symlink(os.path.join(s[1], "FITOPT000.FITRES.gz"), os.path.join(s[1], s[2]))
+                            self.logger.debug(
+                                f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES.gz')}"
+                            )
+                            os.symlink(
+                                os.path.join(s[1], "FITOPT000.FITRES.gz"),
+                                os.path.join(s[1], s[2]),
+                            )
 
                     self.logger.debug(f"Copying MERGE.LOG")
                     filenames = ["MERGE.LOG", "SUBMIT.INFO"]
@@ -192,7 +229,9 @@ class Merger(Task):
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
         tasks = []
 
-        def _get_merge_output_dir(base_output_dir, stage_number, merge_name, lcfit_name):
+        def _get_merge_output_dir(
+            base_output_dir, stage_number, merge_name, lcfit_name
+        ):
             return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}"
 
         for name in c.get("MERGE", []):
@@ -229,9 +268,21 @@ class Merger(Task):
                     num_gen += 1
 
                     merge_name2 = f"{name}_{lcfit.name}"
-                    task = Merger(merge_name2, _get_merge_output_dir(base_output_dir, stage_number, name, lcfit.name), config, [lcfit, agg], options)
-                    Task.logger.info(f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs")
+                    task = Merger(
+                        merge_name2,
+                        _get_merge_output_dir(
+                            base_output_dir, stage_number, name, lcfit.name
+                        ),
+                        config,
+                        [lcfit, agg],
+                        options,
+                    )
+                    Task.logger.info(
+                        f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs"
+                    )
                     tasks.append(task)
             if num_gen == 0:
-                Task.fail_config(f"Merger {name} with mask {mask} matched no combination of aggregators and fits")
+                Task.fail_config(
+                    f"Merger {name} with mask {mask} matched no combination of aggregators and fits"
+                )
         return tasks

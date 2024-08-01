@@ -10,7 +10,7 @@ from pippin.task import Task
 
 
 class NearestNeighborPyClassifier(Classifier):
-    """ Nearest Neighbor Python classifier
+    """Nearest Neighbor Python classifier
 
     CONFIGURATION:
     ==============
@@ -34,16 +34,41 @@ class NearestNeighborPyClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.global_config = get_config()
         self.num_jobs = 1
 
         self.conda_env = self.global_config["SNIRF"]["conda_env"]
 
         self.path_to_classifier = os.path.dirname(inspect.stack()[0][1])
-        self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
-        self.features = options.get("FEATURES", "zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR")
+        self.job_base_name = (
+            os.path.basename(Path(output_dir).parents[1])
+            + "__"
+            + os.path.basename(output_dir)
+        )
+        self.features = options.get(
+            "FEATURES", "zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR"
+        )
         # self.model_pk_file = self.get_unique_name() + ".pkl"
         self.model_pk_file = "model.pkl"
 
@@ -55,7 +80,9 @@ class NearestNeighborPyClassifier(Classifier):
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
 
         self.output["predictions_filename"] = self.predictions_filename
         self.output["model_filename"] = self.output_pk_file
@@ -72,7 +99,9 @@ fi
     def setup(self):
         lcfit = self.get_fit_dependency()
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+        self.fitres_file = os.path.abspath(
+            os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
+        )
 
     def classify(self, command):
         self.setup()
@@ -82,17 +111,17 @@ fi
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, 'r') as f:
+            with open(self.batch_file, "r") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                "REPLACE_NAME": self.job_base_name,
-                "REPLACE_LOGFILE": "output.log",
-                "REPLACE_WALLTIME": "00:55:00",
-                "REPLACE_MEM": "8GB",
-                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"]
-                }
+            "REPLACE_NAME": self.job_base_name,
+            "REPLACE_LOGFILE": "output.log",
+            "REPLACE_WALLTIME": "00:55:00",
+            "REPLACE_MEM": "8GB",
+            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"],
+        }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
 
@@ -100,14 +129,16 @@ fi
             "job_name": self.job_base_name,
             "conda_env": self.conda_env,
             "path_to_classifier": self.path_to_classifier,
-            "command_opts": command
+            "command_opts": command,
         }
 
         format_dict = {
-                "done_file": self.done_file,
-                "sbatch_header": self.sbatch_header,
-                "task_setup": self.update_setup(setup_dict, self.task_setup['nearest_neighbour'])
-                }
+            "done_file": self.done_file,
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(
+                setup_dict, self.task_setup["nearest_neighbour"]
+            ),
+        }
 
         slurm_script = self.slurm.format(**format_dict)
 
@@ -132,17 +163,26 @@ fi
         self.setup()
         model = self.options.get("MODEL")
         if model is None:
-            self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")
+            self.logger.error(
+                "If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name."
+            )
             return False
         if not os.path.exists(get_output_loc(model)):
             # If its not a file, it must be a task
             for t in self.dependencies:
                 if model == t.name:
-                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
+                    self.logger.debug(
+                        f"Found task dependency {t.name} with model file {t.output['model_filename']}"
+                    )
                     model = t.output["model_filename"]
         else:
             model = get_output_loc(model)
-        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
+        types = " ".join(
+            [
+                str(a)
+                for a in self.get_simulation_dependency().output["types_dict"]["IA"]
+            ]
+        )
         if not types:
             types = "1"
         command = (
@@ -158,7 +198,12 @@ fi
         return self.classify(command)
 
     def train(self):
-        types = " ".join([str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]])
+        types = " ".join(
+            [
+                str(a)
+                for a in self.get_simulation_dependency().output["types_dict"]["IA"]
+            ]
+        )
         if not types:
             self.logger.error("No Ia types for a training sim!")
             return False

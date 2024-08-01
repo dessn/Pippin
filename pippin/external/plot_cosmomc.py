@@ -17,7 +17,11 @@ def fail(msg, condition=True):
 def setup_logging():
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_cosmomc.log")])
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=fmt,
+        handlers=[handler, logging.FileHandler("plot_cosmomc.log")],
+    )
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
@@ -33,7 +37,8 @@ def get_arguments():
 
     if config.get("NAMES") is not None:
         assert len(config["NAMES"]) == len(config["PARSED_FILES"]), (
-            "You should specify one name per base file you pass in." + f" Have {len(config['PARSED_FILES'])} base names and {len(config['NAMES'])} names"
+            "You should specify one name per base file you pass in."
+            + f" Have {len(config['PARSED_FILES'])} base names and {len(config['NAMES'])} names"
         )
     return config
 
@@ -42,7 +47,12 @@ def load_output(basename):
     if os.path.exists(basename):
         logging.warning(f"Loading in pre-saved CSV file from {basename}")
         df = pd.read_csv(basename)
-        return df["_weight"].values, df["_likelihood"].values, df.iloc[:, 2:].to_numpy(), list(df.columns[2:])
+        return (
+            df["_weight"].values,
+            df["_likelihood"].values,
+            df.iloc[:, 2:].to_numpy(),
+            list(df.columns[2:]),
+        )
     else:
         return None
 
@@ -58,11 +68,17 @@ if __name__ == "__main__":
             do_full = False
             biases = {}
             b = 1
-            truth = {"$\\Omega_m$": 0.3, "$w\\ \\mathrm{Blinded}$": -1.0, "$\\Omega_\\Lambda$": 0.7}
+            truth = {
+                "$\\Omega_m$": 0.3,
+                "$w\\ \\mathrm{Blinded}$": -1.0,
+                "$\\Omega_\\Lambda$": 0.7,
+            }
             shift_params = truth if args.get("SHIFT") else None
 
             num_parsed = len(args.get("PARSED_FILES"))
-            for index, (basename, covopt) in enumerate(zip(args.get("PARSED_FILES"), args.get("PARSED_COVOPTS"))):
+            for index, (basename, covopt) in enumerate(
+                zip(args.get("PARSED_FILES"), args.get("PARSED_COVOPTS"))
+            ):
                 if plot_covopts is not None and covopt not in plot_covopts:
                     continue
                 if args.get("NAMES"):
@@ -92,7 +108,15 @@ if __name__ == "__main__":
                     weights *= prior
                 if num_parsed > 30:
                     name = "CosmoMC Fit"
-                c.add_chain(chain, weights=weights, parameters=labels, name=name, posterior=-likelihood, shift_params=shift_params, linestyle=linestyle)
+                c.add_chain(
+                    chain,
+                    weights=weights,
+                    parameters=labels,
+                    name=name,
+                    posterior=-likelihood,
+                    shift_params=shift_params,
+                    linestyle=linestyle,
+                )
 
             # Write all our glorious output
             out = args.get("OUTPUT_NAME")

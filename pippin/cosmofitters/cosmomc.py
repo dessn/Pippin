@@ -11,8 +11,10 @@ from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.task import Task
 
 
-class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """ Run cosmomc given an ini file
+class CosmoMC(
+    CosmoFit
+):  # TODO: Define the location of the output so we can run the lc fitting on it.
+    """Run cosmomc given an ini file
 
     CONFIGURATION
     =============
@@ -41,19 +43,29 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
 
     """
 
-    def __init__(self, name, output_dir, config, options, global_config, dependencies=None):
+    def __init__(
+        self, name, output_dir, config, options, global_config, dependencies=None
+    ):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = global_config
 
-        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_COSMOMC_" + name
+        self.job_name = (
+            os.path.basename(Path(output_dir).parents[1]) + "_COSMOMC_" + name
+        )
         self.logfile = os.path.join(self.output_dir, "output.log")
 
         self.path_to_cosmomc = get_output_loc(self.global_config["CosmoMC"]["location"])
 
         self.create_cov_dep = self.get_dep(CreateCov)
-        self.blind = np.all(self.create_cov_dep.output["blind"]) if self.create_cov_dep is not None else self.options.get("BLIND", False)
-        assert isinstance(self.blind, (bool, np.bool_)), "Blind should be set to a boolan value!"
+        self.blind = (
+            np.all(self.create_cov_dep.output["blind"])
+            if self.create_cov_dep is not None
+            else self.options.get("BLIND", False)
+        )
+        assert isinstance(
+            self.blind, (bool, np.bool_)
+        ), "Blind should be set to a boolan value!"
         self.ini_prefix = options.get("INI").replace(".ini", "")
         self.static = self.ini_prefix.replace(".ini", "") in ["cmb_omw", "cmb_omol"]
         self.static_path = "cosmomc_static_chains/"
@@ -71,7 +83,9 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
             self.covopts = options.get("COVOPTS") or list(avail_cov_opts.keys())
             self.covopts_numbers = [avail_cov_opts[k] for k in self.covopts]
 
-            self.ini_files = [f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers]
+            self.ini_files = [
+                f"{self.ini_prefix}_{num}.ini" for num in self.covopts_numbers
+            ]
 
             self.output["hubble_plot"] = self.create_cov_dep.output["hubble_plot"]
             self.output["bcor_name"] = self.create_cov_dep.output["bcor_name"]
@@ -79,15 +93,24 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
             self.num_jobs = len(self.covopts)
 
         self.ntasks = 10
-        self.logger.debug(f"Num Walkers: {self.num_walkers}") 
+        self.logger.debug(f"Num Walkers: {self.num_walkers}")
         self.chain_dir = os.path.join(self.output_dir, "chains/")
-        self.param_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames")) for l, i in zip(self.covopts, self.ini_files)}
+        self.param_dict = {
+            l: os.path.join(self.chain_dir, i.replace(".ini", ".paramnames"))
+            for l, i in zip(self.covopts, self.ini_files)
+        }
 
         self.done_files = [f"done_{num}.txt" for num in self.covopts_numbers]
         self.chain_dict = {
-            l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.ntasks)
+            l: os.path.join(self.chain_dir, i.replace(".ini", f"_{n + 1}.txt"))
+            for l, i in zip(self.covopts, self.ini_files)
+            for n in range(self.ntasks)
         }
-        self.base_dict = {l: os.path.join(self.chain_dir, i.replace(".ini", "")) for l, i in zip(self.covopts, self.ini_files) for n in range(self.ntasks)}
+        self.base_dict = {
+            l: os.path.join(self.chain_dir, i.replace(".ini", ""))
+            for l, i in zip(self.covopts, self.ini_files)
+            for n in range(self.ntasks)
+        }
         self.output["chain_dir"] = self.chain_dir
         self.output["param_dict"] = self.param_dict
         self.output["chain_dict"] = self.chain_dict
@@ -96,13 +119,25 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
         self.output["blind"] = self.blind
 
         self.output["label"] = (
-            self.options.get("LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})")
+            self.options.get(
+                "LABEL", f"({' + '.join(self.ini_prefix.upper().split('_')[:-1])})"
+            )
             + " "
-            + (self.create_cov_dep.output["name"] if self.create_cov_dep is not None else "")
+            + (
+                self.create_cov_dep.output["name"]
+                if self.create_cov_dep is not None
+                else ""
+            )
         )
         # TODO: Better logic here please
         final = self.ini_prefix.split("_")[-1]
-        ps = {"omw": ["omegam", "w"], "flatomol": ["omegam"], "omol": ["omegam", "omegal"], "wnu": ["w", "nu"], "wwa": ["w", "wa"]}
+        ps = {
+            "omw": ["omegam", "w"],
+            "flatomol": ["omegam"],
+            "omol": ["omegam", "omegal"],
+            "wnu": ["w", "nu"],
+            "wwa": ["w", "wa"],
+        }
         if final not in ps.keys():
             self.fail_config(
                 f"The filename passed in ({self.ini_prefix}) needs to have format 'components_cosmology.ini', where the cosmology is omw, omol, wnu or wwa. Is this a custom file?"
@@ -112,7 +147,9 @@ class CosmoMC(CosmoFit):  # TODO: Define the location of the output so we can ru
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
 
         self.slurm = """{sbatch_header}
 {task_setup}
@@ -129,7 +166,9 @@ fi
             self.logger.debug(f"Done file found at f{self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
-                    self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                    self.logger.error(
+                        f"Done file reported failure. Check output log {self.logfile}"
+                    )
                     return Task.FINISHED_FAILURE
                 else:
                     return Task.FINISHED_SUCCESS
@@ -140,7 +179,9 @@ fi
                 if os.path.exists(df):
                     with open(df) as f:
                         if "FAILURE" in f.read():
-                            self.logger.error(f"Done file {d} reported failure. Check output log {self.logfile}")
+                            self.logger.error(
+                                f"Done file {d} reported failure. Check output log {self.logfile}"
+                            )
                             return Task.FINISHED_FAILURE
                 else:
                     all_files = False
@@ -161,7 +202,9 @@ fi
                 if os.path.exists(self.logfile):
                     with open(self.logfile) as f:
                         if "CANCELLED AT" in f.read():
-                            self.logger.debug(f"The job was cancelled! Check {self.logfile} for details")
+                            self.logger.debug(
+                                f"The job was cancelled! Check {self.logfile} for details"
+                            )
                             return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
@@ -175,19 +218,26 @@ fi
             path = os.path.join(directory, file)
             self.logger.debug(f"Path: {path}")
             if not os.path.exists(path):
-                self.logger.error(f"Cannot find the file {path}, make sure you specified a correct INI string matching an existing template")
+                self.logger.error(
+                    f"Cannot find the file {path}, make sure you specified a correct INI string matching an existing template"
+                )
                 return None
             self.logger.debug(f"Reading in {path} to format")
             with open(path) as f:
                 input_files.append(
-                    f.read().format(**{"path_to_cosmomc": self.path_to_cosmomc, "ini_dir": self.create_cov_dep.output["ini_dir"], "root_dir": self.chain_dir})
+                    f.read().format(
+                        **{
+                            "path_to_cosmomc": self.path_to_cosmomc,
+                            "ini_dir": self.create_cov_dep.output["ini_dir"],
+                            "root_dir": self.chain_dir,
+                        }
+                    )
                 )
 
         self.logger.debug(f"Input Files: {input_files}")
         return input_files
 
     def _run(self):
-
         if self.static:
             self.logger.info("CMB only constraints detected, copying static files")
 
@@ -196,7 +246,6 @@ fi
                 self.logger.error("Seems like we can't find the static chains...")
                 return False
             else:
-
                 new_hash = self.get_hash_from_string(cosmomc_static_loc)
 
                 if self._check_regenerate(new_hash):
@@ -223,17 +272,20 @@ fi
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, 'r') as f:
+            with open(self.batch_file, "r") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
-
 
         header_dict = {
             "REPLACE_NAME": self.job_name,
             "REPLACE_WALLTIME": "34:00:00",
             "REPLACE_LOGFILE": self.logfile,
             "REPLACE_MEM": "2GB",
-            "APPEND": [f"#SBATCH --ntasks={self.ntasks}", f"#SBATCH --array=1-{len(self.ini_files)}", "#SBATCH --cpus-per-task=1"]
+            "APPEND": [
+                f"#SBATCH --ntasks={self.ntasks}",
+                f"#SBATCH --array=1-{len(self.ini_files)}",
+                "#SBATCH --cpus-per-task=1",
+            ],
         }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
@@ -249,7 +301,7 @@ fi
 
         format_dict = {
             "sbatch_header": self.sbatch_header,
-            "task_setup": self.update_setup(setup_dict, self.task_setup['cosmomc'])
+            "task_setup": self.update_setup(setup_dict, self.task_setup["cosmomc"]),
         }
         final_slurm = self.slurm.format(**format_dict)
 
@@ -285,7 +337,6 @@ fi
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
         def _get_cosmomc_dir(base_output_dir, stage_number, name):
@@ -302,7 +353,13 @@ fi
             # Check if this is static. Could scan the folder, but dont have all the chains yet.
             # TODO: Update this when I have all the chains
             if options.get("INI") in ["cmb_omw", "cmb_omol"]:
-                a = CosmoMC(cname, _get_cosmomc_dir(base_output_dir, stage_number, cname), config, options, global_config)
+                a = CosmoMC(
+                    cname,
+                    _get_cosmomc_dir(base_output_dir, stage_number, cname),
+                    config,
+                    options,
+                    global_config,
+                )
                 Task.logger.info(f"Creating CosmoMC task {cname} for {a.num_jobs} jobs")
                 tasks.append(a)
 
@@ -311,11 +368,22 @@ fi
                     if mask not in ctask.name:
                         continue
                     name = f"COSMOMC_{cname}_{ctask.name}"
-                    a = CosmoMC(name, _get_cosmomc_dir(base_output_dir, stage_number, name), config, options, global_config, dependencies=[ctask])
-                    Task.logger.info(f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs")
+                    a = CosmoMC(
+                        name,
+                        _get_cosmomc_dir(base_output_dir, stage_number, name),
+                        config,
+                        options,
+                        global_config,
+                        dependencies=[ctask],
+                    )
+                    Task.logger.info(
+                        f"Creating CosmoMC task {name} for {ctask.name} with {a.num_jobs} jobs"
+                    )
                     tasks.append(a)
 
                 if len(create_cov_tasks) == 0:
-                    Task.fail_config(f"CosmoMC task {cname} has no create_cov task to run on!")
+                    Task.fail_config(
+                        f"CosmoMC task {cname} has no create_cov task to run on!"
+                    )
 
         return tasks

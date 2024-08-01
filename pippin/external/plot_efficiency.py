@@ -13,7 +13,11 @@ from scipy.interpolate import interp1d
 def setup_logging():
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
-    logging.basicConfig(level=logging.DEBUG, format=fmt, handlers=[handler, logging.FileHandler("plot_biascor.log")])
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=fmt,
+        handlers=[handler, logging.FileHandler("plot_biascor.log")],
+    )
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
     logging.getLogger("chainconsumer").setLevel(logging.WARNING)
 
@@ -28,7 +32,10 @@ def get_arguments():
         config = yaml.safe_load(f)
     config.update(config["LCFIT"])
     if config.get("FIELDS") is None:
-        config["FIELDS"] = [["X3", "C3"], ["E1", "E2", "C1", "C2", "S1", "S2", "X1", "X2"]]
+        config["FIELDS"] = [
+            ["X3", "C3"],
+            ["E1", "E2", "C1", "C2", "S1", "S2", "X1", "X2"],
+        ]
     return config
 
 
@@ -38,9 +45,10 @@ def load_file(file):
 
 
 def plot_efficiency(data_all, sims, fields):
-
     for i, sim in enumerate(sims):
-        fig, axes = plt.subplots(len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False)
+        fig, axes = plt.subplots(
+            len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False
+        )
         cols = ["HOST_MAG_i", "HOST_MAG_r", "zHD"]
 
         field_eff = {}
@@ -49,7 +57,6 @@ def plot_efficiency(data_all, sims, fields):
             s = sim[np.isin(sim["FIELD"], field)]
 
             for c, ax in zip(cols, row):
-
                 if c == "zHD":
                     bins = np.arange(0.15, 1.55, 0.1)
                 else:
@@ -87,13 +94,29 @@ def plot_efficiency(data_all, sims, fields):
                 ratio2 = ratio2 / ratio2.max()
 
                 ratio3 = np.concatenate((ratio2, np.zeros(100)))
-                bc3 = interp1d(np.arange(bc2.size), bc2, bounds_error=False, fill_value="extrapolate")(np.arange(bc2.size + 20))
+                bc3 = interp1d(
+                    np.arange(bc2.size),
+                    bc2,
+                    bounds_error=False,
+                    fill_value="extrapolate",
+                )(np.arange(bc2.size + 20))
                 smoothed_ratio = gaussian_filter(ratio3, sigma=4, mode="nearest")[:-80]
                 smoothed_ratio = smoothed_ratio / smoothed_ratio.max()
 
-                err = np.sqrt((err_data / hist_data) ** 2 + (err_sim / hist_sim) ** 2) * ratio
+                err = (
+                    np.sqrt((err_data / hist_data) ** 2 + (err_sim / hist_sim) ** 2)
+                    * ratio
+                )
 
-                ddf = pd.DataFrame({c: bc, "Ndata": hist_data, "Nsim": hist_sim, "eff": ratio, "eff_err": err})
+                ddf = pd.DataFrame(
+                    {
+                        c: bc,
+                        "Ndata": hist_data,
+                        "Nsim": hist_sim,
+                        "eff": ratio,
+                        "eff_err": err,
+                    }
+                )
                 ddf.to_csv(f"eff_{c}.csv", index=False, float_format="%0.4f")
 
                 ax.plot(bc, ratio, linewidth=0.5)
@@ -118,12 +141,20 @@ def plot_efficiency(data_all, sims, fields):
         save_efficiency_file(field_eff, fields)
 
         fig.tight_layout()
-        fig.savefig(f"efficiency_{i}.png", bbox_inches="tight", dpi=150, transparent=True)
+        fig.savefig(
+            f"efficiency_{i}.png", bbox_inches="tight", dpi=150, transparent=True
+        )
 
 
 def save_efficiency_file(field_eff, fields):
     labels = field_eff.keys()
-    name_map = {"HOST_MAG_i": "i_obs", "HOST_MAG_r": "r_obs", "HOST_MAG_z": "z_obs", "HOST_MAG_g": "g_obs", "zHD": "ZTRUE"}
+    name_map = {
+        "HOST_MAG_i": "i_obs",
+        "HOST_MAG_r": "r_obs",
+        "HOST_MAG_z": "z_obs",
+        "HOST_MAG_g": "g_obs",
+        "zHD": "ZTRUE",
+    }
     for c in labels:
         with open(f"efficiency_{c}.dat", "w") as f:
             header = f"OPT_EXTRAP: 1\n\n"
@@ -173,19 +204,25 @@ def plot_efficiency2d(data_all, sims, fields):
             ratio = hist_data / hist_sim
             # ratio = ratio / ratio[np.isfinite(ratio)].max()
 
-            im = ax[0].imshow(hist_data.T, origin="lower", extent=[min_i, max_i, min_r, max_r])
+            im = ax[0].imshow(
+                hist_data.T, origin="lower", extent=[min_i, max_i, min_r, max_r]
+            )
             ax[0].set_title("Data " + ff)
             divider = make_axes_locatable(ax[0])
             cax = divider.append_axes("right", size="5%", pad=0.05)
             fig.colorbar(im, cax=cax, orientation="vertical")
 
-            im = ax[1].imshow(hist_sim.T, origin="lower", extent=[min_i, max_i, min_r, max_r])
+            im = ax[1].imshow(
+                hist_sim.T, origin="lower", extent=[min_i, max_i, min_r, max_r]
+            )
             ax[1].set_title("Sim " + ff)
             divider = make_axes_locatable(ax[1])
             cax = divider.append_axes("right", size="5%", pad=0.05)
             fig.colorbar(im, cax=cax, orientation="vertical")
 
-            im = ax[2].imshow(ratio.T, origin="lower", extent=[min_i, max_i, min_r, max_r])
+            im = ax[2].imshow(
+                ratio.T, origin="lower", extent=[min_i, max_i, min_r, max_r]
+            )
             ax[2].set_title("Ratio " + ff)
             divider = make_axes_locatable(ax[2])
             cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -196,16 +233,27 @@ def plot_efficiency2d(data_all, sims, fields):
                 a.set_ylabel(cr)
 
         fig.tight_layout()
-        fig.savefig(f"efficiency2d_{i}.png", bbox_inches="tight", dpi=150, transparent=True)
+        fig.savefig(
+            f"efficiency2d_{i}.png", bbox_inches="tight", dpi=150, transparent=True
+        )
 
 
 def get_means_and_errors(x, y, bins):
     means, *_ = binned_statistic(x, y, bins=bins, statistic="mean")
-    err, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size))
+    err, *_ = binned_statistic(
+        x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size)
+    )
 
     std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
     std_err, *_ = binned_statistic(
-        x, y, bins=bins, statistic=lambda x: np.sqrt((1 / x.size) * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))) / (2 * np.std(x))
+        x,
+        y,
+        bins=bins,
+        statistic=lambda x: np.sqrt(
+            (1 / x.size)
+            * (moment(x, 4) - (((x.size - 3) / (x.size - 1)) * np.var(x) ** 2))
+        )
+        / (2 * np.std(x)),
     )
     return means, err, std, std_err
 
@@ -225,9 +273,10 @@ if __name__ == "__main__":
         if "HOST_MAG_i" not in sim_dfs[0].columns:
             logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
         else:
-
             if len(data_dfs) > 1:
-                logging.info("Please specify only one data file if you want to calculate efficiency")
+                logging.info(
+                    "Please specify only one data file if you want to calculate efficiency"
+                )
             else:
                 for d in data_dfs + sim_dfs:
                     d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]

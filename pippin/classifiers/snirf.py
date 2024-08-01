@@ -10,7 +10,7 @@ from pippin.task import Task
 
 
 class SnirfClassifier(Classifier):
-    """ SNIRF classifier
+    """SNIRF classifier
 
     CONFIGURATION:
     ==============
@@ -38,14 +38,39 @@ class SnirfClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.global_config = get_config()
         self.num_jobs = 4
 
         self.conda_env = self.global_config["SNIRF"]["conda_env"]
-        self.path_to_classifier = get_output_loc(self.global_config["SNIRF"]["location"])
-        self.job_base_name = os.path.basename(Path(output_dir).parents[1]) + "__" + os.path.basename(output_dir)
+        self.path_to_classifier = get_output_loc(
+            self.global_config["SNIRF"]["location"]
+        )
+        self.job_base_name = (
+            os.path.basename(Path(output_dir).parents[1])
+            + "__"
+            + os.path.basename(output_dir)
+        )
         self.features = options.get("FEATURES", "x1 c zHD x1ERR cERR PKMJDERR")
         self.validate_model()
 
@@ -58,7 +83,9 @@ class SnirfClassifier(Classifier):
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
 
         self.slurm = """{sbatch_header}
         {task_setup}
@@ -67,9 +94,13 @@ class SnirfClassifier(Classifier):
     def setup(self):
         lcfit = self.get_fit_dependency()[0]
         if len(self.get_fit_dependency()) > 1:
-            self.logger.warning(f"Found multiple fit dependencies for SNIRF possibly because COMBINE_MASK is being used, but SNIRF does not currently support this.  Using the first one: {lcfit.name}")
+            self.logger.warning(
+                f"Found multiple fit dependencies for SNIRF possibly because COMBINE_MASK is being used, but SNIRF does not currently support this.  Using the first one: {lcfit.name}"
+            )
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
-        self.fitres_file = os.path.abspath(os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename))
+        self.fitres_file = os.path.abspath(
+            os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
+        )
 
     def classify(self, command):
         if self.batch_file is None:
@@ -78,17 +109,17 @@ class SnirfClassifier(Classifier):
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, 'r') as f:
+            with open(self.batch_file, "r") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                    "REPLACE_NAME": self.job_base_name,
-                    "REPLACE_LOGFILE": "output.log",
-                    "REPLACE_WALLTIME": "15:00:00",
-                    "REPLACE_MEM": "3GB",
-                    "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"]
-                }
+            "REPLACE_NAME": self.job_base_name,
+            "REPLACE_LOGFILE": "output.log",
+            "REPLACE_WALLTIME": "15:00:00",
+            "REPLACE_MEM": "3GB",
+            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=4"],
+        }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
 
@@ -101,9 +132,8 @@ class SnirfClassifier(Classifier):
 
         format_dict = {
             "sbatch_header": self.sbatch_header,
-            "task_setup": self.update_setup(setup_dict, self.task_setup['snirf'])
-
-                }
+            "task_setup": self.update_setup(setup_dict, self.task_setup["snirf"]),
+        }
         slurm_script = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(slurm_script)
@@ -127,10 +157,26 @@ class SnirfClassifier(Classifier):
 
     def get_rf_conf(self):
         leaf_opts = (
-            (f"--n_estimators {self.options.get('N_ESTIMATORS')} " if self.options.get("N_ESTIMATORS") is not None else "")
-            + (f"--min_samples_split {self.options.get('MIN_SAMPLES_SPLIT')} " if self.options.get("MIN_SAMPLES_SPLIT") is not None else "")
-            + (f"--min_samples_leaf {self.options.get('MIN_SAMPLES_LEAF')} " if self.options.get("MIN_SAMPLES_LEAF") is not None else "")
-            + (f"--max_depth {self.options.get('MAX_DEPTH')} " if self.options.get("MAX_DEPTH") is not None else "")
+            (
+                f"--n_estimators {self.options.get('N_ESTIMATORS')} "
+                if self.options.get("N_ESTIMATORS") is not None
+                else ""
+            )
+            + (
+                f"--min_samples_split {self.options.get('MIN_SAMPLES_SPLIT')} "
+                if self.options.get("MIN_SAMPLES_SPLIT") is not None
+                else ""
+            )
+            + (
+                f"--min_samples_leaf {self.options.get('MIN_SAMPLES_LEAF')} "
+                if self.options.get("MIN_SAMPLES_LEAF") is not None
+                else ""
+            )
+            + (
+                f"--max_depth {self.options.get('MAX_DEPTH')} "
+                if self.options.get("MAX_DEPTH") is not None
+                else ""
+            )
         )
         return leaf_opts
 
@@ -138,7 +184,9 @@ class SnirfClassifier(Classifier):
         self.setup()
         model = self.options.get("MODEL")
         if model is None:
-            self.logger.error("If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name.")
+            self.logger.error(
+                "If you are in predict model, please specify a MODEL in OPTS. Either a file location or a training task name."
+            )
             return False
         potential_path = get_output_loc(model)
         if os.path.exists(potential_path):
@@ -146,11 +194,15 @@ class SnirfClassifier(Classifier):
             model = potential_path
         else:
             if "/" in model:
-                self.logger.warning(f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}")
+                self.logger.warning(
+                    f"Your model {model} looks like a path, but I couldn't find a model at {potential_path}"
+                )
             # If its not a file, it must be a task
             for t in self.dependencies:
                 if model == t.name:
-                    self.logger.debug(f"Found task dependency {t.name} with model file {t.output['model_filename']}")
+                    self.logger.debug(
+                        f"Found task dependency {t.name} with model file {t.output['model_filename']}"
+                    )
                     model = t.output["model_filename"]
         command = (
             f"--nc 4 "
@@ -195,21 +247,41 @@ class SnirfClassifier(Classifier):
                     if self.mode == Classifier.PREDICT:
                         # Rename output file myself
                         # First check to see if this is already done
-                        predictions_filename = os.path.join(self.output_dir, "predictions.csv")
+                        predictions_filename = os.path.join(
+                            self.output_dir, "predictions.csv"
+                        )
                         if not os.path.exists(predictions_filename):
                             # Find the output file
-                            output_files = [i for i in os.listdir(self.output_dir) if i.endswith("Classes.txt")]
+                            output_files = [
+                                i
+                                for i in os.listdir(self.output_dir)
+                                if i.endswith("Classes.txt")
+                            ]
                             if len(output_files) != 1:
-                                self.logger.error(f"Could not find the output file in {self.output_dir}")
+                                self.logger.error(
+                                    f"Could not find the output file in {self.output_dir}"
+                                )
                                 return Task.FINISHED_FAILURE
-                            df = pd.read_csv(os.path.join(self.output_dir, output_files[0]), delim_whitespace=True)
+                            df = pd.read_csv(
+                                os.path.join(self.output_dir, output_files[0]),
+                                delim_whitespace=True,
+                            )
                             df_final = df[["CID", "RFprobability0"]]
-                            df_final = df_final.rename(columns={"CID": "SNID", "RFprobability0": self.get_prob_column_name()})
-                            df_final.to_csv(predictions_filename, index=False, float_format="%0.4f")
+                            df_final = df_final.rename(
+                                columns={
+                                    "CID": "SNID",
+                                    "RFprobability0": self.get_prob_column_name(),
+                                }
+                            )
+                            df_final.to_csv(
+                                predictions_filename, index=False, float_format="%0.4f"
+                            )
                         self.output["predictions_filename"] = predictions_filename
                     else:
                         self.output["model_filename"] = [
-                            os.path.join(self.output_dir, f) for f in os.listdir(self.output_dir) if f.startswith(self.model_pk_file)
+                            os.path.join(self.output_dir, f)
+                            for f in os.listdir(self.output_dir)
+                            if f.startswith(self.model_pk_file)
                         ][0]
                     return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)

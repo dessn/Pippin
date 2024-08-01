@@ -48,7 +48,13 @@ def parse_data(filename):
     # mask_fitprob = all_data["FITPROB"] > 0.01
 
     # mask_ratio = all_data["RATIO"] > 0
-    mask = mask_errtest_high & mask_errtest_low & mask_sbfluxcal & mask_5yr & mask_nolowz_y1  # & mask_fitprob  # & mask_fluxcalsim & mask_ratio
+    mask = (
+        mask_errtest_high
+        & mask_errtest_low
+        & mask_sbfluxcal
+        & mask_5yr
+        & mask_nolowz_y1
+    )  # & mask_fitprob  # & mask_fluxcalsim & mask_ratio
     print_drop(mask_errtest_high, "errtest < 10")
     print_drop(mask_errtest_low, "errtest >= 0.1")
     print_drop(mask_sbfluxcal, "SBFLUXCAL > 0")
@@ -125,7 +131,11 @@ for cut in cuts:
         df_s = get_data("sim_obs.pkl", cut, cut_fitprob=cut_fitprob)
 
         data = [
-            [("LOGSNR", np.arange(0, 3.1, 1)), ("SBMAG", np.arange(20, 30, 2)), ("PSF", np.array([1, 3, 5]))],
+            [
+                ("LOGSNR", np.arange(0, 3.1, 1)),
+                ("SBMAG", np.arange(20, 30, 2)),
+                ("PSF", np.array([1, 3, 5])),
+            ],
             [("LOGSNR", np.arange(0, 3.1, 1)), ("SBMAG", np.arange(20, 30, 1))],
             [("SBMAG", np.arange(20, 30, 1))],
         ]
@@ -141,7 +151,9 @@ for cut in cuts:
             shape = []
             for k, bins in maps:
                 if bins is None:
-                    bins = np.linspace(df_f[k].quantile(0.001), df_f[k].quantile(0.999), 7)
+                    bins = np.linspace(
+                        df_f[k].quantile(0.001), df_f[k].quantile(0.999), 7
+                    )
                 bcs.append(0.5 * (bins[:-1] + bins[1:]))
                 shape.append(bcs[-1].size)
                 indices_f.append(np.digitize(df_f[k], bins=bins) - 1)
@@ -149,14 +161,22 @@ for cut in cuts:
 
             data = {}
             for field_name, color in zip(field_names, ("viridis", "magma")):
-                fields_list = ["E1", "E2", "S1", "S2", "C1", "C2", "X1", "X2"] if field_name == "SHALLOW" else ["C3", "X3"]
+                fields_list = (
+                    ["E1", "E2", "S1", "S2", "C1", "C2", "X1", "X2"]
+                    if field_name == "SHALLOW"
+                    else ["C3", "X3"]
+                )
 
                 for band_index, band in enumerate(bands):
                     print(f"Doing field {field_name} and band {band}")
 
                     # Select down to field and band
-                    mask_f = (df_f["IFILTOBS"] == band_index + 2) & (np.isin(df_f["FIELD"], fields_list))
-                    mask_s = (df_s["IFILTOBS"] == band_index + 2) & (np.isin(df_s["FIELD"], fields_list))
+                    mask_f = (df_f["IFILTOBS"] == band_index + 2) & (
+                        np.isin(df_f["FIELD"], fields_list)
+                    )
+                    mask_s = (df_s["IFILTOBS"] == band_index + 2) & (
+                        np.isin(df_s["FIELD"], fields_list)
+                    )
                     df_f2 = df_f[mask_f]
                     df_s2 = df_s[mask_s]
                     indices_f2 = [i[mask_f] for i in indices_f]
@@ -203,7 +223,11 @@ for cut in cuts:
 
                         x2 = xx[non_nan]
                         ind2 = ind[:, non_nan]
-                        x = griddata(ind2.T, x2, ind.T, method="nearest").T.flatten().reshape((x.shape))
+                        x = (
+                            griddata(ind2.T, x2, ind.T, method="nearest")
+                            .T.flatten()
+                            .reshape((x.shape))
+                        )
 
                         # Save to output
                         data[n + field_name + band] = x
@@ -211,7 +235,9 @@ for cut in cuts:
             # Create output files
             for j, n in enumerate(["SIM", "FAKES"]):
                 output_string = []
-                output_string.append("DEFINE_FIELDGROUP: SHALLOW E1+E2+S1+S2+C1+C2+X1+X2")
+                output_string.append(
+                    "DEFINE_FIELDGROUP: SHALLOW E1+E2+S1+S2+C1+C2+X1+X2"
+                )
                 output_string.append("DEFINE_FIELDGROUP: DEEP C3+X3\n")
                 names = [m[0] for m in maps]
                 for field in field_names:
@@ -229,5 +255,7 @@ for cut in cuts:
                             bc.append(f"{value:0.3f}")
                             output_string.append("ROW: " + "  ".join(bc))
                         output_string.append("ENDMAP:\n")
-                with open(f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}.DAT", "w") as ff:
+                with open(
+                    f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}.DAT", "w"
+                ) as ff:
                     ff.write("\n".join(output_string))

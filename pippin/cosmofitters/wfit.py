@@ -11,8 +11,11 @@ from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
 
+
 class WFit(ConfigBasedExecutable, CosmoFit):
-    def __init__(self, name, output_dir, create_cov_tasks, config, options, global_config):
+    def __init__(
+        self, name, output_dir, create_cov_tasks, config, options, global_config
+    ):
         # First check if all required options exist
         # In this case, WFITOPTS must exist with at least 1 entry
 
@@ -24,7 +27,14 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             Task.fail_config(f"WFITOPTS for task {name} does not have any options!")
 
         base_file = get_data_loc("wfit/input_file.INPUT")
-        super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies=create_cov_tasks)
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            base_file,
+            default_assignment=": ",
+            dependencies=create_cov_tasks,
+        )
         self.num_jobs = len(self.wfitopts)
 
         self.create_cov_tasks = create_cov_tasks
@@ -37,7 +47,9 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.global_config = global_config
         self.done_file = os.path.join(self.output_dir, "output", "ALL.DONE")
 
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
         batch_mem = self.batch_replace.get("REPLACE_MEM", None)
         if batch_mem is not None:
             self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
@@ -48,7 +60,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.input_name = f"{self.job_name}.INPUT"
         self.input_file = os.path.join(self.output_dir, self.input_name)
-        
+
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at {self.done_file}")
@@ -56,7 +68,9 @@ class WFit(ConfigBasedExecutable, CosmoFit):
                 if "SUCCESS" in f.read():
                     return Task.FINISHED_SUCCESS
                 else:
-                    self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                    self.logger.error(
+                        f"Done file reported failure. Check output log {self.logfile}"
+                    )
                     self.scan_files_for_error([self.logfile], "ERROR", "EXCEPTION")
                     return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
@@ -71,7 +85,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             if k == "WFITOPTS":
                 k = "WFITOPT"
             self.yaml["CONFIG"][k] = v
-        
+
         final_output_for_hash = self.get_output_string()
 
         new_hash = self.get_hash_from_string(final_output_for_hash)
@@ -86,12 +100,20 @@ class WFit(ConfigBasedExecutable, CosmoFit):
                 f.write(self.get_output_string())
 
             cmd = ["submit_batch_jobs.sh", os.path.basename(self.input_file)]
-            self.logger.debug(f"Submitting wfit job: {' '.join(cmd)} in cwd: {self.output_dir}")
+            self.logger.debug(
+                f"Submitting wfit job: {' '.join(cmd)} in cwd: {self.output_dir}"
+            )
             self.logger.debug(f"Logging to {self.logfile}")
-            with open(self.logfile, 'w') as f:
-                subprocess.run(' '.join(cmd), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            with open(self.logfile, "w") as f:
+                subprocess.run(
+                    " ".join(cmd),
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=self.output_dir,
+                    shell=True,
+                )
             chown_dir(self.output_dir)
-            
+
         else:
             self.should_be_done()
             self.logger.info("Has check passed, not rerunning")
@@ -99,7 +121,6 @@ class WFit(ConfigBasedExecutable, CosmoFit):
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
         def _get_wfit_dir(base_output_dir, stage_number, name):
@@ -118,7 +139,14 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             if len(ctasks) == 0:
                 Task.fail_config(f"WFit task {name} has no create_cov task to run on!")
 
-            t = WFit(name, _get_wfit_dir(base_output_dir, stage_number, name), ctasks, config, options, global_config)
+            t = WFit(
+                name,
+                _get_wfit_dir(base_output_dir, stage_number, name),
+                ctasks,
+                config,
+                options,
+                global_config,
+            )
             Task.logger.info(f"Creating WFit task {name} {t.num_jobs} jobs")
             tasks.append(t)
 

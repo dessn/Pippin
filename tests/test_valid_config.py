@@ -7,7 +7,7 @@ from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.classifiers.fitprob import FitProbClassifier
 from pippin.classifiers.perfect import PerfectClassifier
-from pippin.classifiers.scone import SconeClassifier 
+from pippin.classifiers.scone import SconeClassifier
 from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 from pippin.aggregator import Aggregator
 from pippin.merge import Merger
@@ -18,7 +18,6 @@ from pippin.cosmofitters.cosmomc import CosmoMC
 
 
 def test_dataprep_config_valid():
-
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_dataprep.yml", check=True)
     tasks = manager.tasks
@@ -43,7 +42,6 @@ def test_dataprep_outputs_set():
 
 
 def test_sim_config_valid():
-
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_sim.yml", check=True)
     tasks = manager.tasks
@@ -68,7 +66,6 @@ def test_sim_outputs_set():
 
 
 def test_lcfit_config_valid():
-
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_lcfit.yml", check=True)
     tasks = manager.tasks
@@ -97,14 +94,17 @@ def test_lcfit_outputs_mask():
     tasks = manager.tasks
     assert len(tasks) == 5
 
-    expected = {"DIFFERENT_SN_EXAMPLESIM", "DIFFERENT_SN_EXAMPLESIM2", "MASKTEST_EXAMPLESIM2"}
+    expected = {
+        "DIFFERENT_SN_EXAMPLESIM",
+        "DIFFERENT_SN_EXAMPLESIM2",
+        "MASKTEST_EXAMPLESIM2",
+    }
     found = set([t.name for t in tasks if isinstance(t, SNANALightCurveFit)])
 
     assert expected == found
 
 
 def test_classify_sim_only_config_valid():
-
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_classify_sim.yml", check=True)
     tasks = manager.tasks
@@ -120,7 +120,9 @@ def test_classify_sim_only_config_valid():
 
 
 def test_classifier_lcfit_config_valid():
-    manager = get_manager(yaml="tests/config_files/valid_classify_lcfit.yml", check=True)
+    manager = get_manager(
+        yaml="tests/config_files/valid_classify_lcfit.yml", check=True
+    )
     tasks = manager.tasks
 
     assert len(tasks) == 3
@@ -135,8 +137,11 @@ def test_classifier_lcfit_config_valid():
     assert task.output["prob_column_name"] == "PROB_FITPROBTEST"
     assert len(task.dependencies) == 2
 
+
 def test_classifier_sim_with_opt_lcfit_config_valid():
-    manager = get_manager(yaml="tests/config_files/valid_classify_sim_with_lcfit.yml", check=True)
+    manager = get_manager(
+        yaml="tests/config_files/valid_classify_sim_with_lcfit.yml", check=True
+    )
     tasks = manager.tasks
 
     assert len(tasks) == 3
@@ -152,8 +157,11 @@ def test_classifier_sim_with_opt_lcfit_config_valid():
     assert isinstance(deps[0], SNANASimulation)
     assert isinstance(deps[1], SNANALightCurveFit)
 
+
 def test_classifier_scone_valid():
-    manager = get_manager(yaml="tests/config_files/valid_classify_scone.yml", check=True)
+    manager = get_manager(
+        yaml="tests/config_files/valid_classify_scone.yml", check=True
+    )
     tasks = manager.tasks
 
     # 1 Sim, 1 LCFit, 4 Scone
@@ -166,46 +174,40 @@ def test_classifier_scone_valid():
 
     tests = [
         {
-            'task': tasks[2],
-            'cls': SconeLegacyClassifier,
-            'attr': {
-                'name': 'LEGACY_SCONE_TRAIN',
-                'scone_input_file': None
-            }
+            "task": tasks[2],
+            "cls": SconeLegacyClassifier,
+            "attr": {"name": "LEGACY_SCONE_TRAIN", "scone_input_file": None},
         },
         {
-            'task': tasks[3],
-            'cls': SconeLegacyClassifier,
-            'attr': {
-                'name': 'LEGACY_SCONE_PREDICT',
-                'scone_input_file': None
-            }
+            "task": tasks[3],
+            "cls": SconeLegacyClassifier,
+            "attr": {"name": "LEGACY_SCONE_PREDICT", "scone_input_file": None},
         },
         {
-            'task': tasks[4],
-            'cls': SconeClassifier,
-            'attr': {
-                'name': 'SCONE_TRAIN',
-            }
+            "task": tasks[4],
+            "cls": SconeClassifier,
+            "attr": {
+                "name": "SCONE_TRAIN",
+            },
         },
         {
-            'task': tasks[5],
-            'cls': SconeClassifier,
-            'attr': {
-                'name': 'SCONE_PREDICT',
-            }
-        }
+            "task": tasks[5],
+            "cls": SconeClassifier,
+            "attr": {
+                "name": "SCONE_PREDICT",
+            },
+        },
     ]
 
     for test in tests:
-        task = test['task']
-        assert type(task) is test['cls']
-        for (attr, val) in test['attr'].items():
+        task = test["task"]
+        assert type(task) is test["cls"]
+        for attr, val in test["attr"].items():
             assert hasattr(task, attr)
             assert getattr(task, attr) == val
 
-def test_agg_config_valid():
 
+def test_agg_config_valid():
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_agg.yml", check=True)
     tasks = manager.tasks
@@ -264,7 +266,9 @@ def test_createcov_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_create_cov.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 14  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov)
+    assert (
+        len(tasks) == 14
+    )  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov)
     assert isinstance(tasks[-1], CreateCov)
 
     task = tasks[-1]
@@ -281,7 +285,9 @@ def test_cosmomc_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_cosmomc.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 15  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov, 1 cosmomc)
+    assert (
+        len(tasks) == 15
+    )  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov, 1 cosmomc)
     assert isinstance(tasks[-1], CosmoMC)
 
     task = tasks[-1]
@@ -299,11 +305,15 @@ def test_analyse_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_analyse.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 16  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov, 1 cosmomc, 1 analyse)
+    assert (
+        len(tasks) == 16
+    )  # (2 sims, 2 lcfit, 4 classifiers, 2 agg, 2 merge, 1 bcor, 1 create cov, 1 cosmomc, 1 analyse)
     assert isinstance(tasks[-1], AnalyseChains)
 
     task = tasks[-1]
     assert task.output["name"] == "ALL_OMW"
-    assert len(task.dependencies) == 2  # Create cosmomc for chains, and biascor for hubble diagram
+    assert (
+        len(task.dependencies) == 2
+    )  # Create cosmomc for chains, and biascor for hubble diagram
     assert isinstance(task.dependencies[0], (CosmoMC, BiasCor))
     assert isinstance(task.dependencies[1], (CosmoMC, BiasCor))

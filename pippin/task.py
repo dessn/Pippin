@@ -1,13 +1,22 @@
 import logging
 import shutil
 from abc import ABC, abstractmethod
-from pippin.config import get_logger, get_hash, ensure_list, get_data_loc, read_yaml, compress_dir, uncompress_dir
+from pippin.config import (
+    get_logger,
+    get_hash,
+    ensure_list,
+    get_data_loc,
+    read_yaml,
+    compress_dir,
+    uncompress_dir,
+)
 import tarfile
 import os
 import datetime
 import numpy as np
 import yaml
 import sys
+
 sys.setrecursionlimit(10000)
 
 
@@ -16,7 +25,9 @@ class Task(ABC):
     FINISHED_FAILURE = -9
     logger = get_logger()
 
-    def __init__(self, name, output_dir, dependencies=None, config=None, done_file="done.txt"):
+    def __init__(
+        self, name, output_dir, dependencies=None, config=None, done_file="done.txt"
+    ):
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
@@ -44,16 +55,22 @@ class Task(ABC):
             if name_match is not None:
                 matching_dirs = [d for d in external_dirs if name_match in d]
                 if len(matching_dirs) == 0:
-                    self.logger.error(f"Task {output_name} has external mapping {name_match} but there were no matching EXTERNAL_DIRS")
+                    self.logger.error(
+                        f"Task {output_name} has external mapping {name_match} but there were no matching EXTERNAL_DIRS"
+                    )
                 else:
                     if len(matching_dirs) > 1:
-                        self.logger.warning(f"Task {output_name} has external mapping {name_match} which matched with multiple EXTERNAL_DIRS: {matching_dirs}. Defaulting to {matching_dirs[0]}")
+                        self.logger.warning(
+                            f"Task {output_name} has external mapping {name_match} which matched with multiple EXTERNAL_DIRS: {matching_dirs}. Defaulting to {matching_dirs[0]}"
+                        )
 
                     self.logger.info(f"Found external match for {output_name}")
                     self.config["EXTERNAL"] = matching_dirs[0]
             # If you haven't specified an EXTERNAL_MAP for this output_name, check for exact match
             elif output_name in external_names:
-                self.config["EXTERNAL"] = external_dirs[external_names.index(output_name)]
+                self.config["EXTERNAL"] = external_dirs[
+                    external_names.index(output_name)
+                ]
             else:
                 self.logger.info(f"No external match found for {output_name}")
 
@@ -63,13 +80,19 @@ class Task(ABC):
             self.external = get_data_loc(self.external)
             # External directory might be compressed
             if not os.path.exists(self.external):
-                self.logger.warning(f"External config {self.external} does not exist, checking if it's compressed")
+                self.logger.warning(
+                    f"External config {self.external} does not exist, checking if it's compressed"
+                )
                 compressed_dir = self.external + ".tar.gz"
                 if not os.path.exists(compressed_dir):
-                    self.logger.error(f"{self.external} and {compressed_dir} do not exist")
+                    self.logger.error(
+                        f"{self.external} and {compressed_dir} do not exist"
+                    )
                 else:
                     self.external = compressed_dir
-                    self.logger.debug(f"External config file path resolved to {self.external}")
+                    self.logger.debug(
+                        f"External config file path resolved to {self.external}"
+                    )
                     with tarfile.open(self.external, "r:gz") as tar:
                         for member in tar:
                             if member.isfile():
@@ -82,11 +105,15 @@ class Task(ABC):
                                     conf.update(self.config)
                                     self.config = conf
                                     self.output = external_config.get("OUTPUT", {})
-                                    self.logger.debug("Loaded external config successfully")
+                                    self.logger.debug(
+                                        "Loaded external config successfully"
+                                    )
             else:
                 if os.path.isdir(self.external):
                     self.external = os.path.join(self.external, "config.yml")
-                self.logger.debug(f"External config file path resolved to {self.external}")
+                self.logger.debug(
+                    f"External config file path resolved to {self.external}"
+                )
                 with open(self.external, "r") as f:
                     external_config = yaml.load(f, Loader=yaml.Loader)
                     conf = external_config.get("CONFIG", {})
@@ -113,7 +140,14 @@ class Task(ABC):
         self.force_refresh = False
         self.force_ignore = False
 
-        self.output.update({"name": name, "output_dir": output_dir, "hash_file": self.hash_file, "done_file": self.done_file})
+        self.output.update(
+            {
+                "name": name,
+                "output_dir": output_dir,
+                "hash_file": self.hash_file,
+                "done_file": self.done_file,
+            }
+        )
         self.config_file = os.path.join(output_dir, "config.yml")
 
     def add_dependent(self, task):
@@ -145,16 +179,16 @@ class Task(ABC):
                 self.sbatch_header = self.sbatch_header.replace(key, str(value))
         append_list = header_dict.get("APPEND")
         if append_list is not None:
-            lines = self.sbatch_header.split('\n')
+            lines = self.sbatch_header.split("\n")
             lines += append_list
-            self.sbatch_header = '\n'.join(lines)
+            self.sbatch_header = "\n".join(lines)
         self.logger.debug("Updated header")
 
     def clean_header(self, header):
-        lines = header.split('\n')
-        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('Sxxx' not in x)
+        lines = header.split("\n")
+        mask = lambda x: (len(x) > 0) and (x[0] == "#") and ("Sxxx" not in x)
         lines = filter(mask, lines)
-        header = '\n'.join(lines)
+        header = "\n".join(lines)
         return header
 
     def compress(self):
@@ -175,15 +209,18 @@ class Task(ABC):
             if os.path.exists(source_file):
                 uncompress_dir(os.path.dirname(t.output_dir), source_file)
 
-    
     def _check_regenerate(self, new_hash):
         hash_are_different = new_hash != self.get_old_hash()
 
         if self.force_ignore:
             if hash_are_different:
-                self.logger.warning(f"Warning, hashes are different for {self}, but force_ignore is True so regenerate=False")
+                self.logger.warning(
+                    f"Warning, hashes are different for {self}, but force_ignore is True so regenerate=False"
+                )
             else:
-                self.logger.debug("Hashes agree and force_ignore is set, returning regenerate=False")
+                self.logger.debug(
+                    "Hashes agree and force_ignore is set, returning regenerate=False"
+                )
             return False
         elif self.force_refresh:
             self.logger.debug("Force refresh is set, returning regenerate=True")
@@ -228,10 +265,14 @@ class Task(ABC):
         if num_jobs == 0:
             self.num_empty += 1
             if self.num_empty >= self.num_empty_threshold:
-                self.logger.error(f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}")
+                self.logger.error(
+                    f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}"
+                )
                 return Task.FINISHED_FAILURE
             elif self.num_empty > 1 and self.num_empty > self.display_threshold:
-                self.logger.warning(f"Task {str(self)} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}")
+                self.logger.warning(
+                    f"Task {str(self)} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}"
+                )
             return 0
         return num_jobs
 
@@ -264,7 +305,9 @@ class Task(ABC):
         return new_hash
 
     def get_hash_from_string(self, string_to_hash):
-        hashes = sorted([dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies])
+        hashes = sorted(
+            [dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies]
+        )
         string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
@@ -287,27 +330,40 @@ class Task(ABC):
         if self.external is not None:
             self.logger.debug(f"Name: {self.name} External: {self.external}")
             if os.path.exists(self.output_dir) and not self.force_refresh:
-                self.logger.info(f"Not copying external site, output_dir already exists at {self.output_dir}")
+                self.logger.info(
+                    f"Not copying external site, output_dir already exists at {self.output_dir}"
+                )
             else:
                 if os.path.exists(self.output_dir):
                     self.logger.debug(f"Removing old directory {self.output_dir}")
                     shutil.rmtree(self.output_dir, ignore_errors=True)
                 if ".tar.gz" in self.external:
                     tardir = os.path.basename(self.external).replace(".tar.gz", "")
-                    self.logger.info(f"Copying files from {self.external} to {self.output_dir}")
-                            
-                    shutil.copyfile(self.external, self.output_dir + '.tar.gz')
+                    self.logger.info(
+                        f"Copying files from {self.external} to {self.output_dir}"
+                    )
+
+                    shutil.copyfile(self.external, self.output_dir + ".tar.gz")
                     self.uncompress()
-                    shutil.move(os.path.join(os.path.dirname(self.output_dir), tardir), self.output_dir)
+                    shutil.move(
+                        os.path.join(os.path.dirname(self.output_dir), tardir),
+                        self.output_dir,
+                    )
                 else:
-                    self.logger.info(f"Copying from {os.path.dirname(self.external)} to {self.output_dir}")
-                    shutil.copytree(os.path.dirname(self.external), self.output_dir, symlinks=True)
+                    self.logger.info(
+                        f"Copying from {os.path.dirname(self.external)} to {self.output_dir}"
+                    )
+                    shutil.copytree(
+                        os.path.dirname(self.external), self.output_dir, symlinks=True
+                    )
             return True
 
         return self._run()
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
-        assert len(error_match) >= 1, "You need to specify what string to search for. I have nothing."
+        assert (
+            len(error_match) >= 1
+        ), "You need to specify what string to search for. I have nothing."
         found = False
         if not os.path.exists(path):
             self.logger.warning(f"Note, expected log path {path} does not exist")
@@ -324,7 +380,9 @@ class Task(ABC):
                     self.logger.error(f"Excerpt:    {line}")
         return found
 
-    def scan_files_for_error(self, paths, *error_match, max_lines=10, max_erroring_files=3):
+    def scan_files_for_error(
+        self, paths, *error_match, max_lines=10, max_erroring_files=3
+    ):
         num_errors = 0
         self.logger.debug(f"Found {len(paths)} to scan")
         for path in paths:
@@ -333,8 +391,12 @@ class Task(ABC):
                 fail_summary = read_yaml(path)
                 for key, dicts in fail_summary.items():
                     if key.startswith("FAILURE-0"):
-                        self.logger.error(f"{key}: {' '.join(dicts.get('ABORT_MESSAGES', 'Unknown message'))}")
-                        self.logger.error(f"{key}: Detailed in {dicts.get('JOB_LOG_FILE', 'Unknown path')}")
+                        self.logger.error(
+                            f"{key}: {' '.join(dicts.get('ABORT_MESSAGES', 'Unknown message'))}"
+                        )
+                        self.logger.error(
+                            f"{key}: Detailed in {dicts.get('JOB_LOG_FILE', 'Unknown path')}"
+                        )
                         num_errors += 1
                     if num_errors > max_erroring_files:
                         break
@@ -363,17 +425,24 @@ class Task(ABC):
         for m in mask:
             specific_match = [d for d in matching_deps if m in d.name]
             if len(specific_match) == 0 and not allowed_failure:
-                Task.fail_config(f"Mask '{m}' does not match any deps. Probably a typo. Available options are {deps}")
+                Task.fail_config(
+                    f"Mask '{m}' does not match any deps. Probably a typo. Available options are {deps}"
+                )
 
         return matching_deps
 
     @staticmethod
     def match_tasks_of_type(mask, deps, *cls, match_none=True, allowed_failure=False):
-        return Task.match_tasks(mask, Task.get_task_of_type(deps, *cls), match_none=match_none, allowed_failure=allowed_failure)
+        return Task.match_tasks(
+            mask,
+            Task.get_task_of_type(deps, *cls),
+            match_none=match_none,
+            allowed_failure=allowed_failure,
+        )
 
     @abstractmethod
     def _run(self):
-        """ Execute the primary function of the task
+        """Execute the primary function of the task
 
         :param force_refresh: to force refresh and rerun - do not pass hash checks
         :return: true or false if the job launched successfully
@@ -391,7 +460,9 @@ class Task(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+    def get_tasks(
+        config, prior_tasks, base_output_dir, stage_number, prefix, global_config
+    ):
         raise NotImplementedError()
 
     def get_wall_time_str(self):
@@ -400,7 +471,7 @@ class Task(ABC):
         return None
 
     def check_completion(self, squeue):
-        """ Checks if the job has completed.
+        """Checks if the job has completed.
 
         Invokes  `_check_completion` and determines wall time.
 
@@ -413,28 +484,40 @@ class Task(ABC):
                 if self.start_time is None and os.path.exists(self.hash_file):
                     self.start_time = os.path.getmtime(self.hash_file)
                 if self.end_time is not None and self.start_time is not None:
-                    self.wall_time = int(self.end_time - self.start_time + 0.5)  # round up
-                    self.logger.info(f"Task finished with wall time {self.get_wall_time_str()}")
+                    self.wall_time = int(
+                        self.end_time - self.start_time + 0.5
+                    )  # round up
+                    self.logger.info(
+                        f"Task finished with wall time {self.get_wall_time_str()}"
+                    )
             if result == Task.FINISHED_FAILURE:
                 self.clear_hash()
         elif not self.fresh_run:
-            self.logger.error("Hash check had passed, so the task should be done, but it said it wasn't!")
-            self.logger.error(f"This means it probably crashed, have a look in {self.output_dir}")
+            self.logger.error(
+                "Hash check had passed, so the task should be done, but it said it wasn't!"
+            )
+            self.logger.error(
+                f"This means it probably crashed, have a look in {self.output_dir}"
+            )
             self.logger.error(f"Removing hash from {self.hash_file}")
             self.clear_hash()
-            #TODO try rerunning task
+            # TODO try rerunning task
             return Task.FINISHED_FAILURE
-        if self.external is None and result == Task.FINISHED_SUCCESS and not os.path.exists(self.config_file):
+        if (
+            self.external is None
+            and result == Task.FINISHED_SUCCESS
+            and not os.path.exists(self.config_file)
+        ):
             self.write_config()
         return result
 
     @abstractmethod
     def _check_completion(self, squeue):
-        """ Checks if the job is complete or has failed. 
-        
-        If it is complete it should also load in the any useful results that 
+        """Checks if the job is complete or has failed.
+
+        If it is complete it should also load in the any useful results that
         other tasks may need in `self.output` dictionary
-        
+
         Such as the location of a trained model or output files.
         :param squeue:
         """

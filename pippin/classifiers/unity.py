@@ -11,7 +11,7 @@ from pippin.task import Task
 
 
 class UnityClassifier(Classifier):
-    """ Classification task for the SuperNNova classifier.
+    """Classification task for the SuperNNova classifier.
 
     CONFIGURATION
     =============
@@ -33,8 +33,27 @@ class UnityClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
@@ -55,13 +74,21 @@ class UnityClassifier(Classifier):
                 s = self.get_simulation_dependency()
                 df = None
                 phot_dir = s.output["photometry_dirs"][self.index]
-                headers = [os.path.join(phot_dir, a) for a in os.listdir(phot_dir) if "HEAD" in a]
+                headers = [
+                    os.path.join(phot_dir, a)
+                    for a in os.listdir(phot_dir)
+                    if "HEAD" in a
+                ]
                 if len(headers) == 0:
-                    self.logger.warning(f"No HEAD fits files found in {phot_dir}! Going to do it manually, this may not work.")
+                    self.logger.warning(
+                        f"No HEAD fits files found in {phot_dir}! Going to do it manually, this may not work."
+                    )
 
                     cmd = "grep --exclude-dir=* SNID: * | awk -F ':' '{print $3}'"
                     self.logger.debug(f"Running command   {cmd}")
-                    process = subprocess.run(cmd, capture_output=True, cwd=phot_dir, shell=True)
+                    process = subprocess.run(
+                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                    )
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
 
@@ -74,7 +101,9 @@ class UnityClassifier(Classifier):
                         with fits.open(h) as hdul:
                             data = hdul[1].data
                             snid = np.array(data.field("SNID"))
-                            dataframe = pd.DataFrame({cid: snid, name: np.ones(snid.shape)})
+                            dataframe = pd.DataFrame(
+                                {cid: snid, name: np.ones(snid.shape)}
+                            )
                             dataframe[cid] = dataframe[cid].apply(str)
                             dataframe[cid] = dataframe[cid].str.strip()
                             if df is None:

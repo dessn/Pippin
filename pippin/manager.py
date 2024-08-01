@@ -8,7 +8,15 @@ from pippin.aggregator import Aggregator
 from pippin.analyse import AnalyseChains
 from pippin.biascor import BiasCor
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_logger, get_config, get_output_dir, mkdirs, chown_dir, chown_file, get_data_loc
+from pippin.config import (
+    get_logger,
+    get_config,
+    get_output_dir,
+    mkdirs,
+    chown_dir,
+    chown_file,
+    get_data_loc,
+)
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.create_cov import CreateCov
 from pippin.dataprep import DataPrep
@@ -19,8 +27,30 @@ from pippin.task import Task
 
 
 class Manager:
-    task_order = [DataPrep, SNANASimulation, SNANALightCurveFit, Classifier, Aggregator, Merger, BiasCor, CreateCov, CosmoFit, AnalyseChains]
-    stages = ["DATAPREP", "SIM", "LCFIT", "CLASSIFY", "AGGREGATE", "MERGE", "BIASCOR", "CREATE_COV", "COSMOFIT", "ANALYSE"]
+    task_order = [
+        DataPrep,
+        SNANASimulation,
+        SNANALightCurveFit,
+        Classifier,
+        Aggregator,
+        Merger,
+        BiasCor,
+        CreateCov,
+        CosmoFit,
+        AnalyseChains,
+    ]
+    stages = [
+        "DATAPREP",
+        "SIM",
+        "LCFIT",
+        "CLASSIFY",
+        "AGGREGATE",
+        "MERGE",
+        "BIASCOR",
+        "CREATE_COV",
+        "COSMOFIT",
+        "ANALYSE",
+    ]
 
     def __init__(self, filename, config_path, config_raw, config, message_store):
         self.logger = get_logger()
@@ -36,15 +66,21 @@ class Manager:
         self.max_jobs = int(self.global_config["QUEUE"]["max_jobs"])
         self.max_jobs_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs"])
         self.max_jobs_in_queue = int(self.global_config["QUEUE"]["max_jobs_in_queue"])
-        self.max_jobs_in_queue_gpu = int(self.global_config["QUEUE"]["max_gpu_jobs_in_queue"])
+        self.max_jobs_in_queue_gpu = int(
+            self.global_config["QUEUE"]["max_gpu_jobs_in_queue"]
+        )
 
         self.logger.debug(self.global_config.keys())
 
-        self.sbatch_cpu_path = get_data_loc(self.global_config["SBATCH"]["cpu_location"])
-        with open(self.sbatch_cpu_path, 'r') as f:
+        self.sbatch_cpu_path = get_data_loc(
+            self.global_config["SBATCH"]["cpu_location"]
+        )
+        with open(self.sbatch_cpu_path, "r") as f:
             self.sbatch_cpu_header = f.read()
-        self.sbatch_gpu_path = get_data_loc(self.global_config["SBATCH"]["gpu_location"])
-        with open(self.sbatch_gpu_path, 'r') as f:
+        self.sbatch_gpu_path = get_data_loc(
+            self.global_config["SBATCH"]["gpu_location"]
+        )
+        with open(self.sbatch_gpu_path, "r") as f:
             self.sbatch_gpu_header = f.read()
         self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
         self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
@@ -68,11 +104,21 @@ class Manager:
         self.blocked = []
 
     def load_task_setup(self):
-        tasks = ['cosmomc', 'snirf', 'analyse', 'supernnova', 'nearest_neighbour', 'create_cov', 'supernnova_yml', 'scone', 'dataprep']
+        tasks = [
+            "cosmomc",
+            "snirf",
+            "analyse",
+            "supernnova",
+            "nearest_neighbour",
+            "create_cov",
+            "supernnova_yml",
+            "scone",
+            "dataprep",
+        ]
         self.task_setup = {}
         for task in tasks:
-          with open(get_data_loc(f"{self.setup_task_location}/{task}"), 'r') as f:
-              self.task_setup[task] = f.read()
+            with open(get_data_loc(f"{self.setup_task_location}/{task}"), "r") as f:
+                self.task_setup[task] = f.read()
 
     def get_force_refresh(self, task):
         if self.start is None:
@@ -85,7 +131,9 @@ class Manager:
             self.logger.error(f"Task {task} did not match any class in the task order!")
             index = 0
         force = index >= self.start
-        self.logger.debug(f"Start set! Task {task} has index {index}, start index set {self.start}, so returning {force}")
+        self.logger.debug(
+            f"Start set! Task {task} has index {index}, start index set {self.start}, so returning {force}"
+        )
         return force
 
     def get_force_ignore(self, task):
@@ -99,7 +147,9 @@ class Manager:
             self.logger.error(f"Task {task} did not match any class in the task order!")
             assert index is not None
         force_ignore = index <= self.force_ignore_stage
-        self.logger.debug(f"Task {task} has index {index}, ignore index is {self.force_ignore_stage}, so returning force_ignore={force_ignore}")
+        self.logger.debug(
+            f"Task {task} has index {index}, ignore index is {self.force_ignore_stage}, so returning force_ignore={force_ignore}"
+        )
         return force_ignore
 
     def set_force_refresh(self, force_refresh):
@@ -109,10 +159,10 @@ class Manager:
         self.force_ignore_stage = self.resolve_stage(force_ignore_stage)
 
     def clean_header(self, header):
-        lines = header.split('\n')
-        mask = lambda x: (len(x) > 0) and (x[0] == '#') and ('xxxx' not in x)
+        lines = header.split("\n")
+        mask = lambda x: (len(x) > 0) and (x[0] == "#") and ("xxxx" not in x)
         lines = filter(mask, lines)
-        header = '\n'.join(lines)
+        header = "\n".join(lines)
         return header
 
     def set_start(self, stage):
@@ -128,18 +178,28 @@ class Manager:
             num = int(stage)
         else:
             key = stage.upper()
-            assert key in Manager.stages, f"Stage {key} is not in recognised keys {Manager.stages}"
+            assert (
+                key in Manager.stages
+            ), f"Stage {key} is not in recognised keys {Manager.stages}"
             num = Manager.stages.index(key)
-        assert 0 <= num < len(Manager.stages), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        assert (
+            0 <= num < len(Manager.stages)
+        ), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
         return num
 
     def get_tasks(self, config):
-
         total_tasks = []
         try:
             for i, task in enumerate(Manager.task_order):
                 if self.finish is None or i <= self.finish:
-                    new_tasks = task.get_tasks(config, total_tasks, self.output_dir, i, self.prefix, self.global_config)
+                    new_tasks = task.get_tasks(
+                        config,
+                        total_tasks,
+                        self.output_dir,
+                        i,
+                        self.prefix,
+                        self.global_config,
+                    )
                     if new_tasks is not None:
                         total_tasks += new_tasks
         except Exception as e:
@@ -155,7 +215,11 @@ class Manager:
         return total_tasks
 
     def get_num_running_jobs(self):
-        num_jobs = int(subprocess.check_output("squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT))
+        num_jobs = int(
+            subprocess.check_output(
+                "squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT
+            )
+        )
         return num_jobs
 
     def get_task_to_run(self):
@@ -164,12 +228,19 @@ class Manager:
             for dep in t.dependencies:
                 if dep not in self.done:
                     can_run = False
-            if t.gpu and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu:
-                self.logger.warning(f"Cant submit {t} because GPU NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}")
+            if (
+                t.gpu
+                and self.num_jobs_queue_gpu + t.num_jobs >= self.max_jobs_in_queue_gpu
+            ):
+                self.logger.warning(
+                    f"Cant submit {t} because GPU NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}"
+                )
                 can_run = False
 
             if not t.gpu and self.num_jobs_queue + t.num_jobs >= self.max_jobs_in_queue:
-                self.logger.warning(f"Cant submit {t} because NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue}/{self.max_jobs_in_queue}")
+                self.logger.warning(
+                    f"Cant submit {t} because NUM_JOBS {t.num_jobs} would exceed {self.num_jobs_queue}/{self.max_jobs_in_queue}"
+                )
                 can_run = False
 
             if can_run:
@@ -201,7 +272,6 @@ class Manager:
                             t2.compress()
                         modified = True
                         break
-
 
     def log_status(self):
         self.logger.debug("")
@@ -264,12 +334,13 @@ class Manager:
     def print_dashboard(self):
         all_tasks = self.tasks + self.running + self.done + self.failed + self.blocked
 
-
         self.logger.info("-------------------")
         self.logger.info("CURRENT TASK STATUS")
 
         options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
-        header = "Key: " + "  ".join([self.get_string_with_colour(o, o.lower()) for o in options])
+        header = "Key: " + "  ".join(
+            [self.get_string_with_colour(o, o.lower()) for o in options]
+        )
         self.logger.info(header)
         for name, task_class in zip(Manager.stages, Manager.task_order):
             tasks = self.get_subtasks(task_class, all_tasks)
@@ -278,12 +349,14 @@ class Manager:
 
         self.logger.info("-------------------")
         try:
-            with open(self.dashboard, 'w') as f:
+            with open(self.dashboard, "w") as f:
                 f.write("-------------------\n")
                 f.write("CURRENT TASK STATUS\n")
 
                 options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
-                header = "Key: " + "  ".join([self.get_string_with_colour(o, o.lower()) for o in options])
+                header = "Key: " + "  ".join(
+                    [self.get_string_with_colour(o, o.lower()) for o in options]
+                )
                 f.write(header + "\n")
                 for name, task_class in zip(Manager.stages, Manager.task_order):
                     tasks = self.get_subtasks(task_class, all_tasks)
@@ -305,7 +378,9 @@ class Manager:
         self.logger.info(f"Output will be located in {self.output_dir}")
         if check_config:
             self.logger.info("Only verifying config, not launching anything")
-        assert not (compress_output and uncompress_output), "-C / --compress and -U / --uncompress are mutually exclusive"
+        assert not (
+            compress_output and uncompress_output
+        ), "-C / --compress and -U / --uncompress are mutually exclusive"
         # Whilst compressing is being debugged, false by default
         self.compress = False
         if compress_output:
@@ -324,7 +399,6 @@ class Manager:
         self.num_jobs_queue_gpu = 0
         squeue = None
 
-        
         if check_config:
             if compress_output:
                 self.compress_all()
@@ -339,12 +413,16 @@ class Manager:
         max_sleep_time = self.global_config["OUTPUT"]["max_ping_frequency"]
         current_sleep_time = start_sleep_time
 
-        config_file_output = os.path.join(self.output_dir, os.path.basename(self.filename_path))
+        config_file_output = os.path.join(
+            self.output_dir, os.path.basename(self.filename_path)
+        )
         if not check_config and self.filename_path != config_file_output:
-            self.logger.info(f"Saving processed and parsed config file to {config_file_output}")
-            with open(config_file_output, 'w') as f:
+            self.logger.info(
+                f"Saving processed and parsed config file to {config_file_output}"
+            )
+            with open(config_file_output, "w") as f:
                 f.write(self.file_raw)
-            #shutil.copy(self.filename_path, config_file_output)
+            # shutil.copy(self.filename_path, config_file_output)
             chown_file(config_file_output)
 
         # Welcome to the primary loop
@@ -362,7 +440,6 @@ class Manager:
 
             # Submit new jobs if needed
             while self.num_jobs_queue < self.max_jobs:
-
                 t = self.get_task_to_run()
                 if t is not None:
                     self.logger.info("")
@@ -381,9 +458,7 @@ class Manager:
                     if started:
                         if t.gpu:
                             self.num_jobs_queue_gpu += t.num_jobs
-                            message = (
-                                f"LAUNCHED: {t} with {t.num_jobs} GPU NUM_JOBS. Total GPU NUM_JOBS now {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}"
-                            )
+                            message = f"LAUNCHED: {t} with {t.num_jobs} GPU NUM_JOBS. Total GPU NUM_JOBS now {self.num_jobs_queue_gpu}/{self.max_jobs_in_queue_gpu}"
                         else:
                             self.num_jobs_queue += t.num_jobs
                             message = f"LAUNCHED: {t} with {t.num_jobs} NUM_JOBS. Total NUM_JOBS now {self.num_jobs_queue}/{self.max_jobs_in_queue}"
@@ -414,14 +489,24 @@ class Manager:
                 current_sleep_time *= 2
                 if current_sleep_time > max_sleep_time:
                     current_sleep_time = max_sleep_time
-                p = subprocess.run(f"squeue -h -u $USER -o '%.j'", shell=True, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                p = subprocess.run(
+                    f"squeue -h -u $USER -o '%.j'",
+                    shell=True,
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
                 if (p.returncode != 0) or (p.stderr != ""):
-                    self.logger.error(f"Command '{p.args}' failed with exit status '{p.returncode}' and error '{p.stderr.strip()}'")
+                    self.logger.error(
+                        f"Command '{p.args}' failed with exit status '{p.returncode}' and error '{p.stderr.strip()}'"
+                    )
                 else:
                     squeue = [i.strip() for i in p.stdout.splitlines()]
                     n = len(squeue)
                     if n == 0 or n > self.max_jobs:
-                        self.logger.debug(f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many")
+                        self.logger.debug(
+                            f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many"
+                        )
         num_errs = self.log_finals()
         return num_errs
 
@@ -435,9 +520,13 @@ class Manager:
                 for task in t.dependencies:
                     self.logger.debug(f"Modifying dependency task {task.name}")
                     task.dependents.remove(t)
-                    #t.dependencies.remove(task)
-                    self.logger.debug(f"Task {task.name} has dependencies: {task.dependencies}")
-                    self.logger.debug(f"Task {task.name} has dependents: {task.dependents}")
+                    # t.dependencies.remove(task)
+                    self.logger.debug(
+                        f"Task {task.name} has dependencies: {task.dependencies}"
+                    )
+                    self.logger.debug(
+                        f"Task {task.name} has dependents: {task.dependents}"
+                    )
                     if len(task.dependents) == 0:
                         if self.compress:
                             task.compress()
@@ -450,7 +539,9 @@ class Manager:
                 self.num_jobs_queue -= t.num_jobs
             if result == Task.FINISHED_SUCCESS:
                 self.running.remove(t)
-                self.logger.notice(f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}")
+                self.logger.notice(
+                    f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}"
+                )
                 self.done.append(t)
                 if self.compress:
                     if len(t.dependents) == 0:

@@ -5,7 +5,9 @@ import yaml
 
 
 class ConfigBasedExecutable(Task, ABC):
-    def __init__(self, name, output_dir, config, base_file, default_assignment, dependencies=None):
+    def __init__(
+        self, name, output_dir, config, base_file, default_assignment, dependencies=None
+    ):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.default_assignment = default_assignment
         self.base_file = base_file
@@ -29,7 +31,9 @@ class ConfigBasedExecutable(Task, ABC):
         self.base = self.base[index:]
 
     def delete_property(self, name, section_start=None, section_end=None):
-        self.set_property(name, None, section_start=section_start, section_end=section_end)
+        self.set_property(
+            name, None, section_start=section_start, section_end=section_end
+        )
 
     def get_output_string(self):
         return yaml.safe_dump(self.yaml, width=2048) + "\n".join(self.base) + "\n"
@@ -40,7 +44,7 @@ class ConfigBasedExecutable(Task, ABC):
         self.logger.info(f"Input file written to {path}")
 
     def get_property(self, name, assignment=None):
-        """ Get a property from the base file
+        """Get a property from the base file
 
         Parameters
         ----------
@@ -60,9 +64,17 @@ class ConfigBasedExecutable(Task, ABC):
                 return line.split(assignment, maxsplit=1)[1]
         return None
 
-    def set_property(self, name, value, section_start=None, section_end=None, assignment=None, only_add=False):
-        """ Ensures the property name value pair is set in the base file.
-        
+    def set_property(
+        self,
+        name,
+        value,
+        section_start=None,
+        section_end=None,
+        assignment=None,
+        only_add=False,
+    ):
+        """Ensures the property name value pair is set in the base file.
+
         Set value to None to remove a property
 
         Parameters
@@ -97,7 +109,11 @@ class ConfigBasedExecutable(Task, ABC):
             else:
                 continue
 
-            if not only_add and modified_line and modified_line.split()[0] == name.upper():
+            if (
+                not only_add
+                and modified_line
+                and modified_line.split()[0] == name.upper()
+            ):
                 # Replace existing option or remove it
                 if value is None:
                     self.base[i] = ""
@@ -109,7 +125,11 @@ class ConfigBasedExecutable(Task, ABC):
                 added = True
                 break
 
-            if value is not None and reached_section and (section_end is not None and line.strip().startswith(section_end)):
+            if (
+                value is not None
+                and reached_section
+                and (section_end is not None and line.strip().startswith(section_end))
+            ):
                 # Option doesn't exist, lets add it
                 self.base.insert(i, desired_line)
                 added = True
@@ -121,4 +141,11 @@ class ConfigBasedExecutable(Task, ABC):
 
         if others is not None:
             for o in others:
-                self.set_property(name, o, section_start=section_start, section_end=section_end, assignment=assignment, only_add=True)
+                self.set_property(
+                    name,
+                    o,
+                    section_start=section_start,
+                    section_end=section_end,
+                    assignment=assignment,
+                    only_add=True,
+                )

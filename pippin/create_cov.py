@@ -10,8 +10,9 @@ from pippin.biascor import BiasCor
 import pippin.cosmofitters.cosmomc as cosmomc
 from pippin.config import get_data_loc, get_config, read_yaml, mkdirs, chown_dir
 
+
 class CreateCov(ConfigBasedExecutable):
-    """ Create covariance matrices and data from salt2mu used for cosmomc and wfit.
+    """Create covariance matrices and data from salt2mu used for cosmomc and wfit.
     Run through submit_batch
 
     CONFIGURATION:
@@ -39,23 +40,34 @@ class CreateCov(ConfigBasedExecutable):
 
     """
 
-
-    def __init__(self, name, output_dir, config, options, global_config, dependencies=None):
-        
+    def __init__(
+        self, name, output_dir, config, options, global_config, dependencies=None
+    ):
         base_file = get_data_loc("create_cov/COVMAT.input")
-        super().__init__(name, output_dir, config, base_file, default_assignment=": ", dependencies = dependencies)
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            base_file,
+            default_assignment=": ",
+            dependencies=dependencies,
+        )
 
         if options is None:
             options = {}
         self.options = options
         self.templates_dir = self.options.get("INI_DIR", "cosmomc_templates")
         self.global_config = get_config()
-        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
+        self.job_name = (
+            os.path.basename(Path(output_dir).parents[1]) + "_CREATE_COV_" + name
+        )
         self.config_dir = os.path.join(self.output_dir, "output")
         self.wfit_inpdir = []
         for d in dependencies:
             for subdir in d.output["subdirs"]:
-                self.wfit_inpdir.append(os.path.join(self.config_dir, f"{self.name}_{d.name}_{subdir}"))
+                self.wfit_inpdir.append(
+                    os.path.join(self.config_dir, f"{self.name}_{d.name}_{subdir}")
+                )
         self.done_file = os.path.join(self.config_dir, "ALL.DONE")
         self.input_name = f"{self.job_name}.INPUT"
         self.input_file = os.path.join(self.output_dir, self.input_name)
@@ -79,7 +91,9 @@ class CreateCov(ConfigBasedExecutable):
             if num_jobs > 20:
                 num_jobs = 20
             BATCH_INFO = f"sbatch {BATCH_FILE} {num_jobs}"
-        BATCH_REPLACE = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        BATCH_REPLACE = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
         if BATCH_REPLACE != {}:
             BATCH_MEM = BATCH_REPLACE.get("REPLACE_MEM", None)
             BATCH_WALLTIME = BATCH_REPLACE.get("REPLACE_WALLTIME", None)
@@ -93,13 +107,13 @@ class CreateCov(ConfigBasedExecutable):
             self.yaml["CONFIG"]["BATCH_WALLTIME"] = BATCH_WALLTIME
 
         # create_covariance.py input file
-        self.input_covmat_file = get_data_loc("create_cov/input_file.txt") 
+        self.input_covmat_file = get_data_loc("create_cov/input_file.txt")
         self.output_covmat_file = os.path.join(self.output_dir, "input_file.txt")
         self.prepare_cosmomc = self.config.get("COSMOMC", False)
         if self.prepare_cosmomc:
             self.logger.info("Generating CosmoMC output")
         else:
-            self.logger.info("Not generating CosmoMC output") 
+            self.logger.info("Not generating CosmoMC output")
         self.sys_file_in = self.get_sys_file_in()
         self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
         self.calibration_set = options.get("CALIBRATORS", [])
@@ -117,7 +131,9 @@ class CreateCov(ConfigBasedExecutable):
 
         # Output
         self.output["blind"] = [d.output["blind"] for d in self.dependencies]
-        self.output["hubble_plot"] = [d.output["hubble_plot"] for d in self.dependencies]
+        self.output["hubble_plot"] = [
+            d.output["hubble_plot"] for d in self.dependencies
+        ]
         covopts_map = {"ALL": 0}
         for i, covopt in enumerate(self.options.get("COVOPTS", [])):
             covopts_map[covopt.split("]")[0][1:]] = i + 1
@@ -129,7 +145,9 @@ class CreateCov(ConfigBasedExecutable):
     def add_dependent(self, task):
         self.dependents.append(task)
         if isinstance(task, cosmomc.CosmoMC):
-            self.logger.info("CosmoMC task found, CreateCov will generate CosmoMC output")
+            self.logger.info(
+                "CosmoMC task found, CreateCov will generate CosmoMC output"
+            )
             self.prepare_cosmomc = True
 
     def _check_completion(self, squeue):
@@ -137,7 +155,9 @@ class CreateCov(ConfigBasedExecutable):
             self.logger.debug(f"Done file found at {self.done_file}")
             with open(self.done_file) as f:
                 if "FAIL" in f.read():
-                    self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                    self.logger.error(
+                        f"Done file reported failure. Check output log {self.logfile}"
+                    )
                     self.scan_files_for_error([self.logfile], "ERROR", "EXCEPTION")
                     return Task.FINISHED_FAILURE
                 else:
@@ -156,7 +176,9 @@ class CreateCov(ConfigBasedExecutable):
     def prepare_input_covmat(self):
         self.load_input_covmat()
         if self.prepare_cosmomc:
-            self.input_covmat_yaml["COSMOMC_TEMPLATES_PATH"] = get_data_loc(self.templates_dir)
+            self.input_covmat_yaml["COSMOMC_TEMPLATES_PATH"] = get_data_loc(
+                self.templates_dir
+            )
         else:
             self.input_covmat_yaml.pop("COSMOMC_TEMPLATES_PATH", None)
         self.input_covmat_yaml["SYS_SCALE_FILE"] = self.sys_file_out
@@ -175,9 +197,11 @@ class CreateCov(ConfigBasedExecutable):
     def get_covmatopt(self):
         rebin_x1 = self.options.get("REBINNED_X1", 0)
         rebin_c = self.options.get("REBINNED_C", 0)
-        if (rebin_x1 + rebin_c > 0):
+        if rebin_x1 + rebin_c > 0:
             if (rebin_x1 == 0) or (rebin_c == 0):
-                Task.fail_config(f"If rebin, both REBINNED_X1 ({rebin_x1}) and REBINNED_C ({rebin_c}) must be greater than 0")
+                Task.fail_config(
+                    f"If rebin, both REBINNED_X1 ({rebin_x1}) and REBINNED_C ({rebin_c}) must be greater than 0"
+                )
             else:
                 cmd = f"--nbin_x1 {rebin_x1} --nbin_c {rebin_c}"
         elif self.options.get("SUBTRACT_VPEC", False):
@@ -203,7 +227,9 @@ class CreateCov(ConfigBasedExecutable):
             for d in self.dependencies:
                 fitopt_files = []
                 fitopt_files += [f for f in d.output["fitopt_files"] if f is not None]
-                assert len(set(fitopt_files)) < 2, f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
+                assert (
+                    len(set(fitopt_files)) < 2
+                ), f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
                 if (len(fitopt_files) > 0) and (path is None):
                     path = fitopt_files[0]
                     break
@@ -216,13 +242,20 @@ class CreateCov(ConfigBasedExecutable):
             return {}
         self.logger.debug(f"Loading sys scaling from {self.sys_file_in}")
         yaml = read_yaml(self.sys_file_in)
-        if 'FLAG_USE_SAME_EVENTS' in yaml.keys():
-            yaml.pop('FLAG_USE_SAME_EVENTS')
-        raw = {k: float(v.split(maxsplit=1)[0]) for _, d in yaml.items() for k, v in d.items()}
+        if "FLAG_USE_SAME_EVENTS" in yaml.keys():
+            yaml.pop("FLAG_USE_SAME_EVENTS")
+        raw = {
+            k: float(v.split(maxsplit=1)[0])
+            for _, d in yaml.items()
+            for k, v in d.items()
+        }
         return raw
 
     def get_sys_scale(self):
-        return {**self.get_scales_from_fitopt_file(), **self.options.get("FITOPT_SCALES", {})}
+        return {
+            **self.get_scales_from_fitopt_file(),
+            **self.options.get("FITOPT_SCALES", {}),
+        }
 
     def _run(self):
         sys_scale = self.get_sys_scale()
@@ -248,22 +281,28 @@ class CreateCov(ConfigBasedExecutable):
                 f.write(yaml.safe_dump(self.input_covmat_yaml, width=2048))
 
             cmd = ["submit_batch_jobs.sh", os.path.basename(self.input_file)]
-            self.logger.debug(f"Submitting CreateCov job: {' '.join(cmd)} in cwd: {self.output_dir}")
+            self.logger.debug(
+                f"Submitting CreateCov job: {' '.join(cmd)} in cwd: {self.output_dir}"
+            )
             self.logger.debug(f"Logging to {self.logfile}")
-            with open(self.logfile, 'w') as f:
-                subprocess.run(' '.join(cmd), stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir, shell=True)
+            with open(self.logfile, "w") as f:
+                subprocess.run(
+                    " ".join(cmd),
+                    stdout=f,
+                    stderr=subprocess.STDOUT,
+                    cwd=self.output_dir,
+                    shell=True,
+                )
             chown_dir(self.output_dir)
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
         return True
 
-        
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
-
         biascor_tasks = Task.get_task_of_type(prior_tasks, BiasCor)
-        
+
         def _get_createcov_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_CREATE_COV/{name}"
 
@@ -277,9 +316,18 @@ class CreateCov(ConfigBasedExecutable):
 
             btasks = [btask for btask in biascor_tasks if mask in btask.name]
             if len(btasks) == 0:
-                Task.fail_config(f"Create cov task {cname} has no biascor tasks matching mask {mask}")
+                Task.fail_config(
+                    f"Create cov task {cname} has no biascor tasks matching mask {mask}"
+                )
 
-            t = CreateCov(cname, _get_createcov_dir(base_output_dir, stage_number, cname), config, options, global_config, dependencies=btasks)
+            t = CreateCov(
+                cname,
+                _get_createcov_dir(base_output_dir, stage_number, cname),
+                config,
+                options,
+                global_config,
+                dependencies=btasks,
+            )
             tasks.append(t)
 
         return tasks

@@ -9,8 +9,9 @@ from pippin.classifiers.classifier import Classifier
 from pippin.config import chown_dir, mkdirs
 from pippin.task import Task
 
+
 class PerfectClassifier(Classifier):
-    """ Classification task for the SuperNNova classifier.
+    """Classification task for the SuperNNova classifier.
 
     CONFIGURATION
     =============
@@ -35,8 +36,27 @@ class PerfectClassifier(Classifier):
 
     """
 
-    def __init__(self, name, output_dir, config, dependencies, mode, options, index=0, model_name=None):
-        super().__init__(name, output_dir, config, dependencies, mode, options, index=index, model_name=model_name)
+    def __init__(
+        self,
+        name,
+        output_dir,
+        config,
+        dependencies,
+        mode,
+        options,
+        index=0,
+        model_name=None,
+    ):
+        super().__init__(
+            name,
+            output_dir,
+            config,
+            dependencies,
+            mode,
+            options,
+            index=index,
+            model_name=model_name,
+        )
         self.output_file = None
         self.passed = False
         self.num_jobs = 1  # This is the default. Can get this from options if needed.
@@ -49,7 +69,9 @@ class PerfectClassifier(Classifier):
         return self.name
 
     def classify(self):
-        new_hash = self.get_hash_from_string(self.name + f"{self.prob_ia}_{self.prob_cc}")
+        new_hash = self.get_hash_from_string(
+            self.name + f"{self.prob_ia}_{self.prob_cc}"
+        )
 
         if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -59,14 +81,21 @@ class PerfectClassifier(Classifier):
                 cid = "CID"
                 s = self.get_simulation_dependency()
                 df = None
-                phot_dirs = [sim_dep.output["photometry_dirs"][self.index] for sim_dep in s]
-                headers = [os.path.join(phot_dir, a) for phot_dir in phot_dirs for a in os.listdir(phot_dir) if "HEAD" in a]
+                phot_dirs = [
+                    sim_dep.output["photometry_dirs"][self.index] for sim_dep in s
+                ]
+                headers = [
+                    os.path.join(phot_dir, a)
+                    for phot_dir in phot_dirs
+                    for a in os.listdir(phot_dir)
+                    if "HEAD" in a
+                ]
                 if not headers:
                     Task.fail_config(f"No HEAD fits files found in {phot_dir}!")
                 else:
                     types = defaultdict(list)
                     for t in self.get_simulation_dependency():
-                        for k, v in t.output['types_dict'].items():
+                        for k, v in t.output["types_dict"].items():
                             types[k] = np.unique(types[k] + v)
                     self.logger.debug(f"Input types are {types}")
 

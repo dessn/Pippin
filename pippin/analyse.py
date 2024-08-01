@@ -7,7 +7,14 @@ from pathlib import Path
 import numpy as np
 
 from pippin.biascor import BiasCor
-from pippin.config import mkdirs, get_config, ensure_list, get_data_loc, generic_open, merge_dict
+from pippin.config import (
+    mkdirs,
+    get_config,
+    ensure_list,
+    get_data_loc,
+    generic_open,
+    merge_dict,
+)
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.cosmofitters.cosmomc import CosmoMC
 from pippin.cosmofitters.wfit import WFit
@@ -15,8 +22,10 @@ from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
 
 
-class AnalyseChains(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """ Smack the data into something that looks like the simulated data
+class AnalyseChains(
+    Task
+):  # TODO: Define the location of the output so we can run the lc fitting on it.
+    """Smack the data into something that looks like the simulated data
 
     CONFIGURATION
     =============
@@ -48,12 +57,18 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
 
         self.logfile = os.path.join(self.output_dir, "output.log")
 
-        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_ANALYSE_" + os.path.basename(output_dir)
+        self.job_name = (
+            os.path.basename(Path(output_dir).parents[1])
+            + "_ANALYSE_"
+            + os.path.basename(output_dir)
+        )
 
         self.path_to_codes = []
         self.done_files = []
 
-        self.plot_code_dir = os.path.join(os.path.dirname(inspect.stack()[0][1]), "external")
+        self.plot_code_dir = os.path.join(
+            os.path.dirname(inspect.stack()[0][1]), "external"
+        )
 
         self.covopts = options.get("COVOPTS")
         self.singular_blind = options.get("SINGULAR_BLIND", False)
@@ -101,21 +116,36 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         for c in self.cosmomc_deps:
             for covopt in c.output["covopts"]:
                 self.cosmomc_input_files.append(c.output["base_dict"][covopt])
-                self.cosmomc_output_files.append(c.output["label"] + "_" + covopt + ".csv.gz")
+                self.cosmomc_output_files.append(
+                    c.output["label"] + "_" + covopt + ".csv.gz"
+                )
                 self.cosmomc_covopts.append(covopt)
                 self.names.append(c.output["label"].replace("_", " ") + " " + covopt)
                 for p in c.output["cosmology_params"]:
                     if p not in self.params:
                         self.params.append(p)
-            self.logger.debug(f"Analyse task will create CosmoMC plots with {len(self.cosmomc_input_files)} covopts/plots")
+            self.logger.debug(
+                f"Analyse task will create CosmoMC plots with {len(self.cosmomc_input_files)} covopts/plots"
+            )
 
         self.wsummary_files = [b.output["w_summary"] for b in self.biascor_deps]
 
         # Get the fitres and m0diff files we'd want to parse for Hubble diagram plotting
-        self.biascor_fitres_input_files = [os.path.join(m, "FITOPT000_MUOPT000.FITRES.gz") for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
-        self.biascor_prob_col_names = [b.output["prob_column_name"] for b in self.biascor_deps for m in b.output["m0dif_dirs"]]
+        self.biascor_fitres_input_files = [
+            os.path.join(m, "FITOPT000_MUOPT000.FITRES.gz")
+            for b in self.biascor_deps
+            for m in b.output["m0dif_dirs"]
+        ]
+        self.biascor_prob_col_names = [
+            b.output["prob_column_name"]
+            for b in self.biascor_deps
+            for m in b.output["m0dif_dirs"]
+        ]
         self.biascor_fitres_output_files = [
-            b.name + "__" + os.path.basename(m).replace("OUTPUT_BBCFIT", "1") + "__FITOPT0_MUOPT0.fitres.gz"
+            b.name
+            + "__"
+            + os.path.basename(m).replace("OUTPUT_BBCFIT", "1")
+            + "__FITOPT0_MUOPT0.fitres.gz"
             for b in self.biascor_deps
             for m in b.output["m0dif_dirs"]
         ]
@@ -127,8 +157,9 @@ class AnalyseChains(Task):  # TODO: Define the location of the output so we can 
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
-
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
 
         self.slurm = """{sbatch_header}
         {task_setup}
@@ -153,11 +184,17 @@ fi
     def add_plot_script_to_run(self, script_name):
         script_path = get_data_loc(script_name, extra=self.plot_code_dir)
         if script_path is None:
-            self.fail_config(f"Cannot resolve script {script_name} relative to {self.plot_code_dir}. Please use a variable or abs path.")
+            self.fail_config(
+                f"Cannot resolve script {script_name} relative to {self.plot_code_dir}. Please use a variable or abs path."
+            )
         else:
             self.logger.debug(f"Adding script path {script_path} to plotting code.")
         self.path_to_codes.append(script_path)
-        self.done_files.append(os.path.join(self.output_dir, os.path.basename(script_name).split(".")[0] + ".done"))
+        self.done_files.append(
+            os.path.join(
+                self.output_dir, os.path.basename(script_name).split(".")[0] + ".done"
+            )
+        )
 
     def _check_completion(self, squeue):
         num_success = 0
@@ -166,7 +203,9 @@ fi
                 self.logger.debug(f"Done file found at {f}")
                 with open(f) as ff:
                     if "FAILURE" in ff.read():
-                        self.logger.error(f"Done file reported failure. Check output log {self.logfile}")
+                        self.logger.error(
+                            f"Done file reported failure. Check output log {self.logfile}"
+                        )
                         return Task.FINISHED_FAILURE
                     else:
                         num_success += 1
@@ -182,7 +221,6 @@ fi
         return self.check_for_job(squeue, self.job_name)
 
     def _run(self):
-
         # Get the m0diff files for everything
         for b in self.biascor_deps:
             for m in b.output["m0dif_dirs"]:
@@ -190,27 +228,59 @@ fi
                 sim_number = 1
                 if os.path.basename(m).isdigit():
                     sim_number = int(os.path.basename(m))
-                files = [f for f in sorted(os.listdir(m)) if f.endswith(".M0DIF") or f.endswith(".M0DIF.gz")]
+                files = [
+                    f
+                    for f in sorted(os.listdir(m))
+                    if f.endswith(".M0DIF") or f.endswith(".M0DIF.gz")
+                ]
                 for f in files:
                     muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
                     fitopt_num = int(f.split("FITOPT")[-1].split("_")[0])
                     if muopt_num == 0:
                         muopt = "DEFAULT"
                     else:
-                        muopt = b.output["muopts"][muopt_num - 1]  # Because 0 is default
+                        muopt = b.output["muopts"][
+                            muopt_num - 1
+                        ]  # Because 0 is default
 
                     if fitopt_num == 0:
                         fitopt = "DEFAULT"
                     else:
                         fitopt = b.output["fitopt_index"][fitopt_num]
 
-                    self.biascor_m0diffs.append((b.name, sim_number, muopt, muopt_num, fitopt, fitopt_num, os.path.join(m, f)))
+                    self.biascor_m0diffs.append(
+                        (
+                            b.name,
+                            sim_number,
+                            muopt,
+                            muopt_num,
+                            fitopt,
+                            fitopt_num,
+                            os.path.join(m, f),
+                        )
+                    )
 
-        data_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if l.output["is_data"]]
+        data_fitres_files = [
+            os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"])
+            for l in self.lcfit_deps
+            if l.output["is_data"]
+        ]
         data_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in data_fitres_files]
-        sim_fitres_files = [os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"]) for l in self.lcfit_deps if not l.output["is_data"]]
+        sim_fitres_files = [
+            os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"])
+            for l in self.lcfit_deps
+            if not l.output["is_data"]
+        ]
         sim_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in sim_fitres_files]
-        types = list(set([a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]]))
+        types = list(
+            set(
+                [
+                    a
+                    for l in self.lcfit_deps
+                    for a in l.sim_task.output["types_dict"]["IA"]
+                ]
+            )
+        )
         input_yml_file = "input.yml"
         output_dict = {
             "COSMOMC": {
@@ -244,35 +314,33 @@ fi
                 "IA_TYPES": types,
             },
         }
-        
+
         if self.batch_file is None:
             if self.gpu:
                 self.sbatch_header = self.sbatch_gpu_header
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, 'r') as f:
+            with open(self.batch_file, "r") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                    "REPLACE_NAME": self.job_name,
-                    "REPLACE_WALLTIME": "1:00:00",
-                    "REPLACE_LOGFILE": self.logfile,
-                    "REPLACE_MEM": "20GB",
-                    "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"]
-                } 
+            "REPLACE_NAME": self.job_name,
+            "REPLACE_WALLTIME": "1:00:00",
+            "REPLACE_LOGFILE": self.logfile,
+            "REPLACE_MEM": "20GB",
+            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
+        }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
-        setup_dict = {
-                "output_dir": self.output_dir
-                }
+        setup_dict = {"output_dir": self.output_dir}
 
         format_dict = {
-                "sbatch_header": self.sbatch_header,
-                "task_setup": self.update_setup(setup_dict, self.task_setup['analyse']),
-                "input_yml": input_yml_file
-                }
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup["analyse"]),
+            "input_yml": input_yml_file,
+        }
         final_slurm = self.get_slurm_raw().format(**format_dict)
 
         new_hash = self.get_hash_from_string(final_slurm + json.dumps(output_dict))
@@ -299,7 +367,9 @@ fi
         return True
 
     @staticmethod
-    def get_tasks(configs, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+    def get_tasks(
+        configs, prior_tasks, base_output_dir, stage_number, prefix, global_config
+    ):
         def _get_analyse_dir(base_output_dir, stage_number, name):
             return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
 
@@ -314,23 +384,43 @@ fi
             mask_cosmofit = config.get("MASK_COSMOFIT")
             mask_biascor = config.get("MASK_BIASCOR")
             if config.get("HISTOGRAM") is not None:
-                Task.fail_config("Sorry to do this, but please change HISTOGRAM into MASK_LCFIT to bring it into line with others.")
+                Task.fail_config(
+                    "Sorry to do this, but please change HISTOGRAM into MASK_LCFIT to bring it into line with others."
+                )
             mask_lcfit = config.get("MASK_LCFIT")
             # TODO: Add aggregation to compile all the plots here
 
-            deps_cosmofit = Task.match_tasks_of_type(mask_cosmofit, prior_tasks, CosmoFit, match_none=False, allowed_failure=True)
+            deps_cosmofit = Task.match_tasks_of_type(
+                mask_cosmofit,
+                prior_tasks,
+                CosmoFit,
+                match_none=False,
+                allowed_failure=True,
+            )
             Task.logger.debug(f"deps_cosmofit: {deps_cosmofit}")
-            deps_biascor = Task.match_tasks_of_type(mask_biascor, prior_tasks, BiasCor, match_none=False)
+            deps_biascor = Task.match_tasks_of_type(
+                mask_biascor, prior_tasks, BiasCor, match_none=False
+            )
             Task.logger.debug(f"deps_biascor: {deps_biascor}")
-            deps_lcfit = Task.match_tasks_of_type(mask_lcfit, prior_tasks, SNANALightCurveFit, match_none=False)
+            deps_lcfit = Task.match_tasks_of_type(
+                mask_lcfit, prior_tasks, SNANALightCurveFit, match_none=False
+            )
             Task.logger.debug(f"deps_lcfit: {deps_lcfit}")
 
             deps = deps_cosmofit + deps_biascor + deps_lcfit
             if len(deps) == 0:
                 Task.fail_config(f"Analyse task {cname} has no dependencies!")
 
-            a = AnalyseChains(cname, _get_analyse_dir(base_output_dir, stage_number, cname), config, options, deps)
-            Task.logger.info(f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs")
+            a = AnalyseChains(
+                cname,
+                _get_analyse_dir(base_output_dir, stage_number, cname),
+                config,
+                options,
+                deps,
+            )
+            Task.logger.info(
+                f"Creating Analyse task {cname} for {[c.name for c in deps]} with {a.num_jobs} jobs"
+            )
             tasks.append(a)
 
         return tasks

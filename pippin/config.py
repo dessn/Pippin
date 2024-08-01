@@ -8,36 +8,37 @@ import stat
 import tarfile
 import gzip
 
+
 def compress_dir(output_filename, source_dir):
     logging.info(f"Compressing {source_dir} to {output_filename}")
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
     shutil.rmtree(source_dir)
 
+
 def uncompress_dir(output_dir, source_filename):
     logging.info(f"Uncompressing {source_filename} to {output_dir}")
     with tarfile.open(source_filename, "r:gz") as tar:
+
         def is_within_directory(directory, target):
-            
             abs_directory = os.path.abspath(directory)
             abs_target = os.path.abspath(target)
-        
+
             prefix = os.path.commonprefix([abs_directory, abs_target])
-            
+
             return prefix == abs_directory
-        
+
         def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-        
             for member in tar.getmembers():
                 member_path = os.path.join(path, member.name)
                 if not is_within_directory(path, member_path):
                     raise Exception("Attempted Path Traversal in Tar File")
-        
-            tar.extractall(path, members, numeric_owner=numeric_owner) 
-            
-        
+
+            tar.extractall(path, members, numeric_owner=numeric_owner)
+
         safe_extract(tar, path=output_dir)
     os.remove(source_filename)
+
 
 def singleton(fn):
     instance = None
@@ -52,7 +53,6 @@ def singleton(fn):
 
 
 def merge_dict(original, extra):
-
     for key, value in extra.items():
         if isinstance(value, dict):
             node = original.setdefault(key, {})
@@ -66,7 +66,9 @@ def merge_dict(original, extra):
 
 @singleton
 def get_config(initial_path=None, overwrites=None):
-    this_dir = os.path.abspath(os.path.join(os.path.dirname(inspect.stack()[0][1]), ".."))
+    this_dir = os.path.abspath(
+        os.path.join(os.path.dirname(inspect.stack()[0][1]), "..")
+    )
     if initial_path is None:
         filename = os.path.abspath(os.path.join(this_dir, "cfg.yml"))
     else:
@@ -95,7 +97,9 @@ def get_output_dir():
         if "$" in output_dir:
             raise ValueError(f"Could not resolve variable in path: {output_dir}")
     if not output_dir.startswith("/"):
-        output_dir = os.path.abspath(os.path.dirname(inspect.stack()[0][1]) + "/../" + output_dir)
+        output_dir = os.path.abspath(
+            os.path.dirname(inspect.stack()[0][1]) + "/../" + output_dir
+        )
     return output_dir
 
 
@@ -114,7 +118,9 @@ def get_data_loc(path, extra=None):
     if "$" in path:
         path = os.path.expandvars(path)
         if "$" in path:
-            logging.error(f"Unable to resolve the variable in {path}, please check to see if it is set in your environment")
+            logging.error(
+                f"Unable to resolve the variable in {path}, please check to see if it is set in your environment"
+            )
             return None
         return path
     if path.startswith("/"):
@@ -127,7 +133,9 @@ def get_data_loc(path, extra=None):
             new_path = os.path.join(data_dir, path)
             if os.path.exists(new_path):
                 return new_path
-        logging.error(f"Unable to find relative path {path} when searching through the data directories: {data_dirs}")
+        logging.error(
+            f"Unable to find relative path {path} when searching through the data directories: {data_dirs}"
+        )
         return None
 
 
@@ -220,14 +228,18 @@ def chown_dir(directory, walk=True):
             for d in dirs:
                 if not os.path.islink(os.path.join(root, d)):
                     try:
-                        os.chown(os.path.join(root, d), -1, group_id, follow_symlinks=False)
+                        os.chown(
+                            os.path.join(root, d), -1, group_id, follow_symlinks=False
+                        )
                         os.chmod(os.path.join(root, d), 0o2775)
                     except Exception as e:
                         logger.warning(f"Chown error: {os.path.join(root, d)}")
             for f in files:
                 if not os.path.islink(os.path.join(root, f)):
                     try:
-                        os.chown(os.path.join(root, f), -1, group_id, follow_symlinks=False)
+                        os.chown(
+                            os.path.join(root, f), -1, group_id, follow_symlinks=False
+                        )
                         os.chmod(os.path.join(root, f), 0o664)
                     except Exception as e:
                         logger.warning(f"Chown error: {os.path.join(root, f)}")
@@ -238,6 +250,7 @@ def ensure_list(a):
         return a
     return [a]
 
+
 def generic_open(fpath, mode="r"):
     """
     Check that fpath exists, identify whether it is compressed or uncompressed, and open it
@@ -246,9 +259,10 @@ def generic_open(fpath, mode="r"):
     if not os.path.exists(fpath):
         logging.error(f"Path doesn't exist: {fpath}")
     if ".gz" in fpath:
-        return gzip.open(fpath, mode)        
+        return gzip.open(fpath, mode)
     else:
         return open(fpath, mode)
+
 
 if __name__ == "__main__":
     c = get_config()

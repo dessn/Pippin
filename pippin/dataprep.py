@@ -4,12 +4,21 @@ import tarfile
 import os
 from collections import OrderedDict
 from pathlib import Path
-from pippin.config import mkdirs, get_output_loc, get_config, get_data_loc, read_yaml, merge_dict
+from pippin.config import (
+    mkdirs,
+    get_output_loc,
+    get_config,
+    get_data_loc,
+    read_yaml,
+    merge_dict,
+)
 from pippin.task import Task
 
 
-class DataPrep(Task):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """ Smack the data into something that looks like the simulated data
+class DataPrep(
+    Task
+):  # TODO: Define the location of the output so we can run the lc fitting on it.
+    """Smack the data into something that looks like the simulated data
 
     OUTPUTS:
     ========
@@ -26,7 +35,9 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         is_sim: bool - whether or not the input is a simulation
     """
 
-    def __init__(self, name, output_dir, config, options, global_config, dependencies=None):
+    def __init__(
+        self, name, output_dir, config, options, global_config, dependencies=None
+    ):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
@@ -47,7 +58,9 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         if self.unparsed_raw == "$SCRATCH_SIMDIR" or "SNDATA_ROOT/SIM" in self.raw_dir:
             self.logger.debug("Removing PRIVATE_DATA_PATH from NML file")
             self.data_path = ""
-        self.job_name = os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
+        self.job_name = (
+            os.path.basename(Path(output_dir).parents[1]) + "_DATAPREP_" + self.name
+        )
 
         self.output_info = os.path.join(self.output_dir, f"{self.genversion}.YAML")
         self.output["genversion"] = self.genversion
@@ -66,7 +79,27 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
 
         self.types_dict = options.get("TYPES")
         if self.types_dict is None:
-            self.types_dict = {"IA": [1], "NONIA": [2, 20, 21, 22, 29, 30, 31, 32, 33, 39, 40, 41, 42, 43, 80, 81]}
+            self.types_dict = {
+                "IA": [1],
+                "NONIA": [
+                    2,
+                    20,
+                    21,
+                    22,
+                    29,
+                    30,
+                    31,
+                    32,
+                    33,
+                    39,
+                    40,
+                    41,
+                    42,
+                    43,
+                    80,
+                    81,
+                ],
+            }
         else:
             for key in self.types_dict.keys():
                 self.types_dict[key] = [int(c) for c in self.types_dict[key]]
@@ -74,7 +107,9 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
-        self.batch_replace = self.options.get("BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {}))
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
 
         self.logger.debug(f"\tIA types are {self.types_dict['IA']}")
         self.logger.debug(f"\tNONIA types are {self.types_dict['NONIA']}")
@@ -123,11 +158,15 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
             self.logger.debug(f"Done file found at {self.done_file}")
             with open(self.done_file) as f:
                 if "FAILURE" in f.read():
-                    self.logger.info(f"Done file reported failure. Check output log {self.logfile}")
+                    self.logger.info(
+                        f"Done file reported failure. Check output log {self.logfile}"
+                    )
                     return Task.FINISHED_FAILURE
                 else:
                     if not os.path.exists(self.output_info):
-                        self.logger.exception(f"Cannot find output info file {self.output_info}")
+                        self.logger.exception(
+                            f"Cannot find output info file {self.output_info}"
+                        )
                         return Task.FINISHED_FAILURE
                     else:
                         content = read_yaml(self.output_info)
@@ -138,43 +177,44 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         return self.check_for_job(squeue, self.job_name)
 
     def _run(self):
-
         val_p = self.options.get("PHOTFLAG_DETECT")
         val_c = self.options.get("CUTWIN_SNR_NODETECT")
         photflag = f"PHOTFLAG_DETECT = {val_p}" if val_p else ""
         cutwin = f"CUTWIN_SNR_NODETECT = {val_c}" if val_c else ""
         command_string = self.clump_command.format(
-            genversion=self.genversion, data_path=self.data_path, opt_setpkmjd=self.opt_setpkmjd, photflag=photflag, cutwin_snr_nodetect=cutwin, photflag_mskrej=self.photflag_mskrej
+            genversion=self.genversion,
+            data_path=self.data_path,
+            opt_setpkmjd=self.opt_setpkmjd,
+            photflag=photflag,
+            cutwin_snr_nodetect=cutwin,
+            photflag_mskrej=self.photflag_mskrej,
         )
-        
+
         if self.batch_file is None:
             if self.gpu:
                 self.sbatch_header = self.sbatch_gpu_header
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, 'r') as f:
+            with open(self.batch_file, "r") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
         header_dict = {
-                "REPLACE_NAME": self.job_name,
-                "REPLACE_WALLTIME": "0:20:00",
-                "REPLACE_LOGFILE": self.logfile,
-                "REPLACE_MEM": "2GB",
-                "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"]
-                }
+            "REPLACE_NAME": self.job_name,
+            "REPLACE_WALLTIME": "0:20:00",
+            "REPLACE_LOGFILE": self.logfile,
+            "REPLACE_MEM": "2GB",
+            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
+        }
         header_dict = merge_dict(header_dict, self.batch_replace)
         self.update_header(header_dict)
-        setup_dict = {
-                "path_to_task": self.path_to_task,
-                "done_file": self.done_file
-                }
+        setup_dict = {"path_to_task": self.path_to_task, "done_file": self.done_file}
         format_dict = {
-                "sbatch_header": self.sbatch_header,
-                "task_setup": self.update_setup(setup_dict, self.task_setup['dataprep'])
-                }
-        #format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
+            "sbatch_header": self.sbatch_header,
+            "task_setup": self.update_setup(setup_dict, self.task_setup["dataprep"]),
+        }
+        # format_dict = {"job_name": self.job_name, "log_file": self.logfile, "path_to_task": self.path_to_task, "done_file": self.done_file}
         final_slurm = self.slurm.format(**format_dict)
 
         new_hash = self.get_hash_from_string(command_string + final_slurm)
@@ -199,14 +239,20 @@ class DataPrep(Task):  # TODO: Define the location of the output so we can run t
         return True
 
     @staticmethod
-    def get_tasks(config, prior_tasks, base_output_dir, stage_number, prefix, global_config):
+    def get_tasks(
+        config, prior_tasks, base_output_dir, stage_number, prefix, global_config
+    ):
         tasks = []
         for name in config.get("DATAPREP", []):
             output_dir = f"{base_output_dir}/{stage_number}_DATAPREP/{name}"
             options = config["DATAPREP"][name].get("OPTS")
             if options is None and config["DATAPREP"][name].get("EXTERNAL") is None:
                 Task.fail_config(f"DATAPREP task {name} needs to specify OPTS!")
-            s = DataPrep(name, output_dir, config["DATAPREP"][name], options, global_config)
-            Task.logger.debug(f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}")
+            s = DataPrep(
+                name, output_dir, config["DATAPREP"][name], options, global_config
+            )
+            Task.logger.debug(
+                f"Creating data prep task {name} with {s.num_jobs} jobs, output to {output_dir}"
+            )
             tasks.append(s)
         return tasks
