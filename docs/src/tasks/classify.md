@@ -113,7 +113,7 @@ CLASSIFICATION:
       MAX_DEPTH: 0  # Max depth of tree. 0 means auto, which means as deep as it wants.
 ```
 
-#### Nearest Neighbour Classifier
+## Nearest Neighbour Classifier
 
 Similar to SNIRF, NN trains on SALT2 summary statistics using a basic Nearest Neighbour algorithm from sklearn. It will produce a `model.pkl` file in its output directory when trained. You can configure it as per SNIRF:
 
@@ -128,7 +128,7 @@ CLASSIFICATION:
       FEATURES: zHD x1 c cERR x1ERR COV_x1_c COV_x1_x0 COV_c_x0 PKMJDERR  # Columns to use. Defaults are shown.
 ```
 
-#### Perfect Classifier
+## Perfect Classifier
 
 Sometimes you want to cheat, and if you have simulations, this is easy. The perfect classifier looks into the sims to get the actual type, and will then assign probabilities as per your configuration. This classifier has no training mode, only predict.
 
@@ -142,7 +142,7 @@ CLASSIFICATION:
       PROB_CC: 0.0  # Probs to use for CC events, default 0.0
 ```
 
-#### Unity Classifier
+## Unity Classifier
 
 To emulate a spectroscopically confirmed sample, or just to save time, we can assign every event a probability of 1.0 that it is a type Ia. As it just returns 1.0 for everything, it only has a predict mode
 
@@ -153,7 +153,7 @@ CLASSIFICATION:
     MODE: predict
 ```
 
-#### FitProb Classifier
+## FitProb Classifier
 
 Another useful debug test is to just take the SALT2 fit probability calculated from the chi2 fitting and use that as our probability. You'd hope that classifiers all improve on this. Again, this classifier only has a predict mode.
 
