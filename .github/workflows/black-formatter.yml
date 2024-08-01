@@ -1,19 +1,29 @@
 name: Black Linter
 on:
-    push:
-        branches:
-        - main
-    pull_request:
-        branches:
-        - main
+  push:
+    branches-ignore:
+      - main
+    paths-ignore:
+      - "docs/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
     workflow_dispatch:
 
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: always.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-    lint:
-        runs-on: ubuntu-latest
-        steps:
-        - uses: actions/checkout@v3
-        - uses: psf/black@stable
-          with:
-              options: "--check --verbose --diff"
-              version: "~= 22.0"
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose --diff --color"
+          version: "~= 22.0"
