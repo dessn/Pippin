@@ -6,7 +6,7 @@
 The console output from a succesfull Pippin run. Follow these instructions and you too can witness a beautiful wall of green text!
 ```
 
-Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on Midway and use SNANA, this script will be in your path already. To use Pippin, all you need is a config file, examples of which can be found in the [configs directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/configs). Given the config file `example.yml`, simply run `pippin.sh example.yml` to invoke Pippin. This will create a new folder in the `OUTPUT: output_dir` path defined in the global [cfg.yml](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/cfg.yml) file. By default, this is set to the `$PIPPIN_OUTPUT` environment variable, so please either set said variable or change the associated line in the `cfg.yml`.
+Using Pippin is very simple. In the top level directory, there is a `pippin.sh`. If you're on Midway and use SNANA, this script will be in your path already. To use Pippin, all you need is a config file, examples of which can be found in the [configs directory](https://github.com/dessn/Pippin/tree/main/configs). Given the config file `example.yml`, simply run `pippin.sh example.yml` to invoke Pippin. This will create a new folder in the `OUTPUT: output_dir` path defined in the global [cfg.yml](https://github.com/dessn/Pippin/blob/main/cfg.yml) file. By default, this is set to the `$PIPPIN_OUTPUT` environment variable, so please either set said variable or change the associated line in the `cfg.yml`.
 
 <details>
   <summary>For the morbidly curious, here's a small demo video of using Pippin in the Midway environment</summary>
@@ -37,7 +37,7 @@ LCFIT:
     LCFIT_CONFIG: HERE
 ```
 
-Configuration detail for each tasks can be found in the <project:./tasks.md> section, with stage-specific example config files available in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples)
+Configuration detail for each tasks can be found in the <project:./tasks.md> section, with stage-specific example config files available in the [examples directory](https://github.com/dessn/Pippin/tree/main/examples)
 
 ## What If I change my config file?
 
@@ -121,7 +121,7 @@ GLOBAL:
 
 ## Examples
 
-If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/dessn/Pippin/tree/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples), pick the task you want to know more about, and have a look over all the options.
+If you want detailed examples of what you can do with Pippin tasks, have a look in the [examples directory](https://github.com/dessn/Pippin/tree/main/examples), pick the task you want to know more about, and have a look over all the options.
 
 Here is a very simple configuration file which runs a simulation, does light curve fitting, and then classifies it using the debug FITPROB classifier.
 
@@ -437,7 +437,7 @@ Feel free to send me the log and stack, and I'll see what I can do turn the exce
 
 ### I want to modify a ton of files but don't want huge yml files, please help
 
-You can modify input files and put them in a directory you own, and then tell Pippin to look there (in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/dessn/Pippin/blob/4fd0994bc445858bba83b2e9e5d3fcb3c4a83120/examples/global.yml), or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
+You can modify input files and put them in a directory you own, and then tell Pippin to look there (in addition to the default location) when its constructing your tasks. To do this, see [this example here](https://github.com/dessn/Pippin/blob/main/examples/global.yml), or use this code snippet at the top of your YAML file (not that it matters if it's at the top):
 
 ```yaml
 GLOBAL:
