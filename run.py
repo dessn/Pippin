@@ -212,8 +212,7 @@ def run(args):
     return manager
 
 
-def get_syntax(options):
-    syntax = {}
+def get_syntax(task):
     taskname = [
         "DATAPREP",
         "SIM",
@@ -226,46 +225,20 @@ def get_syntax(options):
         "COSMOFIT",
         "ANALYSE",
     ]
-    syntax[
-        "options"
-    ] = f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})"
-    if options:
-        return syntax
-    base = os.path.dirname(os.path.realpath(__file__))
-    with open(f"{base}/README.md", "r") as f:
-        readme = f.read()
-    lines = readme.split("\n")
-    start, end = [idx for (idx, line) in enumerate(lines) if "[//]" in line]
-    lines = lines[start:end]
-    index = [idx for (idx, line) in enumerate(lines) if "###" == line.split(" ")[0]]
-    tasks = []
-    for i in range(len(index)):
-        idx = index[i]
-        if idx != index[-1]:
-            tasks.append("\n".join(lines[idx + 2 : index[i + 1] - 1]))
-        else:
-            tasks.append("\n".join(lines[idx + 2 : -1]))
-    for i, name in enumerate(taskname):
-        syntax[name] = tasks[i]
-    return syntax
+    if task == "options":
+        print(f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})")
+        return None
 
-
-def print_syntax(s):
-    syntax = get_syntax(s == "options")
     try:
-        keys = list(syntax.keys())
-        s = int(s) + 1
-        if s < 0 or s > len(keys) - 1:
-            raise ValueError(f"Unknown task number {s}")
-        key = keys[s]
-    except ValueError:
-        key = s
-    if key not in syntax.keys():
-        raise ValueError(f"Unknown task {key}")
-    msg = syntax[key]
-    print(msg)
-    return None
+        task = taskname[int(task)]
+    except:
+        pass
 
+    assert task in taskname, f"Unknown task {task}"
+
+    base = os.path.dirname(os.path.realpath(__file__))
+    with open(f"{base}/docs/src/tasks/{task.lower()}.md", "r") as f:
+        print(f.read())
 
 def get_args(test=False):
     # Set up command line arguments
@@ -351,7 +324,7 @@ def get_args(test=False):
 
     if args.syntax is not None:
         s = args.syntax
-        print_syntax(s)
+        get_syntax(s)
         return None
     elif not test:
         if len(args.yaml) == 0:
