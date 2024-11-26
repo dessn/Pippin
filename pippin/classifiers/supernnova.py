@@ -97,7 +97,7 @@ class SuperNNovaClassifier(Classifier):
         # Must be a list
         self.list_filters = options.get("LIST_FILTERS", None)
         if self.list_filters is None:
-            self.list_filters = ["g", "i", "r", "z"]
+            self.list_filters = ["DES-g", "DES-i", "DES-r", "DES-z"]
         assert isinstance(
             self.list_filters, list
         ), f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
