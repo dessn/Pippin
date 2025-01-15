@@ -190,7 +190,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         #if self.use_same_events == 1:
         #    self.yaml["CONFIG"]["OPT_SNCID_LIST"] = 1
 
-         if self.use_same_events > 0:
+        if self.use_same_events > 0:
             self.yaml["CONFIG"]["OPT_SNCID_LIST"] = self.use_same_events
             
         for i, line in enumerate(fitopts):
