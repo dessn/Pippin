@@ -59,11 +59,15 @@ class SNANASimulation(ConfigBasedExecutable):
         self.yaml["CONFIG"]["PATH_SNDATA_SIM"] = path_sndata_sim
 
         self.genversion = self.config["GENVERSION"]
-        if len(self.genversion) < 30:
-            self.genprefix = self.genversion
-        else:
-            hash = get_hash(self.genversion)[:5]
-            self.genprefix = self.genversion[:25] + hash
+        self.genprefix  = "PIP"  # R.Kessler Jan 2025
+
+        # xxxxxxxx mark delete Jan 15 2025 by RK xxxxxxxx
+        #if len(self.genversion) < 30:
+        #    self.genprefix = self.genversion
+        #else:
+        #    hash = get_hash(self.genversion)[:5]
+        #    self.genprefix = self.genversion[:25] + hash
+        # xxxxxx end mark xxxxxx
 
         self.options = self.config.get("OPTS", {})
 
