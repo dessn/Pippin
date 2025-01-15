@@ -187,12 +187,8 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.logger.debug(f"USE_SAME_EVENTS: {self.use_same_events}")
         mapped = {"DEFAULT": "FITOPT000.FITRES.gz"}
         mapped2 = {0: "DEFAULT"}
-        #if self.use_same_events == 1:
-        #    self.yaml["CONFIG"]["OPT_SNCID_LIST"] = 1
-
         if self.use_same_events > 0:
-            self.yaml["CONFIG"]["OPT_SNCID_LIST"] = self.use_same_events
-            
+            self.yaml["CONFIG"]["OPT_SNCID_LIST"] = self.use_same_events            
         for i, line in enumerate(fitopts):
             label = line.strip().split("/")[1]
             mapped[label] = f"FITOPT{i + 1:03d}.FITRES.gz"
