@@ -1,23 +1,23 @@
 import os
 
-from pippin.analyse import AnalyseChains
 from tests.utils import get_manager
+from pippin.merge import Merger
+from pippin.analyse import AnalyseChains
+from pippin.biascor import BiasCor
 from pippin.dataprep import DataPrep
-from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
+from pippin.snana_sim import SNANASimulation
+from pippin.aggregator import Aggregator
+from pippin.create_cov import CreateCov
+from pippin.classifiers.scone import SconeClassifier
 from pippin.classifiers.fitprob import FitProbClassifier
 from pippin.classifiers.perfect import PerfectClassifier
-from pippin.classifiers.scone import SconeClassifier
-from pippin.classifiers.scone_legacy import SconeLegacyClassifier
-from pippin.aggregator import Aggregator
-from pippin.merge import Merger
-from pippin.biascor import BiasCor
-from pippin.create_cov import CreateCov
-from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.cosmofitters.cosmomc import CosmoMC
+from pippin.cosmofitters.cosmofit import CosmoFit
+from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 
 
-def test_dataprep_config_valid():
+def test_dataprep_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_dataprep.yml", check=True)
     tasks = manager.tasks
@@ -28,7 +28,7 @@ def test_dataprep_config_valid():
     assert isinstance(task, DataPrep)
 
 
-def test_dataprep_outputs_set():
+def test_dataprep_outputs_set() -> None:
     manager = get_manager(yaml="tests/config_files/valid_dataprep.yml", check=True)
     tasks = manager.tasks
     task = tasks[0]
@@ -41,7 +41,7 @@ def test_dataprep_outputs_set():
     assert len(task.dependencies) == 0
 
 
-def test_sim_config_valid():
+def test_sim_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_sim.yml", check=True)
     tasks = manager.tasks
@@ -52,7 +52,7 @@ def test_sim_config_valid():
     assert isinstance(task, SNANASimulation)
 
 
-def test_sim_outputs_set():
+def test_sim_outputs_set() -> None:
     manager = get_manager(yaml="tests/config_files/valid_sim.yml", check=True)
     tasks = manager.tasks
     task = tasks[0]
@@ -65,7 +65,7 @@ def test_sim_outputs_set():
     assert len(task.dependencies) == 0
 
 
-def test_lcfit_config_valid():
+def test_lcfit_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_lcfit.yml", check=True)
     tasks = manager.tasks
@@ -75,7 +75,7 @@ def test_lcfit_config_valid():
     assert isinstance(tasks[1], SNANALightCurveFit)
 
 
-def test_lcfit_outputs_set():
+def test_lcfit_outputs_set() -> None:
     manager = get_manager(yaml="tests/config_files/valid_lcfit.yml", check=True)
     tasks = manager.tasks
     task = tasks[-1]
@@ -89,7 +89,7 @@ def test_lcfit_outputs_set():
     assert len(task.dependencies) == 1
 
 
-def test_lcfit_outputs_mask():
+def test_lcfit_outputs_mask() -> None:
     manager = get_manager(yaml="tests/config_files/valid_lcfit_mask.yml", check=True)
     tasks = manager.tasks
     assert len(tasks) == 5
@@ -99,12 +99,12 @@ def test_lcfit_outputs_mask():
         "DIFFERENT_SN_EXAMPLESIM2",
         "MASKTEST_EXAMPLESIM2",
     }
-    found = set([t.name for t in tasks if isinstance(t, SNANALightCurveFit)])
+    found = {t.name for t in tasks if isinstance(t, SNANALightCurveFit)}
 
     assert expected == found
 
 
-def test_classify_sim_only_config_valid():
+def test_classify_sim_only_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_classify_sim.yml", check=True)
     tasks = manager.tasks
@@ -119,7 +119,7 @@ def test_classify_sim_only_config_valid():
     assert len(task.dependencies) == 1
 
 
-def test_classifier_lcfit_config_valid():
+def test_classifier_lcfit_config_valid() -> None:
     manager = get_manager(
         yaml="tests/config_files/valid_classify_lcfit.yml", check=True
     )
@@ -138,7 +138,7 @@ def test_classifier_lcfit_config_valid():
     assert len(task.dependencies) == 2
 
 
-def test_classifier_sim_with_opt_lcfit_config_valid():
+def test_classifier_sim_with_opt_lcfit_config_valid() -> None:
     manager = get_manager(
         yaml="tests/config_files/valid_classify_sim_with_lcfit.yml", check=True
     )
@@ -158,7 +158,7 @@ def test_classifier_sim_with_opt_lcfit_config_valid():
     assert isinstance(deps[1], SNANALightCurveFit)
 
 
-def test_classifier_scone_valid():
+def test_classifier_scone_valid() -> None:
     manager = get_manager(
         yaml="tests/config_files/valid_classify_scone.yml", check=True
     )
@@ -207,7 +207,7 @@ def test_classifier_scone_valid():
             assert getattr(task, attr) == val
 
 
-def test_agg_config_valid():
+def test_agg_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_agg.yml", check=True)
     tasks = manager.tasks
@@ -225,7 +225,7 @@ def test_agg_config_valid():
     assert len(task.dependencies) == 2
 
 
-def test_merge_config_valid():
+def test_merge_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_merge.yml", check=True)
     tasks = manager.tasks
@@ -247,7 +247,7 @@ def test_merge_config_valid():
     assert len(task.dependencies) == 2
 
 
-def test_biascor_config_valid():
+def test_biascor_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_biascor.yml", check=True)
     tasks = manager.tasks
@@ -261,7 +261,7 @@ def test_biascor_config_valid():
     assert len(task.dependencies) == 3  # Two merge + classifier
 
 
-def test_createcov_config_valid():
+def test_createcov_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_create_cov.yml", check=True)
     tasks = manager.tasks
@@ -280,7 +280,7 @@ def test_createcov_config_valid():
     assert len(task.dependencies) == 1  # Biascor only
 
 
-def test_cosmomc_config_valid():
+def test_cosmomc_config_valid() -> None:
     # This shouldn't raise an error
     manager = get_manager(yaml="tests/config_files/valid_cosmomc.yml", check=True)
     tasks = manager.tasks
@@ -301,7 +301,7 @@ def test_cosmomc_config_valid():
     assert len(task.dependencies) == 1  # Create cov only
 
 
-def test_analyse_config_valid():
+def test_analyse_config_valid() -> None:
     manager = get_manager(yaml="tests/config_files/valid_analyse.yml", check=True)
     tasks = manager.tasks
 

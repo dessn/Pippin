@@ -6,5 +6,4 @@ def get_manager(**kwargs):
     args.config = "tests/config_files/cfg_dev.yml"
     for key, value in kwargs.items():
         setattr(args, key, value)
-    manager = run(args)
-    return manager
+    return run(args)
