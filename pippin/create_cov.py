@@ -9,7 +9,6 @@ from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
 from pippin.config import mkdirs, chown_dir, read_yaml, get_config, get_data_loc
 from pippin.biascor import BiasCor
-from pippin.cosmofitters import cosmomc
 
 
 class CreateCov(ConfigBasedExecutable):
@@ -142,6 +141,8 @@ class CreateCov(ConfigBasedExecutable):
         self.output["bcor_name"] = [d.name for d in self.dependencies]
 
     def add_dependent(self, task) -> None:
+        from pippin.cosmofitters import cosmomc  # Import here to avoid dependency clash
+
         self.dependents.append(task)
         if isinstance(task, cosmomc.CosmoMC):
             self.logger.info(
@@ -289,7 +290,8 @@ class CreateCov(ConfigBasedExecutable):
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=self.output_dir,
-                    shell=True, check=False,
+                    shell=True,
+                    check=False,
                 )
             chown_dir(self.output_dir)
         else:
