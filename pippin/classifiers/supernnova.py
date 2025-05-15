@@ -1,21 +1,23 @@
 import os
-import subprocess
 import json
-import shutil
-import pickle
-from collections import OrderedDict
-from pippin.classifiers.classifier import Classifier
-from pippin.config import (
-    chown_dir,
-    mkdirs,
-    get_config,
-    get_output_loc,
-    get_data_loc,
-    merge_dict,
-)
-from pippin.task import Task
 from time import sleep
+import pickle
+import shutil
+import subprocess
+from collections import OrderedDict
+
 import numpy as np
+
+from pippin.task import Task
+from pippin.config import (
+    mkdirs,
+    chown_dir,
+    get_config,
+    merge_dict,
+    get_data_loc,
+    get_output_loc,
+)
+from pippin.classifiers.classifier import Classifier
 
 
 class SuperNNovaClassifier(Classifier):
@@ -58,7 +60,7 @@ class SuperNNovaClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -80,12 +82,12 @@ class SuperNNovaClassifier(Classifier):
         # Redshift can be True, False, 'zpho', 'zspe', or 'none'
         redshift = options.get("REDSHIFT", "zspe")
         # Not sure how python deals with strings and bools, so just being careful
-        if redshift == True:
+        if redshift:
             redshift = "zspe"
-        elif redshift == False:
+        elif not redshift:
             redshift = "none"
-        if redshift not in ["zpho", "zspe", "none"]:
-            self.logger.warning(f"Unknown redshift option ['zpho', 'zspe', 'none']")
+        if redshift not in {"zpho", "zspe", "none"}:
+            self.logger.warning("Unknown redshift option ['zpho', 'zspe', 'none']")
         self.redshift = redshift
         self.norm = options.get("NORM", "cosmo")
         self.cyclic = options.get("CYCLIC", True)
@@ -98,24 +100,24 @@ class SuperNNovaClassifier(Classifier):
         self.list_filters = options.get("LIST_FILTERS", None)
         if self.list_filters is None:
             self.list_filters = ["DES-g", "DES-i", "DES-r", "DES-z"]
-        assert isinstance(
-            self.list_filters, list
-        ), f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
+        assert isinstance(self.list_filters, list), (
+            f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
+        )
         # Can either be a yml dictionary or a str filepath to a txt files containing all mappings
         self.sntypes = options.get("SNTYPES", None)
         if self.sntypes is None:
             self.sntypes = {}
         elif isinstance(self.sntypes, str):
             sntypes_path = get_data_loc(self.sntypes)
-            assert (
-                sntypes_path is not None
-            ), f"SNTYPES: {self.sntypes} does not resolve to a path."
+            assert sntypes_path is not None, (
+                f"SNTYPES: {self.sntypes} does not resolve to a path."
+            )
             self.logger.debug(f"Reading in SNTYPES from {sntypes_path}")
             sntypes_raw = np.loadtxt(sntypes_path, dtype=str)
             self.sntypes = {i[0]: i[1] for i in sntypes_raw}
-        assert isinstance(
-            self.sntypes, dict
-        ), f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
+        assert isinstance(self.sntypes, dict), (
+            f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
+        )
 
         # Setup yml files
         self.data_yml_file = options.get("DATA_YML", None)
@@ -130,9 +132,9 @@ class SuperNNovaClassifier(Classifier):
                 f"If using yml inputs, both 'DATA_YML' (currently {self.data_yml} and 'CLASSIFICATION_YML' (currently {self.classification_yml}) must be provided"
             )
         elif self.data_yml_file is not None:
-            with open(self.data_yml_file, "r") as f:
+            with open(self.data_yml_file, encoding="utf-8") as f:
                 self.data_yml = f.read()
-            with open(self.classification_yml_file, "r") as f:
+            with open(self.classification_yml_file, encoding="utf-8") as f:
                 self.classification_yml = f.read()
             self.has_yml = True
             self.variant = self.get_variant_from_yml(self.classification_yml)
@@ -150,18 +152,20 @@ class SuperNNovaClassifier(Classifier):
 
         self.validate_model()
 
-        assert self.norm in [
+        assert self.norm in {
             "global",
             "cosmo",
             "perfilter",
             "cosmo_quantile",
             "none",
-        ], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
-        assert self.variant in [
+        }, (
+            f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
+        )
+        assert self.variant in {
             "vanilla",
             "variational",
             "bayesian",
-        ], f"Variant {self.variant} is not vanilla, variational or bayesian"
+        }, f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """{sbatch_header}
         {task_setup}
 
@@ -171,7 +175,7 @@ class SuperNNovaClassifier(Classifier):
             self.global_config["SuperNNova"]["location"]
         )
 
-    def get_variant_from_yml(self, yml_file):
+    def get_variant_from_yml(self, yml_file) -> str:
         if "model" in yml_file:
             self.logger.debug("Detected model in yml file")
             stripped = "".join(yml_file.split(" "))
@@ -184,7 +188,7 @@ class SuperNNovaClassifier(Classifier):
         self.logger.debug("Defaulting variant to vanilla")
         return "vanilla"
 
-    def update_yml(self):
+    def update_yml(self) -> None:
         replace_dict = {
             "DONE_FILE": self.done_file,
             "DUMP_DIR": self.dump_dir,
@@ -205,9 +209,9 @@ class SuperNNovaClassifier(Classifier):
                     for f in os.listdir(model_folder)
                     if os.path.isdir(os.path.join(model_folder, f))
                 ]
-                assert (
-                    len(files) == 1
-                ), f"Did not find singular output file: {str(files)}"
+                assert len(files) == 1, (
+                    f"Did not find singular output file: {files!s}"
+                )
                 saved_dir = os.path.abspath(os.path.join(model_folder, files[0]))
 
                 subfiles = list(os.listdir(saved_dir))
@@ -222,7 +226,7 @@ class SuperNNovaClassifier(Classifier):
                     model_file = None
                 ending = (
                     "_aggregated.pickle"
-                    if self.variant in ["variational", "bayesian"]
+                    if self.variant in {"variational", "bayesian"}
                     else ".pickle"
                 )
                 pred_files = [
@@ -230,7 +234,7 @@ class SuperNNovaClassifier(Classifier):
                 ]
                 self.logger.debug(pred_files)
                 pred_file = pred_files[0]
-                self.logger.debug(f"Success after {100-max_tries} tries.")
+                self.logger.debug(f"Success after {100 - max_tries} tries.")
                 break
             except Exception as e:
                 self.logger.debug(e)
@@ -252,13 +256,13 @@ class SuperNNovaClassifier(Classifier):
                     types[k] = v
         return types
 
-    def classify(self, training):
+    def classify(self, training) -> bool:
         model = self.options.get("MODEL")
         model_path = ""
         if not training:
-            assert (
-                model is not None
-            ), "If TRAIN is not specified, you have to point to a model to use"
+            assert model is not None, (
+                "If TRAIN is not specified, you have to point to a model to use"
+            )
             if not os.path.exists(get_output_loc(model)):
                 for t in self.dependencies:
                     if model == t.name:
@@ -278,39 +282,37 @@ class SuperNNovaClassifier(Classifier):
             # Otherwise use default
             types = self.get_types()
             if types is None:
-                types = OrderedDict(
-                    {
-                        1: "Ia",
-                        0: "unknown",
-                        2: "SNIax",
-                        3: "SNIa-pec",
-                        20: "SNIIP",
-                        21: "SNIIL",
-                        22: "SNIIn",
-                        29: "SNII",
-                        32: "SNIb",
-                        33: "SNIc",
-                        39: "SNIbc",
-                        41: "SLSN-I",
-                        42: "SLSN-II",
-                        43: "SLSN-R",
-                        80: "AGN",
-                        81: "galaxy",
-                        98: "None",
-                        99: "pending",
-                        101: "Ia",
-                        120: "SNII",
-                        130: "SNIbc",
-                    }
-                )
+                types = OrderedDict({
+                    1: "Ia",
+                    0: "unknown",
+                    2: "SNIax",
+                    3: "SNIa-pec",
+                    20: "SNIIP",
+                    21: "SNIIL",
+                    22: "SNIIn",
+                    29: "SNII",
+                    32: "SNIb",
+                    33: "SNIc",
+                    39: "SNIbc",
+                    41: "SLSN-I",
+                    42: "SLSN-II",
+                    43: "SLSN-R",
+                    80: "AGN",
+                    81: "galaxy",
+                    98: "None",
+                    99: "pending",
+                    101: "Ia",
+                    120: "SNII",
+                    130: "SNIbc",
+                })
             else:
                 has_ia = False
                 has_cc = False
                 self.logger.debug(f"Input types set to {types}")
-                for key, value in types.items():
+                for value in types.values():
                     if value.upper() == "IA":
                         has_ia = True
-                    elif value.upper() in ["II", "IBC"]:
+                    elif value.upper() in {"II", "IBC"}:
                         has_cc = True
                 if not has_ia:
                     self.logger.debug("No Ia type found, injecting type")
@@ -343,13 +345,13 @@ class SuperNNovaClassifier(Classifier):
         self.raw_dir = light_curve_dir
         fit = self.get_fit_dependency()
         fit_dir = (
-            f""
+            ""
             if ((fit is None) or (len(fit) == 0))
             else f"--fits_dir {fit[self.index]['fitres_dirs']}"
         )
         cyclic = (
             "--cyclic"
-            if self.variant in ["vanilla", "variational"] and self.cyclic
+            if self.variant in {"vanilla", "variational"} and self.cyclic
             else ""
         )
         batch_size = f"--batch_size {self.batch_size}"
@@ -360,10 +362,7 @@ class SuperNNovaClassifier(Classifier):
             variant += " --num_inference_samples 20"
 
         clump = sim_dep.output.get("clump_file")
-        if clump is None:
-            clump_txt = ""
-        else:
-            clump_txt = f"--photo_window_files {clump}"
+        clump_txt = "" if clump is None else f"--photo_window_files {clump}"
 
         if self.batch_file is None:
             if self.gpu:
@@ -371,7 +370,7 @@ class SuperNNovaClassifier(Classifier):
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -444,20 +443,20 @@ class SuperNNovaClassifier(Classifier):
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             if self.has_yml:
-                with open(self.output_data_yml, "w") as f:
+                with open(self.output_data_yml, "w", encoding="utf-8") as f:
                     f.write(self.data_yml)
-                with open(self.output_classification_yml, "w") as f:
+                with open(self.output_classification_yml, "w", encoding="utf-8") as f:
                     f.write(self.classification_yml)
 
             self.save_new_hash(new_hash)
 
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(slurm_text)
 
             self.logger.info(
                 f"Submitting batch job to {'train' if training else 'predict using'} SuperNNova"
             )
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir, check=False)
 
         return True
 
@@ -465,16 +464,16 @@ class SuperNNovaClassifier(Classifier):
         if os.path.exists(self.done_file) or os.path.exists(self.done_file2):
             self.logger.info("Job complete")
             if os.path.exists(self.done_file):
-                with open(self.done_file) as f:
+                with open(self.done_file, encoding="utf-8") as f:
                     if "FAILURE" in f.read():
                         return Task.FINISHED_FAILURE
             if os.path.exists(self.done_file2):
-                with open(self.done_file2) as f:
+                with open(self.done_file2, encoding="utf-8") as f:
                     if "FAILURE" in f.read():
                         return Task.FINISHED_FAILURE
 
             new_pred_file = self.output_dir + "/predictions.csv"
-            new_model_file = os.path.join(self.output_dir, f"model.pt")
+            new_model_file = os.path.join(self.output_dir, "model.pt")
 
             if not os.path.exists(new_pred_file) or not os.path.exists(new_model_file):
                 self.logger.info(
@@ -505,7 +504,7 @@ class SuperNNovaClassifier(Classifier):
                         dataframe = pickle.load(f)
                         self.logger.debug(dataframe)
                         self.logger.debug(self.variant)
-                        if self.variant in ["variational", "bayesian"]:
+                        if self.variant in {"variational", "bayesian"}:
                             final_dataframe = dataframe[
                                 ["SNID", "all_class0_median", "all_class0_std"]
                             ]
@@ -529,15 +528,12 @@ class SuperNNovaClassifier(Classifier):
                         )
                 chown_dir(self.output_dir)
 
-            self.output.update(
-                {
-                    "model_filename": new_model_file,
-                    "predictions_filename": new_pred_file,
-                }
-            )
+            self.output.update({
+                "model_filename": new_model_file,
+                "predictions_filename": new_pred_file,
+            })
             return Task.FINISHED_SUCCESS
-        else:
-            return self.check_for_job(squeue, self.job_base_name)
+        return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod
     def get_requirements(options):

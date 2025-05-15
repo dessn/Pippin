@@ -2,9 +2,7 @@ from pippin.task import Task
 
 
 class CosmoFit(Task):
-    """
-
-    CONFIGURATION:
+    """CONFIGURATION:
     ==============
     COSMOFIT:
         NAME_OF_FITTER (COSMOMC, WFIT, etc...)
@@ -18,7 +16,7 @@ class CosmoFit(Task):
     """
 
     def get_tasks(
-        task_config, prior_tasks, output_dir, stage_num, prefix, global_config
+        self, prior_tasks, output_dir, stage_num, prefix, global_config
     ):
         from pippin.cosmofitters.factory import FitterFactory
 
@@ -26,9 +24,9 @@ class CosmoFit(Task):
 
         tasks = []
 
-        for fitter_name in task_config.get("COSMOFIT", []):
+        for fitter_name in self.get("COSMOFIT", []):
             Task.logger.info(f"Found fitter of type {fitter_name}, generating tasks.")
-            config = {fitter_name: task_config["COSMOFIT"][fitter_name]}
+            config = {fitter_name: self["COSMOFIT"][fitter_name]}
             Task.logger.debug(f"Config for {fitter_name}: {config}")
             fitter = FitterFactory.get(fitter_name.lower())
             Task.logger.debug(f"Fitter class for {fitter_name}: {fitter}")

@@ -1,31 +1,32 @@
-import inspect
+import os
 import json
 import shutil
-import subprocess
-import os
+import inspect
 from pathlib import Path
+import subprocess
+
 import numpy as np
 
-from pippin.biascor import BiasCor
+from pippin.task import Task
 from pippin.config import (
     mkdirs,
     get_config,
-    ensure_list,
-    get_data_loc,
-    generic_open,
     merge_dict,
+    ensure_list,
+    generic_open,
+    get_data_loc,
 )
-from pippin.cosmofitters.cosmofit import CosmoFit
-from pippin.cosmofitters.cosmomc import CosmoMC
-from pippin.cosmofitters.wfit import WFit
+from pippin.biascor import BiasCor
 from pippin.snana_fit import SNANALightCurveFit
-from pippin.task import Task
+from pippin.cosmofitters.wfit import WFit
+from pippin.cosmofitters.cosmomc import CosmoMC
+from pippin.cosmofitters.cosmofit import CosmoFit
 
 
 class AnalyseChains(
     Task
 ):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """Smack the data into something that looks like the simulated data
+    """Smack the data into something that looks like the simulated data.
 
     CONFIGURATION
     =============
@@ -50,7 +51,7 @@ class AnalyseChains(
 
     """
 
-    def __init__(self, name, output_dir, config, options, dependencies=None):
+    def __init__(self, name, output_dir, config, options, dependencies=None) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
@@ -86,11 +87,10 @@ class AnalyseChains(
         self.blind = np.any([c.output["blind"] for c in self.cosmomc_deps])
         if self.blind:
             self.blind_params = ["w", "om", "ol", "omegam", "omegal"]
+        elif options.get("BLIND", False):
+            self.blind_params = options.get("BLIND")
         else:
-            if options.get("BLIND", False):
-                self.blind_params = options.get("BLIND")
-            else:
-                self.blind_params = []
+            self.blind_params = []
         self.biascor_deps = self.get_deps(BiasCor)
         self.lcfit_deps = self.get_deps(SNANALightCurveFit)
 
@@ -181,7 +181,7 @@ fi
             base += template.format(path=os.path.basename(path), donefile=donefile)
         return base
 
-    def add_plot_script_to_run(self, script_name):
+    def add_plot_script_to_run(self, script_name) -> None:
         script_path = get_data_loc(script_name, extra=self.plot_code_dir)
         if script_path is None:
             self.fail_config(
@@ -201,18 +201,17 @@ fi
         for f in self.done_files:
             if os.path.exists(f):
                 self.logger.debug(f"Done file found at {f}")
-                with open(f) as ff:
+                with open(f, encoding="utf-8") as ff:
                     if "FAILURE" in ff.read():
                         self.logger.error(
                             f"Done file reported failure. Check output log {self.logfile}"
                         )
                         return Task.FINISHED_FAILURE
-                    else:
-                        num_success += 1
+                    num_success += 1
         if num_success == len(self.done_files):
             return Task.FINISHED_SUCCESS
         if os.path.exists(self.logfile):
-            with open(self.logfile) as f:
+            with open(self.logfile, encoding="utf-8") as f:
                 for line in f.read().splitlines():
                     if "kill event" in line:
                         self.logger.error(f"Kill event found in {self.logfile}")
@@ -220,7 +219,7 @@ fi
                         return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
-    def _run(self):
+    def _run(self) -> bool:
         # Get the m0diff files for everything
         for b in self.biascor_deps:
             for m in b.output["m0dif_dirs"]:
@@ -231,7 +230,7 @@ fi
                 files = [
                     f
                     for f in sorted(os.listdir(m))
-                    if f.endswith(".M0DIF") or f.endswith(".M0DIF.gz")
+                    if f.endswith((".M0DIF", ".M0DIF.gz"))
                 ]
                 for f in files:
                     muopt_num = int(f.split("MUOPT")[-1].split(".")[0])
@@ -248,17 +247,15 @@ fi
                     else:
                         fitopt = b.output["fitopt_index"][fitopt_num]
 
-                    self.biascor_m0diffs.append(
-                        (
-                            b.name,
-                            sim_number,
-                            muopt,
-                            muopt_num,
-                            fitopt,
-                            fitopt_num,
-                            os.path.join(m, f),
-                        )
-                    )
+                    self.biascor_m0diffs.append((
+                        b.name,
+                        sim_number,
+                        muopt,
+                        muopt_num,
+                        fitopt,
+                        fitopt_num,
+                        os.path.join(m, f),
+                    ))
 
         data_fitres_files = [
             os.path.join(l.output["fitres_dirs"][0], l.output["fitopt_map"]["DEFAULT"])
@@ -272,15 +269,9 @@ fi
             if not l.output["is_data"]
         ]
         sim_fitres_output = [d.split("/")[-4] + ".csv.gz" for d in sim_fitres_files]
-        types = list(
-            set(
-                [
-                    a
-                    for l in self.lcfit_deps
-                    for a in l.sim_task.output["types_dict"]["IA"]
-                ]
-            )
-        )
+        types = list({
+            a for l in self.lcfit_deps for a in l.sim_task.output["types_dict"]["IA"]
+        })
         input_yml_file = "input.yml"
         output_dict = {
             "COSMOMC": {
@@ -321,7 +312,7 @@ fi
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -353,15 +344,17 @@ fi
             for c in self.path_to_codes:
                 shutil.copy(c, self.output_dir)
             input_yml_path = os.path.join(self.output_dir, input_yml_file)
-            with open(input_yml_path, "w") as f:
+            with open(input_yml_path, "w", encoding="utf-8") as f:
                 json.dump(output_dict, f, indent=2)
                 self.logger.debug(f"Input yml file written out to {input_yml_path}")
 
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(final_slurm)
-            self.logger.info(f"Submitting batch job for analyse chains")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            self.logger.info("Submitting batch job for analyse chains")
+            subprocess.run(
+                ["sbatch", slurm_output_file], cwd=self.output_dir, check=False
+            )
         else:
             self.logger.info("Hash check passed, not rerunning")
         return True
@@ -370,7 +363,7 @@ fi
     def get_tasks(
         configs, prior_tasks, base_output_dir, stage_number, prefix, global_config
     ):
-        def _get_analyse_dir(base_output_dir, stage_number, name):
+        def _get_analyse_dir(base_output_dir, stage_number, name) -> str:
             return f"{base_output_dir}/{stage_number}_ANALYSE/{name}"
 
         tasks = []

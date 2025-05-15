@@ -1,17 +1,18 @@
-import numpy as np
-import yaml
-from chainconsumer import ChainConsumer
-import pandas as pd
-import sys
-import argparse
 import os
+import sys
 import logging
+import argparse
+
+import yaml
+import numpy as np
+import pandas as pd
+from chainconsumer import ChainConsumer
 
 
 def load_params(file):
     assert os.path.exists(file), f"Paramnames file {file} does not exist"
     names, labels = [], []
-    with open(file) as f:
+    with open(file, encoding="utf-8") as f:
         for line in f.read().splitlines():
             n, l = line.split(maxsplit=1)
             names.append(n.replace("*", ""))
@@ -20,7 +21,7 @@ def load_params(file):
 
 
 def load_chains(files, all_cols, use_cols=None):
-    header = ["weights", "likelihood"] + all_cols
+    header = ["weights", "likelihood", *all_cols]
     data = [
         pd.read_csv(f, delim_whitespace=True, header=None, names=header) for f in files
     ]
@@ -37,7 +38,7 @@ def load_chains(files, all_cols, use_cols=None):
     return weights, likelihood, chain
 
 
-def fail(msg, condition=True):
+def fail(msg, condition=True) -> None:
     if condition:
         logging.error(msg)
         raise ValueError(msg)
@@ -60,7 +61,7 @@ def get_chain_files(basename):
     return files
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -71,7 +72,7 @@ def setup_logging():
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
-def blind(chain, names, columns_to_blind, index=0):
+def blind(chain, names, columns_to_blind, index=0) -> None:
     np.random.seed(123)
     for i, c in enumerate(columns_to_blind):
         logging.info(f"Blinding column {c}")
@@ -92,7 +93,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["COSMOMC"])
 
@@ -130,7 +131,7 @@ def parse_chains(basename, outname, args, index):
     # Turn into new df
     output_df = pd.DataFrame(
         np.vstack((weights, likelihood, chain.T)).T,
-        columns=["_weight", "_likelihood"] + labels,
+        columns=["_weight", "_likelihood", *labels],
     )
     output_df.to_csv(outname, float_format="%0.5f", index=False)
 
@@ -183,4 +184,4 @@ if __name__ == "__main__":
         logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
-        raise e
+        raise

@@ -1,16 +1,17 @@
 import os
 import shutil
-import subprocess
-import pandas as pd
 from pathlib import Path
+import subprocess
 
-from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
+import pandas as pd
+
 from pippin.task import Task
+from pippin.config import mkdirs, get_config, merge_dict, get_data_loc, get_output_loc
+from pippin.classifiers.classifier import Classifier
 
 
 class SnirfClassifier(Classifier):
-    """SNIRF classifier
+    """SNIRF classifier.
 
     CONFIGURATION:
     ==============
@@ -48,7 +49,7 @@ class SnirfClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -91,7 +92,7 @@ class SnirfClassifier(Classifier):
         {task_setup}
 """
 
-    def setup(self):
+    def setup(self) -> None:
         lcfit = self.get_fit_dependency()[0]
         if len(self.get_fit_dependency()) > 1:
             self.logger.warning(
@@ -102,14 +103,14 @@ class SnirfClassifier(Classifier):
             os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
         )
 
-    def classify(self, command):
+    def classify(self, command) -> bool:
         if self.batch_file is None:
             if self.gpu:
                 self.sbatch_header = self.sbatch_gpu_header
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -145,18 +146,18 @@ class SnirfClassifier(Classifier):
             mkdirs(self.output_dir)
 
             slurm_output_file = self.output_dir + "/job.slurm"
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(slurm_script)
             self.save_new_hash(new_hash)
             self.logger.info(f"Submitting batch job {slurm_output_file}")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir, check=False)
         else:
             self.logger.info("Hash check passed, not rerunning")
             self.should_be_done()
         return True
 
-    def get_rf_conf(self):
-        leaf_opts = (
+    def get_rf_conf(self) -> str:
+        return (
             (
                 f"--n_estimators {self.options.get('N_ESTIMATORS')} "
                 if self.options.get("N_ESTIMATORS") is not None
@@ -178,7 +179,6 @@ class SnirfClassifier(Classifier):
                 else ""
             )
         )
-        return leaf_opts
 
     def predict(self):
         self.setup()
@@ -240,50 +240,49 @@ class SnirfClassifier(Classifier):
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
-                else:
-                    if self.mode == Classifier.PREDICT:
-                        # Rename output file myself
-                        # First check to see if this is already done
-                        predictions_filename = os.path.join(
-                            self.output_dir, "predictions.csv"
+                if self.mode == Classifier.PREDICT:
+                    # Rename output file myself
+                    # First check to see if this is already done
+                    predictions_filename = os.path.join(
+                        self.output_dir, "predictions.csv"
+                    )
+                    if not os.path.exists(predictions_filename):
+                        # Find the output file
+                        output_files = [
+                            i
+                            for i in os.listdir(self.output_dir)
+                            if i.endswith("Classes.txt")
+                        ]
+                        if len(output_files) != 1:
+                            self.logger.error(
+                                f"Could not find the output file in {self.output_dir}"
+                            )
+                            return Task.FINISHED_FAILURE
+                        df = pd.read_csv(
+                            os.path.join(self.output_dir, output_files[0]),
+                            delim_whitespace=True,
                         )
-                        if not os.path.exists(predictions_filename):
-                            # Find the output file
-                            output_files = [
-                                i
-                                for i in os.listdir(self.output_dir)
-                                if i.endswith("Classes.txt")
-                            ]
-                            if len(output_files) != 1:
-                                self.logger.error(
-                                    f"Could not find the output file in {self.output_dir}"
-                                )
-                                return Task.FINISHED_FAILURE
-                            df = pd.read_csv(
-                                os.path.join(self.output_dir, output_files[0]),
-                                delim_whitespace=True,
-                            )
-                            df_final = df[["CID", "RFprobability0"]]
-                            df_final = df_final.rename(
-                                columns={
-                                    "CID": "SNID",
-                                    "RFprobability0": self.get_prob_column_name(),
-                                }
-                            )
-                            df_final.to_csv(
-                                predictions_filename, index=False, float_format="%0.4f"
-                            )
-                        self.output["predictions_filename"] = predictions_filename
-                    else:
-                        self.output["model_filename"] = [
-                            os.path.join(self.output_dir, f)
-                            for f in os.listdir(self.output_dir)
-                            if f.startswith(self.model_pk_file)
-                        ][0]
-                    return Task.FINISHED_SUCCESS
+                        df_final = df[["CID", "RFprobability0"]]
+                        df_final = df_final.rename(
+                            columns={
+                                "CID": "SNID",
+                                "RFprobability0": self.get_prob_column_name(),
+                            }
+                        )
+                        df_final.to_csv(
+                            predictions_filename, index=False, float_format="%0.4f"
+                        )
+                    self.output["predictions_filename"] = predictions_filename
+                else:
+                    self.output["model_filename"] = next(
+                        os.path.join(self.output_dir, f)
+                        for f in os.listdir(self.output_dir)
+                        if f.startswith(self.model_pk_file)
+                    )
+                return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
 
     @staticmethod

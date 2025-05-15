@@ -1,11 +1,12 @@
-import argparse
 import os
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
 import logging
+import argparse
+
+import numpy as np
+import pandas as pd
 import seaborn as sb
 from scipy.stats import binned_statistic
+import matplotlib.pyplot as plt
 
 colours = [
     "#1976D2",
@@ -23,7 +24,7 @@ colours = [
 ] * 2
 
 
-def plot_corr(df, output_dir, index):
+def plot_corr(df, output_dir, index) -> None:
     logging.debug("Making prob correlation plot")
 
     fig, ax = plt.subplots(figsize=(8, 6))
@@ -35,7 +36,7 @@ def plot_corr(df, output_dir, index):
         logging.info(f"Prob corr plot saved to {filename}")
 
 
-def plot_prob_acc(df, output_dir, index):
+def plot_prob_acc(df, output_dir, index) -> None:
     logging.debug("Making prob accuracy plot")
 
     prob_bins = np.linspace(0, 1, 21)
@@ -48,7 +49,7 @@ def plot_prob_acc(df, output_dir, index):
     for c, col in zip(columns, colours):
         data, truth = _get_data_and_truth(df[c], df["IA"])
         actual_prob, _, _ = binned_statistic(
-            data, truth.astype(np.float), bins=prob_bins, statistic="mean"
+            data, truth.astype(float), bins=prob_bins, statistic="mean"
         )
         ax.plot(bin_center, actual_prob, label=c, c=col)
     ax.plot(prob_bins, prob_bins, label="Expected", color="k", ls="--")
@@ -91,7 +92,7 @@ def _get_data_and_truth(data, truth):
     return data, truth
 
 
-def plot_thresholds(df, output_dir, index):
+def plot_thresholds(df, output_dir, index) -> None:
     logging.debug("Making threshold plot")
 
     thresholds = np.linspace(0.5, 0.999, 100)
@@ -125,7 +126,7 @@ def plot_thresholds(df, output_dir, index):
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_pr(df, output_dir, index):
+def plot_pr(df, output_dir, index) -> None:
     logging.debug("Making pr plot")
 
     thresholds = np.linspace(0.01, 1, 100)
@@ -156,7 +157,7 @@ def plot_pr(df, output_dir, index):
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_roc(df, output_dir, index):
+def plot_roc(df, output_dir, index) -> None:
     logging.debug("Making roc plot")
 
     thresholds = np.linspace(0.01, 0.999, 100)
@@ -186,7 +187,7 @@ def plot_roc(df, output_dir, index):
         logging.info(f"Prob threshold plot saved to {filename}")
 
 
-def plot_comparison(df, output_dir, index):
+def plot_comparison(df, output_dir, index) -> None:
     df = df.dropna()
     frac = min(10000.0 / df.shape[0], 1)
     df = df.sample(frac=frac)
@@ -210,8 +211,8 @@ def plot_comparison(df, output_dir, index):
             if i < j:
                 ax.axis("off")
                 continue
-            elif i == j:
-                h, _, _ = ax.hist(
+            if i == j:
+                _h, _, _ = ax.hist(
                     df[label1],
                     bins=bins,
                     histtype="stepfilled",
@@ -267,7 +268,7 @@ def plot_comparison(df, output_dir, index):
         logging.info(f"Prob scatter plot saved to {filename}")
 
 
-def plot(df, output_dir, index):
+def plot(df, output_dir, index) -> None:
     plot_corr(df, output_dir, index)
     plot_prob_acc(df, output_dir, index)
     # plot_thresholds(df, output_dir, index)
@@ -300,5 +301,5 @@ if __name__ == "__main__":
         df = pd.read_csv(args.mergedcsv)
         plot(df, args.output_dir, args.index)
     except Exception as e:
-        logging.error(str(e))
-        raise e
+        logging.exception(str(e))
+        raise

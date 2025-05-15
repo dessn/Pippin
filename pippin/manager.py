@@ -1,29 +1,30 @@
 import os
+import time
 import shutil
 import subprocess
-import time
+
 from colorama import Fore, Style
 
-from pippin.aggregator import Aggregator
-from pippin.analyse import AnalyseChains
-from pippin.biascor import BiasCor
-from pippin.classifiers.classifier import Classifier
+from pippin.task import Task
+from pippin.merge import Merger
 from pippin.config import (
-    get_logger,
-    get_config,
-    get_output_dir,
     mkdirs,
     chown_dir,
     chown_file,
+    get_config,
+    get_logger,
     get_data_loc,
+    get_output_dir,
 )
-from pippin.cosmofitters.cosmofit import CosmoFit
-from pippin.create_cov import CreateCov
+from pippin.analyse import AnalyseChains
+from pippin.biascor import BiasCor
 from pippin.dataprep import DataPrep
-from pippin.merge import Merger
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
-from pippin.task import Task
+from pippin.aggregator import Aggregator
+from pippin.create_cov import CreateCov
+from pippin.cosmofitters.cosmofit import CosmoFit
+from pippin.classifiers.classifier import Classifier
 
 
 class Manager:
@@ -52,7 +53,7 @@ class Manager:
         "ANALYSE",
     ]
 
-    def __init__(self, filename, config_path, config_raw, config, message_store):
+    def __init__(self, filename, config_path, config_raw, config, message_store) -> None:
         self.logger = get_logger()
         self.task_index = {t: i for i, t in enumerate(self.task_order)}
         self.message_store = message_store
@@ -75,12 +76,12 @@ class Manager:
         self.sbatch_cpu_path = get_data_loc(
             self.global_config["SBATCH"]["cpu_location"]
         )
-        with open(self.sbatch_cpu_path, "r") as f:
+        with open(self.sbatch_cpu_path, encoding="utf-8") as f:
             self.sbatch_cpu_header = f.read()
         self.sbatch_gpu_path = get_data_loc(
             self.global_config["SBATCH"]["gpu_location"]
         )
-        with open(self.sbatch_gpu_path, "r") as f:
+        with open(self.sbatch_gpu_path, encoding="utf-8") as f:
             self.sbatch_gpu_header = f.read()
         self.sbatch_cpu_header = self.clean_header(self.sbatch_cpu_header)
         self.sbatch_gpu_header = self.clean_header(self.sbatch_gpu_header)
@@ -103,7 +104,7 @@ class Manager:
         self.failed = []
         self.blocked = []
 
-    def load_task_setup(self):
+    def load_task_setup(self) -> None:
         tasks = [
             "cosmomc",
             "snirf",
@@ -117,7 +118,7 @@ class Manager:
         ]
         self.task_setup = {}
         for task in tasks:
-            with open(get_data_loc(f"{self.setup_task_location}/{task}"), "r") as f:
+            with open(get_data_loc(f"{self.setup_task_location}/{task}"), encoding="utf-8") as f:
                 self.task_setup[task] = f.read()
 
     def get_force_refresh(self, task):
@@ -152,23 +153,24 @@ class Manager:
         )
         return force_ignore
 
-    def set_force_refresh(self, force_refresh):
+    def set_force_refresh(self, force_refresh) -> None:
         self.force_refresh = force_refresh
 
-    def set_force_ignore_stage(self, force_ignore_stage):
+    def set_force_ignore_stage(self, force_ignore_stage) -> None:
         self.force_ignore_stage = self.resolve_stage(force_ignore_stage)
 
     def clean_header(self, header):
         lines = header.split("\n")
-        mask = lambda x: (len(x) > 0) and (x[0] == "#") and ("xxxx" not in x)
-        lines = filter(mask, lines)
-        header = "\n".join(lines)
-        return header
 
-    def set_start(self, stage):
+        def mask(x):
+            return (len(x) > 0) and (x[0] == "#") and ("xxxx" not in x)
+        lines = filter(mask, lines)
+        return "\n".join(lines)
+
+    def set_start(self, stage) -> None:
         self.start = self.resolve_stage(stage)
 
-    def set_finish(self, stage):
+    def set_finish(self, stage) -> None:
         self.finish = self.resolve_stage(stage)
 
     def resolve_stage(self, stage):
@@ -178,13 +180,13 @@ class Manager:
             num = int(stage)
         else:
             key = stage.upper()
-            assert (
-                key in Manager.stages
-            ), f"Stage {key} is not in recognised keys {Manager.stages}"
+            assert key in Manager.stages, (
+                f"Stage {key} is not in recognised keys {Manager.stages}"
+            )
             num = Manager.stages.index(key)
-        assert (
-            0 <= num < len(Manager.stages)
-        ), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        assert 0 <= num < len(Manager.stages), (
+            f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        )
         return num
 
     def get_tasks(self, config):
@@ -204,7 +206,7 @@ class Manager:
                         total_tasks += new_tasks
         except Exception as e:
             self.logger.exception(e, exc_info=False)
-            raise e
+            raise
         self.logger.info("")
         self.logger.notice("Listing tasks:")
         for task in total_tasks:
@@ -215,12 +217,11 @@ class Manager:
         return total_tasks
 
     def get_num_running_jobs(self):
-        num_jobs = int(
+        return int(
             subprocess.check_output(
                 "squeue -ho %A -u $USER | wc -l", shell=True, stderr=subprocess.STDOUT
             )
         )
-        return num_jobs
 
     def get_task_to_run(self):
         for t in self.tasks:
@@ -247,7 +248,7 @@ class Manager:
                 return t
         return None
 
-    def fail_task(self, t):
+    def fail_task(self, t) -> None:
         if t in self.tasks:
             self.tasks.remove(t)
         if t in self.running:
@@ -273,7 +274,7 @@ class Manager:
                         modified = True
                         break
 
-    def log_status(self):
+    def log_status(self) -> None:
         self.logger.debug("")
         self.logger.debug(f"Status as of {time.ctime()}:")
         self.logger.debug(f"    Waiting: {[t.name for t in self.tasks]}")
@@ -331,16 +332,16 @@ class Manager:
 
         return output
 
-    def print_dashboard(self):
+    def print_dashboard(self) -> None:
         all_tasks = self.tasks + self.running + self.done + self.failed + self.blocked
 
         self.logger.info("-------------------")
         self.logger.info("CURRENT TASK STATUS")
 
         options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
-        header = "Key: " + "  ".join(
-            [self.get_string_with_colour(o, o.lower()) for o in options]
-        )
+        header = "Key: " + "  ".join([
+            self.get_string_with_colour(o, o.lower()) for o in options
+        ])
         self.logger.info(header)
         for name, task_class in zip(Manager.stages, Manager.task_order):
             tasks = self.get_subtasks(task_class, all_tasks)
@@ -349,14 +350,14 @@ class Manager:
 
         self.logger.info("-------------------")
         try:
-            with open(self.dashboard, "w") as f:
+            with open(self.dashboard, "w", encoding="utf-8") as f:
                 f.write("-------------------\n")
                 f.write("CURRENT TASK STATUS\n")
 
                 options = ["WAITING", "RUNNING", "DONE", "FAILED", "BLOCKED"]
-                header = "Key: " + "  ".join(
-                    [self.get_string_with_colour(o, o.lower()) for o in options]
-                )
+                header = "Key: " + "  ".join([
+                    self.get_string_with_colour(o, o.lower()) for o in options
+                ])
                 f.write(header + "\n")
                 for name, task_class in zip(Manager.stages, Manager.task_order):
                     tasks = self.get_subtasks(task_class, all_tasks)
@@ -365,11 +366,11 @@ class Manager:
         except:
             self.logger.warning(f"Error opening {self.dashboard}")
 
-    def compress_all(self):
+    def compress_all(self) -> None:
         for t in self.tasks:
             t.compress()
 
-    def uncompress_all(self):
+    def uncompress_all(self) -> None:
         for t in self.tasks:
             t.uncompress()
 
@@ -378,9 +379,9 @@ class Manager:
         self.logger.info(f"Output will be located in {self.output_dir}")
         if check_config:
             self.logger.info("Only verifying config, not launching anything")
-        assert not (
-            compress_output and uncompress_output
-        ), "-C / --compress and -U / --uncompress are mutually exclusive"
+        assert not (compress_output and uncompress_output), (
+            "-C / --compress and -U / --uncompress are mutually exclusive"
+        )
         # Whilst compressing is being debugged, false by default
         self.compress = False
         if compress_output:
@@ -405,7 +406,7 @@ class Manager:
             if uncompress_output:
                 self.uncompress_all()
             self.logger.notice("Config verified, exiting")
-            return
+            return None
 
         self.print_dashboard()
 
@@ -420,7 +421,7 @@ class Manager:
             self.logger.info(
                 f"Saving processed and parsed config file to {config_file_output}"
             )
-            with open(config_file_output, "w") as f:
+            with open(config_file_output, "w", encoding="utf-8") as f:
                 f.write(self.file_raw)
             # shutil.copy(self.filename_path, config_file_output)
             chown_file(config_file_output)
@@ -487,14 +488,12 @@ class Manager:
             else:
                 time.sleep(current_sleep_time)
                 current_sleep_time *= 2
-                if current_sleep_time > max_sleep_time:
-                    current_sleep_time = max_sleep_time
+                current_sleep_time = min(current_sleep_time, max_sleep_time)
                 p = subprocess.run(
-                    f"squeue -h -u $USER -o '%.j'",
+                    "squeue -h -u $USER -o '%.j'",
                     shell=True,
                     text=True,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
+                    capture_output=True, check=False,
                 )
                 if (p.returncode != 0) or (p.stderr != ""):
                     self.logger.error(
@@ -507,13 +506,12 @@ class Manager:
                         self.logger.debug(
                             f"Squeue is reporting {n} NUM_JOBS in the queue... this is either 0 or toeing the line as to too many"
                         )
-        num_errs = self.log_finals()
-        return num_errs
+        return self.log_finals()
 
-    def check_task_completion(self, t, squeue):
+    def check_task_completion(self, t, squeue) -> bool:
         result = t.check_completion(squeue)
         # If its finished, good or bad, juggle tasks
-        if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+        if result in {Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE}:
             self.logger.debug(f"Task {t.name} has dependencies: {t.dependencies}")
             self.logger.debug(f"Task {t.name} has dependents: {t.dependents}")
             if len(t.dependencies) > 0:
@@ -527,9 +525,8 @@ class Manager:
                     self.logger.debug(
                         f"Task {task.name} has dependents: {task.dependents}"
                     )
-                    if len(task.dependents) == 0:
-                        if self.compress:
-                            task.compress()
+                    if len(task.dependents) == 0 and self.compress:
+                        task.compress()
                 self.logger.debug(f"Task {t.name} has dependencies: {t.dependencies}")
                 self.logger.debug(f"Task {t.name} has dependents: {t.dependents}")
 
@@ -543,9 +540,8 @@ class Manager:
                     f"FINISHED: {t} with {t.num_jobs} NUM_JOBS. NUM_JOBS now {self.num_jobs_queue}"
                 )
                 self.done.append(t)
-                if self.compress:
-                    if len(t.dependents) == 0:
-                        t.compress()
+                if self.compress and len(t.dependents) == 0:
+                    t.compress()
             else:
                 self.fail_task(t)
             if os.path.exists(t.output_dir):
@@ -555,7 +551,7 @@ class Manager:
             return True
         return False
 
-    def kill_remaining_tasks(self):
+    def kill_remaining_tasks(self) -> None:
         remaining_tasks = self.tasks + self.running
         for t in remaining_tasks:
             self.fail_task(t)
@@ -586,14 +582,14 @@ class Manager:
 
         self.logger.info("")
         if len(ws) == 0:
-            self.logger.info(f"No warnings")
+            self.logger.info("No warnings")
         else:
             self.logger.warning(f"{len(ws)} warnings")
         for w in ws:
             self.logger.warning(f"\t{w.message}")
 
         if len(es) == 0:
-            self.logger.info(f"No errors")
+            self.logger.info("No errors")
         else:
             self.logger.error(f"{len(es)} errors")
 

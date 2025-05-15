@@ -1,15 +1,15 @@
 import os
 from abc import abstractmethod
 
-from pippin.config import get_output_loc, get_data_loc
-from pippin.dataprep import DataPrep
 from pippin.task import Task
-from pippin.snana_sim import SNANASimulation
+from pippin.config import get_data_loc, get_output_loc
+from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
+from pippin.snana_sim import SNANASimulation
 
 
 class Classifier(Task):
-    """Classification task
+    """Classification task.
 
     CONFIGURATION:
     ==============
@@ -52,7 +52,7 @@ class Classifier(Task):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.index = index
@@ -63,23 +63,21 @@ class Classifier(Task):
 
     @abstractmethod
     def predict(self):
-        """Predict probabilities for given dependencies
+        """Predict probabilities for given dependencies.
 
         :return: true or false for success in launching the job
         """
-        pass
 
     @abstractmethod
     def train(self):
-        """Train a model to file for given dependencies
+        """Train a model to file for given dependencies.
 
         :return: true or false for success in launching the job
         """
-        pass
 
     @staticmethod
     def get_requirements(config):
-        """Return what data is actively used by the classifier
+        """Return what data is actively used by the classifier.
 
         :param config: the input dictionary `OPTS` from the config file
         :return: a two tuple - (needs simulation photometry, needs a fitres file)
@@ -95,13 +93,12 @@ class Classifier(Task):
             if OPTIONAL_MASK_SIM != "":
                 True, False
             if OPTIONAL_MASK_FIT != "":
-                False, True
+                False, True.
 
 
         :param config: the input dictionary `OPTS` from the config file
         :return: a two tuple - (needs simulation photomerty, needs a fitres file)
         """
-
         opt_sim = ("OPTIONAL_MASK" in config) or ("OPTIONAL_MASK_SIM" in config)
         opt_fit = ("OPTIONAL_MASK" in config) or ("OPTIONAL_MASK_FIT" in config)
         return opt_sim, opt_fit
@@ -114,17 +111,18 @@ class Classifier(Task):
         return fit_deps
 
     def get_simulation_dependency(self):
-        sim_deps = []
-        for t in self.dependencies:
-            if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
-                sim_deps.append(t)
+        sim_deps = [
+            t for t in self.dependencies if isinstance(t, (SNANASimulation, DataPrep))
+        ]
         for t in self.get_fit_dependency(output=False):
-            for dep in t.dependencies:
-                if isinstance(t, SNANASimulation) or isinstance(t, DataPrep):
-                    sim_deps.append(t)
+            sim_deps.extend(
+                t
+                for dep in t.dependencies
+                if isinstance(t, (SNANASimulation, DataPrep))
+            )
         return sim_deps
 
-    def validate_model(self):
+    def validate_model(self) -> bool:
         if self.mode == Classifier.PREDICT:
             model = self.options.get("MODEL")
             if model is None:
@@ -150,12 +148,13 @@ class Classifier(Task):
     def _run(self):
         if self.mode == Classifier.TRAIN:
             return self.train()
-        elif self.mode == Classifier.PREDICT:
+        if self.mode == Classifier.PREDICT:
             return self.predict()
+        return None
 
     def get_unique_name(self):
         name = self.name
-        use_sim, use_fit = self.get_requirements(self.options)
+        _use_sim, use_fit = self.get_requirements(self.options)
         if use_fit:
             for t in self.get_fit_dependency():
                 name += f"_{t['name']}"
@@ -169,10 +168,8 @@ class Classifier(Task):
         if m is None:
             if self.model_name is not None:
                 return f"PROB_{self.model_name}"
-            else:
-                return f"PROB_{self.get_unique_name()}"
-        else:
-            return m.output["prob_column_name"]
+            return f"PROB_{self.get_unique_name()}"
+        return m.output["prob_column_name"]
 
     @staticmethod
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
@@ -186,7 +183,7 @@ class Classifier(Task):
             clas_name,
             index=None,
             extra=None,
-        ):
+        ) -> str:
             sim_name = (
                 "" if sim_name is None or fit_name is not None else "_" + sim_name
             )
@@ -199,16 +196,14 @@ class Classifier(Task):
             num = 0
             if len(sim_tasks) > 0:
                 return min(
-                    [len(sim_task.output["sim_folders"]) for sim_task in sim_tasks]
+                    len(sim_task.output["sim_folders"]) for sim_task in sim_tasks
                 )
             if len(lcfit_tasks) > 0:
                 return min(
-                    [
-                        len(lcfit_task.output["fitres_dirs"])
-                        for lcfit_task in lcfit_tasks
-                    ]
+                    len(lcfit_task.output["fitres_dirs"]) for lcfit_task in lcfit_tasks
                 )
-            raise ValueError("Classifier dependency has no sim_task or lcfit_task?")
+            msg = "Classifier dependency has no sim_task or lcfit_task?"
+            raise ValueError(msg)
 
         tasks = []
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
@@ -218,7 +213,7 @@ class Classifier(Task):
             name = config["CLASSIFIER"]
             cls = ClassifierFactory.get(name)
             options = config.get("OPTS", {})
-            if options == None:
+            if options is None:
                 Task.fail_config(
                     f"Classifier {clas_name} has no OPTS specified -- either remove the OPTS keyword or specify some options under it"
                 )
@@ -227,14 +222,11 @@ class Classifier(Task):
                     f"Classifier task {clas_name} needs to specify MODE as train or predict"
                 )
             mode = config["MODE"].lower()
-            assert mode in [
+            assert mode in {
                 "train",
                 "predict",
-            ], "MODE should be either train or predict"
-            if mode == "train":
-                mode = Classifier.TRAIN
-            else:
-                mode = Classifier.PREDICT
+            }, "MODE should be either train or predict"
+            mode = Classifier.TRAIN if mode == "train" else Classifier.PREDICT
 
             # Prevent mode = predict and SIM_FRACTION < 1
             if mode == Classifier.PREDICT and options.get("SIM_FRACTION", 1) > 1:
@@ -244,11 +236,11 @@ class Classifier(Task):
 
             # Validate that train is not used on certain classifiers
             if mode == Classifier.TRAIN:
-                assert name not in [
+                assert name not in {
                     "PerfectClassifier",
                     "UnityClassifier",
                     "FitProbClassifier",
-                ], f"Can not use train mode with {name}"
+                }, f"Can not use train mode with {name}"
 
             needs_sim, needs_lc = cls.get_requirements(options)
 
@@ -272,14 +264,14 @@ class Classifier(Task):
                 if opt_sim:
                     if not any([mask, mask_sim]):
                         Task.logger.debug(
-                            f"No optional sim masks set, all sim tasks included as dependendencies"
+                            "No optional sim masks set, all sim tasks included as dependendencies"
                         )
                         optional_sim_tasks = sim_tasks
                     else:
                         for s in sim_tasks:
-                            if mask_sim and mask_sim in s.name:
-                                optional_sim_tasks.append(s)
-                            elif mask and mask in s.name:
+                            if (mask_sim and mask_sim in s.name) or (
+                                mask and mask in s.name
+                            ):
                                 optional_sim_tasks.append(s)
                         if len(optional_sim_tasks) == 0:
                             Task.logger.warn(
@@ -294,14 +286,14 @@ class Classifier(Task):
                 if opt_lc:
                     if not any([mask, mask_fit]):
                         Task.logger.debug(
-                            f"No optional lcfit masks set, all lcfit tasks included as dependendencies"
+                            "No optional lcfit masks set, all lcfit tasks included as dependendencies"
                         )
                         optional_lcfit_tasks = lcfit_tasks
                     else:
                         for l in lcfit_tasks:
-                            if mask_fit and mask_fit in l.name:
-                                optional_lcfit_tasks.append(l)
-                            elif mask and mask in l.name:
+                            if (mask_fit and mask_fit in l.name) or (
+                                mask and mask in l.name
+                            ):
                                 optional_lcfit_tasks.append(l)
                             if len(optional_lcfit_tasks) == 0:
                                 Task.logger.warn(
@@ -329,16 +321,13 @@ class Classifier(Task):
                             combined_tasks.append((s, None))
                         if s is not None and s.name not in config["COMBINE_MASK"]:
                             regular_tasks.append([(s, None)])
-                runs = [combined_tasks] + regular_tasks
+                runs = [combined_tasks, *regular_tasks]
+            elif needs_lc:
+                runs = [[(l.dependencies[0], l)] for l in lcfit_tasks]
+            elif needs_sim:
+                runs = [[(s, None)] for s in sim_tasks]
             else:
-                if needs_lc:
-                    runs = [[(l.dependencies[0], l)] for l in lcfit_tasks]
-                elif needs_sim:
-                    runs = [[(s, None)] for s in sim_tasks]
-                else:
-                    Task.logger.warn(
-                        f"Classifier {name} does not need sims or fits. Wat."
-                    )
+                Task.logger.warn(f"Classifier {name} does not need sims or fits. Wat.")
 
             num_gen = 0
             mask = config.get("MASK", "")
@@ -388,15 +377,15 @@ class Classifier(Task):
                     for s in sim_deps:
                         if s is not None:
                             folders = s.output["sim_folders"]
-                            assert (
-                                len(folders) == 1
-                            ), f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            assert len(folders) == 1, (
+                                f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            )
                     for l in fit_deps:
                         if l is not None:
                             folders = l.output["fitres_dirs"]
-                            assert (
-                                len(folders) == 1
-                            ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            assert len(folders) == 1, (
+                                f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            )
 
                 deps = sim_deps + fit_deps + opt_deps
 
@@ -460,9 +449,9 @@ class Classifier(Task):
                                 # deps.append(t)
                                 extra = t.get_unique_name()
 
-                                assert isinstance(
-                                    t, cls
-                                ), f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+                                assert isinstance(t, cls), (
+                                    f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+                                )
 
                                 indexes = get_num_ranseed(sim_deps, fit_deps)
                                 for i in range(indexes):
@@ -480,7 +469,7 @@ class Classifier(Task):
                                         clas_name,
                                         clas_output_dir,
                                         config,
-                                        deps + [t],
+                                        [*deps, t],
                                         mode,
                                         options,
                                         index=i,

@@ -2,12 +2,13 @@ import os
 import shutil
 from collections import defaultdict
 
+import numpy as np
 import pandas as pd
 from astropy.io import fits
-import numpy as np
-from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs
+
 from pippin.task import Task
+from pippin.config import mkdirs, chown_dir
+from pippin.classifiers.classifier import Classifier
 
 
 class PerfectClassifier(Classifier):
@@ -46,7 +47,7 @@ class PerfectClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -68,7 +69,7 @@ class PerfectClassifier(Classifier):
     def get_unique_name(self):
         return self.name
 
-    def classify(self):
+    def classify(self) -> bool:
         new_hash = self.get_hash_from_string(
             self.name + f"{self.prob_ia}_{self.prob_cc}"
         )
@@ -110,22 +111,19 @@ class PerfectClassifier(Classifier):
                             dataframe = pd.DataFrame({cid: snid, name: prob})
                             dataframe[cid] = dataframe[cid].apply(str)
                             dataframe[cid] = dataframe[cid].str.strip()
-                            if df is None:
-                                df = dataframe
-                            else:
-                                df = pd.concat([df, dataframe])
-                    df.drop_duplicates(subset=cid, inplace=True)
+                            df = dataframe if df is None else pd.concat([df, dataframe])
+                    df = df.drop_duplicates(subset=cid)
 
                 self.logger.info(f"Saving probabilities to {self.output_file}")
                 df.to_csv(self.output_file, index=False, float_format="%0.4f")
                 chown_dir(self.output_dir)
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     f.write("SUCCESS")
                 self.save_new_hash(new_hash)
             except Exception as e:
                 self.logger.exception(e, exc_info=True)
                 self.passed = False
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     f.write("FAILED")
                 return False
         else:
@@ -134,10 +132,9 @@ class PerfectClassifier(Classifier):
         return True
 
     def _check_completion(self, squeue):
-        if not self.passed:
-            if os.path.exists(self.done_file):
-                with open(self.done_file) as f:
-                    self.passed = "SUCCESS" in f.read()
+        if not self.passed and os.path.exists(self.done_file):
+            with open(self.done_file, encoding="utf-8") as f:
+                self.passed = "SUCCESS" in f.read()
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self):

@@ -1,20 +1,21 @@
-import inspect
-import shutil
-import subprocess
 import os
+import shutil
+import inspect
 from pathlib import Path
+import subprocess
+
 import numpy as np
 
-from pippin.config import mkdirs, get_output_loc, get_data_loc, merge_dict
+from pippin.task import Task
+from pippin.config import mkdirs, merge_dict, get_data_loc, get_output_loc
 from pippin.create_cov import CreateCov
 from pippin.cosmofitters.cosmofit import CosmoFit
-from pippin.task import Task
 
 
 class CosmoMC(
     CosmoFit
 ):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """Run cosmomc given an ini file
+    """Run cosmomc given an ini file.
 
     CONFIGURATION
     =============
@@ -45,7 +46,7 @@ class CosmoMC(
 
     def __init__(
         self, name, output_dir, config, options, global_config, dependencies=None
-    ):
+    ) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = global_config
@@ -63,11 +64,11 @@ class CosmoMC(
             if self.create_cov_dep is not None
             else self.options.get("BLIND", False)
         )
-        assert isinstance(
-            self.blind, (bool, np.bool_)
-        ), "Blind should be set to a boolan value!"
+        assert isinstance(self.blind, (bool, np.bool_)), (
+            "Blind should be set to a boolan value!"
+        )
         self.ini_prefix = options.get("INI").replace(".ini", "")
-        self.static = self.ini_prefix.replace(".ini", "") in ["cmb_omw", "cmb_omol"]
+        self.static = self.ini_prefix.replace(".ini", "") in {"cmb_omw", "cmb_omol"}
         self.static_path = "cosmomc_static_chains/"
 
         if self.create_cov_dep is None:
@@ -138,7 +139,7 @@ class CosmoMC(
             "wnu": ["w", "nu"],
             "wwa": ["w", "wa"],
         }
-        if final not in ps.keys():
+        if final not in ps:
             self.fail_config(
                 f"The filename passed in ({self.ini_prefix}) needs to have format 'components_cosmology.ini', where the cosmology is omw, omol, wnu or wwa. Is this a custom file?"
             )
@@ -164,20 +165,19 @@ fi
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at f{self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "FAILURE" in f.read():
                     self.logger.error(
                         f"Done file reported failure. Check output log {self.logfile}"
                     )
                     return Task.FINISHED_FAILURE
-                else:
-                    return Task.FINISHED_SUCCESS
+                return Task.FINISHED_SUCCESS
         else:
             all_files = True
             for d in self.done_files:
                 df = os.path.join(self.output_dir, d)
                 if os.path.exists(df):
-                    with open(df) as f:
+                    with open(df, encoding="utf-8") as f:
                         if "FAILURE" in f.read():
                             self.logger.error(
                                 f"Done file {d} reported failure. Check output log {self.logfile}"
@@ -195,17 +195,16 @@ fi
                     if not os.path.exists(file):
                         self.logger.error(f"No paramnames file at {file}")
                         return Task.FINISHED_FAILURE
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     f.write("SUCCESS")
                 return Task.FINISHED_SUCCESS
-            else:
-                if os.path.exists(self.logfile):
-                    with open(self.logfile) as f:
-                        if "CANCELLED AT" in f.read():
-                            self.logger.debug(
-                                f"The job was cancelled! Check {self.logfile} for details"
-                            )
-                            return Task.FINISHED_FAILURE
+            if os.path.exists(self.logfile):
+                with open(self.logfile, encoding="utf-8") as f:
+                    if "CANCELLED AT" in f.read():
+                        self.logger.debug(
+                            f"The job was cancelled! Check {self.logfile} for details"
+                        )
+                        return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
     def get_ini_file(self):
@@ -223,21 +222,15 @@ fi
                 )
                 return None
             self.logger.debug(f"Reading in {path} to format")
-            with open(path) as f:
+            with open(path, encoding="utf-8") as f:
                 input_files.append(
-                    f.read().format(
-                        **{
-                            "path_to_cosmomc": self.path_to_cosmomc,
-                            "ini_dir": self.create_cov_dep.output["ini_dir"],
-                            "root_dir": self.chain_dir,
-                        }
-                    )
+                    f.read().format(path_to_cosmomc=self.path_to_cosmomc, ini_dir=self.create_cov_dep.output["ini_dir"], root_dir=self.chain_dir)
                 )
 
         self.logger.debug(f"Input Files: {input_files}")
         return input_files
 
-    def _run(self):
+    def _run(self) -> bool:
         if self.static:
             self.logger.info("CMB only constraints detected, copying static files")
 
@@ -245,22 +238,21 @@ fi
             if cosmomc_static_loc is None:
                 self.logger.error("Seems like we can't find the static chains...")
                 return False
+            new_hash = self.get_hash_from_string(cosmomc_static_loc)
+
+            if self._check_regenerate(new_hash):
+                self.logger.debug("Regenerating and copying static chains")
+                shutil.rmtree(self.chain_dir, ignore_errors=True)
+                shutil.copytree(cosmomc_static_loc, self.chain_dir)
+                for done_file in self.done_files:
+                    df = os.path.join(self.output_dir, done_file)
+                    with open(df, "w", encoding="utf-8") as f:
+                        f.write("SUCCESS")
+                self.save_new_hash(new_hash)
+
             else:
-                new_hash = self.get_hash_from_string(cosmomc_static_loc)
-
-                if self._check_regenerate(new_hash):
-                    self.logger.debug("Regenerating and copying static chains")
-                    shutil.rmtree(self.chain_dir, ignore_errors=True)
-                    shutil.copytree(cosmomc_static_loc, self.chain_dir)
-                    for done_file in self.done_files:
-                        df = os.path.join(self.output_dir, done_file)
-                        with open(df, "w") as f:
-                            f.write("SUCCESS")
-                    self.save_new_hash(new_hash)
-
-                else:
-                    self.should_be_done()
-                    self.logger.info("Hash check passed, not rerunning")
+                self.should_be_done()
+                self.logger.info("Hash check passed, not rerunning")
         else:
             ini_filecontents = self.get_ini_file()
             if ini_filecontents is None:
@@ -272,7 +264,7 @@ fi
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -313,11 +305,11 @@ fi
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(final_slurm)
             for file, content in zip(self.ini_files, ini_filecontents):
                 filepath = os.path.join(self.output_dir, file)
-                with open(filepath, "w") as f:
+                with open(filepath, "w", encoding="utf-8") as f:
                     f.write(content)
             mkdirs(self.chain_dir)
 
@@ -328,8 +320,8 @@ fi
                 new_data_dir = os.path.join(self.output_dir, d)
                 os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
-            self.logger.info(f"Submitting batch job for cosmomc")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            self.logger.info("Submitting batch job for cosmomc")
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir, check=False)
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
@@ -339,7 +331,7 @@ fi
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
-        def _get_cosmomc_dir(base_output_dir, stage_number, name):
+        def _get_cosmomc_dir(base_output_dir, stage_number, name) -> str:
             return f"{base_output_dir}/{stage_number}_COSMOFIT/COSMOMC/{name}"
 
         tasks = []
@@ -352,7 +344,7 @@ fi
 
             # Check if this is static. Could scan the folder, but dont have all the chains yet.
             # TODO: Update this when I have all the chains
-            if options.get("INI") in ["cmb_omw", "cmb_omol"]:
+            if options.get("INI") in {"cmb_omw", "cmb_omol"}:
                 a = CosmoMC(
                     cname,
                     _get_cosmomc_dir(base_output_dir, stage_number, cname),

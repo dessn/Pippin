@@ -1,22 +1,23 @@
-import yaml
+import os
+import gzip
+import stat
+import shutil
+import hashlib
 import inspect
 import logging
-import hashlib
-import os
-import shutil
-import stat
 import tarfile
-import gzip
+
+import yaml
 
 
-def compress_dir(output_filename, source_dir):
+def compress_dir(output_filename, source_dir) -> None:
     logging.info(f"Compressing {source_dir} to {output_filename}")
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
     shutil.rmtree(source_dir)
 
 
-def uncompress_dir(output_dir, source_filename):
+def uncompress_dir(output_dir, source_filename) -> None:
     logging.info(f"Uncompressing {source_filename} to {output_dir}")
     with tarfile.open(source_filename, "r:gz") as tar:
 
@@ -28,11 +29,12 @@ def uncompress_dir(output_dir, source_filename):
 
             return prefix == abs_directory
 
-        def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+        def safe_extract(tar, path=".", members=None, *, numeric_owner=False) -> None:
             for member in tar.getmembers():
                 member_path = os.path.join(path, member.name)
                 if not is_within_directory(path, member_path):
-                    raise Exception("Attempted Path Traversal in Tar File")
+                    msg = "Attempted Path Traversal in Tar File"
+                    raise Exception(msg)
 
             tar.extractall(path, members, numeric_owner=numeric_owner)
 
@@ -74,7 +76,7 @@ def get_config(initial_path=None, overwrites=None):
     else:
         filename = os.path.expandvars(initial_path)
     assert os.path.exists(filename), f"Config location {filename} cannot be found."
-    with open(filename, "r") as f:
+    with open(filename, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     print(f"Loaded in cfg from {filename}")
     if overwrites is not None:
@@ -95,7 +97,8 @@ def get_output_dir():
     if "$" in output_dir:
         output_dir = os.path.expandvars(output_dir)
         if "$" in output_dir:
-            raise ValueError(f"Could not resolve variable in path: {output_dir}")
+            msg = f"Could not resolve variable in path: {output_dir}"
+            raise ValueError(msg)
     if not output_dir.startswith("/"):
         output_dir = os.path.abspath(
             os.path.dirname(inspect.stack()[0][1]) + "/../" + output_dir
@@ -104,7 +107,7 @@ def get_output_dir():
 
 
 def read_yaml(path):
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f.read())
 
 
@@ -128,15 +131,14 @@ def get_data_loc(path, extra=None):
             logging.error(f"Got an absolute path that doesn't exist: {path}")
             return None
         return path
-    else:
-        for data_dir in data_dirs:
-            new_path = os.path.join(data_dir, path)
-            if os.path.exists(new_path):
-                return new_path
-        logging.error(
-            f"Unable to find relative path {path} when searching through the data directories: {data_dirs}"
-        )
-        return None
+    for data_dir in data_dirs:
+        new_path = os.path.join(data_dir, path)
+        if os.path.exists(new_path):
+            return new_path
+    logging.error(
+        f"Unable to find relative path {path} when searching through the data directories: {data_dirs}"
+    )
+    return None
 
 
 def get_output_loc(path):
@@ -144,8 +146,7 @@ def get_output_loc(path):
         path = os.path.expandvars(path)
     if path.startswith("/"):
         return path
-    else:
-        return os.path.join(get_output_dir(), path)
+    return os.path.join(get_output_dir(), path)
 
 
 def get_hash(input_string):
@@ -157,7 +158,7 @@ def get_logger():
     return logging.getLogger("pippin")
 
 
-def mkdirs(path):
+def mkdirs(path) -> None:
     # Do this layer by layer so we can chown correctly
     if not os.path.exists(path):
         parent = os.path.dirname(path)
@@ -167,7 +168,7 @@ def mkdirs(path):
         chown_dir(path)
 
 
-def copytree(src, dst, symlinks=False, ignore=None):
+def copytree(src, dst, symlinks=False, ignore=None) -> None:
     lst = os.listdir(src)
     if ignore:
         excl = ignore(src, lst)
@@ -191,11 +192,11 @@ def copytree(src, dst, symlinks=False, ignore=None):
             shutil.copy2(s, d)
 
 
-def chown_file(path):
+def chown_file(path) -> None:
     try:
         import grp
     except ModuleNotFoundError:
-        return None
+        return
 
     global_config = get_config()
     logger = get_logger()
@@ -207,11 +208,11 @@ def chown_file(path):
         logger.debug(f"Did not chown {path}")
 
 
-def chown_dir(directory, walk=True):
+def chown_dir(directory, walk=True) -> None:
     try:
         import grp
     except ModuleNotFoundError:
-        return None
+        return
 
     global_config = get_config()
     logger = get_logger()
@@ -252,16 +253,13 @@ def ensure_list(a):
 
 
 def generic_open(fpath, mode="r"):
-    """
-    Check that fpath exists, identify whether it is compressed or uncompressed, and open it
-    """
+    """Check that fpath exists, identify whether it is compressed or uncompressed, and open it."""
     fpath = get_data_loc(fpath)
     if not os.path.exists(fpath):
         logging.error(f"Path doesn't exist: {fpath}")
     if ".gz" in fpath:
         return gzip.open(fpath, mode)
-    else:
-        return open(fpath, mode)
+    return open(fpath, mode)
 
 
 if __name__ == "__main__":

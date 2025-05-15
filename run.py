@@ -1,38 +1,41 @@
-import argparse
 import os
-import yaml
-import logging
-import coloredlogs
-import signal
 import sys
+import signal
+import socket
+import logging
+import argparse
+import contextlib
+
+import yaml
+from colorama import init
+import coloredlogs
+
 from pippin.config import (
     mkdirs,
-    get_logger,
-    get_output_dir,
+    chown_dir,
     chown_file,
     get_config,
-    chown_dir,
+    get_logger,
+    get_output_dir,
 )
 from pippin.manager import Manager
-from colorama import init
-import socket
 
 
 class MessageStore(logging.Handler):
     store = None
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.store = {}
 
-    def emit(self, record):
+    def emit(self, record) -> None:
         l = record.levelname
         if l not in self.store:
             self.store[l] = []
         self.store[l].append(record)
 
     def get_warnings(self):
-        return self.store.get("WARNING", []) + []
+        return [*self.store.get("WARNING", [])]
 
     def get_errors(self):
         return self.store.get("CRITICAL", []) + self.store.get("ERROR", [])
@@ -47,7 +50,7 @@ def setup_logging(config_filename, logging_folder, args):
     NOTICE_LEVELV_NUM = 25
     logging.addLevelName(NOTICE_LEVELV_NUM, "NOTICE")
 
-    def notice(self, message, *args, **kws):
+    def notice(self, message, *args, **kws) -> None:
         if self.isEnabledFor(NOTICE_LEVELV_NUM):
             self._log(NOTICE_LEVELV_NUM, message, args, **kws)
 
@@ -84,7 +87,7 @@ def setup_logging(config_filename, logging_folder, args):
 
 
 def load_yaml(yaml_path):
-    with open(yaml_path, "r") as f:
+    with open(yaml_path, encoding="utf-8") as f:
         raw = f.read()
     logging.info("Preprocessing yaml")
     yaml_str = preprocess(raw)
@@ -119,19 +122,18 @@ def preprocess(raw):
             lines = preprocess_include(value, lines)
         else:
             logging.warning(f"Unknown preprocessing step: {name}, skipping")
-    yaml_str = "\n".join(lines)
-    return yaml_str
+    return "\n".join(lines)
 
 
 def preprocess_include(value, lines):
     include_path = os.path.abspath(os.path.expandvars(value[0]))
-    assert os.path.exists(
-        include_path
-    ), f"Attempting to include {include_path}, but file cannot be found."
-    with open(include_path, "r") as f:
+    assert os.path.exists(include_path), (
+        f"Attempting to include {include_path}, but file cannot be found."
+    )
+    with open(include_path, encoding="utf-8") as f:
         include_yaml = f.read()
     include_yaml = include_yaml.split("\n")
-    index = [i for i, l in enumerate(lines) if value[0] in l][0]
+    index = next(i for i, l in enumerate(lines) if value[0] in l)
     info = [f"# Anchors included from {include_path}"]
     return lines[:index] + info + include_yaml + lines[index + 1 :]
 
@@ -173,7 +175,7 @@ def run(args):
         chown_dir(logging_folder, walk=args.permission)
 
     if args.permission:
-        return
+        return None
 
     message_store, logging_filename = setup_logging(
         config_filename, logging_folder, args
@@ -181,9 +183,9 @@ def run(args):
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
-        assert (
-            d is not None
-        ), "Data directory is none, which means it failed to resolve. Check the error message above for why."
+        assert d is not None, (
+            "Data directory is none, which means it failed to resolve. Check the error message above for why."
+        )
 
     logging.info(
         f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node."
@@ -192,11 +194,11 @@ def run(args):
     manager = Manager(config_filename, yaml_path, config_raw, config, message_store)
 
     # Gracefully hand Ctrl-c
-    def handler(signum, frame):
+    def handler(signum, frame) -> None:
         logging.error("Ctrl-c was pressed.")
         logging.warning("All remaining tasks will be killed and their hash reset")
         manager.kill_remaining_tasks()
-        exit(1)
+        sys.exit(1)
 
     signal.signal(signal.SIGINT, handler)
 
@@ -212,7 +214,7 @@ def run(args):
     return manager
 
 
-def get_syntax(task):
+def get_syntax(task) -> None:
     taskname = [
         "DATAPREP",
         "SIM",
@@ -227,18 +229,17 @@ def get_syntax(task):
     ]
     if task == "options":
         print(f"Possible tasks are: ({[(i, task) for i, task in enumerate(taskname)]})")
-        return None
+        return
 
-    try:
+    with contextlib.suppress(Exception):
         task = taskname[int(task)]
-    except:
-        pass
 
     assert task in taskname, f"Unknown task {task}"
 
     base = os.path.dirname(os.path.realpath(__file__))
-    with open(f"{base}/docs/src/tasks/{task.lower()}.md", "r") as f:
+    with open(f"{base}/docs/src/tasks/{task.lower()}.md", encoding="utf-8") as f:
         print(f.read())
+
 
 def get_args(test=False):
     # Set up command line arguments
@@ -326,7 +327,7 @@ def get_args(test=False):
         s = args.syntax
         get_syntax(s)
         return None
-    elif not test:
+    if not test:
         if len(args.yaml) == 0:
             parser.error("You must specify a yaml file!")
         else:
@@ -341,4 +342,5 @@ if __name__ == "__main__":
         manager = run(args)
         sys.stdout.flush()
         if manager.num_errs > 0:
-            raise (ValueError(f"{manager.num_errs} Errors found"))
+            msg = f"{manager.num_errs} Errors found"
+            raise (ValueError(msg))

@@ -1,0 +1,156 @@
+[project]
+name = "pippin"
+version = "1.0.0"
+description = "Pipeline for photometric SN analysis"
+readme = "README.md"
+authors = [
+    { name = "Patrick Armstrong", email = "patrick.james.1998@gmail.com" }
+]
+requires-python = ">=3.7"
+dependencies = [
+    "astropy>=4.3.1",
+    "chainconsumer>=0.34.0",
+    "colorama>=0.4.6",
+    "coloredlogs>=15.0.1",
+    "matplotlib>=3.5.3",
+    "numpy>=1.21.6",
+    "pandas>=1.1.5",
+    "pyyaml>=6.0.1",
+    "scikit-learn>=1.0.2",
+    "scipy>=1.7.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+addopts = ["--import-mode=importlib", "--color=yes"]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.basedpyright]
+# Enable all type checks
+typeCheckingMode = "all"
+
+# Type Evaluation Settings
+analyzeUnannotatedFunctions = false # Useful, but very slow for large projects
+deprecateTypingAliases = true
+strictGenericNarrowing = true
+strictParameterNoneValue = true
+
+# Don't report unknown types
+# Otherwise packages which are untyped blow up your diagnostics
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownMemberType = false
+reportUnknownParameterType = false
+reportUnknownVariableType = false
+
+# Don't report unecessary type casts
+reportUnnecessaryCast = false
+
+# Don't report unused call results
+# Stops errors around functions with side-effects
+# Like matplotlib
+reportUnusedCallResult = false
+
+# Don't report when objects are of type Any
+reportAny = false
+reportExplicitAny = false
+
+[tool.ruff]
+# Enumerate all fixed violations.
+show-fixes = true
+
+# Disable application of unsafe fixes.
+unsafe-fixes = true
+
+# --- Format: Ruff ---
+[tool.ruff.format]
+# Enable preview style formatting
+preview = true
+
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
+
+[tool.ruff.lint]
+# Enable preview features
+preview = true
+
+# Show all lint rules (except preview) by default
+select = ["ALL"]
+
+# Rules to ignore
+ignore = [
+    "COM812",  # Missing trailing comma, already handled by formatter
+    "E501",    # Line too long 
+    "ERA001",  # Found commented out code
+    "G004",    # Logging statement uses f-string
+    "N999",    # Invalid module name
+    "PLR0913", # Too many arguments in function definition (_ > 5) 
+    "PLR0917", # Too many positional arguments (_/5) 
+    "ANN401",  # Allow *args: Any and **kwargs: Any
+    "UP037",   # Don't remove quotes from type annotations
+    "TC008",   # Don't remove quotes from type aliases
+    "F722",    # Ignore forward annotation syntax errors
+]
+
+per-file-ignores = { "src/suPAErnova/configs/**.py" = [
+    "TC001", # Move first party typing-only imports into a TYPE_CHECKING block. Breaks pydantic
+    "TC002", # Move third party typing-only imports into a TYPE_CHECKING block. Breaks pydantic
+    "TC003", # Move standard library typing-only imports into a TYPE_CHECKING block. Breaks pydantic
+], "tests/**/*.py" = [
+    "S101", # Don't warn when assert is used in tests
+] }
+
+
+# Consider all rules fixable
+fixable = ["ALL"]
+
+# Except these rules
+unfixable = [
+    "F401", # unused-import, will remove unused imports
+    "F841", # unused-variable, will remove unused variables not prepended with an `_`
+    "T201", # Print statements
+]
+
+# --- Flake8 ---
+# Copyright Author
+[tool.ruff.lint.flake8-copyright]
+author = "Patrick Armstrong"
+
+# Conventions for `from _ import _ as _`
+[tool.ruff.lint.flake8-import-conventions.aliases]
+matplotlib = "mpl"
+"matplotlib.cm" = "cm"
+"matplotlib.pyplot" = "plt"
+numpy = "np"
+pandas = "pd"
+pytorch = "tch"
+tensorflow = "tf"
+"tensorflow.keras" = "ks"
+"tensorflow_probability" = "tfp"
+
+# Type Checking
+[tool.ruff.lint.flake8-type-checking]
+# Move type-specific imports into an if statement
+# By placing some type annotations in quotes
+quote-annotations = true
+# Be strict with type-specific imports
+strict = true
+
+# --- ISort ---
+[tool.ruff.lint.isort]
+case-sensitive = true
+combine-as-imports = true
+force-sort-within-sections = true
+force-wrap-aliases = true
+from-first = true
+length-sort = true
+length-sort-straight = true
+
+# --- PyDocStyle ---
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+ignore-decorators = ["typing.overload"]

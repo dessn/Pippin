@@ -1,20 +1,21 @@
-import numpy as np
-import yaml
-from chainconsumer import ChainConsumer
-import pandas as pd
-import sys
-import argparse
 import os
+import sys
 import logging
+import argparse
+
+import yaml
+import numpy as np
+import pandas as pd
+from chainconsumer import ChainConsumer
 
 
-def fail(msg, condition=True):
+def fail(msg, condition=True) -> None:
     if condition:
         logging.error(msg)
         raise ValueError(msg)
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -31,7 +32,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["COSMOMC"])
 
@@ -53,8 +54,7 @@ def load_output(basename):
             df.iloc[:, 2:].to_numpy(),
             list(df.columns[2:]),
         )
-    else:
-        return None
+    return None
 
 
 if __name__ == "__main__":
@@ -86,10 +86,7 @@ if __name__ == "__main__":
                 else:
                     name = os.path.basename(basename).replace("_", " ")
                 # Do smarter biascor
-                if ")" in name:
-                    key = name.split(")", 1)[1]
-                else:
-                    key = name
+                key = name.split(")", 1)[1] if ")" in name else name
                 if key not in biases:
                     biases[key] = b
                     b += 1
@@ -130,4 +127,4 @@ if __name__ == "__main__":
         logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
-        raise e
+        raise

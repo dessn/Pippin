@@ -2,12 +2,13 @@ import os
 import shutil
 import subprocess
 
+import numpy as np
 import pandas as pd
 from astropy.io import fits
-import numpy as np
-from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs
+
 from pippin.task import Task
+from pippin.config import mkdirs, chown_dir
+from pippin.classifiers.classifier import Classifier
 
 
 class UnityClassifier(Classifier):
@@ -43,7 +44,7 @@ class UnityClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -60,10 +61,10 @@ class UnityClassifier(Classifier):
         self.output_file = os.path.join(self.output_dir, "predictions.csv")
         self.output.update({"predictions_filename": self.output_file})
 
-    def get_unique_name(self):
+    def get_unique_name(self) -> str:
         return "UNITY"
 
-    def classify(self):
+    def classify(self) -> bool:
         new_hash = self.get_hash_from_string(self.name)
         if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -87,41 +88,39 @@ class UnityClassifier(Classifier):
                     cmd = "grep --exclude-dir=* SNID: * | awk -F ':' '{print $3}'"
                     self.logger.debug(f"Running command   {cmd}")
                     process = subprocess.run(
-                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                        cmd, capture_output=True, cwd=phot_dir, shell=True, check=False
                     )
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
 
                     snid = [x.strip() for x in output]
                     df = pd.DataFrame({cid: snid, name: np.ones(len(snid))})
-                    df.drop_duplicates(subset=cid, inplace=True)
+                    df = df.drop_duplicates(subset=cid)
 
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
                             data = hdul[1].data
                             snid = np.array(data.field("SNID"))
-                            dataframe = pd.DataFrame(
-                                {cid: snid, name: np.ones(snid.shape)}
-                            )
+                            dataframe = pd.DataFrame({
+                                cid: snid,
+                                name: np.ones(snid.shape),
+                            })
                             dataframe[cid] = dataframe[cid].apply(str)
                             dataframe[cid] = dataframe[cid].str.strip()
-                            if df is None:
-                                df = dataframe
-                            else:
-                                df = pd.concat([df, dataframe])
-                    df.drop_duplicates(subset=cid, inplace=True)
+                            df = dataframe if df is None else pd.concat([df, dataframe])
+                    df = df.drop_duplicates(subset=cid)
 
                 self.logger.info(f"Saving probabilities to {self.output_file}")
                 df.to_csv(self.output_file, index=False, float_format="%0.4f")
                 chown_dir(self.output_dir)
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     f.write("SUCCESS")
                 self.save_new_hash(new_hash)
             except Exception as e:
                 self.logger.exception(e, exc_info=True)
                 self.passed = False
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     f.write("FAILED")
                 return False
         else:
@@ -131,10 +130,9 @@ class UnityClassifier(Classifier):
         return True
 
     def _check_completion(self, squeue):
-        if not self.passed:
-            if os.path.exists(self.done_file):
-                with open(self.done_file) as f:
-                    self.passed = "SUCCESS" in f.read()
+        if not self.passed and os.path.exists(self.done_file):
+            with open(self.done_file, encoding="utf-8") as f:
+                self.passed = "SUCCESS" in f.read()
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self):

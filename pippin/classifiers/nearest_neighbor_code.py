@@ -1,18 +1,18 @@
+import os
+import sys
+import pickle
+import logging
 import argparse
+
 import numpy as np
 import pandas as pd
-import logging
-import sys
-import os
-import pickle
-
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -68,13 +68,11 @@ def get_args():
     parser.add_argument(
         "-n", "--name", help="Column name for probability", type=str, default="PROB"
     )
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def sanitise_args(args):
-    """Set up defaults and do some sanity checks"""
-
+    """Set up defaults and do some sanity checks."""
     if args.features is None:
         args.features = [
             "zHD",
@@ -95,19 +93,19 @@ def sanitise_args(args):
     logging.info(f"Input fitres_file is {args.fitres_file}")
     assert os.path.exists(args.fitres_file), f"File {args.fitres_file} does not exist"
 
-    assert (
-        " " not in args.name
-    ), f"Prob column name '{args.name}' should not have spaces"
+    assert " " not in args.name, (
+        f"Prob column name '{args.name}' should not have spaces"
+    )
     return args
 
 
 def get_features(filename, features, types):
     df = pd.read_csv(filename, delim_whitespace=True, comment="#")
     for f in features:
-        assert (
-            f in df.columns
-        ), f"Features {f} is not in DataFrame columns {list(df.columns)}"
-    assert "TYPE" in df.columns, f"DataFrame does not have a TYPE column!"
+        assert f in df.columns, (
+            f"Features {f} is not in DataFrame columns {list(df.columns)}"
+        )
+    assert "TYPE" in df.columns, "DataFrame does not have a TYPE column!"
 
     X = df[features].values
     y = np.isin(df["TYPE"].values, types)
@@ -115,7 +113,7 @@ def get_features(filename, features, types):
     return df["CID"], X, y
 
 
-def train(args):
+def train(args) -> None:
     args = sanitise_args(args)
     logging.info(f"Training model on file {args.fitres_file}")
 
@@ -125,12 +123,10 @@ def train(args):
         X, y, stratify=y, test_size=0.05, random_state=0
     )
 
-    clf = Pipeline(
-        [
-            ("scaler", StandardScaler()),
-            ("knn", KNeighborsClassifier(n_neighbors=50, algorithm="kd_tree")),
-        ]
-    )
+    clf = Pipeline([
+        ("scaler", StandardScaler()),
+        ("knn", KNeighborsClassifier(n_neighbors=50, algorithm="kd_tree")),
+    ])
 
     logging.info(f"Training NN on feature matrix {X.shape}")
     clf.fit(X_train, y_train)
@@ -143,7 +139,7 @@ def train(args):
     logging.info(f"Saved trained model out to {args.model}")
 
 
-def predict(args):
+def predict(args) -> None:
     args = sanitise_args(args)
     logging.info(
         f"Predicting model on file {args.fitres_file} using pickle {args.model}"
@@ -171,9 +167,9 @@ if __name__ == "__main__":
         else:
             train(args)
 
-        with open(args.done_file, "w") as f:
+        with open(args.done_file, "w", encoding="utf-8") as f:
             f.write("SUCCESS")
     except Exception as e:
         logging.exception(e, exc_info=True)
-        with open(args.done_file, "w") as f:
+        with open(args.done_file, "w", encoding="utf-8") as f:
             f.write("FAILURE")

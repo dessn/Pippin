@@ -1,21 +1,24 @@
-import logging
-import shutil
+import os
 from abc import ABC, abstractmethod
+import sys
+import shutil
+from typing import NoReturn
+import logging
+import tarfile
+import datetime
+
+import yaml
+import numpy as np
+
 from pippin.config import (
-    get_logger,
     get_hash,
-    ensure_list,
-    get_data_loc,
     read_yaml,
+    get_logger,
+    ensure_list,
     compress_dir,
+    get_data_loc,
     uncompress_dir,
 )
-import tarfile
-import os
-import datetime
-import numpy as np
-import yaml
-import sys
 
 sys.setrecursionlimit(10000)
 
@@ -27,7 +30,7 @@ class Task(ABC):
 
     def __init__(
         self, name, output_dir, dependencies=None, config=None, done_file="done.txt"
-    ):
+    ) -> None:
         self.name = name
         self.output_dir = output_dir
         self.num_jobs = 1
@@ -114,7 +117,7 @@ class Task(ABC):
                 self.logger.debug(
                     f"External config file path resolved to {self.external}"
                 )
-                with open(self.external, "r") as f:
+                with open(self.external, encoding="utf-8") as f:
                     external_config = yaml.load(f, Loader=yaml.Loader)
                     conf = external_config.get("CONFIG", {})
                     conf.update(self.config)
@@ -140,40 +143,38 @@ class Task(ABC):
         self.force_refresh = False
         self.force_ignore = False
 
-        self.output.update(
-            {
-                "name": name,
-                "output_dir": output_dir,
-                "hash_file": self.hash_file,
-                "done_file": self.done_file,
-            }
-        )
+        self.output.update({
+            "name": name,
+            "output_dir": output_dir,
+            "hash_file": self.hash_file,
+            "done_file": self.done_file,
+        })
         self.config_file = os.path.join(output_dir, "config.yml")
 
-    def add_dependent(self, task):
+    def add_dependent(self, task) -> None:
         self.dependents.append(task)
 
-    def set_force_refresh(self, force_refresh):
+    def set_force_refresh(self, force_refresh) -> None:
         self.force_refresh = force_refresh
 
-    def set_force_ignore(self, force_ignore):
+    def set_force_ignore(self, force_ignore) -> None:
         self.force_ignore = force_ignore
 
-    def set_setup(self, setup):
+    def set_setup(self, setup) -> None:
         self.task_setup = setup
 
-    def set_sbatch_cpu_header(self, header):
+    def set_sbatch_cpu_header(self, header) -> None:
         self.logger.debug("Set cpu header")
         self.sbatch_cpu_header = header
 
-    def set_sbatch_gpu_header(self, header):
+    def set_sbatch_gpu_header(self, header) -> None:
         self.logger.debug("Set gpu header")
         self.sbatch_gpu_header = header
 
     def update_setup(self, setup_dict, task_setup):
         return task_setup.format(**setup_dict)
 
-    def update_header(self, header_dict):
+    def update_header(self, header_dict) -> None:
         for key, value in header_dict.items():
             if key in self.sbatch_header:
                 self.sbatch_header = self.sbatch_header.replace(key, str(value))
@@ -186,12 +187,13 @@ class Task(ABC):
 
     def clean_header(self, header):
         lines = header.split("\n")
-        mask = lambda x: (len(x) > 0) and (x[0] == "#") and ("Sxxx" not in x)
-        lines = filter(mask, lines)
-        header = "\n".join(lines)
-        return header
 
-    def compress(self):
+        def mask(x):
+            return (len(x) > 0) and (x[0] == "#") and ("Sxxx" not in x)
+        lines = filter(mask, lines)
+        return "\n".join(lines)
+
+    def compress(self) -> None:
         if os.path.exists(self.output_dir):
             output_file = self.output_dir + ".tar.gz"
             compress_dir(output_file, self.output_dir)
@@ -200,7 +202,7 @@ class Task(ABC):
                 output_file = t.output_dir + ".tar.gz"
                 compress_dir(output_file, t.output_dir)
 
-    def uncompress(self):
+    def uncompress(self) -> None:
         source_file = self.output_dir + ".tar.gz"
         if os.path.exists(source_file):
             uncompress_dir(os.path.dirname(self.output_dir), source_file)
@@ -209,7 +211,7 @@ class Task(ABC):
             if os.path.exists(source_file):
                 uncompress_dir(os.path.dirname(t.output_dir), source_file)
 
-    def _check_regenerate(self, new_hash):
+    def _check_regenerate(self, new_hash) -> bool:
         hash_are_different = new_hash != self.get_old_hash()
 
         if self.force_ignore:
@@ -222,32 +224,29 @@ class Task(ABC):
                     "Hashes agree and force_ignore is set, returning regenerate=False"
                 )
             return False
-        elif self.force_refresh:
+        if self.force_refresh:
             self.logger.debug("Force refresh is set, returning regenerate=True")
             return True
-        else:
-            if hash_are_different:
-                self.logger.debug(f"Hashes are different, regenerating")
-                return True
-            else:
-                self.logger.debug(f"Hashes are the same, not regenerating")
-                return False
+        if hash_are_different:
+            self.logger.debug("Hashes are different, regenerating")
+            return True
+        self.logger.debug("Hashes are the same, not regenerating")
+        return False
 
-    def write_config(self):
+    def write_config(self) -> None:
         content = {"CONFIG": self.config, "OUTPUT": self.output}
-        with open(self.config_file, "w") as f:
+        with open(self.config_file, "w", encoding="utf-8") as f:
             yaml.dump(content, f, sort_keys=False)
 
     def load_config(self):
-        with open(self.config_file, "r") as f:
-            content = yaml.safe_load(f)
-            return content
+        with open(self.config_file, encoding="utf-8") as f:
+            return yaml.safe_load(f)
 
-    def clear_config(self):
+    def clear_config(self) -> None:
         if os.path.exists(self.config_file):
             os.remove(self.config_file)
 
-    def clear_hash(self):
+    def clear_hash(self) -> None:
         if os.path.exists(self.hash_file):
             ext = os.path.splitext(self.hash_file)
             old_hash_path = os.path.join(ext[0] + "_old" + ext[-1])
@@ -269,60 +268,58 @@ class Task(ABC):
                     f"No more waiting, there are no slurm jobs active that match {match}! Debug output dir {self.output_dir}"
                 )
                 return Task.FINISHED_FAILURE
-            elif self.num_empty > 1 and self.num_empty > self.display_threshold:
+            if self.num_empty > 1 and self.num_empty > self.display_threshold:
                 self.logger.warning(
-                    f"Task {str(self)} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}"
+                    f"Task {self!s} has no match for {match} in squeue, warning {self.num_empty}/{self.num_empty_threshold}"
                 )
             return 0
         return num_jobs
 
-    def should_be_done(self):
+    def should_be_done(self) -> None:
         self.fresh_run = False
 
-    def set_stage(self, stage):
+    def set_stage(self, stage) -> None:
         self.stage = stage
 
     def get_old_hash(self, quiet=False, required=False):
         if os.path.exists(self.hash_file):
-            with open(self.hash_file, "r") as f:
+            with open(self.hash_file, encoding="utf-8") as f:
                 old_hash = f.read().strip()
                 if not quiet:
                     self.logger.debug(f"Previous result found, hash is {old_hash}")
                 return old_hash
+        elif required:
+            self.logger.error(f"No hash found for {self} in {self.hash_file}")
         else:
-            if required:
-                self.logger.error(f"No hash found for {self} in {self.hash_file}")
-            else:
-                self.logger.debug(f"No hash found for {self}")
+            self.logger.debug(f"No hash found for {self}")
         return "_NONE_"
 
     def get_hash_from_files(self, output_files):
         string_to_hash = ""
         for file in output_files:
-            with open(file, "r") as f:
+            with open(file, encoding="utf-8") as f:
                 string_to_hash += f.read()
-        new_hash = self.get_hash_from_string(string_to_hash)
-        return new_hash
+        return self.get_hash_from_string(string_to_hash)
 
     def get_hash_from_string(self, string_to_hash):
-        hashes = sorted(
-            [dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies]
-        )
+        hashes = sorted([
+            dep.get_old_hash(quiet=True, required=True) for dep in self.dependencies
+        ])
         string_to_hash += " ".join(hashes)
         new_hash = get_hash(string_to_hash)
         self.logger.debug(f"Current hash set to {new_hash}")
         return new_hash
 
-    def save_new_hash(self, new_hash):
-        with open(self.hash_file, "w") as f:
+    def save_new_hash(self, new_hash) -> None:
+        with open(self.hash_file, "w", encoding="utf-8") as f:
             f.write(str(new_hash))
             self.logger.debug(f"New hash {new_hash}")
             self.logger.debug(f"New hash saved to {self.hash_file}")
 
-    def set_num_jobs(self, num_jobs):
+    def set_num_jobs(self, num_jobs) -> None:
         self.num_jobs = num_jobs
 
-    def add_dependency(self, task):
+    def add_dependency(self, task) -> None:
         self.dependencies.append(task)
 
     def run(self):
@@ -361,15 +358,15 @@ class Task(ABC):
         return self._run()
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
-        assert (
-            len(error_match) >= 1
-        ), "You need to specify what string to search for. I have nothing."
+        assert len(error_match) >= 1, (
+            "You need to specify what string to search for. I have nothing."
+        )
         found = False
         if not os.path.exists(path):
             self.logger.warning(f"Note, expected log path {path} does not exist")
             return False
 
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             for i, line in enumerate(f.read().splitlines()):
                 error_found = np.any([e in line for e in error_match])
                 if error_found:
@@ -415,9 +412,8 @@ class Task(ABC):
                 mask = ""
             else:
                 return []
-        if isinstance(mask, str):
-            if mask == "*":
-                mask = ""
+        if isinstance(mask, str) and mask == "*":
+            mask = ""
         mask = ensure_list(mask)
 
         matching_deps = [d for d in deps if any(x in d.name for x in mask)]
@@ -442,28 +438,28 @@ class Task(ABC):
 
     @abstractmethod
     def _run(self):
-        """Execute the primary function of the task
+        """Execute the primary function of the task.
 
         :param force_refresh: to force refresh and rerun - do not pass hash checks
         :return: true or false if the job launched successfully
         """
-        pass
 
     @staticmethod
     def get_task_of_type(tasks, *cls):
         return [t for t in tasks if isinstance(t, tuple(cls))]
 
     @staticmethod
-    def fail_config(message):
+    def fail_config(message) -> NoReturn:
         Task.logger.error(message)
-        raise ValueError(f"Task failed config")
+        msg = "Task failed config"
+        raise ValueError(msg)
 
     @staticmethod
     @abstractmethod
     def get_tasks(
         config, prior_tasks, base_output_dir, stage_number, prefix, global_config
-    ):
-        raise NotImplementedError()
+    ) -> NoReturn:
+        raise NotImplementedError
 
     def get_wall_time_str(self):
         if self.end_time is not None and self.start_time is not None:
@@ -478,7 +474,7 @@ class Task(ABC):
         :return: Task.FINISHED_SUCCESS, Task.FNISHED_FAILURE or the number of jobs still running
         """
         result = self._check_completion(squeue)
-        if result in [Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE]:
+        if result in {Task.FINISHED_SUCCESS, Task.FINISHED_FAILURE}:
             if os.path.exists(self.done_file):
                 self.end_time = os.path.getmtime(self.done_file)
                 if self.start_time is None and os.path.exists(self.hash_file):
@@ -521,14 +517,10 @@ class Task(ABC):
         Such as the location of a trained model or output files.
         :param squeue:
         """
-        pass
 
-    def __str__(self):
+    def __str__(self) -> str:
         wall_time = self.get_wall_time_str()
-        if wall_time is not None:
-            extra = f"wall time {wall_time}, "
-        else:
-            extra = ""
+        extra = f"wall time {wall_time}, " if wall_time is not None else ""
         if len(self.dependencies) > 5:
             deps = f"{[d.name for d in self.dependencies[:5]]} + {len(self.dependencies) - 5} more deps"
         else:
@@ -536,10 +528,9 @@ class Task(ABC):
 
         if self.external is None:
             return f"{self.__class__.__name__} {self.name} task ({extra}{self.num_jobs} jobs, deps {deps})"
-        else:
-            return f"{self.__class__.__name__} {self.name} task (EXTERNAL JOB, deps {deps})"
+        return f"{self.__class__.__name__} {self.name} task (EXTERNAL JOB, deps {deps})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
     def get_dep(self, *clss, fail=False):
@@ -548,7 +539,8 @@ class Task(ABC):
                 if isinstance(d, cls):
                     return d
         if fail:
-            raise ValueError(f"No deps have class of type {clss}")
+            msg = f"No deps have class of type {clss}"
+            raise ValueError(msg)
         return None
 
     def get_deps(self, *clss):

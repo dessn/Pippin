@@ -1,16 +1,17 @@
+import sys
+import logging
+import argparse
+
+import yaml
 import numpy as np
 import pandas as pd
-import sys
-import argparse
-import logging
-import matplotlib.pyplot as plt
-import yaml
-from scipy.stats import binned_statistic, moment
+from scipy.stats import moment, binned_statistic
 from scipy.ndimage import gaussian_filter
+import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -28,7 +29,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["LCFIT"])
     if config.get("FIELDS") is None:
@@ -44,7 +45,7 @@ def load_file(file):
     return pd.read_csv(file)
 
 
-def plot_efficiency(data_all, sims, fields):
+def plot_efficiency(data_all, sims, fields) -> None:
     for i, sim in enumerate(sims):
         fig, axes = plt.subplots(
             len(fields), 3, figsize=(12, 1 + 2 * len(fields)), squeeze=False
@@ -67,8 +68,8 @@ def plot_efficiency(data_all, sims, fields):
                     title = title[:20] + "..."
                 ax.set_title(title)
 
-                minv = min([x[c].quantile(0.01) for x in [data, s]])
-                maxv = max([x[c].quantile(0.99) for x in [data, s]])
+                minv = min(x[c].quantile(0.01) for x in [data, s])
+                maxv = max(x[c].quantile(0.99) for x in [data, s])
                 bins2 = np.linspace(minv, maxv, 200)  # Keep binning uniform.
                 bc = 0.5 * (bins[1:] + bins[:-1])
                 bc2 = 0.5 * (bins2[1:] + bins2[:-1])
@@ -89,9 +90,9 @@ def plot_efficiency(data_all, sims, fields):
                 err_sim = np.sqrt(hist_sim)
 
                 ratio = hist_data / hist_sim
-                ratio = ratio / ratio.max()
+                ratio /= ratio.max()
                 ratio2 = hist_data2 / hist_sim2
-                ratio2 = ratio2 / ratio2.max()
+                ratio2 /= ratio2.max()
 
                 ratio3 = np.concatenate((ratio2, np.zeros(100)))
                 bc3 = interp1d(
@@ -101,22 +102,20 @@ def plot_efficiency(data_all, sims, fields):
                     fill_value="extrapolate",
                 )(np.arange(bc2.size + 20))
                 smoothed_ratio = gaussian_filter(ratio3, sigma=4, mode="nearest")[:-80]
-                smoothed_ratio = smoothed_ratio / smoothed_ratio.max()
+                smoothed_ratio /= smoothed_ratio.max()
 
                 err = (
                     np.sqrt((err_data / hist_data) ** 2 + (err_sim / hist_sim) ** 2)
                     * ratio
                 )
 
-                ddf = pd.DataFrame(
-                    {
-                        c: bc,
-                        "Ndata": hist_data,
-                        "Nsim": hist_sim,
-                        "eff": ratio,
-                        "eff_err": err,
-                    }
-                )
+                ddf = pd.DataFrame({
+                    c: bc,
+                    "Ndata": hist_data,
+                    "Nsim": hist_sim,
+                    "eff": ratio,
+                    "eff_err": err,
+                })
                 ddf.to_csv(f"eff_{c}.csv", index=False, float_format="%0.4f")
 
                 ax.plot(bc, ratio, linewidth=0.5)
@@ -146,7 +145,7 @@ def plot_efficiency(data_all, sims, fields):
         )
 
 
-def save_efficiency_file(field_eff, fields):
+def save_efficiency_file(field_eff, fields) -> None:
     labels = field_eff.keys()
     name_map = {
         "HOST_MAG_i": "i_obs",
@@ -156,21 +155,20 @@ def save_efficiency_file(field_eff, fields):
         "zHD": "ZTRUE",
     }
     for c in labels:
-        with open(f"efficiency_{c}.dat", "w") as f:
-            header = f"OPT_EXTRAP: 1\n\n"
+        with open(f"efficiency_{c}.dat", "w", encoding="utf-8") as f:
+            header = "OPT_EXTRAP: 1\n\n"
             f.write(header)
 
             for field, (xs, ys) in zip(fields, field_eff[c]):
-                header2 = f"""FIELDLIST: {'+'.join(field)}
+                header2 = f"""FIELDLIST: {"+".join(field)}
 VARNAMES: {name_map[c]} HOSTEFF
 """
                 f.write(header2)
-                for x, y in zip(xs, ys):
-                    f.write(f"HOSTEFF:  {x:7.2f} {y:8.3f}\n")
+                f.writelines(f"HOSTEFF:  {x:7.2f} {y:8.3f}\n" for x, y in zip(xs, ys))
                 f.write("ENDMAP:\n\n")
 
 
-def plot_efficiency2d(data_all, sims, fields):
+def plot_efficiency2d(data_all, sims, fields) -> None:
     from mpl_toolkits.axes_grid1 import make_axes_locatable
 
     for i, sim in enumerate(sims):
@@ -187,10 +185,10 @@ def plot_efficiency2d(data_all, sims, fields):
 
             threshold = 1
 
-            min_i = min([x[ci].quantile(0.01) for x in [data, s]])
-            max_i = max([x[ci].quantile(0.99) for x in [data, s]])
-            min_r = min([x[cr].quantile(0.01) for x in [data, s]])
-            max_r = max([x[cr].quantile(0.99) for x in [data, s]])
+            min_i = min(x[ci].quantile(0.01) for x in [data, s])
+            max_i = max(x[ci].quantile(0.99) for x in [data, s])
+            min_r = min(x[cr].quantile(0.01) for x in [data, s])
+            max_r = max(x[cr].quantile(0.99) for x in [data, s])
 
             bins_i = np.linspace(min_i, max_i, 16)
             bins_r = np.linspace(min_r, max_r, 4)
@@ -244,7 +242,7 @@ def get_means_and_errors(x, y, bins):
         x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(x.size)
     )
 
-    std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
+    std, *_ = binned_statistic(x, y, bins=bins, statistic=np.std)
     std_err, *_ = binned_statistic(
         x,
         y,
@@ -272,18 +270,17 @@ if __name__ == "__main__":
 
         if "HOST_MAG_i" not in sim_dfs[0].columns:
             logging.info("HOST_MAG_i not in output fitres, not computing efficiencies")
+        elif len(data_dfs) > 1:
+            logging.info(
+                "Please specify only one data file if you want to calculate efficiency"
+            )
         else:
-            if len(data_dfs) > 1:
-                logging.info(
-                    "Please specify only one data file if you want to calculate efficiency"
-                )
-            else:
-                for d in data_dfs + sim_dfs:
-                    d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
-                plot_efficiency(data_dfs[0], sim_dfs, args["FIELDS"])
+            for d in data_dfs + sim_dfs:
+                d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
+            plot_efficiency(data_dfs[0], sim_dfs, args["FIELDS"])
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
 
     except Exception as e:
         logging.exception(e, exc_info=True)
-        raise e
+        raise

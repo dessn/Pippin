@@ -1,15 +1,16 @@
-import subprocess
 import os
+import glob
 import shutil
 import tempfile
-import glob
-from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs, get_output_loc, copytree
+import subprocess
+
 from pippin.task import Task
+from pippin.config import mkdirs, copytree, get_output_loc
+from pippin.classifiers.classifier import Classifier
 
 
 class NearestNeighborClassifier(Classifier):
-    """Nearest Neighbour classifier
+    """Nearest Neighbour classifier.
 
     CONFIGURATION
     =============
@@ -43,7 +44,7 @@ class NearestNeighborClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -68,7 +69,7 @@ class NearestNeighborClassifier(Classifier):
         self.nn_options = "z .01 .12 .01 c 0.01 0.19 .01 x1 0.1 1.1 .04"
         self.train_info_local = {}
 
-    def setup(self):
+    def setup(self) -> None:
         lcfit = self.get_fit_dependency()
         self.fitopt = self.options.get("FITOPT", "DEFAULT")
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
@@ -76,7 +77,7 @@ class NearestNeighborClassifier(Classifier):
             os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
         )
 
-    def train(self):
+    def train(self) -> bool:
         # Created April 2019 by R.Kessler
         # Train nearest nbr.
         self.setup()
@@ -126,18 +127,20 @@ class NearestNeighborClassifier(Classifier):
         afterBurn = f"nearnbr_maxFoM.exe FITOPT000.ROOT -truetype 1 -outfile {outfile_train} ; cp {outfile_train} {self.outfile_train}"
 
         sedstr = "sed"
-        sedstr += r" -e '/OUTDIR:/a\OUTDIR: %s' " % self.splitfit_output_dir
+        sedstr += rf" -e '/OUTDIR:/a\OUTDIR: {self.splitfit_output_dir}' "
         sedstr += r" -e '/OUTDIR:/d'"
         sedstr += r" -e '/DONE_STAMP:/d'"
         sedstr += r" -e '/SNTABLE_LIST/a\    ROOTFILE_OUT = \"bla.root\"'"
         sedstr += r" -e '/_OUT/d '"
-        sedstr += r" -e '/VERSION:/a\VERSION_AFTERBURNER: %s'" % afterBurn
-        sedstr += r" -e '/VERSION:/a\DONE_STAMP: %s'" % self.done_file
-        sed_command = "%s %s > %s" % (sedstr, nml_file_orig, nml_file_train1)
+        sedstr += rf" -e '/VERSION:/a\VERSION_AFTERBURNER: {afterBurn}'"
+        sedstr += rf" -e '/VERSION:/a\DONE_STAMP: {self.done_file}'"
+        sed_command = f"{sedstr} {nml_file_orig} > {nml_file_train1}"
 
         # use system call to apply sed command
         # self.logger.debug(f"Running sed command {sed_command}")
-        subprocess.run(sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True)
+        subprocess.run(
+            sed_command, stderr=subprocess.STDOUT, cwd=temp_dir, shell=True, check=False
+        )
 
         # make sure that the new NML file is really there
         if not os.path.isfile(nml_file_train1):
@@ -152,14 +155,12 @@ class NearestNeighborClassifier(Classifier):
             return None
 
         # open NML file in append mode and tack on NNINP namelist
-        with open(nml_file_train1, "a") as f:
+        with open(nml_file_train1, "a", encoding="utf-8") as f:
             f.write("\n# NNINP below added by prepare_NNtrainJob\n")
             f.write("\n&NNINP \n")
-            f.write("   NEARNBR_TRAINFILE_PATH = '%s' \n" % fitres_dir)
-            f.write(
-                "   NEARNBR_TRAINFILE_LIST = '%s' \n" % os.path.basename(fitres_file)
-            )
-            f.write("   NEARNBR_SEPMAX_VARDEF  = '%s' \n" % self.nn_options)
+            f.write(f"   NEARNBR_TRAINFILE_PATH = '{fitres_dir}' \n")
+            f.write(f"   NEARNBR_TRAINFILE_LIST = '{os.path.basename(fitres_file)}' \n")
+            f.write(f"   NEARNBR_SEPMAX_VARDEF  = '{self.nn_options}' \n")
             f.write("   NEARNBR_TRUETYPE_VARNAME = 'SIM_TYPE_INDEX' \n")
             f.write("   NEARNBR_TRAIN_ODDEVEN = T \n")
             f.write("\n&END\n")
@@ -175,20 +176,25 @@ class NearestNeighborClassifier(Classifier):
             copytree(temp_dir, self.output_dir)
             self.save_new_hash(new_hash)
             return new_hash, train_info_local
-        else:
-            self.logger.info("Hash check passed, not rerunning")
-            self.should_be_done()
-            return None, train_info_local
+        self.logger.info("Hash check passed, not rerunning")
+        self.should_be_done()
+        return None, train_info_local
 
-    def run_train_job(self):
+    def run_train_job(self) -> None:
         cmd = [
             "split_and_fit.pl",
             self.train_info_local["nml_file_NNtrain"],
             "NOPROMPT",
         ]
         self.logger.debug(f"Launching training via {cmd}")
-        with open(self.logging_file, "w") as f:
-            subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, cwd=self.output_dir)
+        with open(self.logging_file, "w", encoding="utf-8") as f:
+            subprocess.run(
+                cmd,
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=self.output_dir,
+                check=False,
+            )
 
     def _check_completion(self, squeue):
         outdir = self.splitfit_output_dir
@@ -196,7 +202,7 @@ class NearestNeighborClassifier(Classifier):
         # check global DONE stamp to see if all is DONE
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "FAILURE" in f.read().upper():
                     self.logger.error("Done file has FAILURE stamp!")
                     return Task.FINISHED_FAILURE
@@ -204,57 +210,48 @@ class NearestNeighborClassifier(Classifier):
                 tarball = os.path.join(outdir, "SPLIT_JOBS_LCFIT.tar.gz")
                 if os.path.exists(tarball):
                     return Task.FINISHED_SUCCESS
-                else:
-                    # Because the tarball can be delayed, allow a few checks before failing
-                    self.num_check += 1
-                    if self.num_check >= self.max_check:
-                        self.logger.error(f"Error, no tarball found at {tarball}")
-                        return Task.FINISHED_FAILURE
-                    else:
-                        return 0
-            else:
-                if os.path.exists(self.outfile_predict):
-                    self.logger.debug(
-                        f"Predictions can be found at {self.outfile_predict}"
-                    )
-                    self.output["predictions_filename"] = self.outfile_predict
-                    return Task.FINISHED_SUCCESS
-                else:
-                    self.logger.error(f"No predictions found at {self.outfile_predict}")
+                # Because the tarball can be delayed, allow a few checks before failing
+                self.num_check += 1
+                if self.num_check >= self.max_check:
+                    self.logger.error(f"Error, no tarball found at {tarball}")
                     return Task.FINISHED_FAILURE
-        else:
-            if os.path.exists(self.logging_file):
-                with open(self.logging_file, "r") as f:
-                    output_error = False
-                    for line in f.read().splitlines():
-                        if (
-                            "ERROR" in line or ("ABORT" in line and " 0 " not in line)
-                        ) and not output_error:
-                            self.logger.error(
-                                f"Fatal error in light curve fitting. See {self.logging_file} for details."
-                            )
-                            output_error = True
-                        if output_error:
-                            self.logger.info(f"Excerpt: {line}")
-
-                if output_error:
-                    return Task.FINISHED_FAILURE
-
-            if self.mode == Classifier.TRAIN:
-                done_path = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
-                num_done = len(glob.glob1(done_path, "*.DONE"))
-                num_remain = self.num_jobs - num_done
-                return num_remain
-            else:
                 return 0
+            if os.path.exists(self.outfile_predict):
+                self.logger.debug(f"Predictions can be found at {self.outfile_predict}")
+                self.output["predictions_filename"] = self.outfile_predict
+                return Task.FINISHED_SUCCESS
+            self.logger.error(f"No predictions found at {self.outfile_predict}")
+            return Task.FINISHED_FAILURE
+        if os.path.exists(self.logging_file):
+            with open(self.logging_file, encoding="utf-8") as f:
+                output_error = False
+                for line in f.read().splitlines():
+                    if (
+                        "ERROR" in line or ("ABORT" in line and " 0 " not in line)
+                    ) and not output_error:
+                        self.logger.error(
+                            f"Fatal error in light curve fitting. See {self.logging_file} for details."
+                        )
+                        output_error = True
+                    if output_error:
+                        self.logger.info(f"Excerpt: {line}")
 
-    def predict(self):
+            if output_error:
+                return Task.FINISHED_FAILURE
+
+        if self.mode == Classifier.TRAIN:
+            done_path = os.path.join(outdir, "SPLIT_JOBS_LCFIT")
+            num_done = len(glob.glob1(done_path, "*.DONE"))
+            return self.num_jobs - num_done
+        return 0
+
+    def predict(self) -> bool:
         self.setup()
 
         model = self.options.get("MODEL")
-        assert (
-            model is not None
-        ), "If TRAIN is not specified, you have to point to a model to use"
+        assert model is not None, (
+            "If TRAIN is not specified, you have to point to a model to use"
+        )
         for t in self.dependencies:
             if model == t.name:
                 self.logger.debug(
@@ -280,16 +277,17 @@ class NearestNeighborClassifier(Classifier):
             job_name = "nearnbr_apply.exe"
             inArgs = f"-inFile_data {self.fitres_path} -inFile_MLpar {model_path}"
             outArgs = f"-outFile {self.outfile_predict} -varName_prob {self.get_prob_column_name()}"
-            cmd_job = "%s %s %s" % (job_name, inArgs, outArgs)
+            cmd_job = f"{job_name} {inArgs} {outArgs}"
             self.logger.debug(f"Executing command {cmd_job}")
-            with open(self.logging_file, "w") as f:
+            with open(self.logging_file, "w", encoding="utf-8") as f:
                 val = subprocess.run(
                     cmd_job.split(" "),
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=self.output_dir,
+                    check=False,
                 )
-                with open(self.done_file, "w") as f:
+                with open(self.done_file, "w", encoding="utf-8") as f:
                     if val.returncode == 0:
                         f.write("SUCCESS")
                     else:

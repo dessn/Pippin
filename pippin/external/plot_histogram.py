@@ -1,17 +1,17 @@
 import os
+import sys
+import logging
+import argparse
 
+import yaml
 import numpy as np
 import pandas as pd
-import sys
-import argparse
-import logging
-import matplotlib.pyplot as plt
-import yaml
+from scipy.stats import moment, binned_statistic
 from astropy.cosmology import FlatLambdaCDM
-from scipy.stats import binned_statistic, moment
+import matplotlib.pyplot as plt
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -29,7 +29,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["LCFIT"])
     return config
@@ -41,7 +41,7 @@ def load_file(file):
     return pd.read_csv(file), name
 
 
-def plot_histograms(data, sims, types, figname):
+def plot_histograms(data, sims, types, figname) -> None:
     cols = [
         "x1",
         "c",
@@ -117,9 +117,8 @@ def plot_histograms(data, sims, types, figname):
         if isinstance(c, list):
             if (c[0] in data[0][0].columns) & (c[1] in data[0][0].columns):
                 usecols.append(c)
-        else:
-            if c in data[0][0].columns:
-                usecols.append(c)
+        elif c in data[0][0].columns:
+            usecols.append(c)
 
     for c in restricted:
         for x in data + sims:
@@ -142,8 +141,8 @@ def plot_histograms(data, sims, types, figname):
 
         # HISTOGRAM
         if not isinstance(c, list):
-            minv = min([x[0][c].quantile(0.01) for x in data + sims])
-            maxv = max([x[0][c].quantile(u) for x in data + sims])
+            minv = min(x[0][c].quantile(0.01) for x in data + sims)
+            maxv = max(x[0][c].quantile(u) for x in data + sims)
             bins = np.linspace(minv, maxv, 20)  # Keep binning uniform.
             bc = 0.5 * (bins[1:] + bins[:-1])
 
@@ -222,7 +221,7 @@ def plot_histograms(data, sims, types, figname):
                 for i, (s, n) in enumerate(sims):
                     sim_col = s[c]
 
-                    sim_hist, _ = np.histogram(sim_col, bins=bins)
+                    _sim_hist, _ = np.histogram(sim_col, bins=bins)
                     sim_err = 1 / np.sqrt(data_hist)
                     sim_dist, _ = np.histogram(sim_col, bins=bins, density=True)
 
@@ -231,7 +230,7 @@ def plot_histograms(data, sims, types, figname):
                     )
                     dist_diff = data_dist - sim_dist
 
-                    chi2 = np.nansum(((dist_diff / dist_error) ** 2))
+                    chi2 = np.nansum((dist_diff / dist_error) ** 2)
                     ndof = len(bc)
                     red_chi2 = chi2 / ndof
 
@@ -247,14 +246,14 @@ def plot_histograms(data, sims, types, figname):
                     )
             ax.set_yticklabels([])
         else:
-            minv = min([x[0][c[0]].quantile(0.01) for x in data + sims])
-            maxv = max([x[0][c[0]].quantile(u) for x in data + sims])
+            minv = min(x[0][c[0]].quantile(0.01) for x in data + sims)
+            maxv = max(x[0][c[0]].quantile(u) for x in data + sims)
             bins = np.linspace(minv, maxv, 20)
 
             for i, (s, n) in enumerate(sims):
                 sim_xcol = s[c[0]]
                 sim_ycol = s[c[1]]
-                bin_medians, bin_edges, binnumber = binned_statistic(
+                bin_medians, bin_edges, _binnumber = binned_statistic(
                     sim_xcol, sim_ycol, statistic="median", bins=bins
                 )
                 bincenters = (bin_edges[:-1] + bin_edges[1:]) / 2.0
@@ -264,13 +263,13 @@ def plot_histograms(data, sims, types, figname):
                 data_xcol = d[c[0]]
                 data_ycol = d[c[1]]
                 try:
-                    bin_medians, bin_edges, binnumber = binned_statistic(
+                    bin_medians, bin_edges, _binnumber = binned_statistic(
                         data_xcol, data_ycol, statistic="median", bins=bins
                     )
-                    bin_stds, bin_edges, binnumber = binned_statistic(
+                    bin_stds, bin_edges, _binnumber = binned_statistic(
                         data_xcol, data_ycol, statistic="std", bins=bins
                     )
-                    bin_counts, bin_edges, binnumber = binned_statistic(
+                    bin_counts, bin_edges, _binnumber = binned_statistic(
                         data_xcol, data_ycol, statistic="count", bins=bins
                     )
 
@@ -323,7 +322,7 @@ def get_means_and_errors(x, y, bins):
         x, y, bins=bins, statistic=lambda x: np.std(x) / np.sqrt(len(x))
     )
 
-    std, *_ = binned_statistic(x, y, bins=bins, statistic=lambda x: np.std(x))
+    std, *_ = binned_statistic(x, y, bins=bins, statistic=np.std)
     std_err, *_ = binned_statistic(
         x,
         y,
@@ -339,7 +338,7 @@ def get_means_and_errors(x, y, bins):
     return means, err, std, std_err
 
 
-def plot_redshift_evolution(data, sims, types, figname):
+def plot_redshift_evolution(data, sims, types, figname) -> None:
     fig, axes = plt.subplots(
         2, 2, figsize=(6, 4), sharex=True, gridspec_kw={"hspace": 0.0, "wspace": 0.4}
     )
@@ -348,8 +347,8 @@ def plot_redshift_evolution(data, sims, types, figname):
     for c, row in zip(cols, axes.T):
         ax0, ax1 = row
 
-        minv = min([x[0]["zHD"].min() for x in data + sims])
-        maxv = max([x[0]["zHD"].max() for x in data + sims])
+        minv = min(x[0]["zHD"].min() for x in data + sims)
+        maxv = max(x[0]["zHD"].max() for x in data + sims)
         if not np.isfinite(minv) or not np.isfinite(maxv):
             continue
 
@@ -467,10 +466,10 @@ if __name__ == "__main__":
                     f"redshift_{n}.png",
                 )
         except:
-            logging.info(f"NO DES Fields, skipping...")
+            logging.info("NO DES Fields, skipping...")
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
 
     except Exception as e:
         logging.exception(str(e))
-        raise e
+        raise

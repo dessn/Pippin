@@ -1,11 +1,11 @@
-from pippin.classifiers.nearest_neighbor_python import NearestNeighborPyClassifier
-from pippin.classifiers.perfect import PerfectClassifier
-from pippin.classifiers.snirf import SnirfClassifier
-from pippin.classifiers.nearest_neighbor import NearestNeighborClassifier
-from pippin.classifiers.supernnova import SuperNNovaClassifier
-from pippin.classifiers.fitprob import FitProbClassifier
-from pippin.classifiers.unity import UnityClassifier
 from pippin.classifiers.scone import SconeClassifier
+from pippin.classifiers.snirf import SnirfClassifier
+from pippin.classifiers.unity import UnityClassifier
+from pippin.classifiers.fitprob import FitProbClassifier
+from pippin.classifiers.perfect import PerfectClassifier
+from pippin.classifiers.supernnova import SuperNNovaClassifier
+from pippin.classifiers.nearest_neighbor import NearestNeighborClassifier
+from pippin.classifiers.nearest_neighbor_python import NearestNeighborPyClassifier
 
 
 class ClassifierFactory:
@@ -16,7 +16,7 @@ class ClassifierFactory:
         return cls.ids[name]
 
     @classmethod
-    def add_factory(cls, classifier_class):
+    def add_factory(cls, classifier_class) -> None:
         cls.ids[classifier_class.__name__] = classifier_class
 
 

@@ -1,18 +1,19 @@
-import shutil
-import gzip
-import numpy as np
-import yaml
-from chainconsumer import ChainConsumer
-import pandas as pd
-import sys
-import argparse
 import os
+import sys
+import gzip
+import shutil
 import logging
+import argparse
+
+import yaml
+import numpy as np
+import pandas as pd
+from chainconsumer import ChainConsumer
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -30,7 +31,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["BIASCOR"])
 
@@ -47,12 +48,12 @@ def blind_df(df, args):
     return df
 
 
-def save_blind(df, args, output):
+def save_blind(df, args, output) -> None:
     df2 = blind_df(df, args)
     df2.to_csv(output, index=False, float_format="%0.5f")
 
 
-def make_summary_file(wfit_files, args):
+def make_summary_file(wfit_files, args) -> None:
     logging.info("Creating summary file")
     all_output_csv = args.get("WFIT_SUMMARY_OUTPUT")
 
@@ -65,14 +66,11 @@ def make_summary_file(wfit_files, args):
         name = os.path.basename(os.path.dirname(os.path.dirname(f)))
         df["name"] = name
         logging.debug(f"Read {f}, contents are: {df}")
-        if df_all is None:
-            df_all = df
-        else:
-            df_all = pd.concat([df_all, df])
+        df_all = df if df_all is None else pd.concat([df_all, df])
     save_blind(df_all, args, all_output_csv)
 
 
-def parse_fitres_files(args):
+def parse_fitres_files(args) -> None:
     fitres_input = args.get("FITRES_INPUT")
     fitres_output = args.get("FITRES_PARSED")
     logging.debug(f"FITRES_INPUT is {fitres_input}")
@@ -83,7 +81,7 @@ def parse_fitres_files(args):
         shutil.copy(fin, fout)
 
 
-def parse_m0diffs(args):
+def parse_m0diffs(args) -> None:
     m0diffs = args.get("M0DIFF_INPUTS")
     m0diff_out = args.get("M0DIFF_PARSED")
 
@@ -95,8 +93,8 @@ def parse_m0diffs(args):
         logging.debug(f"Parsing m0diff {path}")
         df = pd.read_csv(path, delim_whitespace=True, comment="#")
 
-        ol_ref = np.NaN
-        w_ref = np.NaN
+        ol_ref = np.nan
+        w_ref = np.nan
 
         with gzip.open(path, "rt") as f:
             for line in f.read().splitlines():
@@ -114,16 +112,13 @@ def parse_m0diffs(args):
         df["ol_ref"] = ol_ref
         df["w_ref"] = w_ref
 
-        if df_all is None:
-            df_all = df
-        else:
-            df_all = pd.concat([df_all, df])
+        df_all = df if df_all is None else pd.concat([df_all, df])
 
     logging.info(f"Saving m0diffs to {m0diff_out}")
     save_blind(df_all, args, m0diff_out)
 
 
-def parse_fitres(args):
+def parse_fitres(args) -> None:
     m0diffs = args.get("M0DIFF_INPUTS")
     fites_out = args.get("FITRES_COMBINED")
     df_all = None
@@ -141,10 +136,7 @@ def parse_fitres(args):
         df["fitopt"] = fitopt
         df["fitopt_num"] = fitopt_num
 
-        if df_all is None:
-            df_all = df
-        else:
-            df_all = pd.concat([df_all, df])
+        df_all = df if df_all is None else pd.concat([df_all, df])
 
     logging.info(f"Saving combined fitres to {fites_out}")
     save_blind(df_all, args, fites_out)
@@ -161,7 +153,7 @@ if __name__ == "__main__":
         parse_fitres_files(args)
         parse_m0diffs(args)
         parse_fitres(args)
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
-        raise e
+        raise

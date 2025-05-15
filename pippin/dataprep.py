@@ -1,24 +1,25 @@
-import shutil
-import subprocess
-import tarfile
 import os
-from collections import OrderedDict
+import shutil
 from pathlib import Path
+import tarfile
+import subprocess
+from collections import OrderedDict
+
+from pippin.task import Task
 from pippin.config import (
     mkdirs,
-    get_output_loc,
-    get_config,
-    get_data_loc,
     read_yaml,
+    get_config,
     merge_dict,
+    get_data_loc,
+    get_output_loc,
 )
-from pippin.task import Task
 
 
 class DataPrep(
     Task
 ):  # TODO: Define the location of the output so we can run the lc fitting on it.
-    """Smack the data into something that looks like the simulated data
+    """Smack the data into something that looks like the simulated data.
 
     OUTPUTS:
     ========
@@ -37,7 +38,7 @@ class DataPrep(
 
     def __init__(
         self, name, output_dir, config, options, global_config, dependencies=None
-    ):
+    ) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.global_config = get_config()
@@ -101,7 +102,7 @@ class DataPrep(
                 ],
             }
         else:
-            for key in self.types_dict.keys():
+            for key in self.types_dict:
                 self.types_dict[key] = [int(c) for c in self.types_dict[key]]
 
         self.batch_file = self.options.get("BATCH_FILE")
@@ -142,7 +143,7 @@ class DataPrep(
      PRIVATE_DATA_PATH = '{data_path}'
      VERSION_PHOTOMETRY = '{genversion}'
 
-     PHOTFLAG_MSKREJ   = {photflag_mskrej} !PHOTFLAG eliminate epoch that has errors, not LC 
+     PHOTFLAG_MSKREJ   = {photflag_mskrej} !PHOTFLAG eliminate epoch that has errors, not LC
 
      {photflag}
      {cutwin_snr_nodetect}
@@ -156,27 +157,25 @@ class DataPrep(
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "FAILURE" in f.read():
                     self.logger.info(
                         f"Done file reported failure. Check output log {self.logfile}"
                     )
                     return Task.FINISHED_FAILURE
-                else:
-                    if not os.path.exists(self.output_info):
-                        self.logger.exception(
-                            f"Cannot find output info file {self.output_info}"
-                        )
-                        return Task.FINISHED_FAILURE
-                    else:
-                        content = read_yaml(self.output_info)
-                        self.output["SURVEY"] = content["SURVEY"]
-                        self.output["SURVEY_ID"] = content["IDSURVEY"]
-                    self.output["types"] = self._get_types()
-                    return Task.FINISHED_SUCCESS
+                if not os.path.exists(self.output_info):
+                    self.logger.error(
+                        f"Cannot find output info file {self.output_info}"
+                    )
+                    return Task.FINISHED_FAILURE
+                content = read_yaml(self.output_info)
+                self.output["SURVEY"] = content["SURVEY"]
+                self.output["SURVEY_ID"] = content["IDSURVEY"]
+                self.output["types"] = self._get_types()
+                return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_name)
 
-    def _run(self):
+    def _run(self) -> bool:
         val_p = self.options.get("PHOTFLAG_DETECT")
         val_c = self.options.get("CUTWIN_SNR_NODETECT")
         photflag = f"PHOTFLAG_DETECT = {val_p}" if val_p else ""
@@ -196,7 +195,7 @@ class DataPrep(
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -226,13 +225,13 @@ class DataPrep(
             self.save_new_hash(new_hash)
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             clump_file = os.path.join(self.output_dir, "clump.nml")
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(final_slurm)
-            with open(clump_file, "w") as f:
+            with open(clump_file, "w", encoding="utf-8") as f:
                 f.write(command_string)
 
-            self.logger.info(f"Submitting batch job for data prep")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            self.logger.info("Submitting batch job for data prep")
+            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir, check=False)
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")

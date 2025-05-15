@@ -1,12 +1,14 @@
 import os
+
 import pandas as pd
-from pippin.classifiers.classifier import Classifier
-from pippin.config import chown_dir, mkdirs
+
 from pippin.task import Task
+from pippin.config import mkdirs, chown_dir
+from pippin.classifiers.classifier import Classifier
 
 
 class FitProbClassifier(Classifier):
-    """FitProb classifier
+    """FitProb classifier.
 
     CONFIGURATION:
     ==============
@@ -38,7 +40,7 @@ class FitProbClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -56,7 +58,7 @@ class FitProbClassifier(Classifier):
         self.output["predictions_filename"] = self.output_file
         self.fitopt = options.get("FITOPT", "DEFAULT")
 
-    def classify(self):
+    def classify(self) -> bool:
         new_hash = self.get_hash_from_string(self.name)
         if self._check_regenerate(new_hash):
             mkdirs(self.output_dir)
@@ -84,7 +86,7 @@ class FitProbClassifier(Classifier):
             self.logger.info(f"Saving probabilities to {self.output_file}")
             df.to_csv(self.output_file, index=False, float_format="%0.4f")
             chown_dir(self.output_dir)
-            with open(self.done_file, "w") as f:
+            with open(self.done_file, "w", encoding="utf-8") as f:
                 f.write("SUCCESS")
             self.save_new_hash(new_hash)
         self.passed = True
@@ -92,10 +94,9 @@ class FitProbClassifier(Classifier):
         return True
 
     def _check_completion(self, squeue):
-        if not self.passed:
-            if os.path.exists(self.done_file):
-                with open(self.done_file) as f:
-                    self.passed = "SUCCESS" in f.read()
+        if not self.passed and os.path.exists(self.done_file):
+            with open(self.done_file, encoding="utf-8") as f:
+                self.passed = "SUCCESS" in f.read()
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
 
     def train(self):

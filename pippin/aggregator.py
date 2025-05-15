@@ -1,25 +1,25 @@
-import inspect
+import os
 import shutil
+import inspect
 import subprocess
 
-from scipy.interpolate import interp1d
-from scipy.ndimage import gaussian_filter
+import numpy as np
+import pandas as pd
+from astropy.io import fits
 from scipy.stats import binned_statistic
+from scipy.ndimage import gaussian_filter
+from scipy.interpolate import interp1d
 
-from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs, get_output_loc, ensure_list
+from pippin.task import Task
+from pippin.config import mkdirs, ensure_list, get_output_loc
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
-from pippin.task import Task
-import pandas as pd
-import os
-from astropy.io import fits
-import numpy as np
+from pippin.classifiers.classifier import Classifier
 
 
 class Aggregator(Task):
-    """Merge fitres files and aggregator output
+    """Merge fitres files and aggregator output.
 
     CONFIGURATION:
     ==============
@@ -50,16 +50,18 @@ class Aggregator(Task):
         empty_agg: if there were no types or ids that could be found.
     """
 
-    def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
+    def __init__(
+        self, name, output_dir, config, dependencies, options, recal_aggtask
+    ) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.lcfit_deps = [
             d for c in self.classifiers for d in c.get_fit_dependency(output=False)
         ]
-        self.lcfit_names = list(
-            set([l.output["name"] for l in self.lcfit_deps if l is not None])
-        )
+        self.lcfit_names = list({
+            l.output["name"] for l in self.lcfit_deps if l is not None
+        })
         self.output["lcfit_names"] = self.lcfit_names
         if not self.lcfit_names:
             self.logger.debug("No jobs depend on the LCFIT, so adding a dummy one")
@@ -114,33 +116,29 @@ class Aggregator(Task):
             c.output["name"]: c.get_prob_column_name() for c in self.classifiers
         }
         if merge_classifiers is not None:
-            self.classifier_merge = dict()
+            self.classifier_merge = {}
             for c in self.classifiers:
                 prob_col = []
-                for prob_col_name in merge_classifiers.keys():
+                for prob_col_name in merge_classifiers:
                     mask_list = ensure_list(merge_classifiers[prob_col_name])
                     match = False
                     for m in mask_list:
                         if match:
                             continue
-                        else:
-                            if m in c.output["name"]:
-                                match = True
+                        if m in c.output["name"]:
+                            match = True
                     if match:
                         if prob_col_name[:5] != "PROB_":
                             prob_col_name = "PROB_" + prob_col_name
                         prob_col.append(prob_col_name)
                 if len(prob_col) == 1:
                     self.classifier_merge[c.output["name"]] = prob_col[0]
+                elif len(prob_col) == 0:
+                    self.classifier_merge[c.output["name"]] = c.get_prob_column_name()
                 else:
-                    if len(prob_col) == 0:
-                        self.classifier_merge[
-                            c.output["name"]
-                        ] = c.get_prob_column_name()
-                    else:
-                        Task.fail_config(
-                            f"Classifier task {c.output['name']} matched multiple MERGE_CLASSIFIERS keys: {prob_col}. Please provide more specific keys"
-                        )
+                    Task.fail_config(
+                        f"Classifier task {c.output['name']} matched multiple MERGE_CLASSIFIERS keys: {prob_col}. Please provide more specific keys"
+                    )
         self.logger.debug(f"Classifier merge = {self.classifier_merge}")
         self.output["classifier_merge"] = self.classifier_merge
 
@@ -151,7 +149,7 @@ class Aggregator(Task):
             )
             if os.path.exists(self.done_file):
                 self.logger.debug("Done file exists, loading contents")
-                with open(self.done_file) as f:
+                with open(self.done_file, encoding="utf-8") as f:
                     self.passed = "SUCCESS" in f.read()
                     self.logger.debug(
                         f"After reading done file, passed set to {self.passed}"
@@ -171,7 +169,7 @@ class Aggregator(Task):
                     check += task.dependencies
 
         for task in check + self.dependencies:
-            if isinstance(task, SNANASimulation) or isinstance(task, DataPrep):
+            if isinstance(task, (SNANASimulation, DataPrep)):
                 return task
         self.logger.error(
             f"Unable to find a simulation or data dependency for aggregator {self.name}"
@@ -188,10 +186,9 @@ class Aggregator(Task):
         remove_columns = [
             c for i, c in enumerate(df.columns) if i != 0 and "PROB_" not in c
         ]
-        df = df.drop(columns=remove_columns)
-        return df
+        return df.drop(columns=remove_columns)
 
-    def save_calibration_curve(self, df, output_name):
+    def save_calibration_curve(self, df, output_name) -> None:
         self.logger.debug("Creating calibration curves")
 
         # First let us define some prob bins
@@ -217,7 +214,7 @@ class Aggregator(Task):
                 if data.isnull().sum() == data.size:
                     self.logger.error(f"prob column {c} is all NaN")
                 if truth.isnull().sum() == truth.size:
-                    self.logger.error(f"truth values are all NaN")
+                    self.logger.error("truth values are all NaN")
                 continue
 
             # Remove NaNs
@@ -285,9 +282,9 @@ class Aggregator(Task):
             self.logger.warning(
                 f"Warning, found multiple calibration files, only using first one: {path}"
             )
-        assert (
-            len(path) != 0
-        ), f"No calibration files found for agg task {self.recal_aggtask}"
+        assert len(path) != 0, (
+            f"No calibration files found for agg task {self.recal_aggtask}"
+        )
         path = path[0]
 
         df = pd.read_csv(path)
@@ -296,7 +293,7 @@ class Aggregator(Task):
 
     def _run(
         self,
-    ):
+    ) -> bool:
         new_hash = self.get_hash_from_string(
             self.name + str(self.include_type) + str(self.plot)
         )
@@ -390,7 +387,7 @@ class Aggregator(Task):
                     cmd = "grep --exclude-dir=* TYPE *.dat | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command   {cmd}  in dir {phot_dir}")
                     process = subprocess.run(
-                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                        cmd, capture_output=True, cwd=phot_dir, shell=True, check=False
                     )
                     output = process.stdout.decode("ascii").split("\n")
                     output = [x for x in output if x]
@@ -398,7 +395,7 @@ class Aggregator(Task):
                     cmd = "zgrep TYPE *.dat.gz | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
                     process = subprocess.run(
-                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                        cmd, capture_output=True, cwd=phot_dir, shell=True, check=False
                     )
                     output2 = process.stdout.decode("ascii").split("\n")
                     output += [x for x in output2 if x]
@@ -406,27 +403,26 @@ class Aggregator(Task):
                     cmd = "zgrep TYPE *.txt | awk -F ':' '{print $1 $3}'"
                     self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
                     process = subprocess.run(
-                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                        cmd, capture_output=True, cwd=phot_dir, shell=True, check=False
                     )
                     output3 = process.stdout.decode("ascii").split("\n")
                     output += [x for x in output3 if x]
 
                     if len(output) == 0:
                         snid = []
+                    elif "_" in output[0]:  # check if photometry is in filename
+                        snid = [
+                            x.split()[0].split("_")[1].split(".")[0] for x in output
+                        ]
+                        snid = [x[1:] if x.startswith("0") else x for x in snid]
                     else:
-                        if "_" in output[0]:  # check if photometry is in filename
-                            snid = [
-                                x.split()[0].split("_")[1].split(".")[0] for x in output
-                            ]
-                            snid = [x[1:] if x.startswith("0") else x for x in snid]
-                        else:
-                            snid = [x.split()[0].split(".")[0] for x in output]
-                            snid = [x[1:] if x.startswith("0") else x for x in snid]
+                        snid = [x.split()[0].split(".")[0] for x in output]
+                        snid = [x[1:] if x.startswith("0") else x for x in snid]
                     sntype = [x.split()[1].strip() for x in output]
 
                     type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
                     type_df[self.id] = type_df[self.id].astype(str).str.strip()
-                    type_df.drop_duplicates(subset=self.id, inplace=True)
+                    type_df = type_df.drop_duplicates(subset=self.id)
                 else:
                     for h in headers:
                         with fits.open(h) as hdul:
@@ -434,9 +430,10 @@ class Aggregator(Task):
                             snid = np.array(data.field("SNID"))
                             sntype = np.array(data.field("SNTYPE")).astype(np.int64)
                             # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
-                            dataframe = pd.DataFrame(
-                                {self.id: snid, self.type_name: sntype}
-                            )
+                            dataframe = pd.DataFrame({
+                                self.id: snid,
+                                self.type_name: sntype,
+                            })
                             dataframe[self.id] = (
                                 dataframe[self.id].astype(str).str.strip()
                             )
@@ -444,7 +441,7 @@ class Aggregator(Task):
                                 type_df = dataframe
                             else:
                                 type_df = pd.concat([type_df, dataframe])
-                        type_df.drop_duplicates(subset=self.id, inplace=True)
+                        type_df = type_df.drop_duplicates(subset=self.id)
                     self.logger.debug(
                         f"Photometric types are {type_df['SNTYPE'].unique()}"
                     )
@@ -481,9 +478,12 @@ class Aggregator(Task):
                     f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns"
                 )
 
-                sorted_columns = [self.id, "SNTYPE", "IA"] + sorted(
-                    [c for c in df.columns if c.startswith("PROB_")]
-                )
+                sorted_columns = [
+                    self.id,
+                    "SNTYPE",
+                    "IA",
+                    *sorted([c for c in df.columns if c.startswith("PROB_")]),
+                ]
                 df = df.reindex(sorted_columns, axis=1)
                 self.logger.info(
                     f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}"
@@ -521,7 +521,7 @@ class Aggregator(Task):
 
             # Write the done file
             self.logger.debug(f"Writing done file to {self.done_file}")
-            with open(self.done_file, "w") as f:
+            with open(self.done_file, "w", encoding="utf-8") as f:
                 f.write("SUCCESS")
 
         else:
@@ -538,7 +538,7 @@ class Aggregator(Task):
 
         return True
 
-    def save_key_format(self, df, index, lcfitname):
+    def save_key_format(self, df, index, lcfitname) -> None:
         lc_index = (
             0 if len(self.lcfit_names) == 1 else self.lcfit_names.index(lcfitname)
         )
@@ -563,7 +563,7 @@ class Aggregator(Task):
             sep=" ",
         )
 
-    def _plot(self, index):
+    def _plot(self, index) -> bool:
         cmd = [
             "python",
             self.python_file,
@@ -590,7 +590,7 @@ class Aggregator(Task):
         sim_tasks = Task.get_task_of_type(prior_tasks, SNANASimulation, DataPrep)
         classifier_tasks = Task.get_task_of_type(prior_tasks, Classifier)
 
-        def _get_aggregator_dir(base_output_dir, stage_number, agg_name):
+        def _get_aggregator_dir(base_output_dir, stage_number, agg_name) -> str:
             return f"{base_output_dir}/{stage_number}_AGG/{agg_name}"
 
         tasks = []
@@ -627,10 +627,8 @@ class Aggregator(Task):
                 sim_tasks.insert(0, sim_tasks.pop(recal_sim_index))
 
             for sim_task in sim_tasks:
-                if (
-                    mask_sim not in sim_task.name
-                    or mask not in sim_task.name
-                    and recal_simtask != sim_task
+                if mask_sim not in sim_task.name or (
+                    mask not in sim_task.name and recal_simtask != sim_task
                 ):
                     continue
 

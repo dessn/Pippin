@@ -1,17 +1,17 @@
+import os
 import shutil
 import subprocess
 
-from pippin.aggregator import Aggregator
-from pippin.config import chown_dir, mkdirs
+from pippin.task import Task
+from pippin.config import mkdirs, chown_dir
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
-from pippin.task import Task
-import os
+from pippin.aggregator import Aggregator
 
 
 class Merger(Task):
-    """Merge fitres files and aggregator output
+    """Merge fitres files and aggregator output.
 
     CONFIGURATION:
     ==============
@@ -38,7 +38,7 @@ class Merger(Task):
         blind: bool - whether or not to blind cosmo results
     """
 
-    def __init__(self, name, output_dir, config, dependencies, options):
+    def __init__(self, name, output_dir, config, dependencies, options) -> None:
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
         self.options = options
         self.passed = False
@@ -88,29 +88,28 @@ class Merger(Task):
                 f"Merger finished, see combined fitres at {self.suboutput_dir}"
             )
             return Task.FINISHED_SUCCESS
+        output_error = False
+        if os.path.exists(self.logfile):
+            with open(self.logfile, encoding="utf-8") as f:
+                for line in f.read().splitlines():
+                    if "ERROR" in line or "ABORT" in line:
+                        self.logger.error(
+                            f"Fatal error in combine_fitres. See {self.logfile} for details."
+                        )
+                        output_error = True
+                    if output_error:
+                        self.logger.info(f"Excerpt: {line}")
+            if output_error:
+                self.logger.debug("Removing hash on failure")
+                os.remove(self.hash_file)
+                chown_dir(self.output_dir)
         else:
-            output_error = False
-            if os.path.exists(self.logfile):
-                with open(self.logfile, "r") as f:
-                    for line in f.read().splitlines():
-                        if "ERROR" in line or "ABORT" in line:
-                            self.logger.error(
-                                f"Fatal error in combine_fitres. See {self.logfile} for details."
-                            )
-                            output_error = True
-                        if output_error:
-                            self.logger.info(f"Excerpt: {line}")
-                if output_error:
-                    self.logger.debug("Removing hash on failure")
-                    os.remove(self.hash_file)
-                    chown_dir(self.output_dir)
-            else:
-                self.logger.error(
-                    "Combine task failed with no output log. Please debug"
-                )
-            return Task.FINISHED_FAILURE
+            self.logger.error(
+                "Combine task failed with no output log. Please debug"
+            )
+        return Task.FINISHED_FAILURE
 
-    def add_to_fitres(self, fitres_file, outdir, lcfit, index=0):
+    def add_to_fitres(self, fitres_file, outdir, lcfit, index=0) -> None:
         if not self.agg["lcfit_names"]:
             lcfit_index = 0
         else:
@@ -129,7 +128,7 @@ class Merger(Task):
             ]
             try:
                 self.logger.debug(f"Executing command {' '.join(command)}")
-                with open(self.logfile, "w+") as f:
+                with open(self.logfile, "w+", encoding="utf-8") as f:
                     subprocess.run(
                         command,
                         stdout=f,
@@ -139,8 +138,8 @@ class Merger(Task):
                     )
 
             except subprocess.CalledProcessError as e:
-                self.logger.error(f"Error invoking command {command}")
-                raise e
+                self.logger.exception(f"Error invoking command {command}")
+                raise
         else:
             self.logger.info(
                 "Empty aggregation result found, not invoking combine_fitres.exe"
@@ -148,7 +147,7 @@ class Merger(Task):
             self.logger.debug(f"Copying file {fitres_file} to {outdir}")
             shutil.copy(fitres_file, outdir)
 
-    def _run(self):
+    def _run(self) -> bool:
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
@@ -172,12 +171,10 @@ class Merger(Task):
             ]
 
         new_hash = self.get_hash_from_string(
-            " ".join(
-                [
-                    a + b + c + f"{d}" + e
-                    for a, b, c, d, e in (fitres_files + symlink_files)
-                ]
-            )
+            " ".join([
+                a + b + c + f"{d}" + e
+                for a, b, c, d, e in (fitres_files + symlink_files)
+            ])
         )
         if self._check_regenerate(new_hash):
             shutil.rmtree(self.output_dir, ignore_errors=True)
@@ -201,7 +198,7 @@ class Merger(Task):
                                 os.path.join(s[1], s[2]),
                             )
 
-                    self.logger.debug(f"Copying MERGE.LOG")
+                    self.logger.debug("Copying MERGE.LOG")
                     filenames = ["MERGE.LOG", "SUBMIT.INFO"]
                     for f in filenames:
                         original = os.path.join(self.lc_fit["lc_output_dir"], f)
@@ -211,11 +208,11 @@ class Merger(Task):
                             shutil.copy(original, moved)
 
                     self.save_new_hash(new_hash)
-                    with open(self.done_file, "w") as f:
+                    with open(self.done_file, "w", encoding="utf-8") as f:
                         f.write("SUCCESS\n")
             except Exception as e:
-                self.logger.error("Error running merger!")
-                self.logger.error(f"Check log at {self.logfile}")
+                self.logger.exception("Error running merger!")
+                self.logger.exception(f"Check log at {self.logfile}")
                 self.logger.exception(e, exc_info=True)
                 return False
         else:
@@ -231,7 +228,7 @@ class Merger(Task):
 
         def _get_merge_output_dir(
             base_output_dir, stage_number, merge_name, lcfit_name
-        ):
+        ) -> str:
             return f"{base_output_dir}/{stage_number}_MERGE/{merge_name}_{lcfit_name}"
 
         for name in c.get("MERGE", []):

@@ -2,15 +2,21 @@
 # Refactor pippin interface to scone to accept and modify
 # a scone-input file.
 
-import os, sys, shutil, subprocess, yaml, re, time
+import os
+import re
+import sys
+import time
+import shutil
 from pathlib import Path
-import pandas as pd
+import subprocess
+
+import yaml
 import numpy as np
+import pandas as pd
 
-from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
 from pippin.task import Task
-
+from pippin.config import mkdirs, get_config, merge_dict, get_data_loc, get_output_loc
+from pippin.classifiers.classifier import Classifier
 
 # =========================================
 
@@ -36,7 +42,7 @@ KEYLIST_SCONE_INPUT = [
 # ==========================================
 class SconeClassifier(Classifier):
     """convolutional neural network-based SN photometric classifier
-    for details, see https://arxiv.org/abs/2106.04370, https://arxiv.org/abs/2111.05539, https://arxiv.org/abs/2207.09440
+    for details, see https://arxiv.org/abs/2106.04370, https://arxiv.org/abs/2111.05539, https://arxiv.org/abs/2207.09440.
 
     CONFIGURATION:
     ==============
@@ -100,7 +106,7 @@ class SconeClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -154,16 +160,14 @@ class SconeClassifier(Classifier):
         remake_heatmaps = self.options.get("REMAKE_HEATMAPS", False)
         self.keep_heatmaps = not remake_heatmaps
 
-        return
-
-    def classify(self, mode):
+    def classify(self, mode) -> bool:
         self.logger.info(
             f"============ Prepare refactored SCONE with mode = {mode} ============="
         )
         failed = False
         if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "SUCCESS" not in f.read().upper():
                     failed = True
 
@@ -198,9 +202,8 @@ class SconeClassifier(Classifier):
         # input file is updated
         scone_input_base = os.path.basename(self.scone_input_file)
         self.scone_input_file = self.output_dir + "/" + "PIP_" + scone_input_base
-        with open(self.scone_input_file, "wt") as i:
-            for line in scone_input_lines:
-                i.write(f"{line}\n")
+        with open(self.scone_input_file, "w", encoding="utf-8") as i:
+            i.writelines(f"{line}\n" for line in scone_input_lines)
 
         self.save_new_hash(new_hash)
 
@@ -210,11 +213,11 @@ class SconeClassifier(Classifier):
             if path.exists()
             else Path(self.path_to_classifier) / SCONE_SHELL_SCRIPT
         )
-        cmd = f"python {str(path)} " f"--config_path {self.scone_input_file} "
+        cmd = f"python {path!s} --config_path {self.scone_input_file} "
         #      f"--sbatch_job_name {self.job_base_name} "
 
         self.logger.info(f"Running command: {cmd}")
-        subprocess.run([cmd], shell=True)
+        subprocess.run([cmd], shell=True, check=False)
 
         return True
 
@@ -238,7 +241,7 @@ class SconeClassifier(Classifier):
         # - - - -
         flag_remove_line = False
 
-        with open(scone_input_file, "r") as i:
+        with open(scone_input_file, encoding="utf-8") as i:
             inp_config = i.read().split("\n")
 
         key_replace_dict = {}
@@ -282,15 +285,15 @@ class SconeClassifier(Classifier):
 
         # - - - - - - - - - -
         # add extra info from pippin
-        config_lines.append(f"")
-        config_lines.append(f"# ======================================= ")
-        config_lines.append(f"# keys added by pippin\n ")
+        config_lines.append("")
+        config_lines.append("# ======================================= ")
+        config_lines.append("# keys added by pippin\n ")
 
         # pass sbatch_job_name via config since there are other sbatch config
         # keys already. Could also pass via command line arg --sbatch_job_name.
         config_lines.append(f"sbatch_job_name: {self.job_base_name}\n")
 
-        config_lines.append(f"input_data_paths:")
+        config_lines.append("input_data_paths:")
         for sim_dir in sim_dirs:
             resolved_dir = os.path.realpath(sim_dir)
             config_lines.append(f"  - {resolved_dir}")
@@ -301,15 +304,12 @@ class SconeClassifier(Classifier):
             if key_pippin not in key_replace_dict and key in KEYLIST_SCONE_INPUT:
                 val = options_local[key_pippin]
                 line = f"{key}:  {val}"
-                config_lines.append(f"")
-                config_lines.append(f"{line}")
+                config_lines.extend(("", f"{line}"))
 
         # check option to select events passing LCFIT
 
         if self.select_lcfit:
-            config_lines.append(f"")
-            config_lines.append(f"# Train on events passing LCFIT")
-            config_lines.append("snid_select_files:")
+            config_lines.extend(("", "# Train on events passing LCFIT", "snid_select_files:"))
             lcfit_deps = self.get_fit_dependency()
             # self.logger.info(f"\n xxx lcfit_deps = \n{lcfit_deps}\n")
             for tmp_dict in lcfit_deps:
@@ -335,7 +335,7 @@ class SconeClassifier(Classifier):
     def _check_completion(self, squeue):
         if Path(self.done_file).exists():
             self.logger.debug(f"Found scone done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "SUCCESS" not in f.read().upper():
                     return Task.FINISHED_FAILURE
 
@@ -346,14 +346,12 @@ class SconeClassifier(Classifier):
             #   predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
             #    predictions.to_csv(pred_path, index=False)
             # self.logger.info(f"Predictions file can be found at {pred_path}")
-            self.output.update(
-                {
-                    "model_filename": self.options.get(
-                        "MODEL", str(Path(self.output_dir) / "trained_model")
-                    ),
-                    "predictions_filename": pred_path,
-                }
-            )
+            self.output.update({
+                "model_filename": self.options.get(
+                    "MODEL", str(Path(self.output_dir) / "trained_model")
+                ),
+                "predictions_filename": pred_path,
+            })
 
             return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
@@ -361,7 +359,7 @@ class SconeClassifier(Classifier):
     def _heatmap_creation_success(self):
         if not Path(self.heatmaps_done_file).exists():
             return False
-        with open(self.heatmaps_done_file, "r") as donefile:
+        with open(self.heatmaps_done_file, encoding="utf-8") as donefile:
             if "CREATE HEATMAPS FAILURE" in donefile.read():
                 return False
         return (

@@ -1,24 +1,24 @@
 import os
-import shutil
-import subprocess
-import tempfile
 import json
+import shutil
+import tempfile
+import subprocess
 
 from pippin.base import ConfigBasedExecutable
+from pippin.task import Task
 from pippin.config import (
-    chown_dir,
-    copytree,
     mkdirs,
-    get_data_loc,
+    copytree,
     get_hash,
+    chown_dir,
     read_yaml,
     get_config,
+    get_data_loc,
 )
-from pippin.task import Task
 
 
 class SNANASimulation(ConfigBasedExecutable):
-    """Merge fitres files and aggregator output
+    """Merge fitres files and aggregator output.
 
     CONFIGURATION:
     ==============
@@ -48,7 +48,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
     def __init__(
         self, name, output_dir, config, global_config, combine="combine.input"
-    ):
+    ) -> None:
         self.data_dirs = global_config["DATA_DIRS"]
         base_file = get_data_loc(combine)
         super().__init__(name, output_dir, config, base_file, ": ")
@@ -88,9 +88,9 @@ class SNANASimulation(ConfigBasedExecutable):
         self.logging_file = self.config_path.replace(".input", ".LOG")
         self.kill_file = self.config_path.replace(".input", "_KILL.LOG")
 
-        if "EXTERNAL" not in self.config.keys():
+        if "EXTERNAL" not in self.config:
             # Deterime the type of each component
-            keys = [k for k in self.config.keys() if k not in self.reserved_top]
+            keys = [k for k in self.config if k not in self.reserved_top]
             self.base_ia = []
             self.base_cc = []
             types = {}
@@ -109,7 +109,7 @@ class SNANASimulation(ConfigBasedExecutable):
                     )
 
                 gentype, genmodel = None, None
-                with open(base_path) as f:
+                with open(base_path, encoding="utf-8") as f:
                     for line in f.read().splitlines():
                         if line.upper().strip().startswith("GENTYPE:"):
                             gentype = line.upper().split(":")[1].strip()
@@ -168,7 +168,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
             rankeys = [
                 r
-                for r in self.config.get("GLOBAL", {}).keys()
+                for r in self.config.get("GLOBAL", {})
                 if r.startswith("RANSEED_")
             ]
             value = (
@@ -244,7 +244,7 @@ class SNANASimulation(ConfigBasedExecutable):
         else:
             self.sim_folders = self.output["sim_folders"]
 
-    def get_sim_folders(self, base, genversion):
+    def get_sim_folders(self, base, genversion) -> None:
         if self.output.get("ranseed_change"):
             num_sims = int(self.output["ranseed_change_val"].split()[0])
             self.logger.debug(
@@ -276,13 +276,13 @@ class SNANASimulation(ConfigBasedExecutable):
         # Logging now goes in the "CONFIG"
         c["LOGDIR"] = os.path.basename(self.sim_log_dir)
 
-        for k in self.config.keys():
+        for k in self.config:
             if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
                 run_config_keys = list(run_config.keys())
-                assert (
-                    "BASE" in run_config_keys
-                ), "You must specify a base file for each option"
+                assert "BASE" in run_config_keys, (
+                    "You must specify a base file for each option"
+                )
                 for key in run_config_keys:
                     if key.upper() in self.reserved_keywords:
                         continue
@@ -359,8 +359,8 @@ class SNANASimulation(ConfigBasedExecutable):
                 input_copied.append(ff)
                 path = get_data_loc(ff)
                 copied_path = os.path.join(temp_dir, os.path.basename(path))
-                with open(path, "r") as f:
-                    for line in f.readlines():
+                with open(path, encoding="utf-8") as f:
+                    for line in f:
                         line = line.strip()
                         if line.startswith("INPUT_FILE_INCLUDE"):
                             include_file = line.split(":")[-1].strip()
@@ -388,7 +388,7 @@ class SNANASimulation(ConfigBasedExecutable):
                                         sed_command,
                                         stderr=subprocess.STDOUT,
                                         cwd=temp_dir,
-                                        shell=True,
+                                        shell=True, check=False,
                                     )
 
                                 # And make sure we dont do this file again
@@ -409,7 +409,7 @@ class SNANASimulation(ConfigBasedExecutable):
         regenerate = self._check_regenerate(new_hash)
 
         if regenerate:
-            self.logger.info(f"Running simulation")
+            self.logger.info("Running simulation")
             # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
             if "//" not in self.output_dir and len(self.output_dir) > 30:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")
@@ -429,31 +429,31 @@ class SNANASimulation(ConfigBasedExecutable):
         temp_dir_obj.cleanup()
         return regenerate, new_hash
 
-    def _run(self):
-        regenerate, new_hash = self.write_input()
+    def _run(self) -> bool:
+        regenerate, _new_hash = self.write_input()
         if not regenerate:
             self.should_be_done()
             return True
 
-        with open(self.logging_file, "w") as f:
+        with open(self.logging_file, "w", encoding="utf-8") as f:
             subprocess.run(
                 ["submit_batch_jobs.sh", os.path.basename(self.config_path)],
                 stdout=f,
                 stderr=subprocess.STDOUT,
-                cwd=self.output_dir,
+                cwd=self.output_dir, check=False,
             )
 
         self.logger.info(f"Sim running and logging outputting to {self.logging_file}")
         return True
 
     def kill_and_fail(self):
-        with open(self.kill_file, "w") as f:
+        with open(self.kill_file, "w", encoding="utf-8") as f:
             self.logger.info(f"Killing remaining jobs for {self.name}")
             subprocess.run(
                 ["submit_batch_jobs.sh", "--kill", os.path.basename(self.config_path)],
                 stdout=f,
                 stderr=subprocess.STDOUT,
-                cwd=self.output_dir,
+                cwd=self.output_dir, check=False,
             )
         return Task.FINISHED_FAILURE
 
@@ -481,7 +481,7 @@ class SNANASimulation(ConfigBasedExecutable):
         if os.path.exists(self.done_file) or not os.path.exists(self.total_summary):
             if os.path.exists(self.done_file):
                 self.logger.info(f"Simulation {self.name} found done file!")
-                with open(self.done_file) as f:
+                with open(self.done_file, encoding="utf-8") as f:
                     if "FAIL" in f.read():
                         self.logger.error(
                             f"Done file {self.done_file} reporting failure"
@@ -493,18 +493,18 @@ class SNANASimulation(ConfigBasedExecutable):
 
             if os.path.exists(self.total_summary):
                 y = read_yaml(self.total_summary)
-                if "MERGE" in y.keys():
+                if "MERGE" in y:
                     for i, row in enumerate(y["MERGE"]):
                         if (
                             len(row) == 6
                         ):  # Old version for backward compatibility (before 15/01/2021)
-                            state, iver, version, ngen, nwrite, cpu = row
+                            _state, _iver, _version, ngen, nwrite, cpu = row
                         else:  # New MERGE.LOG syntax (after 15/01/2021)
-                            state, iver, version, ngen, nwrite, nspec, cpu = row
+                            _state, _iver, _version, ngen, nwrite, _nspec, cpu = row
                         if cpu < 60:
                             units = "minutes"
                         else:
-                            cpu = cpu / 60
+                            cpu /= 60
                             units = "hours"
                         self.logger.info(
                             f"Simulation {i + 1} generated {ngen} events and wrote {nwrite} to file, taking {cpu:0.1f} CPU {units}"
@@ -514,7 +514,7 @@ class SNANASimulation(ConfigBasedExecutable):
                         f"File {self.total_summary} does not have a MERGE section - did it die?"
                     )
                     return self.kill_and_fail()
-                if "SURVEY" in y.keys():
+                if "SURVEY" in y:
                     self.output["SURVEY"] = y["SURVEY"]
                     self.output["SURVEY_ID"] = y["IDSURVEY"]
                 else:
@@ -538,9 +538,8 @@ class SNANASimulation(ConfigBasedExecutable):
                             f"Symlink {s_end} exists and is pointing to a broken or missing directory"
                         )
                         return Task.FINISHED_FAILURE
-                    else:
-                        self.logger.debug(f"Linking {s} -> {s_end}")
-                        os.symlink(s, s_end, target_is_directory=True)
+                    self.logger.debug(f"Linking {s} -> {s_end}")
+                    os.symlink(s, s_end, target_is_directory=True)
                 chown_dir(self.output_dir)
             self.output.update({"photometry_dirs": s_ends})
             return Task.FINISHED_SUCCESS
@@ -566,7 +565,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # first find INCLUDE files and append INPUT_FILE_LIST
         KEYLIST_INCLUDE_FILE = ["INPUT_INCLUDE_FILE", "INPUT_FILE_INCLUDE"]
-        with open(sim_input_file, "rt") as f:
+        with open(sim_input_file, encoding="utf-8") as f:
             line_list = f.readlines()
         for line in line_list:
             line = line.rstrip()  # remove trailine space
@@ -588,7 +587,7 @@ class SNANASimulation(ConfigBasedExecutable):
 
         # loop over all of the sim-input files and search for key values
         for inp_file in INPUT_FILE_LIST:
-            f = open(inp_file, "rt")
+            f = open(inp_file, encoding="utf-8")
             line_list = f.readlines()
             f.close()
 
@@ -621,7 +620,7 @@ class SNANASimulation(ConfigBasedExecutable):
         tasks = []
         for sim_name in config.get("SIM", []):
             task_config = config["SIM"][sim_name]
-            if "EXTERNAL" not in task_config.keys():
+            if "EXTERNAL" not in task_config:
                 task_config["GENVERSION"] = f"{prefix}_{sim_name}"
             sim_output_dir = f"{base_output_dir}/{stage_number}_SIM/{sim_name}"
             s = SNANASimulation(sim_name, sim_output_dir, task_config, global_config)

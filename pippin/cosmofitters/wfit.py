@@ -1,21 +1,22 @@
-import inspect
-import shutil
-import subprocess
 import os
+import shutil
+import inspect
 from pathlib import Path
+import subprocess
+
 import numpy as np
 
-from pippin.config import mkdirs, get_output_loc, get_data_loc, chown_dir, read_yaml
-from pippin.create_cov import CreateCov
-from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.base import ConfigBasedExecutable
 from pippin.task import Task
+from pippin.config import mkdirs, chown_dir, read_yaml, get_data_loc, get_output_loc
+from pippin.create_cov import CreateCov
+from pippin.cosmofitters.cosmofit import CosmoFit
 
 
 class WFit(ConfigBasedExecutable, CosmoFit):
     def __init__(
         self, name, output_dir, create_cov_tasks, config, options, global_config
-    ):
+    ) -> None:
         # First check if all required options exist
         # In this case, WFITOPTS must exist with at least 1 entry
 
@@ -64,18 +65,17 @@ class WFit(ConfigBasedExecutable, CosmoFit):
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Done file found at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "SUCCESS" in f.read():
                     return Task.FINISHED_SUCCESS
-                else:
-                    self.logger.error(
-                        f"Done file reported failure. Check output log {self.logfile}"
-                    )
-                    self.scan_files_for_error([self.logfile], "ERROR", "EXCEPTION")
-                    return Task.FINISHED_FAILURE
+                self.logger.error(
+                    f"Done file reported failure. Check output log {self.logfile}"
+                )
+                self.scan_files_for_error([self.logfile], "ERROR", "EXCEPTION")
+                return Task.FINISHED_FAILURE
         return self.check_for_job(squeue, self.job_name)
 
-    def _run(self):
+    def _run(self) -> bool:
         self.yaml["CONFIG"]["WFITOPT"] = self.wfitopts
         self.yaml["CONFIG"]["INPDIR"] = self.create_cov_dirs
         self.yaml["CONFIG"]["OUTDIR"] = os.path.join(self.output_dir, "output")
@@ -96,7 +96,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
             mkdirs(self.output_dir)
             self.save_new_hash(new_hash)
 
-            with open(self.input_file, "w") as f:
+            with open(self.input_file, "w", encoding="utf-8") as f:
                 f.write(self.get_output_string())
 
             cmd = ["submit_batch_jobs.sh", os.path.basename(self.input_file)]
@@ -104,13 +104,13 @@ class WFit(ConfigBasedExecutable, CosmoFit):
                 f"Submitting wfit job: {' '.join(cmd)} in cwd: {self.output_dir}"
             )
             self.logger.debug(f"Logging to {self.logfile}")
-            with open(self.logfile, "w") as f:
+            with open(self.logfile, "w", encoding="utf-8") as f:
                 subprocess.run(
                     " ".join(cmd),
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=self.output_dir,
-                    shell=True,
+                    shell=True, check=False,
                 )
             chown_dir(self.output_dir)
 
@@ -123,7 +123,7 @@ class WFit(ConfigBasedExecutable, CosmoFit):
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         create_cov_tasks = Task.get_task_of_type(prior_tasks, CreateCov)
 
-        def _get_wfit_dir(base_output_dir, stage_number, name):
+        def _get_wfit_dir(base_output_dir, stage_number, name) -> str:
             return f"{base_output_dir}/{stage_number}_COSMOFIT/WFIT/{name}"
 
         tasks = []

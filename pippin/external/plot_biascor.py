@@ -1,17 +1,18 @@
-import numpy as np
-import yaml
-from chainconsumer import ChainConsumer
-import pandas as pd
-import sys
-import argparse
 import os
+import sys
+import gzip
 import logging
+import argparse
+
+import yaml
+import numpy as np
+import pandas as pd
+from chainconsumer import ChainConsumer
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
-import gzip
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(funcName)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -29,7 +30,7 @@ def get_arguments():
     parser.add_argument("input_file", help="Input yml file", type=str)
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["BIASCOR"])
 
@@ -37,11 +38,10 @@ def get_arguments():
 
 
 def load_file(file):
-    df = pd.read_csv(file)
-    return df
+    return pd.read_csv(file)
 
 
-def plot_single_file(source_file, df):
+def plot_single_file(source_file, df) -> None:
     logging.info(f"Plotting single file {source_file}")
     name = os.path.basename(os.path.dirname(os.path.abspath(source_file)))
     output_file = name + "_wfit.png"
@@ -57,7 +57,7 @@ def plot_single_file(source_file, df):
     del c
 
 
-def plot_all_files(df_all):
+def plot_all_files(df_all) -> None:
     output_file = "all_biascor_results.png"
     logging.info(f"Plotting all fits to {output_file}")
 
@@ -68,14 +68,14 @@ def plot_all_files(df_all):
         means = [df["omm"].mean(), df["w"].mean(), df["sigint"].mean()]
         if df.shape[0] < 2:
             name2 = name + " (showing mean error)"
-            cov = np.diag(
-                [df["omm_sig"].mean() ** 2, df["w_sig"].mean() ** 2, 0.01**2]
-            )
+            cov = np.diag([df["omm_sig"].mean() ** 2, df["w_sig"].mean() ** 2, 0.01**2])
         else:
             name2 = name + " (showing scatter error)"
-            cov = np.diag(
-                [df["omm"].std() ** 2, df["w"].std() ** 2, df["sigint"].std() ** 2]
-            )
+            cov = np.diag([
+                df["omm"].std() ** 2,
+                df["w"].std() ** 2,
+                df["sigint"].std() ** 2,
+            ])
         c.add_covariance(means, cov, parameters=labels, name=name2.replace("_", "\\_"))
         data.append([name, df["w"].mean(), df["w"].std(), df["w_sig"].mean()])
     wdf = pd.DataFrame(data, columns=["name", "mean_w", "scatter_mean_w", "mean_std_w"])
@@ -84,7 +84,7 @@ def plot_all_files(df_all):
     c.plotter.plot_summary(errorbar=True, filename=output_file)
 
 
-def plot_scatter_comp(df_all):
+def plot_scatter_comp(df_all) -> None:
     logging.info("Creating scatter plots")
     cols = ChainConsumer()._all_colours * 2
     # Cant plot data, want to make sure all the versions match
@@ -119,7 +119,7 @@ def plot_scatter_comp(df_all):
                 if i < j:
                     ax.axis("off")
                     continue
-                elif i == j:
+                if i == j:
                     h, _, _ = ax.hist(
                         ws[i, :],
                         bins=bins,
@@ -179,7 +179,7 @@ def plot_scatter_comp(df_all):
         fig.savefig(figname, bbox_inches="tight", dpi=150, transparent=True)
 
 
-def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
+def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args) -> None:
     logging.info(
         f"Making Hubble plot from FITRES file {fitres_file} and M0DIF file {m0diff_file}"
     )
@@ -197,12 +197,12 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         & (dfm.fitopt_num == 0)
     ]
 
-    from astropy.cosmology import FlatwCDM
     import numpy as np
+    from astropy.cosmology import FlatwCDM
     import matplotlib.pyplot as plt
 
-    df.sort_values(by="zHD", inplace=True)
-    dfm.sort_values(by="z", inplace=True)
+    df = df.sort_values(by="zHD")
+    dfm = dfm.sort_values(by="z")
     dfm = dfm[dfm["MUDIFERR"] < 10]
 
     ol = dfm.ol_ref.unique()[0]
@@ -254,19 +254,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
         classifier_text = f"Classifier = {prob_label}"
     else:
         classifier_text = "No Classification"
-    label = "\n".join(
-        [
-            num_sn,
-            alpha,
-            beta,
-            sigint,
-            gamma,
-            scalepcc,
-            contam_true,
-            contam_data,
-            classifier_text,
-        ]
-    )
+    label = f"{num_sn}\n{alpha}\n{beta}\n{sigint}\n{gamma}\n{scalepcc}\n{contam_true}\n{contam_data}\n{classifier_text}"
     label = label.replace("\n\n", "\n").replace("\n\n", "\n")
     dfz = df["zHD"]
     zs = np.linspace(dfz.min(), dfz.max(), 500)
@@ -310,11 +298,10 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     )
     logging.info(f"Hubble plot prob colour given by column {prob_col_name}")
 
-    if prob_col_name is not None:
-        if prob_col_name.upper().startswith("PROB"):
-            mask_no_prob = df[prob_col_name] < -1
-            df.loc[mask_no_prob, prob_col_name] = 1.0
-            df[prob_col_name] = df[prob_col_name].clip(0, 1)
+    if prob_col_name is not None and prob_col_name.upper().startswith("PROB"):
+        mask_no_prob = df[prob_col_name] < -1
+        df.loc[mask_no_prob, prob_col_name] = 1.0
+        df[prob_col_name] = df[prob_col_name].clip(0, 1)
 
     for resid, ax in enumerate(axes):
         ax.tick_params(which="major", direction="inout", length=4)
@@ -416,7 +403,7 @@ def make_hubble_plot(fitres_file, m0diff_file, prob_col_name, args):
     plt.close(fig)
 
 
-def make_m0diff_plot(m0diff_file):
+def make_m0diff_plot(m0diff_file) -> None:
     logging.info("Making m0diff plot")
     dfm = pd.read_csv(m0diff_file)
 
@@ -435,10 +422,7 @@ def make_m0diff_plot(m0diff_file):
         dfg = [("", dfm)]
         n = 1
 
-    if n > 6:
-        ncols = 3
-    else:
-        ncols = 1
+    ncols = 3 if n > 6 else 1
     nrows = (n + (ncols - 1)) // ncols
 
     fig, axes = plt.subplots(
@@ -502,7 +486,7 @@ if __name__ == "__main__":
             if df.shape[0] > 1:
                 plot_single_file(name, df)
             else:
-                logging.info(f"Group {name} has df shape {str(df.shape)}")
+                logging.info(f"Group {name} has df shape {df.shape!s}")
             plot_all_files(df_all)
             plot_scatter_comp(df_all)
 
@@ -518,7 +502,7 @@ if __name__ == "__main__":
 
         # Plot tails
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e), exc_info=True)
-        raise e
+        raise

@@ -1,16 +1,16 @@
-import inspect
 import os
 import shutil
-import subprocess
+import inspect
 from pathlib import Path
+import subprocess
 
-from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs, merge_dict, get_data_loc
 from pippin.task import Task
+from pippin.config import mkdirs, get_config, merge_dict, get_data_loc, get_output_loc
+from pippin.classifiers.classifier import Classifier
 
 
 class NearestNeighborPyClassifier(Classifier):
-    """Nearest Neighbor Python classifier
+    """Nearest Neighbor Python classifier.
 
     CONFIGURATION:
     ==============
@@ -44,7 +44,7 @@ class NearestNeighborPyClassifier(Classifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -96,14 +96,14 @@ if [ $? -ne 0 ]; then
 fi
 """
 
-    def setup(self):
+    def setup(self) -> None:
         lcfit = self.get_fit_dependency()
         self.fitres_filename = lcfit["fitopt_map"][self.fitopt]
         self.fitres_file = os.path.abspath(
             os.path.join(lcfit["fitres_dirs"][self.index], self.fitres_filename)
         )
 
-    def classify(self, command):
+    def classify(self, command) -> bool:
         self.setup()
         if self.batch_file is None:
             if self.gpu:
@@ -111,7 +111,7 @@ fi
             else:
                 self.sbatch_header = self.sbatch_cpu_header
         else:
-            with open(self.batch_file, "r") as f:
+            with open(self.batch_file, encoding="utf-8") as f:
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
@@ -149,11 +149,13 @@ fi
             mkdirs(self.output_dir)
 
             slurm_output_file = self.output_dir + "/job.slurm"
-            with open(slurm_output_file, "w") as f:
+            with open(slurm_output_file, "w", encoding="utf-8") as f:
                 f.write(slurm_script)
             self.save_new_hash(new_hash)
             self.logger.info(f"Submitting batch job {slurm_output_file}")
-            subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
+            subprocess.run(
+                ["sbatch", slurm_output_file], cwd=self.output_dir, check=False
+            )
         else:
             self.logger.info("Hash check passed, not rerunning")
             self.should_be_done()
@@ -177,12 +179,9 @@ fi
                     model = t.output["model_filename"]
         else:
             model = get_output_loc(model)
-        types = " ".join(
-            [
-                str(a)
-                for a in self.get_simulation_dependency().output["types_dict"]["IA"]
-            ]
-        )
+        types = " ".join([
+            str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]
+        ])
         if not types:
             types = "1"
         command = (
@@ -198,12 +197,9 @@ fi
         return self.classify(command)
 
     def train(self):
-        types = " ".join(
-            [
-                str(a)
-                for a in self.get_simulation_dependency().output["types_dict"]["IA"]
-            ]
-        )
+        types = " ".join([
+            str(a) for a in self.get_simulation_dependency().output["types_dict"]["IA"]
+        ])
         if not types:
             self.logger.error("No Ia types for a training sim!")
             return False
@@ -221,7 +217,7 @@ fi
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "FAILURE" in f.read().upper():
                     return Task.FINISHED_FAILURE
                 return Task.FINISHED_SUCCESS

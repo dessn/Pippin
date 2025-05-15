@@ -1,13 +1,15 @@
-import numpy as np
-import yaml
-import pandas as pd
-import sys
-import argparse
 import os
+import sys
 import logging
+import argparse
+from itertools import starmap
+
+import yaml
+import numpy as np
+import pandas as pd
 
 
-def setup_logging():
+def setup_logging() -> None:
     fmt = "[%(levelname)8s |%(filename)21s:%(lineno)3d]   %(message)s"
     handler = logging.StreamHandler(sys.stdout)
     logging.basicConfig(
@@ -18,7 +20,7 @@ def setup_logging():
     logging.getLogger("matplotlib").setLevel(logging.ERROR)
 
 
-def fail(msg, condition=True):
+def fail(msg, condition=True) -> None:
     if condition:
         logging.error(msg)
         raise ValueError(msg)
@@ -33,7 +35,7 @@ def get_arguments():
     )
     args = parser.parse_args()
 
-    with open(args.input_file, "r") as f:
+    with open(args.input_file, encoding="utf-8") as f:
         config = yaml.safe_load(f)
     config.update(config["COSMOMC"])
 
@@ -55,9 +57,8 @@ def load_output(basename):
             df.iloc[:, 2:].to_numpy(),
             list(df.columns[2:]),
         )
-    else:
-        fail(f"Cannot find file {basename}")
-        return None
+    fail(f"Cannot find file {basename}")
+    return None
 
 
 def weighted_avg_and_std(values, weights):
@@ -67,14 +68,13 @@ def weighted_avg_and_std(values, weights):
 
 
 def get_entry(name, syst, filename):
-    w, l, chain, cols = load_output(filename)
+    w, _l, chain, cols = load_output(filename)
     means, stds = weighted_avg_and_std(chain, w)
-    d = dict([(l + " avg", [x]) for l, x in zip(cols, means)])
-    d.update(dict([(l + " std", [x]) for l, x in zip(cols, stds)]))
-    d["name"] = [" ".join([n for n in name.split()[:-1]])]
+    d = {l + " avg": [x] for l, x in zip(cols, means)}
+    d.update({l + " std": [x] for l, x in zip(cols, stds)})
+    d["name"] = [" ".join(list(name.split()[:-1]))]
     d["covopt"] = [syst]
-    df = pd.DataFrame(d)
-    return df
+    return pd.DataFrame(d)
 
 
 if __name__ == "__main__":
@@ -90,17 +90,15 @@ if __name__ == "__main__":
             bases = [
                 (b, i)
                 for i, b in enumerate(budget_labels)
-                if b in ["NOSYS", "STAT", "STATONLY"]
+                if b in {"NOSYS", "STAT", "STATONLY"}
             ]
-            if len(bases):
+            if bases:
                 base, base_index = bases[0]
-                data = [
-                    get_entry(n, b, f) for n, b, f in zip(names, budget_labels, files)
-                ]
+                data = list(map(get_entry, names, budget_labels, files))
                 others = [d for i, d in enumerate(data) if i != base_index]
 
                 base_df = data[base_index]
-                df_all = pd.concat([base_df] + others).reset_index()
+                df_all = pd.concat([base_df, *others]).reset_index()
 
                 df_all.columns = [
                     c.replace(r"\ \mathrm{Blinded}", "") for c in df_all.columns
@@ -119,12 +117,16 @@ if __name__ == "__main__":
                     logging.info(f"Determining error budget for {name}")
                     output_filename = f"errbudget_{name}.txt".replace(" ", "_")
 
-                    nosys_mask = df.covopt.str.upper().isin(
-                        ["NOSYS", "NO_SYS", "STAT", "STATONLY", "STAT_ONLY"]
+                    nosys_mask = df.covopt.str.upper().isin([
+                        "NOSYS",
+                        "NO_SYS",
+                        "STAT",
+                        "STATONLY",
+                        "STAT_ONLY",
+                    ])
+                    assert nosys_mask.sum() == 1, (
+                        f"Multiple potential no systematic covopts found for name {name}, this is an issue"
                     )
-                    assert (
-                        nosys_mask.sum() == 1
-                    ), f"Multiple potential no systematic covopts found for name {name}, this is an issue"
 
                     avg_cols = [c for c in df.columns if c.endswith(" avg")]
                     std_cols = [c for c in df.columns if c.endswith(" std")]
@@ -156,9 +158,9 @@ if __name__ == "__main__":
                     pd.set_option("display.max_columns", 500)
                     pd.set_option("display.width", 2000)
 
-                    with open(rep_file, "w") as f:
-                        f.write(df.reset_index(drop=True).__repr__())
+                    with open(rep_file, "w", encoding="utf-8") as f:
+                        f.write(repr(df.reset_index(drop=True)))
 
     except Exception as e:
         logging.exception(e, exc_info=True)
-        raise e
+        raise

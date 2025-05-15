@@ -30,13 +30,13 @@
 
 import os
 import sys
-import numpy as np
-import getpass
 import time
 import shutil
 import string
 import fnmatch
+import getpass
 
+import numpy as np
 
 SNDATA_ROOT = os.environ["SNDATA_ROOT"]
 HOSTNAME = os.environ["HOSTNAME"]
@@ -46,12 +46,13 @@ CWD = os.getcwd()
 
 def linef(file1, line1):
     co = 0
-    with open(file1, "r") as inF:
+    with open(file1, encoding="utf-8") as inF:
         for line in inF:
             if line1 in line:
                 return co
-            co = co + 1
+            co += 1
     print("Didnt find line in file, going to crash")
+    return None
 
 
 def parseLines(lines, key, narg, vbose, force_multi=False):
@@ -64,10 +65,7 @@ def parseLines(lines, key, narg, vbose, force_multi=False):
     nrow = len(rowList)
     print("parse", key, narg)
     if not force_multi and (nrow == 1) and (narg != 99):
-        if narg == 1:
-            arg = rowList[0].split()[1]
-        else:
-            arg = rowList[0].split()[1 : narg + 1]
+        arg = rowList[0].split()[1] if narg == 1 else rowList[0].split()[1:narg + 1]
     elif force_multi or (nrow > 1) or (narg == 99):
         for row in rowList:
             if narg != 99:
@@ -81,9 +79,9 @@ def parseLines(lines, key, narg, vbose, force_multi=False):
     return arg
 
 
-def dataset(output_dir, base_output, strex1, strex2, sys=1):
+def dataset(output_dir, base_output, strex1, strex2, sys=1) -> int:
     # DILLON: I replaced getcwd() because I'm specifying full output
-    g = open(output_dir + "/" + base_output + strex1 + ".dataset", "w+")
+    g = open(output_dir + "/" + base_output + strex1 + ".dataset", "w+", encoding="utf-8")
     # g=open(os.getcwd()+'/'+output_dir+'/'+base_output+strex1+'.dataset','w+');
     g.write("name = JLA\n")
     # g.write('data_file = '+os.getcwd()+'/'+output_dir+'/lcparam_'+base_output+strex2+'.txt\n');
@@ -117,7 +115,7 @@ def dataset(output_dir, base_output, strex1, strex2, sys=1):
     return 2
 
 
-def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
+def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO") -> int:
     from scipy.interpolate import interp2d
 
     headn = linef(file1, "zCMB")
@@ -130,14 +128,12 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
     muerr = data1["MUERR"].astype(float)
 
     f1 = open(
-        output_dir + "/lcparam_" + base_output + ".txt", "w"
+        output_dir + "/lcparam_" + base_output + ".txt", "w", encoding="utf-8"
     )  # this is the file for cosmomc
     f1.write(
         "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec  \n"
     )  # standard format
-    for x in range(0, len(z1)):
-        f1.write(
-            cid[x]
+    f1.writelines(cid[x]
             + " "
             + str(z1[x])
             + " "
@@ -146,13 +142,12 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
             + str(mu[x] - 19.35)
             + " "
             + str(muerr[x])
-            + " 0 0 0 0 0 0 0 0 0 0 0\n"
-        )
+            + " 0 0 0 0 0 0 0 0 0 0 0\n" for x in range(len(z1)))
     f1.close()
-    g = open(output_dir + "/" + base_output + ".dataset", "w")
-    h = open(output_dir + "/" + base_output + "_nosys.dataset", "w")
+    g = open(output_dir + "/" + base_output + ".dataset", "w", encoding="utf-8")
+    h = open(output_dir + "/" + base_output + "_nosys.dataset", "w", encoding="utf-8")
     print("Shafer", lc1)
-    ztemp1, whos = np.loadtxt(lc1, usecols=(1, 2), unpack=True, dtype="str", skiprows=1)
+    ztemp1, _whos = np.loadtxt(lc1, usecols=(1, 2), unpack=True, dtype="str", skiprows=1)
     # stop
     # scount=sys1[0]
     # sys1=sys1.astype(float)
@@ -162,20 +157,20 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
     sys1 = sys1.astype(float)
     bigmatmm = np.zeros((len(ztemp1), len(ztemp1))) + 0.000000
     co = 1
-    for x in range(0, len(ztemp1)):
-        for y in range(0, len(ztemp1)):
+    for x in range(len(ztemp1)):
+        for y in range(len(ztemp1)):
             bigmatmm[x, y] = sys1[co]
-            co = co + 1
+            co += 1
 
-    gmm = open(output_dir + "/sys_" + base_output + ".txt", "w")
+    gmm = open(output_dir + "/sys_" + base_output + ".txt", "w", encoding="utf-8")
     gmm.write(str(len(z1)) + "\n")
     xvec = ztemp1
     yvec = ztemp1
     f = interp2d(xvec, yvec, bigmatmm)
     # stop
-    for x in range(0, len(z1)):
+    for x in range(len(z1)):
         linemm = ""
-        for y in range(0, len(z1)):
+        for y in range(len(z1)):
             xx = np.argmin(np.absolute(z1[x] - ztemp1))
             yy = np.argmin(np.absolute(z1[y] - ztemp1))
             # big1=bigmatmm[xx-1:xx+1,yy-1:yy+1]
@@ -190,7 +185,7 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
             linemm = ""
 
             # linemm=str("%.8f" % bigmatmm[xx,yy])
-            linemm = str("%.8f" % f(z1[x], z1[y]))
+            linemm = str(f"{f(z1[x], z1[y]):.8f}")
             # linemm=str("%.8f" % bigmatmm[xx,yy])
             gmm.write(linemm + "\n")
     gmm.close()
@@ -201,15 +196,16 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
     return 2
 
 
-def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import array
-    import math
+def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO") -> None:
     import os
+    import re
+    import math
+    import array
+
+    import numpy as np
     from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
+    import matplotlib.pyplot as plt
 
     cosmo2 = FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -227,7 +223,7 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     mu_syn1 = 5.0 * (np.log10(x)) + 25.0 - 19.35
     mu1 = mb1 - mu_syn1
 
-    list2, z2, mb2, mb2e = np.loadtxt(
+    _list2, z2, mb2, mb2e = np.loadtxt(
         output_dir + "/lcparam_" + lc2 + ".txt",
         usecols=(0, 1, 4, 5),
         unpack=True,
@@ -251,12 +247,12 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     # print z1
     # stop
     f1 = open(
-        output_dir + "/lcparam_" + base_output + ".txt", "w"
+        output_dir + "/lcparam_" + base_output + ".txt", "w", encoding="utf-8"
     )  # this is the file for cosmomc
     f1.write(
         "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
     )  # standard format
-    for x in range(0, len(z1)):
+    for x in range(len(z1)):
         f1.write(
             str(list1[x])
             + " "
@@ -279,7 +275,7 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     sys1 = sys1.astype(float)
     sys2 = sys2.astype(float)
     savg = (sys1 + sys2) / 2.0
-    sys3 = open(output_dir + "/sys_" + base_output + ".txt", "w")
+    sys3 = open(output_dir + "/sys_" + base_output + ".txt", "w", encoding="utf-8")
     sys3.write(str(scount) + "\n")
     for x in range(1, len(sys1)):
         sys3.write(str(savg[x]) + "\n")
@@ -289,15 +285,16 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     print(output_dir + "/sys_" + base_output + ".txt")
 
 
-def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
-    import numpy as np
-    import matplotlib.pyplot as plt
-    import array
-    import math
+def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO") -> None:
     import os
+    import re
+    import math
+    import array
+
+    import numpy as np
     from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
+    import matplotlib.pyplot as plt
 
     cosmo2 = FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -352,12 +349,12 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     # print z1
     # stop
     f1 = open(
-        output_dir + "/lcparam_" + base_output + ".txt", "w"
+        output_dir + "/lcparam_" + base_output + ".txt", "w", encoding="utf-8"
     )  # this is the file for cosmomc
     f1.write(
         "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
     )  # standard format
-    for x in range(0, len(zs[0])):
+    for x in range(len(zs[0])):
         f1.write(
             str(lists[0][x])
             + " "
@@ -387,7 +384,7 @@ def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     # asdf
     scount = syss[0][0]
     sys1 = syss[0]
-    sys3 = open(output_dir + "/sys_" + base_output + ".txt", "w")
+    sys3 = open(output_dir + "/sys_" + base_output + ".txt", "w", encoding="utf-8")
     sys3.write(str(scount) + "\n")
     for x in range(1, len(sys1)):
         sys3.write(str(savg[x]) + "\n")
@@ -411,14 +408,15 @@ def sysmat(
     topfile="NONE",
     errscales="NONE",
     subdir="*",
-):
-    import numpy as np
-    import array
-    import math
+) -> int:
     import os
+    import re
+    import math
+    import array
+
+    import numpy as np
     from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
 
     if not output_dir:
         output_dir = "COSMO"
@@ -432,7 +430,7 @@ def sysmat(
     print(len(covlines))
     # stop
     sysnum = len(covlines)
-    if covlines == "NONE" or covlines == [[]]:
+    if covlines in ("NONE", [[]]):
         sysnum = 0
     co = 0
     sys_ratio = 1
@@ -444,13 +442,9 @@ def sysmat(
 
     look_dir = os.path.join(topdir, subdir)
 
-    file_lines = sorted(
-        [
-            os.path.join(look_dir, x)
-            for x in os.listdir(look_dir)
-            if x.endswith(".M0DIF")
-        ]
-    )
+    file_lines = sorted([
+        os.path.join(look_dir, x) for x in os.listdir(look_dir) if x.endswith(".M0DIF")
+    ])
 
     if not file_lines:
         print("No M0DIF files!!! This makes me sad!!! Im done here!!")
@@ -465,7 +459,7 @@ def sysmat(
 
     if os.path.isfile(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG"):
         log_lines = open(
-            topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", "r"
+            topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG", encoding="utf-8"
         ).readlines()
     print(topdir + "/SALT2mu_FITSCRIPTS/FITJOBS_SUMMARY.LOG")
 
@@ -484,7 +478,7 @@ def sysmat(
 
     INPDIR1 = []
 
-    for xco in range(0, len(log_lines)):
+    for xco in range(len(log_lines)):
         if "MUOPT:" in log_lines[xco]:
             mu_split = log_lines[xco].split()
             print(mu_split)
@@ -503,9 +497,9 @@ def sysmat(
         FITOPT_var2 = np.append(FITOPT_var2, mu_split[2][1:-1])
     else:
         if os.path.isfile(INPDIR1[0] + "/FITOPT.README"):
-            fit_lines = open(INPDIR1[0] + "/FITOPT.README", "r").readlines()
+            fit_lines = open(INPDIR1[0] + "/FITOPT.README", encoding="utf-8").readlines()
 
-        for xco in range(0, len(fit_lines)):
+        for xco in range(len(fit_lines)):
             if "FITOPT:" in fit_lines[xco]:
                 mu_split = fit_lines[xco].split()
                 FITOPT_var1 = np.append(FITOPT_var1, "FITOPT" + mu_split[1])
@@ -515,15 +509,15 @@ def sysmat(
         (sysfile == "NONE") & (errscales != "NONE")
     ):
         if os.path.isfile(sysfile) & (sysfile != "NONE") & (errscales == "NONE"):
-            if (os.path.isfile(sysfile) == False) & (sysfile != "NONE"):
+            if (not os.path.isfile(sysfile)) & (sysfile != "NONE"):
                 print("That " + sysfile + " doesnt exist.  Grrrr.  Have to leave")
 
-            sys_lines = open(sysfile, "r").readlines()
+            sys_lines = open(sysfile, encoding="utf-8").readlines()
         if (sysfile == "NONE") & (errscales != "NONE"):
             sys_lines = errscales
         print("syslines", sys_lines)
         # stop
-        for xco in range(0, len(sys_lines)):
+        for xco in range(len(sys_lines)):
             if "ERRSCALE:" in sys_lines[xco]:
                 mu_split = sys_lines[xco].split()
                 SYSOPT_var1 = np.append(SYSOPT_var1, mu_split[1])
@@ -571,12 +565,12 @@ def sysmat(
     mu_syn1 = mu_syn + mu1
 
     f1 = open(
-        output_dir + "/lcparam_" + base_output + ".txt", "w"
+        output_dir + "/lcparam_" + base_output + ".txt", "w", encoding="utf-8"
     )  # this is the file for cosmomc
     f1.write(
         "#name zcmb zhel dz mb dmb x1 dx1 color dcolor 3rdvar d3rdvar cov_m_s cov_m_c cov_s_c set ra dec biascor \n"
     )  # standard format
-    for x in range(0, len(z1)):
+    for x in range(len(z1)):
         f1.write(
             str(x)
             + " "
@@ -592,8 +586,8 @@ def sysmat(
     f1.close()
     bigmatmm = np.zeros((len(z1), len(z1), sysnum + 1)) + 0.000000
 
-    logf = open(output_dir + "/" + base_output + ".log", "w")
-    for xco in range(0, len(file_lines)):
+    logf = open(output_dir + "/" + base_output + ".log", "w", encoding="utf-8")
+    for xco in range(len(file_lines)):
         print("Now in file_lines")
         print(file_lines[xco].split("_")[-2], file_lines[xco].split("_")[-1][:-6])
         # SALT2mu_SNLS+SDSS+LOWZ+PS1_Scolnic2+HST/DS17/SALT2mu_FITOPT000_MUOPT000.M0DIF
@@ -622,7 +616,7 @@ def sysmat(
         mu_syn2 = 5.0 * (np.log10(x)) + 25.0 - 19.35
         print(len(z1), len(z2), len(mu1), len(mu_syn2), len(mu2))
         # 35 32 35 35 32
-        mu_syn2 = mu_syn2 + mu2
+        mu_syn2 += mu2
         xxb = (z1 == 0) | (z2 == 0)
         if len(z2[xxb]) > 0:
             mu_syn2[xxb] = mu_syn1[xxb]
@@ -632,7 +626,7 @@ def sysmat(
         # stop
         if len(SYSOPT_var1) > 0:
             comatch = 0
-            for y1 in range(0, len(SYSOPT_var1)):
+            for y1 in range(len(SYSOPT_var1)):
                 filtered1 = fnmatch.filter([FITOPT_var2[xx1][0]], SYSOPT_var1[y1])
                 filtered2 = fnmatch.filter([MUOPT_var2[xx2][0]], SYSOPT_var2[y1])
                 if (len(filtered1) > 0) & (len(filtered2) > 0):
@@ -660,7 +654,7 @@ def sysmat(
                         print(
                             "WARNING you have had multiple systematics match up!!! That is bad"
                         )
-                    comatch = comatch + 1
+                    comatch += 1
 
                     # if ((np.amax(np.absolute(z1-z2)/z1)>0.1)&(sys_ratio>0)):
 
@@ -674,7 +668,7 @@ def sysmat(
         # if 'SALT2' in FITOPT_var2[xx1][0]:
         # print sys_ratio
         # stop
-        distm = np.zeros((1))
+        distm = np.zeros(1)
         dm2 = mu_syn1 - mu_syn2
         dm2 = np.multiply(dm2, sys_ratio)
         dm2t = np.matrix(dm2)
@@ -733,15 +727,15 @@ def sysmat(
                 )
                 bigmatmm[:, :, x] = np.add(bigmatmm[:, :, x], np.multiply(dmm, 1.0))
 
-        co = co + 1
-    for z in range(0, (sysnum + 1)):
-        gmm = open(output_dir + "/sys_" + base_output + "_" + str(z) + ".txt", "w")
+        co += 1
+    for z in range(sysnum + 1):
+        gmm = open(output_dir + "/sys_" + base_output + "_" + str(z) + ".txt", "w", encoding="utf-8")
         gmm.write(str(len(z1)) + "\n")
-        for x in range(0, len(z1)):
+        for x in range(len(z1)):
             linemm = ""
-            for y in range(0, len(z1)):
+            for y in range(len(z1)):
                 linemm = ""
-                linemm = str("%.8f" % bigmatmm[x, y, z])
+                linemm = str(f"{bigmatmm[x, y, z]:.8f}")
                 gmm.write(linemm + "\n")
         gmm.close()
 
@@ -757,7 +751,7 @@ def sysmat(
 
 
 class FILE_INFO:
-    def __init__(self, filename):
+    def __init__(self, filename) -> None:
         print("   Parse kcor input file: ", filename)
 
         filename_expandvars = os.path.expandvars(filename)
@@ -765,11 +759,12 @@ class FILE_INFO:
         if os.path.isfile(filename_expandvars):
             fname_local = filename_expandvars
         else:
-            raise ValueError("TOPDIR_KCOR needs to be defined? Maybe?")
+            msg = "TOPDIR_KCOR needs to be defined? Maybe?"
+            raise ValueError(msg)
             # fname_local = TOPDIR_KCOR + '/' + filename_expandvars
 
         # open file file and read all lines into Lines
-        f = open(fname_local, "rt")
+        f = open(fname_local, encoding="utf-8")
         Lines = np.array(f.readlines())
         self.COSMOMC_TEMPLATES = parseLines(Lines, "COSMOMC_TEMPLATES:", 1, 1)
         self.BASEOUTPUT = parseLines(Lines, "BASEOUTPUT:", 1, 1)
@@ -794,7 +789,7 @@ class FILE_INFO:
 import os.path
 
 
-def makeini(outputdir, baseoutput, basedir, datasetnum=0):
+def makeini(outputdir, baseoutput, basedir, datasetnum=0) -> None:
     # dataset=outputdir+'/'+baseoutput+'.dataset'
     dataset = os.path.join(outputdir, "%s_%d.dataset" % (baseoutput, datasetnum))
     # dvin_nosn_ocmb_omol.ini
@@ -812,14 +807,13 @@ def makeini(outputdir, baseoutput, basedir, datasetnum=0):
     for ss in svec:
         for gg in gvec:
             if os.path.isfile(basedir + "/" + gg + ss + ".ini"):
-                g = open(basedir + "/" + gg + ss + ".ini", "r")
+                g = open(basedir + "/" + gg + ss + ".ini", encoding="utf-8")
                 h = open(
-                    outputdir + "/" + gg + ss + "_" + str(int(datasetnum)) + ".ini", "w"
+                    outputdir + "/" + gg + ss + "_" + str(int(datasetnum)) + ".ini", "w", encoding="utf-8"
                 )
-                with open(basedir + "/" + gg + ss + ".ini", "r") as f:
+                with open(basedir + "/" + gg + ss + ".ini", encoding="utf-8") as f:
                     content = f.readlines()
-                for x in content:
-                    h.write(x)
+                h.writelines(content)
                 h.write("\nfile_root=" + gg + ss + "_" + str(int(datasetnum)) + "\n")
                 h.write("jla_dataset=" + dataset + "\n")
                 h.write("root_dir = {root_dir}\n")
@@ -827,15 +821,16 @@ def makeini(outputdir, baseoutput, basedir, datasetnum=0):
                 g.close()
 
 
-def write_done(filename, success=True):
-    with open(filename, "w") as f:
+def write_done(filename, success=True) -> None:
+    with open(filename, "w", encoding="utf-8") as f:
         f.write("SUCCESS" if success else "FAILURE")
 
 
 if __name__ == "__main__":
     # parse input argument(s)
     if len(sys.argv) < 3:
-        raise ValueError("Must give INFILE argument\n-->ABORT")
+        msg = "Must give INFILE argument\n-->ABORT"
+        raise ValueError(msg)
     else:
         INFILE = sys.argv[1]
         print("Input file: ", INFILE)
@@ -893,7 +888,7 @@ if __name__ == "__main__":
         print(FileInfo.OUTPUTDIR)
         # DILLON: I'm editing here for giving full outputdir path not relative to cwd
         with open(
-            "/".join(FileInfo.OUTPUTDIR.split("/")[:-1]) + "/covopt.dict", "w"
+            "/".join(FileInfo.OUTPUTDIR.split("/")[:-1]) + "/covopt.dict", "w", encoding="utf-8"
         ) as f:
             for d in range(len(FileInfo.COVOPT) + 1):
                 makeini(
@@ -904,14 +899,13 @@ if __name__ == "__main__":
                 )
                 if d == 0:
                     covwrite = "ALLSYS"
-                else:
-                    if FileInfo.COVOPT[d - 1]:
-                        covwrite = (
-                            FileInfo.COVOPT[d - 1][0]
-                            .replace("[", "")
-                            .replace("'", "")
-                            .replace("]", "")
-                        )
+                elif FileInfo.COVOPT[d - 1]:
+                    covwrite = (
+                        FileInfo.COVOPT[d - 1][0]
+                        .replace("[", "")
+                        .replace("'", "")
+                        .replace("]", "")
+                    )
                 f.write("%d\t%s\n" % (d, covwrite))
 
         print("Copying base.ini file over")
@@ -922,7 +916,7 @@ if __name__ == "__main__":
         write_done(done_file, success=True)
     except Exception as e:
         write_done(done_file, success=False)
-        raise e
+        raise
     # print "\n Done parsing ", nkcor, " kcor-input files "
 
     # change filter char

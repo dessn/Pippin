@@ -1,19 +1,20 @@
+import os
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.interpolate import griddata
-import os
 
 field_names = ["SHALLOW", "DEEP"]
 bands = ["g", "r", "i", "z"]
 cuts = [30]
 
 
-def print_drop(mask, name):
+def print_drop(mask, name) -> None:
     print(f"Mask {name} rejects {100 * (~mask).sum() / mask.size:0.2f}% of samples")
 
 
-def parse_data(filename):
+def parse_data(filename) -> None:
     print(f"Parsing {filename}")
     filename_obs = filename.replace(".pkl", ".fitres")
     print(f"Reading FITRES dump file {filename_obs}")
@@ -84,7 +85,7 @@ def rejstd(x, debug=False):
     d = 4
     mask = np.isfinite(x)
     x = x[mask]
-    for i in range(ns):
+    for _i in range(ns):
         std = np.std(x)
         mean = np.mean(x)
         deviation = np.abs(x - mean) / std
@@ -94,7 +95,7 @@ def rejstd(x, debug=False):
     s = np.std(x)
     n = x.size
     if n < 15:
-        return np.NaN
+        return np.nan
     return s
 
 
@@ -103,7 +104,7 @@ def rejmean(x, debug=False):
     d = 4
     mask = np.isfinite(x)
     x = x[mask]
-    for i in range(ns):
+    for _i in range(ns):
         std = np.std(x)
         mean = np.mean(x)
         deviation = np.abs(x - mean) / std
@@ -113,7 +114,7 @@ def rejmean(x, debug=False):
     s = np.mean(x)
     n = x.size
     if n < 15:
-        return np.NaN
+        return np.nan
     return s
 
 
@@ -160,7 +161,7 @@ for cut in cuts:
                 indices_s.append(np.digitize(df_s[k], bins=bins) - 1)
 
             data = {}
-            for field_name, color in zip(field_names, ("viridis", "magma")):
+            for field_name, _color in zip(field_names, ("viridis", "magma")):
                 fields_list = (
                     ["E1", "E2", "S1", "S2", "C1", "C2", "X1", "X2"]
                     if field_name == "SHALLOW"
@@ -226,27 +227,22 @@ for cut in cuts:
                         x = (
                             griddata(ind2.T, x2, ind.T, method="nearest")
                             .T.flatten()
-                            .reshape((x.shape))
+                            .reshape(x.shape)
                         )
 
                         # Save to output
                         data[n + field_name + band] = x
 
             # Create output files
-            for j, n in enumerate(["SIM", "FAKES"]):
+            for _j, n in enumerate(["SIM", "FAKES"]):
                 output_string = []
-                output_string.append(
-                    "DEFINE_FIELDGROUP: SHALLOW E1+E2+S1+S2+C1+C2+X1+X2"
-                )
-                output_string.append("DEFINE_FIELDGROUP: DEEP C3+X3\n")
+                output_string.extend(("DEFINE_FIELDGROUP: SHALLOW E1+E2+S1+S2+C1+C2+X1+X2", "DEFINE_FIELDGROUP: DEEP C3+X3\n"))
                 names = [m[0] for m in maps]
                 for field in field_names:
                     for b in bands:
                         d = data[n + field + b]
 
-                        output_string.append("MAPNAME: FLUXERR_SCALE")
-                        output_string.append(f"BAND: {b}  FIELD: {field}")
-                        output_string.append(f"VARNAMES:  {' '.join(names)} ERRSCALE")
+                        output_string.extend(("MAPNAME: FLUXERR_SCALE", f"BAND: {b}  FIELD: {field}", f"VARNAMES:  {' '.join(names)} ERRSCALE"))
                         for inds in np.indices(d.shape).reshape((len(d.shape), -1)).T:
                             # Get the bin centers
                             bc = [f"{bc[i]:0.2f}" for bc, i in zip(bcs, inds)]
@@ -256,6 +252,6 @@ for cut in cuts:
                             output_string.append("ROW: " + "  ".join(bc))
                         output_string.append("ENDMAP:\n")
                 with open(
-                    f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}.DAT", "w"
+                    f"maps/DES5YR_{n}_ERRORFUDGES_DIFFIMG_{'_'.join(names)}.DAT", "w", encoding="utf-8"
                 ) as ff:
                     ff.write("\n".join(output_string))

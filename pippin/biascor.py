@@ -1,27 +1,30 @@
+import os
 import copy
 import shutil
 import subprocess
-import os
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 
 from pippin.base import ConfigBasedExecutable
-from pippin.classifiers.classifier import Classifier
+from pippin.task import Task
+from pippin.merge import Merger
 from pippin.config import (
-    chown_dir,
     mkdirs,
+    chown_dir,
+    read_yaml,
     get_config,
     ensure_list,
-    get_data_loc,
-    read_yaml,
     compress_dir,
+    get_data_loc,
 )
-from pippin.merge import Merger
-from pippin.task import Task
+from pippin.classifiers.classifier import Classifier
 
 
 class BiasCor(ConfigBasedExecutable):
-    def __init__(self, name, output_dir, config, dependencies, options, global_config):
+    def __init__(
+        self, name, output_dir, config, dependencies, options, global_config
+    ) -> None:
         base = get_data_loc(config.get("BASE", "surveys/des/bbc/bbc_5yr.input"))
         self.base_file = base
         super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
@@ -49,9 +52,9 @@ class BiasCor(ConfigBasedExecutable):
                 self.merged_iasim_fitopts = [0 for _ in self.merged_iasim]
             else:
                 self.merged_iasim_fitopts = ensure_list(self.merged_iasim_fitopts)
-                assert len(self.merged_iasim_fitopts) == len(
-                    self.merged_iasim
-                ), f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(self.merged_iasim)}), but is length {len(self.merged_iasim_fitopts)}"
+                assert len(self.merged_iasim_fitopts) == len(self.merged_iasim), (
+                    f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(self.merged_iasim)}), but is length {len(self.merged_iasim_fitopts)}"
+                )
         self.logger.debug(f"SIMFILE_BIASCOR_FITOPTS: {self.merged_iasim_fitopts}")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
         self.merged_ccsim_fitopts = config.get("SIMFILE_CCPRIOR_FITOPTS")
@@ -60,9 +63,9 @@ class BiasCor(ConfigBasedExecutable):
                 self.merged_ccsim_fitopts = [0 for _ in self.merged_ccsim]
             else:
                 self.merged_ccsim_fitopts = ensure_list(self.merged_ccsim_fitopts)
-                assert len(self.merged_ccsim_fitopts) == len(
-                    self.merged_ccsim
-                ), f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(self.merged_ccsim)}), but is length {len(self.merged_ccsim_fitopts)}"
+                assert len(self.merged_ccsim_fitopts) == len(self.merged_ccsim), (
+                    f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(self.merged_ccsim)}), but is length {len(self.merged_ccsim_fitopts)}"
+                )
         self.logger.debug(f"SIMFILE_CCPRIOR_FITOPTS: {self.merged_ccsim_fitopts}")
 
         self.classifier = config.get("CLASSIFIER")
@@ -98,7 +101,7 @@ class BiasCor(ConfigBasedExecutable):
         self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
         self.reject_list = os.path.join(self.output_dir, "reject.list")
 
-        self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
+        self.done_file = os.path.join(self.fit_output_dir, "ALL.DONE")
         self.done_file_iteration = os.path.join(self.output_dir, "RESUBMITTED.DONE")
         self.run_iteration = 1 if os.path.exists(self.done_file_iteration) else 0
         self.probability_column_name = None
@@ -116,9 +119,7 @@ class BiasCor(ConfigBasedExecutable):
             self.probability_column_name = new_name
         self.output["fit_output_dir"] = self.fit_output_dir
 
-        self.output["NSPLITRAN"] = "NSPLITRAN" in [
-            x.upper() for x in self.options.keys()
-        ]
+        self.output["NSPLITRAN"] = "NSPLITRAN" in [x.upper() for x in self.options]
         if self.output["NSPLITRAN"]:
             self.output["NSPLITRAN_VAL"] = {
                 x.upper(): y for x, y in self.options.items()
@@ -146,7 +147,7 @@ class BiasCor(ConfigBasedExecutable):
         self.logger.debug(f"Do iterate: {self.do_iterate}")
         self.logger.debug(f"SNANA_DIR: {os.environ['SNANA_DIR']}")
 
-    def set_m0dif_dirs(self):
+    def set_m0dif_dirs(self) -> None:
         versions = None
         # Check if the SUBMIT.INFO exists
         submit_info = os.path.join(self.fit_output_dir, "SUBMIT.INFO")
@@ -163,13 +164,12 @@ class BiasCor(ConfigBasedExecutable):
                     f"OUTPUT_BBCFIT-{i + 1:04d}"
                     for i in range(self.output["NSPLITRAN_VAL"])
                 ]
+            elif num_dirs == 1:
+                self.output["subdirs"] = ["OUTPUT_BBCFIT"]
             else:
-                if num_dirs == 1:
-                    self.output["subdirs"] = ["OUTPUT_BBCFIT"]
-                else:
-                    self.output["subdirs"] = [
-                        f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)
-                    ]
+                self.output["subdirs"] = [
+                    f"OUTPUT_BBCFIT-{i + 1:04d}" for i in range(num_dirs)
+                ]
 
         self.output["m0dif_dirs"] = [
             os.path.join(self.fit_output_dir, s) for s in self.output["subdirs"]
@@ -185,13 +185,12 @@ class BiasCor(ConfigBasedExecutable):
     def get_blind(self, config, options):
         if "BLIND" in config:
             return config.get("BLIND")
-        elif "blindflag" in options:
+        if "blindflag" in options:
             return options.get("blindflag") != 0
-        else:
-            return bool(np.any([m.output["blind"] for m in self.merged_data]))
+        return bool(np.any([m.output["blind"] for m in self.merged_data]))
 
     def kill_and_fail(self):
-        with open(self.kill_file, "w") as f:
+        with open(self.kill_file, "w", encoding="utf-8") as f:
             self.logger.info(f"Killing remaining jobs for {self.name}")
             command = [
                 "submit_batch_jobs.sh",
@@ -204,6 +203,7 @@ class BiasCor(ConfigBasedExecutable):
                 stderr=subprocess.STDOUT,
                 cwd=self.output_dir,
                 shell=True,
+                check=False,
             )
         return Task.FINISHED_FAILURE
 
@@ -230,11 +230,10 @@ class BiasCor(ConfigBasedExecutable):
         )
         if kill:
             return self.kill_and_fail()
-        else:
-            return Task.FINISHED_FAILURE
+        return Task.FINISHED_FAILURE
 
     def submit_reject_phase(self):
-        """Merges the reject lists for each version, saves it to the output dir, modifies the input file, and resubmits if needed
+        """Merges the reject lists for each version, saves it to the output dir, modifies the input file, and resubmits if needed.
 
         Returns: true if the job is resubmited, false otherwise
         """
@@ -243,13 +242,11 @@ class BiasCor(ConfigBasedExecutable):
         )
         rejects = None
         for folder in self.output["m0dif_dirs"]:
-            num_fitres_files = len(
-                [
-                    f
-                    for f in os.listdir(folder)
-                    if f.startswith("FITOPT") and ".FITRES" in f
-                ]
-            )
+            num_fitres_files = len([
+                f
+                for f in os.listdir(folder)
+                if f.startswith("FITOPT") and ".FITRES" in f
+            ])
             if num_fitres_files < 2:
                 self.logger.debug(
                     f"M0DIF dir {folder} has only {num_fitres_files} FITRES file, so rejecting wont do anything. Not taking it into account."
@@ -258,64 +255,60 @@ class BiasCor(ConfigBasedExecutable):
             path = os.path.join(folder, "BBC_REJECT_SUMMARY.LIST")
             df = pd.read_csv(path, delim_whitespace=True, comment="#")
             self.logger.debug(f"Folder {folder} has {df.shape[0]} rejected SNID")
-            if rejects is None:
-                rejects = df
-            else:
-                rejects = rejects.append(df)
+            rejects = df if rejects is None else rejects.append(df)
         if rejects is None or not rejects.shape[0]:
             self.logger.info(
                 "No rejected SNIDs found, not rerunning, task finishing successfully"
             )
             return Task.FINISHED_SUCCESS
-        else:
-            self.logger.info(f"Found {rejects.shape[0]} rejected SNIDs, will resubmit")
-            self.logger.debug(f"Saving reject list to {self.reject_list}")
-            rejects.to_csv(self.reject_list, sep=" ", index=False)
+        self.logger.info(f"Found {rejects.shape[0]} rejected SNIDs, will resubmit")
+        self.logger.debug(f"Saving reject list to {self.reject_list}")
+        rejects.to_csv(self.reject_list, sep=" ", index=False)
 
-            # And now rerun
-            if os.path.exists(self.done_file):
-                os.remove(self.done_file)
-            # Remove the output not just the done file
-            tar_file = os.path.join(self.output_dir, "initial_bbc.tar.gz")
-            moved = self.fit_output_dir + "_initial"
-            self.logger.debug(f"Making tar of inital BBC run to {tar_file}")
-            if os.path.exists(tar_file):
-                os.remove(tar_file)
+        # And now rerun
+        if os.path.exists(self.done_file):
+            os.remove(self.done_file)
+        # Remove the output not just the done file
+        tar_file = os.path.join(self.output_dir, "initial_bbc.tar.gz")
+        moved = self.fit_output_dir + "_initial"
+        self.logger.debug(f"Making tar of inital BBC run to {tar_file}")
+        if os.path.exists(tar_file):
+            os.remove(tar_file)
 
-            shutil.move(self.fit_output_dir, moved)
-            compress_dir(tar_file, moved)
+        shutil.move(self.fit_output_dir, moved)
+        compress_dir(tar_file, moved)
 
-            command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
-            self.logger.debug(f"Running command: {' '.join(command)}")
-            with open(self.logging_file, "w") as f:
-                subprocess.run(
-                    [" ".join(command)],
-                    stdout=f,
-                    stderr=subprocess.STDOUT,
-                    cwd=self.output_dir,
-                    shell=True,
-                )
-            self.logger.notice(f"RESUBMITTED: BiasCor {self.name} task")
-            return 1
+        command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
+        self.logger.debug(f"Running command: {' '.join(command)}")
+        with open(self.logging_file, "w", encoding="utf-8") as f:
+            subprocess.run(
+                [" ".join(command)],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=self.output_dir,
+                shell=True,
+                check=False,
+            )
+        self.logger.notice(f"RESUBMITTED: BiasCor {self.name} task")
+        return 1
 
     def move_to_next_phase(self):
         if self.do_iterate and self.consistent_sample and self.run_iteration == 0:
             self.run_iteration += 1
-            with open(self.done_file_iteration, "w") as f:
+            with open(self.done_file_iteration, "w", encoding="utf-8") as f:
                 pass
             return self.submit_reject_phase()
-        else:
-            self.logger.info(
-                f"On run iteration {self.run_iteration}, finishing successfully"
-            )
-            return Task.FINISHED_SUCCESS
+        self.logger.info(
+            f"On run iteration {self.run_iteration}, finishing successfully"
+        )
+        return Task.FINISHED_SUCCESS
 
     def _check_completion(self, squeue):
         if os.path.exists(self.done_file):
             self.logger.debug(
                 f"Done file found for {self.name}, biascor task finishing"
             )
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 content = f.read().upper()
                 if "FAIL" in content or "STOP" in content:
                     self.logger.error(
@@ -323,11 +316,8 @@ class BiasCor(ConfigBasedExecutable):
                     )
                     return self.check_issues()
 
-                else:
-                    self.logger.debug(
-                        f"Found {self.w_summary}, task finished successfully"
-                    )
-                    return self.move_to_next_phase()
+                self.logger.debug(f"Found {self.w_summary}, task finished successfully")
+                return self.move_to_next_phase()
         elif not os.path.exists(self.merge_log):
             self.logger.error("MERGE.LOG was not created, job died on submission")
             return self.check_issues()
@@ -340,14 +330,12 @@ class BiasCor(ConfigBasedExecutable):
         return (
             None
             if ia_sims is None
-            else ",".join(
-                [
-                    os.path.join(
-                        ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
-                    )
-                    for (i, n) in enumerate(fitopt_num)
-                ]
-            )
+            else ",".join([
+                os.path.join(
+                    ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
+                )
+                for (i, n) in enumerate(fitopt_num)
+            ])
         )
 
     def get_simfile_ccprior(self, cc_sims, fitopt_num=None):
@@ -356,14 +344,12 @@ class BiasCor(ConfigBasedExecutable):
         return (
             None
             if cc_sims is None
-            else ",".join(
-                [
-                    os.path.join(
-                        cc_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
-                    )
-                    for (i, n) in enumerate(fitopt_num)
-                ]
-            )
+            else ",".join([
+                os.path.join(
+                    cc_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
+                )
+                for (i, n) in enumerate(fitopt_num)
+            ])
         )
 
     def get_fitopt_map(self, datas):
@@ -380,7 +366,7 @@ class BiasCor(ConfigBasedExecutable):
         # If the label isnt present, then map it back to FITOPT000
         for label, d in fitopts.items():
             for data in datas:
-                if fitopts[label].get(data.name) is None:
+                if d.get(data.name) is None:
                     fitopts[label][data.name] = "FITOPT000"
 
         # Now for each of the labels we've found in all files, construct the output dict
@@ -398,7 +384,7 @@ class BiasCor(ConfigBasedExecutable):
 
         return result, index_map
 
-    def write_input(self):
+    def write_input(self) -> bool:
         if self.merged_iasim is not None:
             for i, m in enumerate(self.merged_iasim):
                 if len(m.output["fitres_dirs"]) > 1:
@@ -503,7 +489,9 @@ class BiasCor(ConfigBasedExecutable):
                     )
                     assert len(value_simfile_biascor_fitopts) == len(
                         value_simfile_biascor
-                    ), f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(value_simfile_biascor)}), but is length {len(value_simfile_biascor_fitopt)}"
+                    ), (
+                        f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(value_simfile_biascor)}), but is length {len(value_simfile_biascor_fitopt)}"
+                    )
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value_simfile_biascor, value_simfile_biascor_fitopts)} "
             if value.get("SIMFILE_CCPRIOR"):
                 value_simfile_ccprior = value.get("SIMFILE_CCPRIOR")
@@ -516,7 +504,9 @@ class BiasCor(ConfigBasedExecutable):
                     )
                     assert len(value_simfile_ccprior_fitopts) == len(
                         value_simfile_ccprior
-                    ), f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(value_simfile_ccprior)}), but is length {len(value_simfile_ccprior_fitopt)}"
+                    ), (
+                        f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(value_simfile_ccprior)}), but is length {len(value_simfile_ccprior_fitopt)}"
+                    )
                 mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value_simfile_ccprior, value_simfile_ccprior_fitopts)} "
             if value.get("CLASSIFIER"):
                 cname = self.prob_cols[value.get("CLASSIFIER").name]
@@ -552,20 +542,19 @@ class BiasCor(ConfigBasedExecutable):
 
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
-            with open(self.reject_list, "w") as f:
+            with open(self.reject_list, "w", encoding="utf-8") as f:
                 pass
             self.run_iteration = 0
-            with open(self.config_path, "w") as f:
+            with open(self.config_path, "w", encoding="utf-8") as f:
                 f.writelines(final_output)
             self.logger.info(f"Input file written to {self.config_path}")
 
             self.save_new_hash(new_hash)
             return True
-        else:
-            self.logger.debug("Hash check passed, not rerunning")
-            return False
+        self.logger.debug("Hash check passed, not rerunning")
+        return False
 
-    def _run(self):
+    def _run(self) -> bool:
         if self.blind:
             self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input()
@@ -574,13 +563,14 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.debug(f"Will check for done file at {self.done_file}")
             self.logger.debug(f"Will output log at {self.logging_file}")
             self.logger.debug(f"Running command: {' '.join(command)}")
-            with open(self.logging_file, "w") as f:
+            with open(self.logging_file, "w", encoding="utf-8") as f:
                 subprocess.run(
                     [" ".join(command)],
                     stdout=f,
                     stderr=subprocess.STDOUT,
                     cwd=self.output_dir,
                     shell=True,
+                    check=False,
                 )
             chown_dir(self.output_dir)
             self.set_m0dif_dirs()
@@ -600,7 +590,7 @@ class BiasCor(ConfigBasedExecutable):
         classifier_tasks = Task.get_task_of_type(prior_tasks, Classifier)
         tasks = []
 
-        def _get_biascor_output_dir(base_output_dir, stage_number, biascor_name):
+        def _get_biascor_output_dir(base_output_dir, stage_number, biascor_name) -> str:
             return f"{base_output_dir}/{stage_number}_BIASCOR/{biascor_name}"
 
         for name in c.get("BIASCOR", []):
@@ -634,7 +624,7 @@ class BiasCor(ConfigBasedExecutable):
                     else:
                         task = [task[0]]
                 elif len(task) > 1:
-                    choices = list(set([prob_cols[c.name] for c in task]))
+                    choices = list({prob_cols[c.name] for c in task})
                     if len(choices) == 1:
                         task = [task[0]]
                     else:
@@ -665,9 +655,10 @@ class BiasCor(ConfigBasedExecutable):
                                 f"If this is a spec confirmed sample, or an EXTERNAL task, all good, else check this."
                             )
                     return task[0]
+                return None
 
             # Ensure classifiers point to the same prob column
-            def validate_classifiers(classifier_names):
+            def validate_classifiers(classifier_names) -> None:
                 prob_col = []
                 for name in classifier_names:
                     col = prob_cols.get(name)
@@ -691,7 +682,7 @@ class BiasCor(ConfigBasedExecutable):
                     )
 
             def resolve_conf(subdict, default=None):
-                """Resolve the sub-dictionary and keep track of all the dependencies"""
+                """Resolve the sub-dictionary and keep track of all the dependencies."""
                 deps = []
 
                 # If this is a muopt, allow access to the base config's resolution
@@ -725,7 +716,7 @@ class BiasCor(ConfigBasedExecutable):
                 simfile_ia = subdict.get("SIMFILE_BIASCOR")
                 if default is None and simfile_ia is None:
                     Task.fail_config(
-                        f"You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output"
+                        "You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output"
                     )
                 if simfile_ia is not None:
                     simfile_ia = ensure_list(simfile_ia)
@@ -739,7 +730,7 @@ class BiasCor(ConfigBasedExecutable):
                 # Resolve the cc sims
                 simfile_cc = subdict.get("SIMFILE_CCPRIOR")
                 if default is None and simfile_ia is None:
-                    message = f"No SIMFILE_CCPRIOR specified. Hope you're doing a Ia only analysis"
+                    message = "No SIMFILE_CCPRIOR specified. Hope you're doing a Ia only analysis"
                     Task.logger.warning(message)
                 if simfile_cc is not None:
                     simfile_cc = ensure_list(simfile_cc)
@@ -772,7 +763,7 @@ class BiasCor(ConfigBasedExecutable):
 
             # Resolve every MUOPT
             muopts = config.get("MUOPTS", {})
-            for label, mu_conf in muopts.items():
+            for mu_conf in muopts.values():
                 deps += resolve_conf(mu_conf, default=config)
 
             task = BiasCor(

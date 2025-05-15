@@ -1,5 +1,5 @@
-from pippin.cosmofitters.cosmomc import CosmoMC
 from pippin.cosmofitters.wfit import WFit
+from pippin.cosmofitters.cosmomc import CosmoMC
 
 
 class FitterFactory:
@@ -10,7 +10,7 @@ class FitterFactory:
         return cls.ids.get(name)
 
     @classmethod
-    def add_factory(cls, fitter_class):
+    def add_factory(cls, fitter_class) -> None:
         cls.ids[fitter_class.__name__.lower()] = fitter_class
 
 

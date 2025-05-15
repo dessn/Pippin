@@ -1,20 +1,21 @@
-import shutil
-import subprocess
-from pathlib import Path
-import yaml
-import pandas as pd
 import re
-import numpy as np
 import time
+import shutil
+from pathlib import Path
+import subprocess
 
-from pippin.classifiers.scone import SconeClassifier
-from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
+import yaml
+import numpy as np
+import pandas as pd
+
 from pippin.task import Task
+from pippin.config import mkdirs, get_config, merge_dict, get_data_loc, get_output_loc
+from pippin.classifiers.scone import SconeClassifier
 
 
 class SconeLegacyClassifier(SconeClassifier):
     """convolutional neural network-based SN photometric classifier
-    for details, see https://arxiv.org/abs/2106.04370, https://arxiv.org/abs/2111.05539, https://arxiv.org/abs/2207.09440
+    for details, see https://arxiv.org/abs/2106.04370, https://arxiv.org/abs/2111.05539, https://arxiv.org/abs/2207.09440.
 
     CONFIGURATION:
     ==============
@@ -56,7 +57,7 @@ class SconeLegacyClassifier(SconeClassifier):
         options,
         index=0,
         model_name=None,
-    ):
+    ) -> None:
         super().__init__(
             name,
             output_dir,
@@ -68,7 +69,7 @@ class SconeLegacyClassifier(SconeClassifier):
             model_name=model_name,
         )
         self.logger.warning(
-            f"Using Legacy Scone version, pass a Scone input file via `BASE: /path/to/input.yml` to use the latest Scone version."
+            "Using Legacy Scone version, pass a Scone input file via `BASE: /path/to/input.yml` to use the latest Scone version."
         )
         self.global_config = get_config()
         self.options = options
@@ -117,7 +118,7 @@ class SconeLegacyClassifier(SconeClassifier):
 
         if sbatch_header_template is not None:
             self.logger.debug(f"batch file found at {sbatch_header_template}")
-            with open(get_data_loc(sbatch_header_template), "r") as f:
+            with open(get_data_loc(sbatch_header_template), encoding="utf-8") as f:
                 sbatch_header = f.read()
 
         sbatch_header = self.clean_header(sbatch_header)
@@ -125,7 +126,7 @@ class SconeLegacyClassifier(SconeClassifier):
         header_dict = merge_dict(header_dict, self.batch_replace)
         return self._update_header(sbatch_header, header_dict)
 
-    def make_heatmaps_sbatch_header(self):
+    def make_heatmaps_sbatch_header(self) -> None:
         self.logger.info("heatmaps not created, creating now")
         shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.heatmaps_path)
@@ -140,7 +141,7 @@ class SconeLegacyClassifier(SconeClassifier):
             "HEATMAPS_BATCH_FILE", header_dict
         )
 
-        with open(self.heatmaps_sbatch_header_path, "w+") as f:
+        with open(self.heatmaps_sbatch_header_path, "w+", encoding="utf-8") as f:
             f.write(heatmaps_sbatch_header)
 
     def make_model_sbatch_script(self):
@@ -174,16 +175,16 @@ class SconeLegacyClassifier(SconeClassifier):
         )
         slurm_script = self.slurm.format(**format_dict)
 
-        with open(self.model_sbatch_job_path, "w") as f:
+        with open(self.model_sbatch_job_path, "w", encoding="utf-8") as f:
             f.write(slurm_script)
 
         return slurm_script
 
-    def classify(self, mode):
+    def classify(self, mode) -> bool:
         failed = False
         if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "SUCCESS" not in f.read().upper():
                     failed = True
 
@@ -218,7 +219,7 @@ class SconeLegacyClassifier(SconeClassifier):
             self.make_heatmaps_sbatch_header()
 
         self.save_new_hash(new_hash)
-        with open(self.config_path, "w+") as cfgfile:
+        with open(self.config_path, "w+", encoding="utf-8") as cfgfile:
             cfgfile.write(str_config)
 
         slurm_script = self.make_model_sbatch_script()
@@ -227,8 +228,8 @@ class SconeLegacyClassifier(SconeClassifier):
         # this shell command to a file so diff systems can define their own
         file_to_run = "run_legacy.py"
         path = Path(self.path_to_classifier) / file_to_run
-        cmd = f"python {str(path)} --config_path {self.config_path}"
-        subprocess.run([cmd], shell=True)
+        cmd = f"python {path!s} --config_path {self.config_path}"
+        subprocess.run([cmd], shell=True, check=False)
         self.logger.info(f"Running command: {cmd}")
 
         return True
@@ -299,7 +300,7 @@ class SconeLegacyClassifier(SconeClassifier):
     def _check_completion(self, squeue):
         if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
+            with open(self.done_file, encoding="utf-8") as f:
                 if "SUCCESS" not in f.read().upper():
                     return Task.FINISHED_FAILURE
 
@@ -314,21 +315,19 @@ class SconeLegacyClassifier(SconeClassifier):
                 )
                 predictions.to_csv(pred_path, index=False)
             self.logger.info(f"Predictions file can be found at {pred_path}")
-            self.output.update(
-                {
-                    "model_filename": self.options.get(
-                        "MODEL", str(Path(self.output_dir) / "trained_model")
-                    ),
-                    "predictions_filename": pred_path,
-                }
-            )
+            self.output.update({
+                "model_filename": self.options.get(
+                    "MODEL", str(Path(self.output_dir) / "trained_model")
+                ),
+                "predictions_filename": pred_path,
+            })
             return Task.FINISHED_SUCCESS
         return self.check_for_job(squeue, self.job_base_name)
 
     def _heatmap_creation_success(self):
         if not Path(self.heatmaps_done_file).exists():
             return False
-        with open(self.heatmaps_done_file, "r") as donefile:
+        with open(self.heatmaps_done_file, encoding="utf-8") as donefile:
             if "CREATE HEATMAPS FAILURE" in donefile.read():
                 return False
         return (
@@ -340,7 +339,7 @@ class SconeLegacyClassifier(SconeClassifier):
         squeue = [
             i.strip()
             for i in subprocess.check_output(
-                f"squeue -h -u $USER -o '%.200j'", shell=True, text=True
+                "squeue -h -u $USER -o '%.200j'", shell=True, text=True
             ).splitlines()
         ]
         self.logger.debug(f"{squeue}")
@@ -348,13 +347,12 @@ class SconeLegacyClassifier(SconeClassifier):
 
     @staticmethod
     def _get_lcdata_paths(sim_dirs):
-        lcdata_paths = [
+        return [
             str(f.resolve())
             for sim_dir in sim_dirs
             for f in Path(sim_dir).iterdir()
             if "PHOT" in f.name
         ]
-        return lcdata_paths
 
     @staticmethod
     def _update_header(header, header_dict):
