@@ -30,7 +30,7 @@ jobs:
       matrix:
         # '3.7' is the minimum supported version
         # '3.x' is the lateest minor release of Python 3
-        python-version: ["3.7", "3.x"]
+        python-version: ["3.7.x", "3.x"]
 
     steps:
       - name: Check out repository code
