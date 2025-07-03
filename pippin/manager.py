@@ -110,7 +110,7 @@ class Manager:
             "supernnova",
             "nearest_neighbour",
             "create_cov",
-            "supernnova_yml",
+            "supernnova",
             "scone",
             "dataprep",
         ]
