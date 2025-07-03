@@ -173,7 +173,7 @@ class SuperNNovaLegacyClassifier(SuperNNovaClassifier):
         """
         self.conda_env = self.global_config["SuperNNova"]["legacy_conda_env"]
         self.path_to_classifier = get_output_loc(
-            self.global_config["SuperNNova"]["location"]
+            self.global_config["SuperNNova"]["legacy_location"]
         )
 
     def get_variant_from_yml(self, yml_file):

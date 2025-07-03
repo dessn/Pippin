@@ -16,8 +16,9 @@ SNANA:
 
 SuperNNova:
   conda_env: snn_gpu
-  legacy_conda_env: snn_gpu
   location: $PRODUCTS/classifiers/supernnova
+  legacy_conda_env: snn_gpu
+  legacy_location: $PRODUCTS/classifiers/supernnova
 
 SNIRF:
   conda_env: snn_gpu
