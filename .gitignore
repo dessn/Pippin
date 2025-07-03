@@ -53,6 +53,7 @@ coverage.xml
 test_files/
 debug_files/
 debug/
+tmp_output/
 
 # Translations
 *.mo
