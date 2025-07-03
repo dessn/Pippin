@@ -23,7 +23,7 @@ concurrency:
 jobs:
   test:
     name: Python ${{ matrix.python-version }} - ${{ github.event_name }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     timeout-minutes: 60
     strategy:
       fail-fast: true
