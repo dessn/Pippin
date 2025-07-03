@@ -1,11 +1,10 @@
 import os
-import yaml
 import subprocess
 import json
 import shutil
 import pickle
 from collections import OrderedDict
-from pippin.classifiers.classifier import Classifier
+from pippin.classifiers.supernnova import SuperNNovaClassifier
 from pippin.config import (
     chown_dir,
     mkdirs,
@@ -19,7 +18,7 @@ from time import sleep
 import numpy as np
 
 
-class SuperNNovaClassifier(Classifier):
+class SuperNNovaLegacyClassifier(SuperNNovaClassifier):
     """Classification task for the SuperNNova classifier.
 
     CONFIGURATION
@@ -31,7 +30,6 @@ class SuperNNovaClassifier(Classifier):
             MASK_FIT: mask  # partial match
             MASK: mask  # partial match
             MODE: train/predict
-            BASE: /path/to/base/file
             GPU: True # default
             CLEAN: True # Whether to remove processed directory, defaults to true
             OPTS:  # Options
@@ -49,27 +47,6 @@ class SuperNNovaClassifier(Classifier):
 
 
     """
-
-    def __new__(
-        cls,
-        name,
-        output_dir,
-        config,
-        dependencies,
-        mode,
-        options,
-        index=0,
-        model_name=None,
-    ):
-        # XXX DEPRECATION
-        # If no BASE file is present, run legacy version of SuperNNova
-        # Avoid recursive nonsense by making sure the type of `cls` is SuperNNovaClassifier
-        if cls == SuperNNovaClassifier and config.get("BASE") is None:
-            # Have to import later because SconeClassifier must exist prior to importing SuperNNovaLegacyClassifier
-            from pippin.classifiers.supernnova_legacy import SuperNNovaLegacyClassifier
-
-            cls = SuperNNovaLegacyClassifier
-        return super().__new__(cls)
 
     def __init__(
         self,
@@ -92,6 +69,9 @@ class SuperNNovaClassifier(Classifier):
             index=index,
             model_name=model_name,
         )
+        self.logger.warning(
+            "Using Legacy SuperNNova version, pass a SuperNNova input file via `BASE: /path/to/input.yml` to use the latest SuperNNova version."
+        )
         self.global_config = get_config()
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
@@ -99,77 +79,36 @@ class SuperNNovaClassifier(Classifier):
         self.tmp_output = None
         self.done_file = os.path.join(self.output_dir, "done_task.txt")
         self.done_file2 = os.path.join(self.output_dir, "done_task2.txt")
-
-        snn_input_file = config.get(
-            "BASE"
-        )  # refactor by passing snn input file to pippin
-        if snn_input_file is not None:
-            snn_input_file = get_data_loc(snn_input_file)
-        self.snn_input_file = snn_input_file
-
-        with open(self.snn_input_file, "r") as f:
-            self.snn_yml = {}
-            snn_yml = yaml.safe_load(f)
-            for k, v in snn_yml.items():
-                self.snn_yml[k.upper()] = v
-        self.output_data_yml = os.path.join(self.output_dir, "data.yml")
-        self.output_classification_yml = os.path.join(
-            self.output_dir, "classification.yml"
-        )
-
-        self.variant = self.options.get(
-            "VARIANT", self.snn_yml.get("MODEL", "vanilla")
-        ).lower()
-        assert self.variant in [
-            "vanilla",
-            "variational",
-            "bayesian",
-        ], f"Variant {self.variant} is not vanilla, variational or bayesian"
-
-        self.redshift = self.options.get(
-            "REDSHIFT", self.snn_yml.get("REDSHIFT", "zspe")
-        )
-        if isinstance(self.redshift, bool):
-            self.redshift = "zspe" if self.redshift else "none"
-        self.redshift = self.redshift.lower()
-        if self.redshift not in ["zpho", "zspe", "none"]:
+        self.variant = options.get("VARIANT", "vanilla").lower()
+        # Redshift can be True, False, 'zpho', 'zspe', or 'none'
+        redshift = options.get("REDSHIFT", "zspe")
+        # Not sure how python deals with strings and bools, so just being careful
+        if redshift == True:
+            redshift = "zspe"
+        elif redshift == False:
+            redshift = "none"
+        if redshift not in ["zpho", "zspe", "none"]:
             self.logger.warning("Unknown redshift option ['zpho', 'zspe', 'none']")
-
-        self.norm = self.options.get("NORM", self.snn_yml.get("NORM", "cosmo")).lower()
-        assert self.norm in [
-            "global",
-            "cosmo",
-            "perfilter",
-            "cosmo_quantile",
-            "none",
-        ], (
-            f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
-        )
-
-        self.cyclic = self.options.get("CYCLIC", self.snn_yml.get("CYCLIC", True))
-
-        self.seed = self.options.get("SEED", self.snn_yml.get("SEED", 0))
-
-        self.model = self.options.get("MODEL", self.snn_yml.get("MODEL_FILES", None))
-
+        self.redshift = redshift
+        self.norm = options.get("NORM", "cosmo")
+        self.cyclic = options.get("CYCLIC", True)
+        self.seed = options.get("SEED", 0)
         self.clean = config.get("CLEAN", True)
-
-        self.batch_size = self.options.get("BATCH_SIZE", 128)
-        self.num_layers = self.options.get("NUM_LAYERS", 2)
-        self.hidden_dim = self.options.get("HIDDEN_DIM", 32)
-
+        self.batch_size = options.get("BATCH_SIZE", 128)
+        self.num_layers = options.get("NUM_LAYERS", 2)
+        self.hidden_dim = options.get("HIDDEN_DIM", 32)
         # Must be a list
-        self.list_filters = self.options.get(
-            "LIST_FILTERS",
-            self.snn_yml.get("LIST_FILTERS", ["DES-g", "DES-i", "DES-r", "DES-z"]),
-        )
+        self.list_filters = options.get("LIST_FILTERS", None)
+        if self.list_filters is None:
+            self.list_filters = ["DES-g", "DES-i", "DES-r", "DES-z"]
         assert isinstance(self.list_filters, list), (
             f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
         )
-
         # Can either be a yml dictionary or a str filepath to a txt files containing all mappings
-        self.sntypes = self.options.get("SNTYPES", self.snn_yml.get("SNTYPES", {}))
-        if isinstance(self.sntypes, str):
+        self.sntypes = options.get("SNTYPES", None)
+        if self.sntypes is None:
+            self.sntypes = {}
+        elif isinstance(self.sntypes, str):
             sntypes_path = get_data_loc(self.sntypes)
             assert sntypes_path is not None, (
                 f"SNTYPES: {self.sntypes} does not resolve to a path."
@@ -181,6 +120,30 @@ class SuperNNovaClassifier(Classifier):
             f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
         )
 
+        # Setup yml files
+        self.data_yml_file = options.get("DATA_YML", None)
+        self.output_data_yml = os.path.join(self.output_dir, "data.yml")
+        self.classification_yml_file = options.get("CLASSIFICATION_YML", None)
+        self.output_classification_yml = os.path.join(
+            self.output_dir, "classification.yml"
+        )
+        # XOR - only runs if either but not both yml's are None
+        if (self.data_yml_file is None) ^ (self.classification_yml_file is None):
+            self.logger.error(
+                f"If using yml inputs, both 'DATA_YML' (currently {self.data_yml} and 'CLASSIFICATION_YML' (currently {self.classification_yml}) must be provided"
+            )
+        elif self.data_yml_file is not None:
+            with open(self.data_yml_file, "r") as f:
+                self.data_yml = f.read()
+            with open(self.classification_yml_file, "r") as f:
+                self.classification_yml = f.read()
+            self.has_yml = True
+            self.variant = self.get_variant_from_yml(self.classification_yml)
+        else:
+            self.data_yml = None
+            self.classification_yml = None
+            self.has_yml = False
+
         self.batch_file = self.options.get("BATCH_FILE")
         if self.batch_file is not None:
             self.batch_file = get_data_loc(self.batch_file)
@@ -190,14 +153,51 @@ class SuperNNovaClassifier(Classifier):
 
         self.validate_model()
 
+        assert self.norm in [
+            "global",
+            "cosmo",
+            "perfilter",
+            "cosmo_quantile",
+            "none",
+        ], (
+            f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
+        )
+        assert self.variant in [
+            "vanilla",
+            "variational",
+            "bayesian",
+        ], f"Variant {self.variant} is not vanilla, variational or bayesian"
         self.slurm = """{sbatch_header}
         {task_setup}
 
         """
-        self.conda_env = self.global_config["SuperNNova"]["conda_env"]
+        self.conda_env = self.global_config["SuperNNova_legacy"]["conda_env"]
         self.path_to_classifier = get_output_loc(
-            self.global_config["SuperNNova"]["location"]
+            self.global_config["SuperNNova_legacy"]["location"]
         )
+
+    def get_variant_from_yml(self, yml_file):
+        if "model" in yml_file:
+            self.logger.debug("Detected model in yml file")
+            stripped = "".join(yml_file.split(" "))
+            if "model:bayesian" in stripped:
+                self.logger.debug("Detected bayesian model")
+                return "bayesian"
+            if "model:variational" in stripped:
+                self.logger.debug("Detected variational model")
+                return "variational"
+        self.logger.debug("Defaulting variant to vanilla")
+        return "vanilla"
+
+    def update_yml(self):
+        replace_dict = {
+            "DONE_FILE": self.done_file,
+            "DUMP_DIR": self.dump_dir,
+            "RAW_DIR": self.raw_dir,
+        }
+        for key, value in replace_dict.items():
+            self.data_yml = self.data_yml.replace(key, value)
+            self.classification_yml = self.classification_yml.replace(key, value)
 
     def get_model_and_pred(self):
         max_tries = 100
@@ -258,19 +258,20 @@ class SuperNNovaClassifier(Classifier):
         return types
 
     def classify(self, training):
+        model = self.options.get("MODEL")
         model_path = ""
         if not training:
-            assert self.model is not None, (
-                "If TRAIN is not specified, you have to point to a model to use, either via `OPTS: MODEL: /path/to/model/file`, or `model_files: /path/to/model/file` in the `BASE` file."
+            assert model is not None, (
+                "If TRAIN is not specified, you have to point to a model to use"
             )
-            if not os.path.exists(get_output_loc(self.model)):
+            if not os.path.exists(get_output_loc(model)):
                 for t in self.dependencies:
-                    if self.model == t.name:
+                    if model == t.name:
                         self.logger.debug(
                             f"Found task dependency {t.name} with model file {t.output['model_filename']}"
                         )
-                        self.model = t.output["model_filename"]
-            model_path = get_output_loc(self.model)
+                        model = t.output["model_filename"]
+            model_path = get_output_loc(model)
             self.logger.debug(f"Looking for model in {model_path}")
             assert os.path.exists(model_path), f"Cannot find {model_path}"
 
@@ -379,7 +380,11 @@ class SuperNNovaClassifier(Classifier):
                 self.sbatch_header = f.read()
             self.sbatch_header = self.clean_header(self.sbatch_header)
 
-        setup_file = "supernnova"
+        if self.has_yml:
+            self.update_yml()
+            setup_file = "supernnova_legacy_yml"
+        else:
+            setup_file = "supernnova_legacy"
 
         header_dict = {
             "REPLACE_NAME": self.job_base_name,
@@ -398,7 +403,7 @@ class SuperNNovaClassifier(Classifier):
             "fit_dir": fit_dir,
             "path_to_classifier": self.path_to_classifier,
             "job_name": self.job_base_name,
-            "command": "train_rnn" if training else "validate_rnn",
+            "command": "--train_rnn" if training else "--validate_rnn",
             "sntypes": str_types,
             "list_filters": str_list_filters,
             "variant": variant,

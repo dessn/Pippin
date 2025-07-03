@@ -47,6 +47,7 @@ class SconeClassifier(Classifier):
         MASK_SIM: TEST  # partial match on sim name
         MASK_FIT: TEST  # partial match on lcfit name
         MODE: train/predict
+        BASE: /path/to/base/file
         OPTS:
           GPU: True
           CATEGORICAL: False

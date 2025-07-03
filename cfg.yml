@@ -6,11 +6,16 @@ QUEUE:
   max_gpu_jobs_in_queue: 50
 
 DATA_DIRS:
-  - data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIRS: [option in your individual config]
+
+- data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIRS: [option in your individual config]
 
 SNANA:
   sim_dir: $SCRATCH_SIMDIR
   group: pi-rkessler
+
+SuperNNova_legacy:
+  conda_env: snn_gpu
+  location: $PRODUCTS/classifiers/supernnova
 
 SuperNNova:
   conda_env: snn_gpu
@@ -35,7 +40,9 @@ CosmoMC:
 
 OUTPUT:
   output_dir: $PIPPIN_OUTPUT
-#  output_dir: output
+
+# output_dir: output
+
   ping_frequency: 30
   max_ping_frequency: 300
 
@@ -45,4 +52,3 @@ SBATCH:
 
 SETUP:
     location: $PRODUCTS/pippin/pippin/tasks
-    #location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/dev/pippin-pa/pippin/tasks
