@@ -133,9 +133,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                     )
                 self.logger.debug(f"Loading in fitopts from {potential_path}")
                 y = read_yaml(potential_path)
-                assert isinstance(
-                    y, dict
-                ), "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                assert isinstance(y, dict), (
+                    "New FITOPT format for external files is a yaml dictionary. See global.yml for an example."
+                )
                 has_file = True
                 self.raw_fitopts.append(y)
                 self.logger.debug(
@@ -143,9 +143,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                 )
                 self.output["fitopt_file"] = potential_path
             else:
-                assert f.strip().startswith(
-                    "/"
-                ), f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
+                assert f.strip().startswith("/"), (
+                    f"Manual fitopt {f} for lcfit {self.name} should specify a label wrapped with /. If this is meant to be a file, it doesnt exist."
+                )
                 self.logger.debug(f"Adding manual fitopt {f}")
                 self.raw_fitopts.append(f)
 
@@ -168,9 +168,9 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                         self.logger.debug(f"FLAG_USE_SAME_EVENTS: {values}")
                         self.use_same_events = values
                     if key in ["GLOBAL", survey]:
-                        assert isinstance(
-                            values, dict
-                        ), "Fitopt values should be a dict of label: scale command"
+                        assert isinstance(values, dict), (
+                            "Fitopt values should be a dict of label: scale command"
+                        )
                         for label, scale_command in values.items():
                             scale, command = scale_command.split(maxsplit=1)
                             fitopt = f"/{label}/ {command}"
@@ -322,7 +322,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         new_hash = self.get_hash_from_string(string_to_hash)
         regenerate = self._check_regenerate(new_hash)
         if regenerate:
-            self.logger.info(f"Running Light curve fit. Removing output_dir")
+            self.logger.info("Running Light curve fit. Removing output_dir")
             shutil.rmtree(self.output_dir, ignore_errors=True)
             mkdirs(self.output_dir)
             # Write main file

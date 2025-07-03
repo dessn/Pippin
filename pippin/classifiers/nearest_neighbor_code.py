@@ -95,19 +95,19 @@ def sanitise_args(args):
     logging.info(f"Input fitres_file is {args.fitres_file}")
     assert os.path.exists(args.fitres_file), f"File {args.fitres_file} does not exist"
 
-    assert (
-        " " not in args.name
-    ), f"Prob column name '{args.name}' should not have spaces"
+    assert " " not in args.name, (
+        f"Prob column name '{args.name}' should not have spaces"
+    )
     return args
 
 
 def get_features(filename, features, types):
     df = pd.read_csv(filename, delim_whitespace=True, comment="#")
     for f in features:
-        assert (
-            f in df.columns
-        ), f"Features {f} is not in DataFrame columns {list(df.columns)}"
-    assert "TYPE" in df.columns, f"DataFrame does not have a TYPE column!"
+        assert f in df.columns, (
+            f"Features {f} is not in DataFrame columns {list(df.columns)}"
+        )
+    assert "TYPE" in df.columns, "DataFrame does not have a TYPE column!"
 
     X = df[features].values
     y = np.isin(df["TYPE"].values, types)

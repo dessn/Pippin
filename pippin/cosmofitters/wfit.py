@@ -1,11 +1,9 @@
-import inspect
 import shutil
 import subprocess
 import os
 from pathlib import Path
-import numpy as np
 
-from pippin.config import mkdirs, get_output_loc, get_data_loc, chown_dir, read_yaml
+from pippin.config import mkdirs, get_data_loc, chown_dir
 from pippin.create_cov import CreateCov
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.base import ConfigBasedExecutable

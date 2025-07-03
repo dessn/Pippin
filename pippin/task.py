@@ -1,4 +1,3 @@
-import logging
 import shutil
 from abc import ABC, abstractmethod
 from pippin.config import (
@@ -227,10 +226,10 @@ class Task(ABC):
             return True
         else:
             if hash_are_different:
-                self.logger.debug(f"Hashes are different, regenerating")
+                self.logger.debug("Hashes are different, regenerating")
                 return True
             else:
-                self.logger.debug(f"Hashes are the same, not regenerating")
+                self.logger.debug("Hashes are the same, not regenerating")
                 return False
 
     def write_config(self):
@@ -361,9 +360,9 @@ class Task(ABC):
         return self._run()
 
     def scan_file_for_error(self, path, *error_match, max_lines=10):
-        assert (
-            len(error_match) >= 1
-        ), "You need to specify what string to search for. I have nothing."
+        assert len(error_match) >= 1, (
+            "You need to specify what string to search for. I have nothing."
+        )
         found = False
         if not os.path.exists(path):
             self.logger.warning(f"Note, expected log path {path} does not exist")
@@ -456,7 +455,7 @@ class Task(ABC):
     @staticmethod
     def fail_config(message):
         Task.logger.error(message)
-        raise ValueError(f"Task failed config")
+        raise ValueError("Task failed config")
 
     @staticmethod
     @abstractmethod

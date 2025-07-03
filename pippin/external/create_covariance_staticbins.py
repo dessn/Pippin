@@ -31,10 +31,8 @@
 import os
 import sys
 import numpy as np
-import getpass
 import time
 import shutil
-import string
 import fnmatch
 
 
@@ -203,13 +201,7 @@ def fullcosmo(base_output, file1, lc1, mat1, output_dir="COSMO"):
 
 def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
     import numpy as np
-    import matplotlib.pyplot as plt
-    import array
-    import math
-    import os
-    from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
 
     cosmo2 = FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -291,13 +283,7 @@ def avgmat(base_output, mat1, mat2, lc1, lc2, output_dir="COSMO"):
 
 def avgmat_Ngrid(base_output, mats, lcs, output_dir="COSMO"):
     import numpy as np
-    import matplotlib.pyplot as plt
-    import array
-    import math
-    import os
-    from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
 
     cosmo2 = FlatLambdaCDM(H0=70, Om0=0.3)
 
@@ -413,12 +399,8 @@ def sysmat(
     subdir="*",
 ):
     import numpy as np
-    import array
-    import math
     import os
-    from astropy import cosmology as cosmo
     from astropy.cosmology import FlatLambdaCDM
-    import re
 
     if not output_dir:
         output_dir = "COSMO"

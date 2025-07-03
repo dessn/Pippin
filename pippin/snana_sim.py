@@ -280,9 +280,9 @@ class SNANASimulation(ConfigBasedExecutable):
             if k.upper() not in self.reserved_top:
                 run_config = self.config[k]
                 run_config_keys = list(run_config.keys())
-                assert (
-                    "BASE" in run_config_keys
-                ), "You must specify a base file for each option"
+                assert "BASE" in run_config_keys, (
+                    "You must specify a base file for each option"
+                )
                 for key in run_config_keys:
                     if key.upper() in self.reserved_keywords:
                         continue
@@ -409,7 +409,7 @@ class SNANASimulation(ConfigBasedExecutable):
         regenerate = self._check_regenerate(new_hash)
 
         if regenerate:
-            self.logger.info(f"Running simulation")
+            self.logger.info("Running simulation")
             # Clean output dir. God I feel dangerous doing this, so hopefully unnecessary check
             if "//" not in self.output_dir and len(self.output_dir) > 30:
                 self.logger.debug(f"Cleaning output directory {self.output_dir}")

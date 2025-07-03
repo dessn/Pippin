@@ -85,7 +85,7 @@ class SuperNNovaClassifier(Classifier):
         elif redshift == False:
             redshift = "none"
         if redshift not in ["zpho", "zspe", "none"]:
-            self.logger.warning(f"Unknown redshift option ['zpho', 'zspe', 'none']")
+            self.logger.warning("Unknown redshift option ['zpho', 'zspe', 'none']")
         self.redshift = redshift
         self.norm = options.get("NORM", "cosmo")
         self.cyclic = options.get("CYCLIC", True)
@@ -98,24 +98,24 @@ class SuperNNovaClassifier(Classifier):
         self.list_filters = options.get("LIST_FILTERS", None)
         if self.list_filters is None:
             self.list_filters = ["DES-g", "DES-i", "DES-r", "DES-z"]
-        assert isinstance(
-            self.list_filters, list
-        ), f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
+        assert isinstance(self.list_filters, list), (
+            f"LIST_FILTERS must be a list, instead got {type(self.list_filters)}"
+        )
         # Can either be a yml dictionary or a str filepath to a txt files containing all mappings
         self.sntypes = options.get("SNTYPES", None)
         if self.sntypes is None:
             self.sntypes = {}
         elif isinstance(self.sntypes, str):
             sntypes_path = get_data_loc(self.sntypes)
-            assert (
-                sntypes_path is not None
-            ), f"SNTYPES: {self.sntypes} does not resolve to a path."
+            assert sntypes_path is not None, (
+                f"SNTYPES: {self.sntypes} does not resolve to a path."
+            )
             self.logger.debug(f"Reading in SNTYPES from {sntypes_path}")
             sntypes_raw = np.loadtxt(sntypes_path, dtype=str)
             self.sntypes = {i[0]: i[1] for i in sntypes_raw}
-        assert isinstance(
-            self.sntypes, dict
-        ), f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
+        assert isinstance(self.sntypes, dict), (
+            f"SNTYPES must be a dict, instead got {type(self.sntypes)}"
+        )
 
         # Setup yml files
         self.data_yml_file = options.get("DATA_YML", None)
@@ -156,7 +156,9 @@ class SuperNNovaClassifier(Classifier):
             "perfilter",
             "cosmo_quantile",
             "none",
-        ], f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
+        ], (
+            f"Norm option is set to {self.norm}, needs to be one of 'global', 'cosmo', 'perfilter', 'cosmo_quantile"
+        )
         assert self.variant in [
             "vanilla",
             "variational",
@@ -205,9 +207,9 @@ class SuperNNovaClassifier(Classifier):
                     for f in os.listdir(model_folder)
                     if os.path.isdir(os.path.join(model_folder, f))
                 ]
-                assert (
-                    len(files) == 1
-                ), f"Did not find singular output file: {str(files)}"
+                assert len(files) == 1, (
+                    f"Did not find singular output file: {str(files)}"
+                )
                 saved_dir = os.path.abspath(os.path.join(model_folder, files[0]))
 
                 subfiles = list(os.listdir(saved_dir))
@@ -230,7 +232,7 @@ class SuperNNovaClassifier(Classifier):
                 ]
                 self.logger.debug(pred_files)
                 pred_file = pred_files[0]
-                self.logger.debug(f"Success after {100-max_tries} tries.")
+                self.logger.debug(f"Success after {100 - max_tries} tries.")
                 break
             except Exception as e:
                 self.logger.debug(e)
@@ -256,9 +258,9 @@ class SuperNNovaClassifier(Classifier):
         model = self.options.get("MODEL")
         model_path = ""
         if not training:
-            assert (
-                model is not None
-            ), "If TRAIN is not specified, you have to point to a model to use"
+            assert model is not None, (
+                "If TRAIN is not specified, you have to point to a model to use"
+            )
             if not os.path.exists(get_output_loc(model)):
                 for t in self.dependencies:
                     if model == t.name:
@@ -343,7 +345,7 @@ class SuperNNovaClassifier(Classifier):
         self.raw_dir = light_curve_dir
         fit = self.get_fit_dependency()
         fit_dir = (
-            f""
+            ""
             if ((fit is None) or (len(fit) == 0))
             else f"--fits_dir {fit[self.index]['fitres_dirs']}"
         )
@@ -474,7 +476,7 @@ class SuperNNovaClassifier(Classifier):
                         return Task.FINISHED_FAILURE
 
             new_pred_file = self.output_dir + "/predictions.csv"
-            new_model_file = os.path.join(self.output_dir, f"model.pt")
+            new_model_file = os.path.join(self.output_dir, "model.pt")
 
             if not os.path.exists(new_pred_file) or not os.path.exists(new_model_file):
                 self.logger.info(

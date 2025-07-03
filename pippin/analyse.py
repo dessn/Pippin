@@ -12,12 +12,10 @@ from pippin.config import (
     get_config,
     ensure_list,
     get_data_loc,
-    generic_open,
     merge_dict,
 )
 from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.cosmofitters.cosmomc import CosmoMC
-from pippin.cosmofitters.wfit import WFit
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.task import Task
 
@@ -360,7 +358,7 @@ fi
             slurm_output_file = os.path.join(self.output_dir, "slurm.job")
             with open(slurm_output_file, "w") as f:
                 f.write(final_slurm)
-            self.logger.info(f"Submitting batch job for analyse chains")
+            self.logger.info("Submitting batch job for analyse chains")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.logger.info("Hash check passed, not rerunning")

@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 import sys
@@ -84,7 +82,7 @@ if __name__ == "__main__":
             )
         ]
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
 
     except Exception as e:
         logging.exception(str(e))

@@ -3,12 +3,9 @@ import subprocess
 from pathlib import Path
 import yaml
 import pandas as pd
-import re
-import numpy as np
-import time
 
 from pippin.classifiers.scone import SconeClassifier
-from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
+from pippin.config import get_config, mkdirs, get_data_loc, merge_dict
 from pippin.task import Task
 
 
@@ -68,7 +65,7 @@ class SconeLegacyClassifier(SconeClassifier):
             model_name=model_name,
         )
         self.logger.warning(
-            f"Using Legacy Scone version, pass a Scone input file via `BASE: /path/to/input.yml` to use the latest Scone version."
+            "Using Legacy Scone version, pass a Scone input file via `BASE: /path/to/input.yml` to use the latest Scone version."
         )
         self.global_config = get_config()
         self.options = options
@@ -340,7 +337,7 @@ class SconeLegacyClassifier(SconeClassifier):
         squeue = [
             i.strip()
             for i in subprocess.check_output(
-                f"squeue -h -u $USER -o '%.200j'", shell=True, text=True
+                "squeue -h -u $USER -o '%.200j'", shell=True, text=True
             ).splitlines()
         ]
         self.logger.debug(f"{squeue}")

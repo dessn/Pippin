@@ -1,6 +1,5 @@
 import numpy as np
 import yaml
-from chainconsumer import ChainConsumer
 import pandas as pd
 import sys
 import argparse
@@ -82,7 +81,7 @@ def blind(chain, names, columns_to_blind, index=0):
                 343 + i + (index + 10)
             ]
             chain[:, ii] = chain[:, ii] * scale + np.std(chain[:, ii]) * offset
-        except ValueError as e:
+        except ValueError:
             logging.warning(f"Cannot find blinding column {c} in list of names {names}")
 
 

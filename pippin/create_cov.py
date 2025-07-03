@@ -227,9 +227,9 @@ class CreateCov(ConfigBasedExecutable):
             for d in self.dependencies:
                 fitopt_files = []
                 fitopt_files += [f for f in d.output["fitopt_files"] if f is not None]
-                assert (
-                    len(set(fitopt_files)) < 2
-                ), f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
+                assert len(set(fitopt_files)) < 2, (
+                    f"Cannot automatically determine scaling from FITOPT file as you have multiple files: {fitopt_files}"
+                )
                 if (len(fitopt_files) > 0) and (path is None):
                     path = fitopt_files[0]
                     break

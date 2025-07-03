@@ -68,9 +68,7 @@ def plot_all_files(df_all):
         means = [df["omm"].mean(), df["w"].mean(), df["sigint"].mean()]
         if df.shape[0] < 2:
             name2 = name + " (showing mean error)"
-            cov = np.diag(
-                [df["omm_sig"].mean() ** 2, df["w_sig"].mean() ** 2, 0.01**2]
-            )
+            cov = np.diag([df["omm_sig"].mean() ** 2, df["w_sig"].mean() ** 2, 0.01**2])
         else:
             name2 = name + " (showing scatter error)"
             cov = np.diag(
@@ -518,7 +516,7 @@ if __name__ == "__main__":
 
         # Plot tails
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e), exc_info=True)
         raise e

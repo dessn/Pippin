@@ -2,13 +2,13 @@
 # Refactor pippin interface to scone to accept and modify
 # a scone-input file.
 
-import os, sys, shutil, subprocess, yaml, re, time
+import os
+import shutil
+import subprocess
 from pathlib import Path
-import pandas as pd
-import numpy as np
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import get_config, get_output_loc, mkdirs, get_data_loc, merge_dict
+from pippin.config import get_config, get_data_loc
 from pippin.task import Task
 
 
@@ -210,7 +210,7 @@ class SconeClassifier(Classifier):
             if path.exists()
             else Path(self.path_to_classifier) / SCONE_SHELL_SCRIPT
         )
-        cmd = f"python {str(path)} " f"--config_path {self.scone_input_file} "
+        cmd = f"python {str(path)} --config_path {self.scone_input_file} "
         #      f"--sbatch_job_name {self.job_base_name} "
 
         self.logger.info(f"Running command: {cmd}")
@@ -282,15 +282,15 @@ class SconeClassifier(Classifier):
 
         # - - - - - - - - - -
         # add extra info from pippin
-        config_lines.append(f"")
-        config_lines.append(f"# ======================================= ")
-        config_lines.append(f"# keys added by pippin\n ")
+        config_lines.append("")
+        config_lines.append("# ======================================= ")
+        config_lines.append("# keys added by pippin\n ")
 
         # pass sbatch_job_name via config since there are other sbatch config
         # keys already. Could also pass via command line arg --sbatch_job_name.
         config_lines.append(f"sbatch_job_name: {self.job_base_name}\n")
 
-        config_lines.append(f"input_data_paths:")
+        config_lines.append("input_data_paths:")
         for sim_dir in sim_dirs:
             resolved_dir = os.path.realpath(sim_dir)
             config_lines.append(f"  - {resolved_dir}")
@@ -301,14 +301,14 @@ class SconeClassifier(Classifier):
             if key_pippin not in key_replace_dict and key in KEYLIST_SCONE_INPUT:
                 val = options_local[key_pippin]
                 line = f"{key}:  {val}"
-                config_lines.append(f"")
+                config_lines.append("")
                 config_lines.append(f"{line}")
 
         # check option to select events passing LCFIT
 
         if self.select_lcfit:
-            config_lines.append(f"")
-            config_lines.append(f"# Train on events passing LCFIT")
+            config_lines.append("")
+            config_lines.append("# Train on events passing LCFIT")
             config_lines.append("snid_select_files:")
             lcfit_deps = self.get_fit_dependency()
             # self.logger.info(f"\n xxx lcfit_deps = \n{lcfit_deps}\n")

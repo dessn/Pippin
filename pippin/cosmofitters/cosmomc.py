@@ -1,4 +1,3 @@
-import inspect
 import shutil
 import subprocess
 import os
@@ -63,9 +62,9 @@ class CosmoMC(
             if self.create_cov_dep is not None
             else self.options.get("BLIND", False)
         )
-        assert isinstance(
-            self.blind, (bool, np.bool_)
-        ), "Blind should be set to a boolan value!"
+        assert isinstance(self.blind, (bool, np.bool_)), (
+            "Blind should be set to a boolan value!"
+        )
         self.ini_prefix = options.get("INI").replace(".ini", "")
         self.static = self.ini_prefix.replace(".ini", "") in ["cmb_omw", "cmb_omol"]
         self.static_path = "cosmomc_static_chains/"
@@ -328,7 +327,7 @@ fi
                 new_data_dir = os.path.join(self.output_dir, d)
                 os.symlink(original_data_dir, new_data_dir, target_is_directory=True)
 
-            self.logger.info(f"Submitting batch job for cosmomc")
+            self.logger.info("Submitting batch job for cosmomc")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.should_be_done()

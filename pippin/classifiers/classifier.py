@@ -272,7 +272,7 @@ class Classifier(Task):
                 if opt_sim:
                     if not any([mask, mask_sim]):
                         Task.logger.debug(
-                            f"No optional sim masks set, all sim tasks included as dependendencies"
+                            "No optional sim masks set, all sim tasks included as dependendencies"
                         )
                         optional_sim_tasks = sim_tasks
                     else:
@@ -294,7 +294,7 @@ class Classifier(Task):
                 if opt_lc:
                     if not any([mask, mask_fit]):
                         Task.logger.debug(
-                            f"No optional lcfit masks set, all lcfit tasks included as dependendencies"
+                            "No optional lcfit masks set, all lcfit tasks included as dependendencies"
                         )
                         optional_lcfit_tasks = lcfit_tasks
                     else:
@@ -388,15 +388,15 @@ class Classifier(Task):
                     for s in sim_deps:
                         if s is not None:
                             folders = s.output["sim_folders"]
-                            assert (
-                                len(folders) == 1
-                            ), f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            assert len(folders) == 1, (
+                                f"Training requires one version of the sim, you have {len(folders)} for sim task {s}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            )
                     for l in fit_deps:
                         if l is not None:
                             folders = l.output["fitres_dirs"]
-                            assert (
-                                len(folders) == 1
-                            ), f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            assert len(folders) == 1, (
+                                f"Training requires one version of the lcfits, you have {len(folders)} for lcfit task {l}. Make sure your training sim doesn't set RANSEED_CHANGE"
+                            )
 
                 deps = sim_deps + fit_deps + opt_deps
 
@@ -460,9 +460,9 @@ class Classifier(Task):
                                 # deps.append(t)
                                 extra = t.get_unique_name()
 
-                                assert isinstance(
-                                    t, cls
-                                ), f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+                                assert isinstance(t, cls), (
+                                    f"Model {clas_name} with class {cls} has model {model} with class {t.__class__}, they should match!"
+                                )
 
                                 indexes = get_num_ranseed(sim_deps, fit_deps)
                                 for i in range(indexes):

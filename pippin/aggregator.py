@@ -134,9 +134,9 @@ class Aggregator(Task):
                     self.classifier_merge[c.output["name"]] = prob_col[0]
                 else:
                     if len(prob_col) == 0:
-                        self.classifier_merge[
-                            c.output["name"]
-                        ] = c.get_prob_column_name()
+                        self.classifier_merge[c.output["name"]] = (
+                            c.get_prob_column_name()
+                        )
                     else:
                         Task.fail_config(
                             f"Classifier task {c.output['name']} matched multiple MERGE_CLASSIFIERS keys: {prob_col}. Please provide more specific keys"
@@ -217,7 +217,7 @@ class Aggregator(Task):
                 if data.isnull().sum() == data.size:
                     self.logger.error(f"prob column {c} is all NaN")
                 if truth.isnull().sum() == truth.size:
-                    self.logger.error(f"truth values are all NaN")
+                    self.logger.error("truth values are all NaN")
                 continue
 
             # Remove NaNs
@@ -285,9 +285,9 @@ class Aggregator(Task):
             self.logger.warning(
                 f"Warning, found multiple calibration files, only using first one: {path}"
             )
-        assert (
-            len(path) != 0
-        ), f"No calibration files found for agg task {self.recal_aggtask}"
+        assert len(path) != 0, (
+            f"No calibration files found for agg task {self.recal_aggtask}"
+        )
         path = path[0]
 
         df = pd.read_csv(path)

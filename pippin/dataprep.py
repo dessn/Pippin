@@ -1,6 +1,5 @@
 import shutil
 import subprocess
-import tarfile
 import os
 from collections import OrderedDict
 from pathlib import Path
@@ -231,7 +230,7 @@ class DataPrep(
             with open(clump_file, "w") as f:
                 f.write(command_string)
 
-            self.logger.info(f"Submitting batch job for data prep")
+            self.logger.info("Submitting batch job for data prep")
             subprocess.run(["sbatch", slurm_output_file], cwd=self.output_dir)
         else:
             self.should_be_done()

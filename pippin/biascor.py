@@ -49,9 +49,9 @@ class BiasCor(ConfigBasedExecutable):
                 self.merged_iasim_fitopts = [0 for _ in self.merged_iasim]
             else:
                 self.merged_iasim_fitopts = ensure_list(self.merged_iasim_fitopts)
-                assert len(self.merged_iasim_fitopts) == len(
-                    self.merged_iasim
-                ), f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(self.merged_iasim)}), but is length {len(self.merged_iasim_fitopts)}"
+                assert len(self.merged_iasim_fitopts) == len(self.merged_iasim), (
+                    f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(self.merged_iasim)}), but is length {len(self.merged_iasim_fitopts)}"
+                )
         self.logger.debug(f"SIMFILE_BIASCOR_FITOPTS: {self.merged_iasim_fitopts}")
         self.merged_ccsim = config.get("SIMFILE_CCPRIOR")
         self.merged_ccsim_fitopts = config.get("SIMFILE_CCPRIOR_FITOPTS")
@@ -60,9 +60,9 @@ class BiasCor(ConfigBasedExecutable):
                 self.merged_ccsim_fitopts = [0 for _ in self.merged_ccsim]
             else:
                 self.merged_ccsim_fitopts = ensure_list(self.merged_ccsim_fitopts)
-                assert len(self.merged_ccsim_fitopts) == len(
-                    self.merged_ccsim
-                ), f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(self.merged_ccsim)}), but is length {len(self.merged_ccsim_fitopts)}"
+                assert len(self.merged_ccsim_fitopts) == len(self.merged_ccsim), (
+                    f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(self.merged_ccsim)}), but is length {len(self.merged_ccsim_fitopts)}"
+                )
         self.logger.debug(f"SIMFILE_CCPRIOR_FITOPTS: {self.merged_ccsim_fitopts}")
 
         self.classifier = config.get("CLASSIFIER")
@@ -98,7 +98,7 @@ class BiasCor(ConfigBasedExecutable):
         self.merge_log = os.path.join(self.fit_output_dir, "MERGE.LOG")
         self.reject_list = os.path.join(self.output_dir, "reject.list")
 
-        self.done_file = os.path.join(self.fit_output_dir, f"ALL.DONE")
+        self.done_file = os.path.join(self.fit_output_dir, "ALL.DONE")
         self.done_file_iteration = os.path.join(self.output_dir, "RESUBMITTED.DONE")
         self.run_iteration = 1 if os.path.exists(self.done_file_iteration) else 0
         self.probability_column_name = None
@@ -503,7 +503,9 @@ class BiasCor(ConfigBasedExecutable):
                     )
                     assert len(value_simfile_biascor_fitopts) == len(
                         value_simfile_biascor
-                    ), f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(value_simfile_biascor)}), but is length {len(value_simfile_biascor_fitopt)}"
+                    ), (
+                        f"SIMFILE_BIASCOR_FITOPTS must be the same length as SIMFILE_BIASCOR ({len(value_simfile_biascor)}), but is length {len(value_simfile_biascor_fitopt)}"
+                    )
                 mu_str += f"simfile_biascor={self.get_simfile_biascor(value_simfile_biascor, value_simfile_biascor_fitopts)} "
             if value.get("SIMFILE_CCPRIOR"):
                 value_simfile_ccprior = value.get("SIMFILE_CCPRIOR")
@@ -516,7 +518,9 @@ class BiasCor(ConfigBasedExecutable):
                     )
                     assert len(value_simfile_ccprior_fitopts) == len(
                         value_simfile_ccprior
-                    ), f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(value_simfile_ccprior)}), but is length {len(value_simfile_ccprior_fitopt)}"
+                    ), (
+                        f"SIMFILE_CCPRIOR_FITOPTS must be the same length as SIMFILE_CCPRIOR ({len(value_simfile_ccprior)}), but is length {len(value_simfile_ccprior_fitopt)}"
+                    )
                 mu_str += f"simfile_ccprior={self.get_simfile_ccprior(value_simfile_ccprior, value_simfile_ccprior_fitopts)} "
             if value.get("CLASSIFIER"):
                 cname = self.prob_cols[value.get("CLASSIFIER").name]
@@ -725,7 +729,7 @@ class BiasCor(ConfigBasedExecutable):
                 simfile_ia = subdict.get("SIMFILE_BIASCOR")
                 if default is None and simfile_ia is None:
                     Task.fail_config(
-                        f"You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output"
+                        "You must specify SIMFILE_BIASCOR for the default biascor. Supply a simulation name that has a merged output"
                     )
                 if simfile_ia is not None:
                     simfile_ia = ensure_list(simfile_ia)
@@ -739,7 +743,7 @@ class BiasCor(ConfigBasedExecutable):
                 # Resolve the cc sims
                 simfile_cc = subdict.get("SIMFILE_CCPRIOR")
                 if default is None and simfile_ia is None:
-                    message = f"No SIMFILE_CCPRIOR specified. Hope you're doing a Ia only analysis"
+                    message = "No SIMFILE_CCPRIOR specified. Hope you're doing a Ia only analysis"
                     Task.logger.warning(message)
                 if simfile_cc is not None:
                     simfile_cc = ensure_list(simfile_cc)
