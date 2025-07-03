@@ -93,6 +93,7 @@ class SuperNNovaClassifier(Classifier):
             model_name=model_name,
         )
         self.global_config = get_config()
+        print(self.global_config)
         self.dump_dir = output_dir + "/dump"
         self.job_base_name = os.path.basename(output_dir)
         self.gpu = config.get("GPU", True)
@@ -106,12 +107,13 @@ class SuperNNovaClassifier(Classifier):
         if snn_input_file is not None:
             snn_input_file = get_data_loc(snn_input_file)
         self.snn_input_file = snn_input_file
+        self.snn_yml = {}
+        if self.snn_input_file is not None:
+            with open(self.snn_input_file, "r") as f:
+                snn_yml = yaml.safe_load(f)
+                for k, v in snn_yml.items():
+                    self.snn_yml[k.upper()] = v
 
-        with open(self.snn_input_file, "r") as f:
-            self.snn_yml = {}
-            snn_yml = yaml.safe_load(f)
-            for k, v in snn_yml.items():
-                self.snn_yml[k.upper()] = v
         self.output_data_yml = os.path.join(self.output_dir, "data.yml")
         self.output_classification_yml = os.path.join(
             self.output_dir, "classification.yml"

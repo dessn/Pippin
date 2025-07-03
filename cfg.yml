@@ -13,12 +13,9 @@ SNANA:
   sim_dir: $SCRATCH_SIMDIR
   group: pi-rkessler
 
-SuperNNova_legacy:
-  conda_env: snn_gpu
-  location: $PRODUCTS/classifiers/supernnova
-
 SuperNNova:
   conda_env: snn_gpu
+  legacy_conda_env: snn_gpu
   location: $PRODUCTS/classifiers/supernnova
 
 SNIRF:

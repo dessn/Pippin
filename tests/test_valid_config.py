@@ -7,6 +7,8 @@ from pippin.snana_sim import SNANASimulation
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.classifiers.fitprob import FitProbClassifier
 from pippin.classifiers.perfect import PerfectClassifier
+from pippin.classifiers.supernnova import SuperNNovaClassifier
+from pippin.classifiers.supernnova_legacy import SuperNNovaLegacyClassifier
 from pippin.classifiers.scone import SconeClassifier
 from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 from pippin.aggregator import Aggregator
@@ -155,6 +157,53 @@ def test_classifier_sim_with_opt_lcfit_config_valid():
     assert len(deps) == 2
     assert isinstance(deps[0], SNANASimulation)
     assert isinstance(deps[1], SNANALightCurveFit)
+
+
+def test_classifier_snn_valid():
+    manager = get_manager(yaml="tests/config_files/valid_classify_snn.yml", check=True)
+    tasks = manager.tasks
+
+    # 1 Sim, 1 LCFit, 4 SNN
+    assert len(tasks) == 6
+    assert isinstance(tasks[0], SNANASimulation)
+    assert isinstance(tasks[1], SNANALightCurveFit)
+    for task in tasks[2:]:
+        # isinstance => Class or Subclass
+        assert isinstance(task, SuperNNovaClassifier)
+
+    tests = [
+        {
+            "task": tasks[2],
+            "cls": SuperNNovaLegacyClassifier,
+            "attr": {"name": "LEGACY_SNN_TRAIN", "snn_input_file": None},
+        },
+        {
+            "task": tasks[3],
+            "cls": SuperNNovaLegacyClassifier,
+            "attr": {"name": "LEGACY_SNN_PREDICT", "snn_input_file": None},
+        },
+        {
+            "task": tasks[4],
+            "cls": SuperNNovaClassifier,
+            "attr": {
+                "name": "SNN_TRAIN",
+            },
+        },
+        {
+            "task": tasks[5],
+            "cls": SuperNNovaClassifier,
+            "attr": {
+                "name": "SNN_PREDICT",
+            },
+        },
+    ]
+
+    for test in tests:
+        task = test["task"]
+        assert type(task) is test["cls"]
+        for attr, val in test["attr"].items():
+            assert hasattr(task, attr)
+            assert getattr(task, attr) == val
 
 
 def test_classifier_scone_valid():
