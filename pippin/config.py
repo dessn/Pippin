@@ -220,7 +220,7 @@ def chown_dir(directory, walk=True):
         group_id = groupinfo.gr_gid
         os.chown(directory, -1, group_id)
         os.chmod(directory, 0o2775)
-    except Exception as e:
+    except Exception:
         logger.exception(f"Chown error: {directory}")
         return
     if walk:
@@ -232,7 +232,7 @@ def chown_dir(directory, walk=True):
                             os.path.join(root, d), -1, group_id, follow_symlinks=False
                         )
                         os.chmod(os.path.join(root, d), 0o2775)
-                    except Exception as e:
+                    except Exception:
                         logger.warning(f"Chown error: {os.path.join(root, d)}")
             for f in files:
                 if not os.path.islink(os.path.join(root, f)):
@@ -241,7 +241,7 @@ def chown_dir(directory, walk=True):
                             os.path.join(root, f), -1, group_id, follow_symlinks=False
                         )
                         os.chmod(os.path.join(root, f), 0o664)
-                    except Exception as e:
+                    except Exception:
                         logger.warning(f"Chown error: {os.path.join(root, f)}")
 
 

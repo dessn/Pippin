@@ -2,14 +2,11 @@ import shutil
 import gzip
 import numpy as np
 import yaml
-from chainconsumer import ChainConsumer
 import pandas as pd
 import sys
 import argparse
 import os
 import logging
-import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
 
 
 def setup_logging():
@@ -161,7 +158,7 @@ if __name__ == "__main__":
         parse_fitres_files(args)
         parse_m0diffs(args)
         parse_fitres(args)
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
     except Exception as e:
         logging.exception(str(e))
         raise e

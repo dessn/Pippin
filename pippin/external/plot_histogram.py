@@ -1,5 +1,3 @@
-import os
-
 import numpy as np
 import pandas as pd
 import sys
@@ -7,7 +5,6 @@ import argparse
 import logging
 import matplotlib.pyplot as plt
 import yaml
-from astropy.cosmology import FlatLambdaCDM
 from scipy.stats import binned_statistic, moment
 
 
@@ -467,9 +464,9 @@ if __name__ == "__main__":
                     f"redshift_{n}.png",
                 )
         except:
-            logging.info(f"NO DES Fields, skipping...")
+            logging.info("NO DES Fields, skipping...")
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
 
     except Exception as e:
         logging.exception(str(e))

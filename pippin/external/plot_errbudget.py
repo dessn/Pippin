@@ -122,9 +122,9 @@ if __name__ == "__main__":
                     nosys_mask = df.covopt.str.upper().isin(
                         ["NOSYS", "NO_SYS", "STAT", "STATONLY", "STAT_ONLY"]
                     )
-                    assert (
-                        nosys_mask.sum() == 1
-                    ), f"Multiple potential no systematic covopts found for name {name}, this is an issue"
+                    assert nosys_mask.sum() == 1, (
+                        f"Multiple potential no systematic covopts found for name {name}, this is an issue"
+                    )
 
                     avg_cols = [c for c in df.columns if c.endswith(" avg")]
                     std_cols = [c for c in df.columns if c.endswith(" std")]

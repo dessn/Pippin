@@ -13,7 +13,6 @@ from pippin.aggregator import Aggregator
 from pippin.merge import Merger
 from pippin.biascor import BiasCor
 from pippin.create_cov import CreateCov
-from pippin.cosmofitters.cosmofit import CosmoFit
 from pippin.cosmofitters.cosmomc import CosmoMC
 
 

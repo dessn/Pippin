@@ -1,5 +1,4 @@
 import os
-import shutil
 import subprocess
 import time
 from colorama import Fore, Style
@@ -178,13 +177,13 @@ class Manager:
             num = int(stage)
         else:
             key = stage.upper()
-            assert (
-                key in Manager.stages
-            ), f"Stage {key} is not in recognised keys {Manager.stages}"
+            assert key in Manager.stages, (
+                f"Stage {key} is not in recognised keys {Manager.stages}"
+            )
             num = Manager.stages.index(key)
-        assert (
-            0 <= num < len(Manager.stages)
-        ), f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        assert 0 <= num < len(Manager.stages), (
+            f"Stage {num} is not in recognised values is not valid - from 0 to {len(Manager.stages) - 1}"
+        )
         return num
 
     def get_tasks(self, config):
@@ -378,9 +377,9 @@ class Manager:
         self.logger.info(f"Output will be located in {self.output_dir}")
         if check_config:
             self.logger.info("Only verifying config, not launching anything")
-        assert not (
-            compress_output and uncompress_output
-        ), "-C / --compress and -U / --uncompress are mutually exclusive"
+        assert not (compress_output and uncompress_output), (
+            "-C / --compress and -U / --uncompress are mutually exclusive"
+        )
         # Whilst compressing is being debugged, false by default
         self.compress = False
         if compress_output:
@@ -490,7 +489,7 @@ class Manager:
                 if current_sleep_time > max_sleep_time:
                     current_sleep_time = max_sleep_time
                 p = subprocess.run(
-                    f"squeue -h -u $USER -o '%.j'",
+                    "squeue -h -u $USER -o '%.j'",
                     shell=True,
                     text=True,
                     stdout=subprocess.PIPE,
@@ -586,14 +585,14 @@ class Manager:
 
         self.logger.info("")
         if len(ws) == 0:
-            self.logger.info(f"No warnings")
+            self.logger.info("No warnings")
         else:
             self.logger.warning(f"{len(ws)} warnings")
         for w in ws:
             self.logger.warning(f"\t{w.message}")
 
         if len(es) == 0:
-            self.logger.info(f"No errors")
+            self.logger.info("No errors")
         else:
             self.logger.error(f"{len(es)} errors")
 

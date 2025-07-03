@@ -252,9 +252,9 @@ class NearestNeighborClassifier(Classifier):
         self.setup()
 
         model = self.options.get("MODEL")
-        assert (
-            model is not None
-        ), "If TRAIN is not specified, you have to point to a model to use"
+        assert model is not None, (
+            "If TRAIN is not specified, you have to point to a model to use"
+        )
         for t in self.dependencies:
             if model == t.name:
                 self.logger.debug(

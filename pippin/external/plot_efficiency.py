@@ -157,11 +157,11 @@ def save_efficiency_file(field_eff, fields):
     }
     for c in labels:
         with open(f"efficiency_{c}.dat", "w") as f:
-            header = f"OPT_EXTRAP: 1\n\n"
+            header = "OPT_EXTRAP: 1\n\n"
             f.write(header)
 
             for field, (xs, ys) in zip(fields, field_eff[c]):
-                header2 = f"""FIELDLIST: {'+'.join(field)}
+                header2 = f"""FIELDLIST: {"+".join(field)}
 VARNAMES: {name_map[c]} HOSTEFF
 """
                 f.write(header2)
@@ -282,7 +282,7 @@ if __name__ == "__main__":
                     d["HOST_MAG_i-r"] = d["HOST_MAG_i"] - d["HOST_MAG_r"]
                 plot_efficiency(data_dfs[0], sim_dfs, args["FIELDS"])
 
-        logging.info(f"Finishing gracefully")
+        logging.info("Finishing gracefully")
 
     except Exception as e:
         logging.exception(e, exc_info=True)

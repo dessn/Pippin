@@ -125,9 +125,9 @@ def preprocess(raw):
 
 def preprocess_include(value, lines):
     include_path = os.path.abspath(os.path.expandvars(value[0]))
-    assert os.path.exists(
-        include_path
-    ), f"Attempting to include {include_path}, but file cannot be found."
+    assert os.path.exists(include_path), (
+        f"Attempting to include {include_path}, but file cannot be found."
+    )
     with open(include_path, "r") as f:
         include_yaml = f.read()
     include_yaml = include_yaml.split("\n")
@@ -181,9 +181,9 @@ def run(args):
 
     for i, d in enumerate(global_config["DATA_DIRS"]):
         logging.debug(f"Data directory {i + 1} set as {d}")
-        assert (
-            d is not None
-        ), "Data directory is none, which means it failed to resolve. Check the error message above for why."
+        assert d is not None, (
+            "Data directory is none, which means it failed to resolve. Check the error message above for why."
+        )
 
     logging.info(
         f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node."
@@ -239,6 +239,7 @@ def get_syntax(task):
     base = os.path.dirname(os.path.realpath(__file__))
     with open(f"{base}/docs/src/tasks/{task.lower()}.md", "r") as f:
         print(f.read())
+
 
 def get_args(test=False):
     # Set up command line arguments
