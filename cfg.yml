@@ -48,4 +48,5 @@ SBATCH:
   gpu_location: $SBATCH_TEMPLATES/SBATCH_gpu.TEMPLATE
 
 SETUP:
-    location: $PRODUCTS/pippin/pippin/tasks
+    #location: $PRODUCTS/pippin/pippin/tasks
+    location: /project2/rkessler/SURVEYS/DES/USERS/parmstrong/pippin-dev/pippin/tasks
