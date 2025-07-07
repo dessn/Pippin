@@ -1,3 +1,10 @@
+# ================================
+#
+# History
+#
+# Jul 7 2025 R.Kessler - add EXTRA_OPTS feature to allow arbitrary command-line overrides
+#
+
 import os
 from pathlib import Path
 import yaml
@@ -210,8 +217,15 @@ class CreateCov(ConfigBasedExecutable):
             cmd = ""
         else:
             cmd = "--unbinned"
+
         if self.options.get("SYSTEMATIC_HD", False):
             cmd += " --systematic_HD"
+
+        # July 7 2025 . R.Kessler - check for arbitrary command-line args
+        extra_opts = self.options.get("EXTRA_OPTS",None)
+        if extra_opts:     
+            cmd += f"  {extra_opts}"
+
         return f"/{self.name}/    {cmd}"
 
     def get_sys_file_in(self):
