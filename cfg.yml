@@ -6,8 +6,7 @@ QUEUE:
   max_gpu_jobs_in_queue: 50
 
 DATA_DIRS:
-
-- data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIRS: [option in your individual config]
+  - data_files  # Relative to this file, absolute or with a variable. Add to this list with the GLOBAL: DATA_DIRS: [option in your individual config]
 
 SNANA:
   sim_dir: $SCRATCH_SIMDIR
@@ -38,9 +37,6 @@ CosmoMC:
 
 OUTPUT:
   output_dir: $PIPPIN_OUTPUT
-
-# output_dir: output
-
   ping_frequency: 30
   max_ping_frequency: 300
 
