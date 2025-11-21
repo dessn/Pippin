@@ -1,3 +1,9 @@
+"""
+  HISTORY
+
+
+"""
+
 import argparse
 import os
 import yaml
@@ -164,7 +170,7 @@ def run(args):
     global_config = get_config(initial_path=cfg, overwrites=overwrites)
 
     config_filename = os.path.basename(args.yaml).split(".")[0].upper()
-    output_dir = get_output_dir()
+    output_dir      = get_output_dir()
     logging_folder = os.path.abspath(os.path.join(output_dir, config_filename))
 
     if not args.check:
@@ -185,11 +191,12 @@ def run(args):
             "Data directory is none, which means it failed to resolve. Check the error message above for why."
         )
 
-    logging.info(
-        f"Running on: {os.environ.get('HOSTNAME', '$HOSTNAME not set')} login node."
-    )
-
     manager = Manager(config_filename, yaml_path, config_raw, config, message_store)
+
+
+    host = os.environ.get('HOSTNAME', '$HOSTNAME not set')  # RK; 
+    logging.info(f"Running on: {host} login node.")
+
 
     # Gracefully hand Ctrl-c
     def handler(signum, frame):

@@ -5,7 +5,7 @@
 # Jul 7 2025 R.Kessler - add EXTRA_OPTS feature to allow arbitrary command-line overrides
 #
 
-import os
+import os, sys
 from pathlib import Path
 import yaml
 import shutil
@@ -31,7 +31,8 @@ class CreateCov(ConfigBasedExecutable):
               SYS_SCALE: location of the fitopts file with scales in it
               FITOPT_SCALES:  # Optional dict to scale fitopts
                     fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
-              MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom, scale defaults to one
+              MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom;
+                              scale defaults to one
                 exact_muopt_name: float
               COVOPTS:  # optional, note you'll get an 'ALL' covopt no matter what
                 - "[NOSYS] [=DEFAULT,=DEFAULT]"  # syntax for Dan&Dillons script. [label] [fitopts_to_match,muopts_to_match]. Does partial matching. =Default means dont do that systematic type
@@ -121,8 +122,8 @@ class CreateCov(ConfigBasedExecutable):
             self.logger.info("Generating CosmoMC output")
         else:
             self.logger.info("Not generating CosmoMC output")
-        self.sys_file_in = self.get_sys_file_in()
-        self.sys_file_out = os.path.join(self.output_dir, "sys_scale.yml")
+        self.sys_file_in     = self.get_sys_file_in()
+        self.sys_file_out    = os.path.join(self.output_dir, "sys_scale.yml")
         self.calibration_set = options.get("CALIBRATORS", [])
         self.prepare_input_covmat()
         self.yaml["CONFIG"]["INPUT_COVMAT_FILE"] = self.output_covmat_file
@@ -183,15 +184,15 @@ class CreateCov(ConfigBasedExecutable):
     def prepare_input_covmat(self):
         self.load_input_covmat()
         if self.prepare_cosmomc:
-            self.input_covmat_yaml["COSMOMC_TEMPLATES_PATH"] = get_data_loc(
-                self.templates_dir
-            )
+            self.input_covmat_yaml["COSMOMC_TEMPLATES_PATH"] = get_data_loc(self.templates_dir)
         else:
             self.input_covmat_yaml.pop("COSMOMC_TEMPLATES_PATH", None)
+            self.input_covmat_yaml.pop("COSMOMC_DATASET_FILE", None)  # RK, Nov 21 2025
+
         self.input_covmat_yaml["SYS_SCALE_FILE"] = self.sys_file_out
-        self.input_covmat_yaml["COVOPTS"] = self.options.get("COVOPTS", [])
-        self.input_covmat_yaml["EXTRA_COVS"] = self.options.get("EXTRA_COVS", [])
-        self.input_covmat_yaml["CALIBRATORS"] = self.calibration_set
+        self.input_covmat_yaml["COVOPTS"]        = self.options.get("COVOPTS", [])
+        self.input_covmat_yaml["EXTRA_COVS"]     = self.options.get("EXTRA_COVS", [])
+        self.input_covmat_yaml["CALIBRATORS"]    = self.calibration_set
 
     def get_bbc_outdirs(self):
         bbc_outdirs = []
@@ -203,7 +204,7 @@ class CreateCov(ConfigBasedExecutable):
 
     def get_covmatopt(self):
         rebin_x1 = self.options.get("REBINNED_X1", 0)
-        rebin_c = self.options.get("REBINNED_C", 0)
+        rebin_c  = self.options.get("REBINNED_C", 0)
         if rebin_x1 + rebin_c > 0:
             if (rebin_x1 == 0) or (rebin_c == 0):
                 Task.fail_config(
@@ -263,13 +264,18 @@ class CreateCov(ConfigBasedExecutable):
             for _, d in yaml.items()
             for k, v in d.items()
         }
+
         return raw
 
     def get_sys_scale(self):
-        return {
-            **self.get_scales_from_fitopt_file(),
-            **self.options.get("FITOPT_SCALES", {}),
+
+        sys_scale_list = {
+            **self.get_scales_from_fitopt_file(),     # from FITOPT yml file
+            **self.options.get("FITOPT_SCALES", {}),  # from FITOPT_SCALES in pippin input
+            **self.options.get("MUOPT_SCALES", {})    # from MUOPT_SCALES in pippin input  (Nov 21 2025, R.Kessler)
         }
+
+        return sys_scale_list
 
     def _run(self):
         sys_scale = self.get_sys_scale()
