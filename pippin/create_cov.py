@@ -31,7 +31,8 @@ class CreateCov(ConfigBasedExecutable):
               SYS_SCALE: location of the fitopts file with scales in it
               FITOPT_SCALES:  # Optional dict to scale fitopts
                     fitopt_label_for_partial check: float to scale by  # (does label in fitopt, not exact match
-              MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom, scale defaults to one
+              MUOPT_SCALES: # Optional dict used to construct SYSFILE input by putting MUOPT scales at the bottom;
+                              scale defaults to one
                 exact_muopt_name: float
               COVOPTS:  # optional, note you'll get an 'ALL' covopt no matter what
                 - "[NOSYS] [=DEFAULT,=DEFAULT]"  # syntax for Dan&Dillons script. [label] [fitopts_to_match,muopts_to_match]. Does partial matching. =Default means dont do that systematic type
@@ -188,6 +189,8 @@ class CreateCov(ConfigBasedExecutable):
             )
         else:
             self.input_covmat_yaml.pop("COSMOMC_TEMPLATES_PATH", None)
+            self.input_covmat_yaml.pop("COSMOMC_DATASET_FILE", None)  # RK, Nov 21 2025
+
         self.input_covmat_yaml["SYS_SCALE_FILE"] = self.sys_file_out
         self.input_covmat_yaml["COVOPTS"] = self.options.get("COVOPTS", [])
         self.input_covmat_yaml["EXTRA_COVS"] = self.options.get("EXTRA_COVS", [])
@@ -222,8 +225,8 @@ class CreateCov(ConfigBasedExecutable):
             cmd += " --systematic_HD"
 
         # July 7 2025 . R.Kessler - check for arbitrary command-line args
-        extra_opts = self.options.get("EXTRA_OPTS",None)
-        if extra_opts:     
+        extra_opts = self.options.get("EXTRA_OPTS", None)
+        if extra_opts:
             cmd += f"  {extra_opts}"
 
         return f"/{self.name}/    {cmd}"
@@ -263,13 +266,21 @@ class CreateCov(ConfigBasedExecutable):
             for _, d in yaml.items()
             for k, v in d.items()
         }
+
         return raw
 
     def get_sys_scale(self):
-        return {
-            **self.get_scales_from_fitopt_file(),
-            **self.options.get("FITOPT_SCALES", {}),
+        sys_scale_list = {
+            **self.get_scales_from_fitopt_file(),  # from FITOPT yml file
+            **self.options.get(
+                "FITOPT_SCALES", {}
+            ),  # from FITOPT_SCALES in pippin input
+            **self.options.get(
+                "MUOPT_SCALES", {}
+            ),  # from MUOPT_SCALES in pippin input  (Nov 21 2025, R.Kessler)
         }
+
+        return sys_scale_list
 
     def _run(self):
         sys_scale = self.get_sys_scale()
