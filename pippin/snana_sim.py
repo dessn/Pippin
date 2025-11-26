@@ -25,9 +25,15 @@ from pippin.config import (
 from pippin.task import Task
 
 # define substring list to identify SNIa model
-SUBSTRING_SNIA_LIST = [ 'SALT',  'BAYESN', 'bayesn', 
-                        'SNEMO', 'BYOSED', 'mlcs', 'snoopy' ]  # R.Kessler July 7 2025
-
+SUBSTRING_SNIA_LIST = [
+    "SALT",
+    "BAYESN",
+    "bayesn",
+    "SNEMO",
+    "BYOSED",
+    "mlcs",
+    "snoopy",
+]  # R.Kessler July 7 2025
 
 
 class SNANASimulation(ConfigBasedExecutable):
@@ -161,7 +167,9 @@ class SNANASimulation(ConfigBasedExecutable):
                         genmodel = genmodel_sublist[0]
 
                 type2 = 100 + gentype
-                is_snia = any(substring in genmodel for substring in SUBSTRING_SNIA_LIST) # RK, Jul 7 2025
+                is_snia = any(
+                    substring in genmodel for substring in SUBSTRING_SNIA_LIST
+                )  # RK, Jul 7 2025
                 # xxx mark delete if "SALT" in genmodel:
                 if is_snia:
                     self.base_ia.append(base_file)
