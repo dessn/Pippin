@@ -33,6 +33,8 @@ KEYLIST_SCONE_INPUT = [
 ]
 
 
+#KEY_PROB_COLUMN_NAME = "PROB_COLUMN_NAME"  # RK - Jan 2026
+
 # ==========================================
 class SconeClassifier(Classifier):
     """convolutional neural network-based SN photometric classifier
@@ -232,6 +234,7 @@ class SconeClassifier(Classifier):
         # set local mode as if it were an override key in pippin input file
         options_local["MODE"] = mode
 
+        # fetch name of output column with scone prob_Ia
         if mode == "predict":
             options_local["PROB_COLUMN_NAME"] = self.get_prob_column_name()
 
@@ -340,12 +343,7 @@ class SconeClassifier(Classifier):
                     return Task.FINISHED_FAILURE
 
             pred_path = str(Path(self.output_dir) / "predictions.csv")
-            # predictions = pd.read_csv(pred_path)
-            # if "pred_labels" in predictions.columns:
-            #    predictions = predictions[["snid", "pred_labels"]] # make sure snid is the first col
-            #   predictions = predictions.rename(columns={"pred_labels": self.get_prob_column_name()})
-            #    predictions.to_csv(pred_path, index=False)
-            # self.logger.info(f"Predictions file can be found at {pred_path}")
+
             self.output.update(
                 {
                     "model_filename": self.options.get(

@@ -165,6 +165,12 @@ class Classifier(Task):
         return name
 
     def get_prob_column_name(self):
+
+        # Jan 8 2026 RK check user option to define column name
+        user_colname = self.options.setdefault("PROB_COLUMN_NAME",None)
+        if user_colname: return user_colname
+
+        # - - - - 
         m = self.get_model_classifier()
         if m is None:
             if self.model_name is not None:
