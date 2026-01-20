@@ -68,14 +68,14 @@ class Aggregator(Task):
         )  # refactor by passing agg input file to pippin
         if agg_input_file is not None:
             agg_input_file = get_data_loc(agg_input_file)
-        self.agg_input_file = agg_input_file
-        agg_input_base = os.path.basename(self.agg_input_file)
-        self.agg_output_file = self.output_dir + "/" + "PIP_" + agg_input_base
-        self.log_dir = f"{self.output_dir}/LOGS"
-        self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
-        self.done_file = f"{self.log_dir}/ALL.DONE"
-        self.logging_file = self.agg_output_file.replace(".INPUT", ".LOG")
-        self.kill_file = self.agg_output_file.replace(".INPUT", "_KILL.LOG")
+            self.agg_input_file = agg_input_file
+            agg_input_base = os.path.basename(self.agg_input_file)
+            self.agg_output_file = self.output_dir + "/" + "PIP_" + agg_input_base
+            self.log_dir = f"{self.output_dir}/LOGS"
+            self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
+            self.done_file = f"{self.log_dir}/ALL.DONE"
+            self.logging_file = self.agg_output_file.replace(".INPUT", ".LOG")
+            self.kill_file = self.agg_output_file.replace(".INPUT", "_KILL.LOG")
 
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
