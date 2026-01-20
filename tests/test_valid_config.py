@@ -231,7 +231,7 @@ def test_agg_config_valid():
             "task": tasks[5],
             "cls": Aggregator,
             "attr": {
-                "name": "AGG_ASIM",
+                "name": "NEW_AGG_ASIM",
                 "sim_name": "ASIM",
             },
         },

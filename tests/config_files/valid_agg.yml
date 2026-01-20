@@ -29,5 +29,5 @@ CLASSIFICATION:
 AGGREGATION:
   LEGACY_AGG:
 
-  AGG:
+  NEW_AGG:
     BASE: "/path/to/base/file"

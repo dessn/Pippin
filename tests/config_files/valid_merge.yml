@@ -29,11 +29,13 @@ CLASSIFICATION:
 AGGREGATION:
   LEGACY_AGG:
 
-  AGG:
+  NEW_AGG:
     BASE: "/path/to/base/file"
 
 MERGE:
   LEGACY_MERGE:
+    MASK_AGG: "LEGACY_AGG"
 
   MERGE:
+    MASK_AGG: "NEW_AGG"
     BASE: "/path/to/base/file"
