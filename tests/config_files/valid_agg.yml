@@ -30,4 +30,4 @@ AGGREGATION:
   LEGACY_AGG:
 
   NEW_AGG:
-    BASE: "/path/to/base/file"
+    BASE: "prereq_files/SUBMIT_COMBINE_FITRES.INPUT"
