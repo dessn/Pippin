@@ -98,9 +98,9 @@ class Merger(Task):
     def prepare_merge_input_lines(self):
         # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
 
-        print(f"XXX\n{self.lc_fit = }")
+        print(f"XXX\n{self.lc_fit}")
         for d in self.dependencies:
-            print(f"XXX\n{d = }")
+            print(f"XXX\n{d}")
 
         config_lines = []
         merge_input_file = self.merge_input_file
