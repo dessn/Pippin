@@ -273,7 +273,7 @@ class MergerLegacy(Merger):
                     num_gen += 1
 
                     merge_name2 = f"{name}_{lcfit.name}"
-                    task = Merger(
+                    task = MergerLegacy(
                         merge_name2,
                         _get_merge_output_dir(
                             base_output_dir, stage_number, name, lcfit.name
