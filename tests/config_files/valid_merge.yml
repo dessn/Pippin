@@ -27,7 +27,13 @@ CLASSIFICATION:
       PROB_CC: 0.0
 
 AGGREGATION:
-  AGGLABEL:
+  LEGACY_AGG:
+
+  AGG:
+    BASE: "/path/to/base/file"
 
 MERGE:
+  LEGACY_MERGE:
+
   MERGE:
+    BASE: "/path/to/base/file"

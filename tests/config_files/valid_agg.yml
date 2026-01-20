@@ -27,4 +27,7 @@ CLASSIFICATION:
       PROB_CC: 0.0
 
 AGGREGATION:
-  AGGLABEL:
+  LEGACY_AGG:
+
+  AGG:
+    BASE: "/path/to/base/file"
