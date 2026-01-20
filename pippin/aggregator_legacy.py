@@ -6,6 +6,7 @@ from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic
 
+from pippin.aggregator import Aggregator
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs, get_output_loc, ensure_list
 from pippin.dataprep import DataPrep
@@ -18,7 +19,7 @@ from astropy.io import fits
 import numpy as np
 
 
-class Aggregator(Task):
+class AggregatorLegacy(Aggregator):
     """Merge fitres files and aggregator output
 
     CONFIGURATION:
@@ -50,19 +51,11 @@ class Aggregator(Task):
         empty_agg: if there were no types or ids that could be found.
     """
 
-    def __new__(cls, name, output_dir, config, dependencies, options, recal_aggtask):
-        # XXX DEPRECATION
-        # If no BASE file is present, run legacy version of Aggregator
-        # Avoid recursive nonsense by making sure the type of `cls` is Aggregator
-        if cls == Aggregator and config.get("BASE") is None:
-            # Have to import later because Aggregator must exist prior to importing AggregatorLegacy
-            from pippin.aggregator_legacy import AggregatorLegacy
-
-            cls = AggregatorLegacy
-        return super().__new__(cls)
-
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
+        self.logger.warning(
+            "Using Legacy Aggregator version, pass a COMBINE_FITRES input file via `BASE: /path/to/input.yml` to use the latest Aggregator version."
+        )
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.lcfit_deps = [

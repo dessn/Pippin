@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 
+from pippin.merge import Merger
 from pippin.aggregator import Aggregator
 from pippin.config import chown_dir, mkdirs
 from pippin.dataprep import DataPrep
@@ -10,7 +11,7 @@ from pippin.task import Task
 import os
 
 
-class Merger(Task):
+class MergerLegacy(Merger):
     """Merge fitres files and aggregator output
 
     CONFIGURATION:
@@ -38,19 +39,11 @@ class Merger(Task):
         blind: bool - whether or not to blind cosmo results
     """
 
-    def __new__(cls, name, output_dir, config, dependencies, options):
-        # XXX DEPRECATION
-        # If no BASE file is present, run legacy version of Merger
-        # Avoid recursive nonsense by making sure the type of `cls` is Merger
-        if cls == Merger and config.get("BASE") is None:
-            # Have to import later because Merger must exist prior to importing MergerLegacy
-            from pippin.merge_legacy import MergerLegacy
-
-            cls = MergerLegacy
-        return super().__new__(cls)
-
     def __init__(self, name, output_dir, config, dependencies, options):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
+        self.logger.warning(
+            "Using Legacy Merger version, pass a COMBINE_FITRES input file via `BASE: /path/to/input.yml` to use the latest Merger version."
+        )
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
