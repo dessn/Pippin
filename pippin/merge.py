@@ -2,7 +2,6 @@ import shutil
 from pathlib import Path
 import subprocess
 
-from pippin.base import ConfigBasedExecutable
 from pippin.aggregator import Aggregator
 from pippin.config import chown_dir, mkdirs, get_data_loc, get_config
 from pippin.dataprep import DataPrep
@@ -12,7 +11,7 @@ from pippin.task import Task
 import os
 
 
-class Merger(ConfigBasedExecutable):
+class Merger(Task):
     """Merge fitres files and aggregator output
 
     CONFIGURATION:
@@ -52,9 +51,10 @@ class Merger(ConfigBasedExecutable):
         return super().__new__(cls)
 
     def __init__(self, name, output_dir, config, dependencies, options):
+        super().__init__(name, output_dir, config=config, dependencies=dependencies)
+
         base = get_data_loc(config.get("BASE", "submit_combine_fitres.input"))
         self.base_file = base
-        super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
         self.global_config = get_config()
@@ -69,12 +69,10 @@ class Merger(ConfigBasedExecutable):
         self.batch_replace = self.options.get(
             "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
         )
-        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
-        if batch_mem is not None:
-            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
-        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
-        if batch_walltime is not None:
-            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
+        self.batch_replace["BATCH_MEM"] = self.batch_replace.get("REPLACE_MEM", "8GB")
+        self.batch_replace["BATCH_WALLTIME"] = self.batch_replace.get(
+            "REPLACE_WALLTIME", "1:00:00"
+        )
 
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -102,8 +100,9 @@ class Merger(ConfigBasedExecutable):
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
 
-        print(f"XXX: self.lc_fit\n{__import__('pprint').pprint(self.lc_fit)}")
-        print(f"XXX: self.yaml\n{__import__('pprint').pprint(self.yaml)}")
+        print(
+            f"XXX: merge\n{__import__('pprint').pprint(self.prepare_merge_input_lines())}"
+        )
 
     def prepare_merge_input_lines(self):
         # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
