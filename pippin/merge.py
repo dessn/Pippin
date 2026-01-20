@@ -3,7 +3,7 @@ from pathlib import Path
 import subprocess
 
 from pippin.aggregator import Aggregator
-from pippin.config import chown_dir, mkdirs, get_data_loc, get_config
+from pippin.config import chown_dir, mkdirs, get_data_loc, merge_dict, get_config
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -69,10 +69,6 @@ class Merger(Task):
         self.batch_replace = self.options.get(
             "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
         )
-        self.batch_replace["BATCH_MEM"] = self.batch_replace.get("REPLACE_MEM", "8GB")
-        self.batch_replace["BATCH_WALLTIME"] = self.batch_replace.get(
-            "REPLACE_WALLTIME", "1:00:00"
-        )
 
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -105,19 +101,22 @@ class Merger(Task):
         )
 
     def prepare_merge_input_lines(self):
-        # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
-
-        print(f"XXX\n{self.lc_fit}")
-        for d in self.dependencies:
-            print(f"XXX\n{d}")
-
-        config_lines = []
         merge_input_file = self.base_file
 
         with open(merge_input_file, "r") as i:
-            config_lines = i.read().split("\n")
+            config = i.read()
+        header_dict = {
+            "REPLACE_NAME": self.name,
+            "REPLACE_WALLTIME": "1:00:00",
+            "REPLACE_LOGFILE": "output.log",
+            "REPLACE_MEM": "8GB",
+            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
+        }
+        header_dict = merge_dict(header_dict, self.batch_replace)
+        self.update_header(header_dict)
+        config = config.format(**self.sbatch_header)
 
-        return config_lines
+        return config
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
