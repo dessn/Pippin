@@ -336,6 +336,8 @@ class Aggregator(Task):
     def _run(
         self,
     ):
+        # TODO(@rkessler) Check this all works as expected
+        # === START ===
         failed = False
         if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
@@ -353,9 +355,6 @@ class Aggregator(Task):
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
             return True
-
-        # TODO(@rkessler) Check this all works as expected
-        # === START ===
 
         shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.output_dir)
