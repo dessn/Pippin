@@ -8,7 +8,7 @@ from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic
 
 from pippin.classifiers.classifier import Classifier
-from pippin.config import mkdirs, get_output_loc, ensure_list, get_data_loc
+from pippin.config import mkdirs, get_output_loc, ensure_list
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -63,21 +63,6 @@ class Aggregator(Task):
 
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
-
-        # TODO(@rkessler). Check if this makes sense
-        agg_input_file = config.get(
-            "BASE"
-        )  # refactor by passing agg input file to pippin
-        if agg_input_file is not None:
-            agg_input_file = get_data_loc(agg_input_file)
-            self.agg_input_file = agg_input_file
-            agg_input_base = os.path.basename(self.agg_input_file)
-            self.agg_output_file = self.output_dir + "/" + "PIP_" + agg_input_base
-            self.log_dir = f"{self.output_dir}/LOGS"
-            self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
-            self.done_file = f"{self.log_dir}/ALL.DONE"
-            self.logging_file = self.agg_output_file.replace(".input", ".LOG")
-            self.kill_file = self.agg_output_file.replace(".input", "_KILL.LOG")
 
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
@@ -189,17 +174,6 @@ class Aggregator(Task):
                     f"Task has not set passed and has no done file at {self.done_file}, returning failure"
                 )
         return Task.FINISHED_SUCCESS if self.passed else Task.FINISHED_FAILURE
-
-    def prepare_agg_input_lines(self):
-        # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
-
-        config_lines = []
-        agg_input_file = self.agg_input_file
-
-        with open(agg_input_file, "r") as i:
-            config_lines = i.read().split("\n")
-
-        return config_lines
 
     def get_underlying_sim_task(self):
         check = []
@@ -336,20 +310,15 @@ class Aggregator(Task):
     def _run(
         self,
     ):
-        return True
-        # TODO(@rkessler) Check this all works as expected
-        # === START ===
         failed = False
         if Path(self.done_file).exists():
             self.logger.debug(f"Found done file at {self.done_file}")
             with open(self.done_file) as f:
                 if "SUCCESS" not in f.read().upper():
                     failed = True
-        # prepare agg input lines needed to create hash,
-        # but don't create agg input file yet.
-        agg_input_lines = self.prepare_agg_input_lines()
-        str_config = " ".join(agg_input_lines)
-        new_hash = self.get_hash_from_string(str_config)
+        new_hash = self.get_hash_from_string(
+            self.name + str(self.include_type) + str(self.plot)
+        )
         if self._check_regenerate(new_hash) or failed:
             self.logger.debug("Regenerating aggregator")
         else:
@@ -360,24 +329,7 @@ class Aggregator(Task):
         shutil.rmtree(self.output_dir, ignore_errors=True)
         mkdirs(self.output_dir)
 
-        # write agg output file
-        with open(self.agg_output_file, "wt") as i:
-            for line in agg_input_lines:
-                i.write(f"{line}\n")
-
         self.save_new_hash(new_hash)
-
-        with open(self.logging_file, "w") as f:
-            subprocess.run(
-                ["submit_batch_jobs.sh", os.path.basename(self.agg_output_file)],
-                stdout=f,
-                stderr=subprocess.STDOUT,
-                cwd=self.output_dir,
-            )
-
-        # === END ===
-
-        # TODO(@rkessler): How are these parameters found?
 
         self.output["merge_predictions_filename"] = self.output_dfs
         self.output["merge_key_filename"] = self.output_dfs_key
@@ -385,9 +337,17 @@ class Aggregator(Task):
         if self.include_type:
             self.output["sn_type_name"] = self.type_name
 
-        self.passed = True
+        self.passed = not failed
 
-        return True
+        # Write the done file
+        self.logger.debug(f"Writing done file to {self.done_file}")
+        with open(self.done_file, "w") as f:
+            if self.passed:
+                f.write("SUCCESS")
+            else:
+                f.write("FAILED")
+
+        return self.passed
 
     def save_key_format(self, df, index, lcfitname):
         lc_index = (

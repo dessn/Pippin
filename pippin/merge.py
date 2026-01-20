@@ -2,8 +2,9 @@ import shutil
 from pathlib import Path
 import subprocess
 
+from pippin.base import ConfigBasedExecutable
 from pippin.aggregator import Aggregator
-from pippin.config import chown_dir, mkdirs, get_data_loc
+from pippin.config import chown_dir, mkdirs, get_data_loc, get_config
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -11,7 +12,7 @@ from pippin.task import Task
 import os
 
 
-class Merger(Task):
+class Merger(ConfigBasedExecutable):
     """Merge fitres files and aggregator output
 
     CONFIGURATION:
@@ -51,24 +52,30 @@ class Merger(Task):
         return super().__new__(cls)
 
     def __init__(self, name, output_dir, config, dependencies, options):
-        super().__init__(name, output_dir, config=config, dependencies=dependencies)
-
-        # TODO(@rkessler). Check if this makes sense
-        merge_input_file = config.get(
-            "BASE"
-        )  # refactor by passing agg input file to pippin
-        if merge_input_file is not None:
-            merge_input_file = get_data_loc(merge_input_file)
-            self.merge_input_file = merge_input_file
-            merge_input_base = os.path.basename(self.merge_input_file)
-            self.merge_output_file = self.output_dir + "/" + "PIP_" + merge_input_base
-            self.log_dir = f"{self.output_dir}/LOGS"
-            self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
-            self.done_file = f"{self.log_dir}/ALL.DONE"
-            self.logging_file = self.merge_output_file.replace(".input", ".LOG")
-            self.kill_file = self.merge_output_file.replace(".input", "_KILL.LOG")
+        base = get_data_loc(config.get("BASE", "submit_combine_fitres.input"))
+        self.base_file = base
+        super().__init__(name, output_dir, config, base, "=", dependencies=dependencies)
 
         self.options = options
+        self.global_config = get_config()
+        merge_input_base = os.path.basename(self.base_file)
+        self.merge_output_file = self.output_dir + "/" + "PIP_" + merge_input_base
+        self.log_dir = f"{self.output_dir}/LOGS"
+        self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
+        self.done_file = f"{self.log_dir}/ALL.DONE"
+        self.logging_file = self.merge_output_file.replace(".input", ".LOG")
+        self.kill_file = self.merge_output_file.replace(".input", "_KILL.LOG")
+
+        self.batch_replace = self.options.get(
+            "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
+        )
+        batch_mem = self.batch_replace.get("REPLACE_MEM", None)
+        if batch_mem is not None:
+            self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+        batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
+        if batch_walltime is not None:
+            self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
+
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
@@ -96,6 +103,7 @@ class Merger(Task):
         self.output["blind"] = self.lc_fit["blind"]
 
         print(f"XXX: self.lc_fit\n{__import__('pprint').pprint(self.lc_fit)}")
+        print(f"XXX: self.yaml\n{__import__('pprint').pprint(self.yaml)}")
 
     def prepare_merge_input_lines(self):
         # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
@@ -105,7 +113,7 @@ class Merger(Task):
             print(f"XXX\n{d}")
 
         config_lines = []
-        merge_input_file = self.merge_input_file
+        merge_input_file = self.base_file
 
         with open(merge_input_file, "r") as i:
             config_lines = i.read().split("\n")
