@@ -63,6 +63,8 @@ class Aggregator(Task):
 
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
+
+        # TODO(@rkessler). Check if this makes sense
         agg_input_file = config.get(
             "BASE"
         )  # refactor by passing agg input file to pippin
@@ -74,8 +76,8 @@ class Aggregator(Task):
             self.log_dir = f"{self.output_dir}/LOGS"
             self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
             self.done_file = f"{self.log_dir}/ALL.DONE"
-            self.logging_file = self.agg_output_file.replace(".INPUT", ".LOG")
-            self.kill_file = self.agg_output_file.replace(".INPUT", "_KILL.LOG")
+            self.logging_file = self.agg_output_file.replace(".input", ".LOG")
+            self.kill_file = self.agg_output_file.replace(".input", "_KILL.LOG")
 
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]

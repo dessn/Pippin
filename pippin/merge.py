@@ -1,8 +1,9 @@
 import shutil
+from pathlib import Path
 import subprocess
 
 from pippin.aggregator import Aggregator
-from pippin.config import chown_dir, mkdirs
+from pippin.config import chown_dir, mkdirs, get_data_loc
 from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
@@ -51,6 +52,22 @@ class Merger(Task):
 
     def __init__(self, name, output_dir, config, dependencies, options):
         super().__init__(name, output_dir, config=config, dependencies=dependencies)
+
+        # TODO(@rkessler). Check if this makes sense
+        merge_input_file = config.get(
+            "BASE"
+        )  # refactor by passing agg input file to pippin
+        if merge_input_file is not None:
+            merge_input_file = get_data_loc(merge_input_file)
+            self.merge_input_file = merge_input_file
+            merge_input_base = os.path.basename(self.merge_input_file)
+            self.merge_output_file = self.output_dir + "/" + "PIP_" + merge_input_base
+            self.log_dir = f"{self.output_dir}/LOGS"
+            self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
+            self.done_file = f"{self.log_dir}/ALL.DONE"
+            self.logging_file = self.merge_output_file.replace(".input", ".LOG")
+            self.kill_file = self.merge_output_file.replace(".input", "_KILL.LOG")
+
         self.options = options
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -77,6 +94,17 @@ class Merger(Task):
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
+
+    def prepare_merge_input_lines(self):
+        # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
+
+        config_lines = []
+        merge_input_file = self.merge_input_file
+
+        with open(merge_input_file, "r") as i:
+            config_lines = i.read().split("\n")
+
+        return config_lines
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
@@ -161,78 +189,51 @@ class Merger(Task):
             shutil.copy(fitres_file, outdir)
 
     def _run(self):
+        # TODO(@rkessler) Check this all works as expected
+        # === START ===
+        failed = False
+        if Path(self.done_file).exists():
+            self.logger.debug(f"Found done file at {self.done_file}")
+            with open(self.done_file) as f:
+                if "SUCCESS" not in f.read().upper():
+                    failed = True
+        # prepare merge input lines needed to create hash,
+        # but don't create merge input file yet.
+        merge_input_lines = self.prepare_merge_input_lines()
+        str_config = " ".join(merge_input_lines)
+        new_hash = self.get_hash_from_string(str_config)
+        if self._check_regenerate(new_hash) or failed:
+            self.logger.debug("Regenerating merger")
+        else:
+            self.should_be_done()
+            self.logger.info("Hash check passed, not rerunning")
+            return True
+
+        shutil.rmtree(self.output_dir, ignore_errors=True)
+        mkdirs(self.output_dir)
+
+        # write merge output file
+        with open(self.merge_output_file, "wt") as i:
+            for line in merge_input_lines:
+                i.write(f"{line}\n")
+
+        self.save_new_hash(new_hash)
+
+        with open(self.logging_file, "w") as f:
+            subprocess.run(
+                ["submit_batch_jobs.sh", os.path.basename(self.merge_output_file)],
+                stdout=f,
+                stderr=subprocess.STDOUT,
+                cwd=self.output_dir,
+            )
+
+        # === END ===
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
         self.output["SURVEY"] = self.lc_fit["SURVEY"]
         self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
 
-        fitres_files, symlink_files = [], []
-        for index, (fitres_dir, outdir) in enumerate(
-            zip(self.lc_fit["fitres_dirs"], self.fitres_outdirs)
-        ):
-            files = os.listdir(fitres_dir)
-            fitres_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"])
-                for f in files
-                if "FITRES" in f and not os.path.islink(os.path.join(fitres_dir, f))
-            ]
-            symlink_files += [
-                (fitres_dir, outdir, f, index, self.lc_fit["name"])
-                for f in files
-                if "FITRES" in f and os.path.islink(os.path.join(fitres_dir, f))
-            ]
-
-        new_hash = self.get_hash_from_string(
-            " ".join(
-                [
-                    a + b + c + f"{d}" + e
-                    for a, b, c, d, e in (fitres_files + symlink_files)
-                ]
-            )
-        )
-        if self._check_regenerate(new_hash):
-            shutil.rmtree(self.output_dir, ignore_errors=True)
-            self.logger.debug("Regenerating, running combine_fitres")
-            try:
-                for fitres_dir in self.fitres_outdirs:
-                    self.logger.debug(f"Creating directory {fitres_dir}")
-                    mkdirs(fitres_dir)
-                    for f in fitres_files:
-                        if f[1] == fitres_dir:
-                            self.add_to_fitres(
-                                os.path.join(f[0], f[2]), f[1], f[4], index=f[3]
-                            )
-                    for s in symlink_files:
-                        if s[1] == fitres_dir:
-                            self.logger.debug(
-                                f"Creating symlink for {os.path.join(s[1], s[2])} to {os.path.join(s[1], 'FITOPT000.FITRES.gz')}"
-                            )
-                            os.symlink(
-                                os.path.join(s[1], "FITOPT000.FITRES.gz"),
-                                os.path.join(s[1], s[2]),
-                            )
-
-                    self.logger.debug("Copying MERGE.LOG")
-                    filenames = ["MERGE.LOG", "SUBMIT.INFO"]
-                    for f in filenames:
-                        original = os.path.join(self.lc_fit["lc_output_dir"], f)
-                        moved = os.path.join(self.suboutput_dir, f)
-                        if not os.path.exists(moved):
-                            self.logger.debug(f"Copying file {f} into output directory")
-                            shutil.copy(original, moved)
-
-                    self.save_new_hash(new_hash)
-                    with open(self.done_file, "w") as f:
-                        f.write("SUCCESS\n")
-            except Exception as e:
-                self.logger.error("Error running merger!")
-                self.logger.error(f"Check log at {self.logfile}")
-                self.logger.exception(e, exc_info=True)
-                return False
-        else:
-            self.should_be_done()
-            self.logger.info("Hash check passed, not rerunning")
         return True
 
     @staticmethod
