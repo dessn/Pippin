@@ -12,6 +12,7 @@ from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 from pippin.aggregator import Aggregator
 from pippin.aggregator_legacy import AggregatorLegacy
 from pippin.merge import Merger
+from pippin.merge_legacy import MergerLegacy
 from pippin.biascor import BiasCor
 from pippin.create_cov import CreateCov
 from pippin.cosmofitters.cosmomc import CosmoMC
@@ -261,13 +262,40 @@ def test_merge_config_valid():
     assert isinstance(tasks[6], Merger)
     assert isinstance(tasks[7], Merger)
 
-    task = tasks[-1]
-    assert task.output["name"] == "MERGE_D_ASIM"
-    assert task.output["sim_name"] == "ASIM"
-    assert task.output["lcfit_name"] == "D_ASIM"
-    assert not task.output["blind"]
-    assert task.output["classifier_names"] == ["FITPROBTEST", "PERFECT"]
-    assert len(task.dependencies) == 2
+    tests = [
+        {
+            "task": tasks[6],
+            "cls": MergerLegacy,
+            "attr": {
+                "name": "LEGACY_MERGE_D_ASIM",
+                "sim_name": "ASIM",
+                "lcfit_name": "D_ASIM",
+                "agg_name": "LEGACY_AGG_ASIM",
+                "blind": False,
+                "classifier_names": ["FITPROBTEST", "PERFECT"],
+            },
+        },
+        {
+            "task": tasks[7],
+            "cls": Merger,
+            "attr": {
+                "name": "NEW_MERGE_D_ASIM",
+                "sim_name": "ASIM",
+                "lcfit_name": "D_ASIM",
+                "agg_name": "NEW_AGG_ASIM",
+                "blind": False,
+                "classifier_names": ["FITPROBTEST", "PERFECT"],
+            },
+        },
+    ]
+
+    for test in tests:
+        task = test["task"]
+        assert type(task) is test["cls"]
+        for attr, val in test["attr"].items():
+            assert hasattr(task, attr)
+            assert getattr(task, attr) == val
+        assert len(task.dependencies) == 2
 
 
 def test_biascor_config_valid():
