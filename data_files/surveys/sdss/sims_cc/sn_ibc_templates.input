@@ -6,13 +6,13 @@ GENMODEL:  NON1ASED
 PATH_NON1ASED:  /project2/rkessler/SURVEYS/DES/USERS/djbrout/smoothSEDtest/NN_plasticc/PLASTICC_models/NON1ASED.SNIbc-Templates
 DNDZ:  CC_S15                # Strolger 2015 (1509.06574)
 DNDZ_ALLSCALE:   0.15        # 30% of CC are type Ib/c, half for hybrid
-GENRANGE_TREST:	 -50 300
+GENRANGE_TREST: -50 300
 GENTYPE:   30
 
 INPUT_FILE_INCLUDE:  surveys/sdss/sims_instrument/sim_sdss_3yr.input
 
 
-# Some of the models plateau at	end of epoch range,
+# Some of the models plateau at end of epoch range,
 # so force min mag/day slope for late-time extrapolation.
 MINSLOPE_EXTRAPMAG_LATE: 0.01
 
