@@ -40,7 +40,7 @@ class MergerLegacy(Merger):
     """
 
     def __init__(self, name, output_dir, config, dependencies, options):
-        super().__init__(name, output_dir, config=config, dependencies=dependencies)
+        super().__init__(name, output_dir, config, dependencies, options)
         self.logger.warning(
             "Using Legacy Merger version, pass a COMBINE_FITRES input file via `BASE: /path/to/input.yml` to use the latest Merger version."
         )

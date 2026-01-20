@@ -52,7 +52,7 @@ class AggregatorLegacy(Aggregator):
     """
 
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
-        super().__init__(name, output_dir, config=config, dependencies=dependencies)
+        super().__init__(name, output_dir, config, dependencies, options, recal_aggtask)
         self.logger.warning(
             "Using Legacy Aggregator version, pass a COMBINE_FITRES input file via `BASE: /path/to/input.yml` to use the latest Aggregator version."
         )
