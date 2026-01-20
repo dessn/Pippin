@@ -72,6 +72,8 @@ class AggregatorLegacy(Aggregator):
         self.sim_task = self.get_underlying_sim_task()
         self.output["sim_name"] = self.sim_task.name
         self.recal_aggtask = recal_aggtask
+        if self.recal_aggtask is not None:
+            self.output["agg_name"] = self.recal_aggtask.name
         self.num_versions = len(self.sim_task.output["sim_folders"])
 
         self.output_dfs = [
