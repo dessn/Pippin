@@ -212,7 +212,7 @@ def test_agg_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_agg.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 5
+    assert len(tasks) == 6
     assert isinstance(tasks[0], SNANASimulation)
     assert isinstance(tasks[1], SNANALightCurveFit)
     assert isinstance(tasks[2], FitProbClassifier)
@@ -251,9 +251,7 @@ def test_merge_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_merge.yml", check=True)
     tasks = manager.tasks
 
-    assert False
-
-    assert len(tasks) == 0
+    assert len(tasks) == 8
     assert isinstance(tasks[0], SNANASimulation)
     assert isinstance(tasks[1], SNANALightCurveFit)
     assert isinstance(tasks[2], FitProbClassifier)
