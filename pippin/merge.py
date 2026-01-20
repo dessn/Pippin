@@ -43,7 +43,7 @@ class Merger(Task):
         # XXX DEPRECATION
         # If no BASE file is present, run legacy version of Merger
         # Avoid recursive nonsense by making sure the type of `cls` is Merger
-        if cls == Merger and config.get("BASE") is None:
+        if cls == Merger and config.get("LEGACY"):
             # Have to import later because Merger must exist prior to importing MergerLegacy
             from pippin.merge_legacy import MergerLegacy
 

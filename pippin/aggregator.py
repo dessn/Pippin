@@ -54,7 +54,7 @@ class Aggregator(Task):
         # XXX DEPRECATION
         # If no BASE file is present, run legacy version of Aggregator
         # Avoid recursive nonsense by making sure the type of `cls` is Aggregator
-        if cls == Aggregator and config.get("BASE") is None:
+        if cls == Aggregator and config.get("LEGACY"):
             # Have to import later because Aggregator must exist prior to importing AggregatorLegacy
             from pippin.aggregator_legacy import AggregatorLegacy
 
