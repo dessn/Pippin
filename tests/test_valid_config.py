@@ -242,8 +242,8 @@ def test_agg_config_valid():
         task = test["task"]
         assert type(task) is test["cls"]
         for attr, val in test["attr"].items():
-            assert hasattr(task, attr)
-            assert getattr(task, attr) == val
+            assert attr in task.output
+            assert task.output[attr] == val
         assert len(task.dependencies) == 2
 
 
@@ -293,8 +293,8 @@ def test_merge_config_valid():
         task = test["task"]
         assert type(task) is test["cls"]
         for attr, val in test["attr"].items():
-            assert hasattr(task, attr)
-            assert getattr(task, attr) == val
+            assert attr in task.output
+            assert task.output[attr] == val
         assert len(task.dependencies) == 2
 
 

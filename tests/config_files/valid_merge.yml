@@ -36,6 +36,6 @@ MERGE:
   LEGACY_MERGE:
     MASK_AGG: "LEGACY_AGG"
 
-  MERGE:
+  NEW_MERGE:
     MASK_AGG: "NEW_AGG"
     BASE: "/path/to/base/file"
