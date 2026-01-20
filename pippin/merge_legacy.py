@@ -55,6 +55,7 @@ class MergerLegacy(Merger):
         self.output["classifier_merge"] = self.agg["classifier_merge"]
         self.output["sim_name"] = self.lc_fit["sim_name"]
         self.output["lcfit_name"] = self.lc_fit["name"]
+        self.output["agg_name"] = self.agg.name
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_file"] = self.lc_fit.get("fitopt_file")
 
