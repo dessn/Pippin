@@ -95,9 +95,7 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
 
-        print(f"XXX: self.lc_fit\n{self.lc_fit}")
-        for i, d in enumerate(self.dependencies):
-            print(f"XXX: {i}th dependency\n{d.output}")
+        print(f"XXX: self.lc_fit\n{__import__('pprint').pprint(self.lc_fit)}")
 
     def prepare_merge_input_lines(self):
         # TODO(@rkessler). Look at [prepare_scone_input_lines](classifiers/scone.py:224) for how you did it with scone
