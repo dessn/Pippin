@@ -1,3 +1,4 @@
+from pippin.classifiers.classifier import Classifier
 import shutil
 from pathlib import Path
 import subprocess
@@ -129,8 +130,6 @@ class Merger(Task):
         # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
         # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
-
-        tasks = []
 
         task_name = self.lc_fit["genversion"]
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
@@ -281,6 +280,7 @@ class Merger(Task):
     def get_tasks(c, prior_tasks, base_output_dir, stage_number, prefix, global_config):
         agg_tasks = Task.get_task_of_type(prior_tasks, Aggregator)
         lcfit_tasks = Task.get_task_of_type(prior_tasks, SNANALightCurveFit)
+        classify_tasks = Task.get_task_of_type(prior_tasks, Classifier)
         tasks = []
 
         def _get_merge_output_dir(
@@ -297,6 +297,7 @@ class Merger(Task):
             mask = config.get("MASK", "")
             mask_sim = config.get("MASK_SIM", "")
             mask_lc = config.get("MASK_FIT", "")
+            mask_class = config.get("MASK_CLASS", "")
             mask_agg = config.get("MASK_AGG", "")
 
             for lcfit in lcfit_tasks:
@@ -310,31 +311,49 @@ class Merger(Task):
                 if mask_sim and mask_sim not in sim.name:
                     continue
 
-                for agg in agg_tasks:
-                    if mask_agg and mask_agg not in agg.name:
+                for classify in classify_tasks:
+                    if mask_class and mask_class not in classify.name:
                         continue
-                    if mask and mask not in agg.name:
+                    if mask and mask not in classify.name:
                         continue
 
                     # Check if the sim is the same for both
-                    if sim != agg.get_underlying_sim_task():
+                    if (
+                        classify.get_requirements()[0]
+                        and sim not in classify.get_simulation_dependency()
+                    ):
                         continue
-                    num_gen += 1
+                    # Check if the lcfit is the same for both
+                    if (
+                        classify.get_requirements()[1]
+                        and lcfit not in classify.get_fit_dependency()
+                    ):
+                        continue
+                    for agg in agg_tasks:
+                        if mask_agg and mask_agg not in agg.name:
+                            continue
+                        if mask and mask not in agg.name:
+                            continue
 
-                    merge_name2 = f"{name}_{lcfit.name}"
-                    task = Merger(
-                        merge_name2,
-                        _get_merge_output_dir(
-                            base_output_dir, stage_number, name, lcfit.name
-                        ),
-                        config,
-                        [lcfit, agg],
-                        options,
-                    )
-                    Task.logger.info(
-                        f"Creating merge task {merge_name2} for {lcfit.name} and {agg.name} with {task.num_jobs} jobs"
-                    )
-                    tasks.append(task)
+                        # Check if the sim is the same for both
+                        if sim != agg.get_underlying_sim_task():
+                            continue
+                        num_gen += 1
+
+                        merge_name2 = f"{name}_{lcfit.name}"
+                        task = Merger(
+                            merge_name2,
+                            _get_merge_output_dir(
+                                base_output_dir, stage_number, name, lcfit.name
+                            ),
+                            config,
+                            [lcfit, classify, agg],
+                            options,
+                        )
+                        Task.logger.info(
+                            f"Creating merge task {merge_name2} for {lcfit.name}, {classify.name}, and {agg.name} with {task.num_jobs} jobs"
+                        )
+                        tasks.append(task)
             if num_gen == 0:
                 Task.fail_config(
                     f"Merger {name} with mask {mask} matched no combination of aggregators and fits"
