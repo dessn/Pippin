@@ -157,10 +157,13 @@ class Merger(Task):
         self.logger.error(msg)
         raise ValueError(msg)
 
-    def get_class_dep(self):
+    def get_class_deps(self):
+        deps = []
         for d in self.dependencies:
             if isinstance(d, Classifier):
-                return d.output
+                deps.append(d.output)
+        if len(deps) > 0:
+            return deps
         msg = f"No dependency of a classifier task in {self.dependencies}"
         self.logger.error(msg)
         raise ValueError(msg)
