@@ -61,7 +61,8 @@ class Merger(Task):
         self.options = options
         self.global_config = get_config()
         merge_input_base = os.path.basename(self.base_file)
-        self.merge_output_file = self.output_dir + "/" + "PIP_" + merge_input_base
+        self.merge_output_dir = self.output_dir + "/" + "PIP_" + self.name
+        self.merge_output_file = self.merge_output_dir / merge_input_base
         self.log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
         self.done_file = f"{self.log_dir}/ALL.DONE"
@@ -130,9 +131,9 @@ class Merger(Task):
 - {REPLACE_TASK_NAME}
         INPUT_BASE: {REPLACE_INPUT_BASE}
         INPUT_APPEND: {REPLACE_INPUT_APPEND}
+        OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
+        MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
 """.strip()
-        # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
-        # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
 
         task_name = self.lc_fit["genversion"]
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
@@ -149,6 +150,8 @@ class Merger(Task):
                             for classifier in self.classifiers
                         ]
                     ),
+                    "REPLACE_OUTDIR_COMBINE": str(self.merge_output_dir),
+                    "MIMIC_OUTDIR_SUBMIT_BATCH": f"{lcfit_fitres_dirs} {self.merge_output_dir.parent}",
                 }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
