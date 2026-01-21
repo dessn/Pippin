@@ -116,8 +116,7 @@ class Merger(Task):
             "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
         }
         header_dict = merge_dict(header_dict, self.batch_replace)
-        self.update_header(header_dict)
-        config = config.format(**self.sbatch_header)
+        config = config.format(**header_dict)
 
         return config
 
