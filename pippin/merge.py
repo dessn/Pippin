@@ -138,7 +138,7 @@ class Merger(Task):
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
 
         for fitres_dir in lcfit_fitres_dirs:
-            for i, fitres in enumerate(Path(fitres_dir).iterdir()):
+            for i, fitres in enumerate(sorted(Path(fitres_dir).iterdir())):
                 outdir_combine = self.output_dir + "/output/" + fitres.parent.stem
 
                 task_dict = {
