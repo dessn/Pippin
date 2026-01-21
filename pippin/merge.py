@@ -106,6 +106,8 @@ class Merger(Task):
     def prepare_merge_input_lines(self):
         merge_input_file = self.base_file
 
+        print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
+
         with open(merge_input_file, "r") as i:
             config = i.read()
         header_dict = {
