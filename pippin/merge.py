@@ -124,6 +124,22 @@ class Merger(Task):
         header_dict = merge_dict(header_dict, self.batch_replace)
         config = config.format(**header_dict)
 
+        task_template = """
+        - {REPLACE_TASK_NAME}
+            INPUT_BASE: {REPLACE_INPUT_BASE}
+            INPUT_APPEND: {REPLACE_INPUT_APPEND}
+            OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
+            MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
+        """.strip()
+
+        tasks = []
+
+        lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
+
+        for fitres_dir in lcfit_fitres_dirs:
+            for i, fitres in enumerate(Path(fitres_dir).iterdir()):
+                print(i, fitres)
+
         return config
 
     def get_lcfit_dep(self):
