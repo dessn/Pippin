@@ -66,9 +66,18 @@ class Merger(Task):
         self.logging_file = self.merge_output_file.replace(".input", ".LOG")
         self.kill_file = self.merge_output_file.replace(".input", "_KILL.LOG")
 
+        self.batch_file = self.options.get("BATCH_FILE")
+        if self.batch_file is not None:
+            self.batch_file = get_data_loc(self.batch_file)
         self.batch_replace = self.options.get(
             "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
         )
+        if self.batch_file is None:
+            self.sbatch_header = self.sbatch_cpu_header
+        else:
+            with open(self.batch_file, "r") as f:
+                self.sbatch_header = f.read()
+        self.sbatch_header = self.clean_header(self.sbatch_header)
 
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
