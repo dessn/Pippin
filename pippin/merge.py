@@ -61,8 +61,10 @@ class Merger(Task):
         self.options = options
         self.global_config = get_config()
         merge_input_base = os.path.basename(self.base_file)
-        self.merge_output_dir = self.output_dir + "/" + "PIP_" + self.name
-        self.merge_output_file = self.merge_output_dir + "/" + merge_input_base
+        self.merge_output_dir = (
+            self.output_dir + "/" + "output" + "/" + "PIP_" + self.name
+        )
+        self.merge_output_file = self.output_dir + "/" + merge_input_base
         self.log_dir = f"{self.output_dir}/LOGS"
         self.total_summary = os.path.join(self.log_dir, "MERGE.LOG")
         self.done_file = f"{self.log_dir}/ALL.DONE"
@@ -150,7 +152,7 @@ class Merger(Task):
                         ]
                     ),
                     "REPLACE_OUTDIR_COMBINE": str(self.merge_output_dir),
-                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{Path(fitres_dir).parent} {self.merge_output_dir}",
+                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{Path(fitres_dir).parent} {Path(self.merge_output_dir).parent}",
                 }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
