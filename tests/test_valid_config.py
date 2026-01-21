@@ -295,7 +295,7 @@ def test_merge_config_valid():
         for attr, val in test["attr"].items():
             assert attr in task.output
             assert task.output[attr] == val
-        assert len(task.dependencies) == 2
+        assert len(task.dependencies) == 4
 
 
 def test_biascor_config_valid():
