@@ -126,8 +126,8 @@ class Merger(Task):
 
         task_template = """
         - {REPLACE_TASK_NAME}
+            INPUT_BASE: {REPLACE_INPUT_BASE}
         """.strip()
-        # INPUT_BASE: {REPLACE_INPUT_BASE}
         # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
         # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
@@ -140,7 +140,10 @@ class Merger(Task):
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(Path(fitres_dir).iterdir()):
                 print(i, fitres)
-                task_dict = {"REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}"}
+                task_dict = {
+                    "REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}",
+                    "REPLACE_INPUT_BASE": str(fitres),
+                }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
 
