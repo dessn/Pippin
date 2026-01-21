@@ -82,7 +82,7 @@ class Merger(Task):
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.lc_fit = self.get_lcfit_dep()
-        self.classifier = self.get_class_dep()
+        self.classifier = self.get_class_deps()
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
         self.output["classifier_indexes"] = self.agg["classifier_indexes"]
