@@ -72,6 +72,9 @@ class Merger(Task):
         self.batch_replace = self.options.get(
             "BATCH_REPLACE", self.global_config.get("BATCH_REPLACE", {})
         )
+        self.batch_replace["REPLACE_TEMPLATE"] = self.batch_replace.get(
+            "REPLACE_TEMPLATE", self.global_config["SBATCH"]["cpu_location"]
+        )
 
         self.passed = False
         self.logfile = os.path.join(self.output_dir, "output.log")
@@ -115,6 +118,7 @@ class Merger(Task):
             "REPLACE_WALLTIME": "1:00:00",
             "REPLACE_LOGFILE": "output.log",
             "REPLACE_MEM": "8GB",
+            "REPLACE_TEMPLATE": "8GB",
             "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
         }
         header_dict = merge_dict(header_dict, self.batch_replace)
