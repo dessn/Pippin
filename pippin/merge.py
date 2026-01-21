@@ -123,9 +123,9 @@ class Merger(Task):
         config = config.format(**header_dict).strip()
 
         task_template = """
-        - {REPLACE_TASK_NAME}
-          INPUT_BASE: {REPLACE_INPUT_BASE}
-        """.strip()
+- {REPLACE_TASK_NAME}
+    INPUT_BASE: {REPLACE_INPUT_BASE}
+""".strip()
         # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
         # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
