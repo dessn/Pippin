@@ -102,9 +102,7 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
 
-        print(
-            f"XXX: merge\n{__import__('pprint').pprint(self.prepare_merge_input_lines())}"
-        )
+        print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
     def prepare_merge_input_lines(self):
         merge_input_file = self.base_file
@@ -126,7 +124,7 @@ class Merger(Task):
 
         task_template = """
         - {REPLACE_TASK_NAME}
-            INPUT_BASE: {REPLACE_INPUT_BASE}
+          INPUT_BASE: {REPLACE_INPUT_BASE}
         """.strip()
         # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
