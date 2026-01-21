@@ -319,15 +319,14 @@ class Merger(Task):
 
                     # Check if the sim is the same for both
                     if (
-                        classify.get_requirements()[0]
+                        classify.get_requirements(classify.options)[0]
                         and sim not in classify.get_simulation_dependency()
                     ):
                         continue
                     # Check if the lcfit is the same for both
-                    if (
-                        classify.get_requirements()[1]
-                        and lcfit not in classify.get_fit_dependency()
-                    ):
+                    if classify.get_requirements(classify.options)[
+                        1
+                    ] and lcfit not in classify.get_fit_dependency(output=False):
                         continue
                     for agg in agg_tasks:
                         if mask_agg and mask_agg not in agg.name:
