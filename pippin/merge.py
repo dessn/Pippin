@@ -126,19 +126,23 @@ class Merger(Task):
 
         task_template = """
         - {REPLACE_TASK_NAME}
-            INPUT_BASE: {REPLACE_INPUT_BASE}
-            INPUT_APPEND: {REPLACE_INPUT_APPEND}
-            OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
-            MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
         """.strip()
+        # INPUT_BASE: {REPLACE_INPUT_BASE}
+        # INPUT_APPEND: {REPLACE_INPUT_APPEND}
+        # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
+        # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
 
         tasks = []
 
+        task_name = self.lc_fit["genversion"]
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
 
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(Path(fitres_dir).iterdir()):
                 print(i, fitres)
+                task_dict = {"REPLACE_TASK_NAME": f"{task_name}-{str(i).ljust(3, '0')}"}
+                task = task_template.format(**task_dict).strip()
+                config += f"\n{task}"
 
         return config
 
