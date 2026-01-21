@@ -132,7 +132,7 @@ class Merger(Task):
         INPUT_BASE: {REPLACE_INPUT_BASE}
         INPUT_APPEND: {REPLACE_INPUT_APPEND}
         OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
-        MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
+        MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH}
 """.strip()
 
         task_name = self.lc_fit["genversion"]
@@ -151,7 +151,7 @@ class Merger(Task):
                         ]
                     ),
                     "REPLACE_OUTDIR_COMBINE": str(self.merge_output_dir),
-                    "MIMIC_OUTDIR_SUBMIT_BATCH": f"{lcfit_fitres_dirs} {Path(self.merge_output_dir).parent}",
+                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{lcfit_fitres_dirs} {Path(self.merge_output_dir).parent}",
                 }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
