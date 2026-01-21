@@ -1,6 +1,3 @@
-# Map intended for 5_MERGE stage (not used in classifier stage)
-# preoblem: some of the PROB_SCONE names in final FITRES file depend on DATA or BCOR
-#
 CONFIG:
   BATCH_INFO:  sbatch {REPLACE_TEMPLATE} 10
   BATCH_WALLTIME: {REPLACE_WALLTIME}
