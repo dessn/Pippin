@@ -142,7 +142,7 @@ class Merger(Task):
                 print(i, fitres)
                 task_dict = {"REPLACE_TASK_NAME": f"{task_name}-{str(i).ljust(3, '0')}"}
                 task = task_template.format(**task_dict).strip()
-                config += f"\n{task}"
+                config += f"\n    {task}"
 
         return config
 
