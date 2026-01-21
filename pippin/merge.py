@@ -140,7 +140,7 @@ class Merger(Task):
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(Path(fitres_dir).iterdir()):
                 print(i, fitres)
-                task_dict = {"REPLACE_TASK_NAME": f"{task_name}-{str(i).ljust(3, '0')}"}
+                task_dict = {"REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}"}
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
 
