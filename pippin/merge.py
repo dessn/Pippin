@@ -22,6 +22,7 @@ class Merger(Task):
             MASK: partial match on all sim, fit and agg
             MASK_SIM: partial match on sim
             MASK_FIT: partial match on lcfit
+            MASK_CLASS: partial match on classifier
             MASK_AGG: partial match on aggregation task
 
     OUTPUTS:
@@ -81,6 +82,7 @@ class Merger(Task):
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.lc_fit = self.get_lcfit_dep()
+        self.classifier = self.get_class_dep()
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
         self.output["classifier_indexes"] = self.agg["classifier_indexes"]
@@ -109,6 +111,7 @@ class Merger(Task):
         merge_input_file = self.base_file
 
         print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
+        print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifier)}")
 
         with open(merge_input_file, "r") as i:
             config = i.read()
@@ -151,6 +154,14 @@ class Merger(Task):
             if isinstance(d, SNANALightCurveFit):
                 return d.output
         msg = f"No dependency of a light curve fit task in {self.dependencies}"
+        self.logger.error(msg)
+        raise ValueError(msg)
+
+    def get_class_dep(self):
+        for d in self.dependencies:
+            if isinstance(d, Classifier):
+                return d.output
+        msg = f"No dependency of a classifier task in {self.dependencies}"
         self.logger.error(msg)
         raise ValueError(msg)
 
