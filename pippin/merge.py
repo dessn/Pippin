@@ -150,7 +150,7 @@ class Merger(Task):
                         ]
                     ),
                     "REPLACE_OUTDIR_COMBINE": str(self.merge_output_dir),
-                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{lcfit_fitres_dirs} {Path(self.merge_output_dir).parent}",
+                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{fitres_dir} {Path(self.merge_output_dir).parent}",
                 }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
