@@ -139,10 +139,10 @@ class Merger(Task):
 
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(sorted(Path(fitres_dir).iterdir())):
-                outdir_combine = self.output_dir + "/output/" + fitres.parent.stem
-
+                subtask_name = f"{task_name}-{str(i).rjust(3, '0')}"
+                outdir_combine = self.output_dir + "/output/" + subtask_name
                 task_dict = {
-                    "REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}",
+                    "REPLACE_TASK_NAME": subtask_name,
                     "REPLACE_INPUT_BASE": str(fitres),
                     "REPLACE_INPUT_APPEND": str(
                         [
