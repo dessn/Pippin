@@ -140,7 +140,13 @@ class Merger(Task):
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(sorted(Path(fitres_dir).iterdir())):
                 subtask_name = f"{task_name}-{str(i).rjust(3, '0')}"
+
+                # @rkessler: Should we have one outdir_combine per fitres or one outdir_combine shared amongst all fitres?
+                # One outdir_combine per fitres
                 outdir_combine = self.output_dir + "/output/" + subtask_name
+                # One outdir_combine shared amongst all fitres
+                # outdir_combine = self.output_dir + "/output/" + fitres.parent.stem
+
                 task_dict = {
                     "REPLACE_TASK_NAME": subtask_name,
                     "REPLACE_INPUT_BASE": str(fitres),
