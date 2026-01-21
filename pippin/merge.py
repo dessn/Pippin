@@ -82,7 +82,7 @@ class Merger(Task):
         self.logfile = os.path.join(self.output_dir, "output.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.lc_fit = self.get_lcfit_dep()
-        self.classifier = self.get_class_deps()
+        self.classifiers = self.get_class_deps()
         self.agg = self.get_agg_dep()
         self.output["classifier_names"] = self.agg["classifier_names"]
         self.output["classifier_indexes"] = self.agg["classifier_indexes"]
@@ -111,7 +111,7 @@ class Merger(Task):
         merge_input_file = self.base_file
 
         print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
-        print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifier)}")
+        print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
 
         with open(merge_input_file, "r") as i:
             config = i.read()
@@ -129,8 +129,8 @@ class Merger(Task):
         task_template = """
 - {REPLACE_TASK_NAME}
         INPUT_BASE: {REPLACE_INPUT_BASE}
+        INPUT_APPEND: {REPLACE_INPUT_APPEND}
 """.strip()
-        # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
         # MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_OUTDIR_SUBMIT_BATCH}
 
@@ -143,6 +143,12 @@ class Merger(Task):
                 task_dict = {
                     "REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}",
                     "REPLACE_INPUT_BASE": str(fitres),
+                    "REPLACE_INPUT_APPEND": str(
+                        [
+                            classifier["predictions_filename"]
+                            for classifier in self.classifiers
+                        ]
+                    ),
                 }
                 task = task_template.format(**task_dict).strip()
                 config += f"\n    {task}"
