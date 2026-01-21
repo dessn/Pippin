@@ -106,13 +106,11 @@ class Merger(Task):
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
 
-        print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
-
     def prepare_merge_input_lines(self):
         merge_input_file = self.base_file
 
-        print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
-        print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
+        # print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
+        # print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
 
         with open(merge_input_file, "r") as i:
             config = i.read()
@@ -140,7 +138,6 @@ class Merger(Task):
 
         for fitres_dir in lcfit_fitres_dirs:
             for i, fitres in enumerate(Path(fitres_dir).iterdir()):
-                print(i, fitres)
                 task_dict = {
                     "REPLACE_TASK_NAME": f"{task_name}-{str(i).rjust(3, '0')}",
                     "REPLACE_INPUT_BASE": str(fitres),
