@@ -331,48 +331,51 @@ class Merger(Task):
                 if mask_sim and mask_sim not in sim.name:
                     continue
 
-                for classify in classify_tasks:
-                    if mask_class and mask_class not in classify.name:
+                for agg in agg_tasks:
+                    if mask_agg and mask_agg not in agg.name:
                         continue
-                    if mask and mask not in classify.name:
+                    if mask and mask not in agg.name:
                         continue
 
                     # Check if the sim is the same for both
-                    if (
-                        classify.get_requirements(classify.options)[0]
-                        and sim not in classify.get_simulation_dependency()
-                    ):
+                    if sim != agg.get_underlying_sim_task():
                         continue
-                    # Check if the lcfit is the same for both
-                    if classify.get_requirements(classify.options)[
-                        1
-                    ] and lcfit not in classify.get_fit_dependency(output=False):
-                        continue
-                    for agg in agg_tasks:
-                        if mask_agg and mask_agg not in agg.name:
+
+                    classifiers = []
+                    for classify in classify_tasks:
+                        if mask_class and mask_class not in classify.name:
                             continue
-                        if mask and mask not in agg.name:
+                        if mask and mask not in classify.name:
                             continue
 
                         # Check if the sim is the same for both
-                        if sim != agg.get_underlying_sim_task():
+                        if (
+                            classify.get_requirements(classify.options)[0]
+                            and sim not in classify.get_simulation_dependency()
+                        ):
                             continue
-                        num_gen += 1
+                        # Check if the lcfit is the same for both
+                        if classify.get_requirements(classify.options)[
+                            1
+                        ] and lcfit not in classify.get_fit_dependency(output=False):
+                            continue
+                        classifiers.append(classify)
+                    num_gen += 1
 
-                        merge_name2 = f"{name}_{lcfit.name}"
-                        task = Merger(
-                            merge_name2,
-                            _get_merge_output_dir(
-                                base_output_dir, stage_number, name, lcfit.name
-                            ),
-                            config,
-                            [lcfit, classify, agg],
-                            options,
-                        )
-                        Task.logger.info(
-                            f"Creating merge task {merge_name2} for {lcfit.name}, {classify.name}, and {agg.name} with {task.num_jobs} jobs"
-                        )
-                        tasks.append(task)
+                    merge_name2 = f"{name}_{lcfit.name}"
+                    task = Merger(
+                        merge_name2,
+                        _get_merge_output_dir(
+                            base_output_dir, stage_number, name, lcfit.name
+                        ),
+                        config,
+                        [lcfit, agg, *classifiers],
+                        options,
+                    )
+                    Task.logger.info(
+                        f"Creating merge task {merge_name2} for {lcfit.name}, {classify.name}, and {agg.name} with {task.num_jobs} jobs"
+                    )
+                    tasks.append(task)
             if num_gen == 0:
                 Task.fail_config(
                     f"Merger {name} with mask {mask} matched no combination of aggregators and fits"
