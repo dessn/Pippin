@@ -104,13 +104,6 @@ class Merger(Task):
         )
 
     def prepare_merge_input_lines(self):
-        if self.batch_file is None:
-            self.sbatch_header = self.sbatch_cpu_header
-        else:
-            with open(self.batch_file, "r") as f:
-                self.sbatch_header = f.read()
-        self.sbatch_header = self.clean_header(self.sbatch_header)
-
         merge_input_file = self.base_file
 
         with open(merge_input_file, "r") as i:
