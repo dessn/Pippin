@@ -124,7 +124,7 @@ class Merger(Task):
 
         task_template = """
 - {REPLACE_TASK_NAME}
-      INPUT_BASE: {REPLACE_INPUT_BASE}
+        INPUT_BASE: {REPLACE_INPUT_BASE}
 """.strip()
         # INPUT_APPEND: {REPLACE_INPUT_APPEND}
         # OUTDIR_COMBINE: {REPLACE_OUTDIR_COMBINE}
