@@ -107,7 +107,7 @@ class Merger(Task):
 
         # print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
-    def prepare_merge_input_lines(self):
+    def prepare_merge_output(self):
         merge_input_file = self.base_file
 
         # print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
@@ -264,9 +264,8 @@ class Merger(Task):
                     failed = True
         # prepare merge input lines needed to create hash,
         # but don't create merge input file yet.
-        merge_input_lines = self.prepare_merge_input_lines()
-        str_config = " ".join(merge_input_lines)
-        new_hash = self.get_hash_from_string(str_config)
+        merge_output = self.prepare_merge_output()
+        new_hash = self.get_hash_from_string(merge_output)
         if self._check_regenerate(new_hash) or failed:
             self.logger.debug("Regenerating merger")
         else:
@@ -278,9 +277,8 @@ class Merger(Task):
         mkdirs(self.output_dir)
 
         # write merge output file
-        with open(self.merge_output_file, "wt") as i:
-            for line in merge_input_lines:
-                i.write(f"{line}\n")
+        with open(self.merge_output_file, "wt") as io:
+            io.write(merge_output)
 
         self.save_new_hash(new_hash)
 
