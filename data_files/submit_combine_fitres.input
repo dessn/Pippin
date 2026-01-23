@@ -1,3 +1,9 @@
+# submit_batch_jobs config input file to merge lightcurve fit table and classifier probs;
+# used in MERGE stage of Pippin.
+# Created Jan 2026 by P.Armstrong and R.Kessler
+#
+# ------------------------------------------------------
+
 CONFIG:
   BATCH_INFO:  sbatch {REPLACE_TEMPLATE} 1
   BATCH_WALLTIME: {REPLACE_WALLTIME}
@@ -5,7 +11,17 @@ CONFIG:
   LOGDIR:  LOGS
   JOBNAME: {REPLACE_NAME}
 
-# ---------------
+# ----------------------------------------------------------
+# COMBINE_FITRES key definitions:
+#   INPUT_BASE:     wildcard path of FITRES tables created by LCFIT program 
+#   INPUT_APPEND:   list of classifier predictions.csv files with PROB_[CLASSIFIER] to append
+#   OUTDIR_COMBINE: output MERGE location of LCFIT+[PROB_CLASSIFIERS]
+#   MIMIC_OUTDIR_SUBMIT_BATCH:  force 2nd path arg to look like 1st path arg so that merged output
+#                               looks like it was produced by LCFIT class of submit_batch_jobs;
+#                               i.e., copy MERGE.LOG and SUBMIT.INFO files to merged output dir.
+#
+# -----------------------------------
 
 COMBINE_FITRES:
   TASK_LIST:
+

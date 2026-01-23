@@ -108,24 +108,37 @@ class Merger(Task):
         # print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
     def prepare_merge_output(self):
-        merge_input_file = self.base_file
+
+        # Created Jan 2026 by P. Armstrong and R. Kessler
+        # prepare config file for submit_batch_jobs to do the actual merging
+        # of LCFIT and classifier probs.
+
+        merge_input_file  = self.base_file   # in Pippin/data/files (no user input here)
+        task_name         = self.lc_fit["genversion"]
+        lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
+        classifiers       = self.classifiers
+        output_dir        = self.output_dir
+
+        n_task = len(lcfit_fitres_dirs)
 
         # print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
         # print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
 
+        # read base input file 
         with open(merge_input_file, "r") as i:
             config = i.read()
+
+        # define stuff to replace in CONFIG block that controls submit_batch_jobs
         header_dict = {
-            "REPLACE_NAME": self.name,
-            "REPLACE_WALLTIME": "1:00:00",
-            "REPLACE_LOGFILE": "output.log",
-            "REPLACE_MEM": "8GB",
-            "REPLACE_TEMPLATE": "8GB",
-            "APPEND": ["#SBATCH --ntasks=1", "#SBATCH --cpus-per-task=1"],
+            "REPLACE_NAME"     : "combine_fitres.exe",  # where to define program names ?
+            "REPLACE_WALLTIME" : "'1:00:00'",
+            "REPLACE_MEM"      : "8GB"
         }
         header_dict = merge_dict(header_dict, self.batch_replace)
         config = config.format(**header_dict).strip()
+        config += f"\n    #  {n_task} merge tasks are defined below  "
 
+        # define keys for combine_fitres class in submit_batch_jobs
         task_template = """
 - {REPLACE_TASK_NAME}
         INPUT_BASE: {REPLACE_INPUT_BASE}
@@ -134,35 +147,54 @@ class Merger(Task):
         MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH}
 """.strip()
 
-        task_name = self.lc_fit["genversion"]
-        lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
 
-        for fitres_dir in lcfit_fitres_dirs:
-            for i, fitres in enumerate(sorted(Path(fitres_dir).iterdir())):
-                subtask_name = f"{task_name}-{str(i).rjust(3, '0')}"
+        # - - - - loop over folders (not FITRES files)
+        for index, fitres_dir in enumerate(lcfit_fitres_dirs):
 
-                # @rkessler: Should we have one outdir_combine per fitres or one outdir_combine shared amongst all fitres?
-                # One outdir_combine per fitres
-                outdir_combine = self.output_dir + "/output/" + subtask_name
-                # One outdir_combine shared amongst all fitres
-                # outdir_combine = self.output_dir + "/output/" + fitres.parent.stem
+            fitres_wildcard  = f"{fitres_dir}/FITOPT*"    # combine_fitres will search this wildcard
+            subtask_name = os.path.basename(fitres_dir)
 
-                task_dict = {
-                    "REPLACE_TASK_NAME": subtask_name,
-                    "REPLACE_INPUT_BASE": str(fitres),
-                    "REPLACE_INPUT_APPEND": str(
-                        [
-                            classifier["predictions_filename"]
-                            for classifier in self.classifiers
-                        ]
-                    ),
-                    "REPLACE_OUTDIR_COMBINE": outdir_combine,
-                    "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{Path(fitres_dir).parent} {Path(outdir_combine).parent}",
-                }
-                task = task_template.format(**task_dict).strip()
-                config += f"\n    {task}"
+            # find classifiers for this task (borrow/tweak logic from legacy aggregator code)
+            relevant_classifiers = [c for c in classifiers if c['index'] == index]
+            predict_csv_list     = [c["predictions_filename"] for c in relevant_classifiers ]
+ 
+            # One outdir_combine per fitres_dir
+            outdir_combine = output_dir + "/output/" + subtask_name
+
+            task_dict = {
+                "REPLACE_TASK_NAME"      : subtask_name + ':' ,
+                "REPLACE_INPUT_BASE"     : fitres_wildcard,
+                "REPLACE_INPUT_APPEND"   : str(predict_csv_list),
+                "REPLACE_OUTDIR_COMBINE" : outdir_combine,
+                "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{Path(fitres_dir).parent} {Path(outdir_combine).parent}",
+            }
+            task = task_template.format(**task_dict).strip()
+            config += f"\n\n    # =============================================================== "
+            config += f"\n    {task}"
+            
+        config += "\n\n# === END: === \n"
 
         return config
+
+    def get_underlying_sim_task(self):
+
+        # Jan 23 2026: R.Kessler - paste this method from aggregator task
+        # ... not clear we need this ???
+
+        check = []
+        for task in self.dependencies:
+            for t in task.dependencies:
+                check.append(t)
+                if isinstance(task, SNANALightCurveFit):
+                    check += task.dependencies
+
+        for task in check + self.dependencies:
+            if isinstance(task, SNANASimulation) or isinstance(task, DataPrep):
+                return task
+        self.logger.error(
+            f"Unable to find a simulation or data dependency for aggregator {self.name}"
+        )
+        return None
 
     def get_lcfit_dep(self):
         for d in self.dependencies:
