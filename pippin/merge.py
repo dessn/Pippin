@@ -100,6 +100,7 @@ class Merger(Task):
             os.path.join(self.suboutput_dir, os.path.basename(f))
             for f in self.lc_fit["fitres_dirs"]
         ]
+        print(self.lc_fit)
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
