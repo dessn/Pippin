@@ -220,8 +220,6 @@ class Merger(Task):
 
     def _check_completion(self, squeue):
 
-        print(self.agg)
-        print(self.lc_fit)
         self.output["lc_output_dir"] = self.suboutput_dir
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
@@ -229,7 +227,6 @@ class Merger(Task):
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
         self.output["SURVEY"] = self.lc_fit["SURVEY"]
         self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
-        print(self.output)
 
         if os.path.exists(self.done_file):
             self.logger.debug(
