@@ -104,6 +104,7 @@ class Merger(Task):
         # print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
         self.output["blind"] = self.lc_fit["blind"]
+        self.output["fitres_dirs"] = self.fitres_outdirs
 
     def prepare_merge_output(self):
 
@@ -222,7 +223,6 @@ class Merger(Task):
         print(self.agg)
         print(self.lc_fit)
         self.output["lc_output_dir"] = self.suboutput_dir
-        self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
         self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
