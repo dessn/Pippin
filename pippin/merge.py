@@ -104,6 +104,11 @@ class Merger(Task):
         self.output["fitres_dirs"] = self.fitres_outdirs
         self.output["genversion"] = self.lc_fit["genversion"]
         self.output["blind"] = self.lc_fit["blind"]
+        self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
+        self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
+        self.output["fitres_file"] = self.lc_fit["fitres_file"]
+        self.output["SURVEY"] = self.lc_fit["SURVEY"]
+        self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
 
         # print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
@@ -113,26 +118,26 @@ class Merger(Task):
         # prepare config file for submit_batch_jobs to do the actual merging
         # of LCFIT and classifier probs.
 
-        merge_input_file  = self.base_file   # in Pippin/data/files (no user input here)
-        task_name         = self.lc_fit["genversion"]
+        merge_input_file = self.base_file  # in Pippin/data/files (no user input here)
+        task_name = self.lc_fit["genversion"]
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
-        classifiers       = self.classifiers
-        output_dir        = self.output_dir
+        classifiers = self.classifiers
+        output_dir = self.output_dir
 
         n_task = len(lcfit_fitres_dirs)
 
         # print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
         # print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
 
-        # read base input file 
+        # read base input file
         with open(merge_input_file, "r") as i:
             config = i.read()
 
         # define stuff to replace in CONFIG block that controls submit_batch_jobs
         header_dict = {
-            "REPLACE_NAME"     : "combine_fitres.exe",  # where to define program names ?
-            "REPLACE_WALLTIME" : "'1:00:00'",
-            "REPLACE_MEM"      : "8GB"
+            "REPLACE_NAME": "combine_fitres.exe",  # where to define program names ?
+            "REPLACE_WALLTIME": "'1:00:00'",
+            "REPLACE_MEM": "8GB",
         }
         header_dict = merge_dict(header_dict, self.batch_replace)
         config = config.format(**header_dict).strip()
@@ -147,31 +152,31 @@ class Merger(Task):
         MIMIC_OUTDIR_SUBMIT_BATCH: {REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH}
 """.strip()
 
-
         # - - - - loop over folders (not FITRES files)
         for index, fitres_dir in enumerate(lcfit_fitres_dirs):
-
-            fitres_wildcard  = f"{fitres_dir}/FITOPT*"    # combine_fitres will search this wildcard
+            fitres_wildcard = (
+                f"{fitres_dir}/FITOPT*"  # combine_fitres will search this wildcard
+            )
             subtask_name = os.path.basename(fitres_dir)
 
             # find classifiers for this task (borrow/tweak logic from legacy aggregator code)
-            relevant_classifiers = [c for c in classifiers if c['index'] == index]
-            predict_csv_list     = [c["predictions_filename"] for c in relevant_classifiers ]
- 
+            relevant_classifiers = [c for c in classifiers if c["index"] == index]
+            predict_csv_list = [c["predictions_filename"] for c in relevant_classifiers]
+
             # One outdir_combine per fitres_dir
             outdir_combine = output_dir + "/output/" + subtask_name
 
             task_dict = {
-                "REPLACE_TASK_NAME"      : subtask_name + ':' ,
-                "REPLACE_INPUT_BASE"     : fitres_wildcard,
-                "REPLACE_INPUT_APPEND"   : str(predict_csv_list),
-                "REPLACE_OUTDIR_COMBINE" : outdir_combine,
+                "REPLACE_TASK_NAME": subtask_name + ":",
+                "REPLACE_INPUT_BASE": fitres_wildcard,
+                "REPLACE_INPUT_APPEND": str(predict_csv_list),
+                "REPLACE_OUTDIR_COMBINE": outdir_combine,
                 "REPLACE_MIMIC_OUTDIR_SUBMIT_BATCH": f"{Path(fitres_dir).parent} {Path(outdir_combine).parent}",
             }
             task = task_template.format(**task_dict).strip()
-            config += f"\n\n    # =============================================================== "
+            config += "\n\n    # =============================================================== "
             config += f"\n    {task}"
-            
+
         config += "\n\n# === END: === \n"
 
         return config
@@ -323,12 +328,6 @@ class Merger(Task):
             )
 
         # === END ===
-        self.output["fitopt_map"] = self.lc_fit["fitopt_map"]
-        self.output["fitopt_index"] = self.lc_fit["fitopt_index"]
-        self.output["fitres_file"] = self.lc_fit["fitres_file"]
-        self.output["SURVEY"] = self.lc_fit["SURVEY"]
-        self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
-
         return True
 
     @staticmethod
