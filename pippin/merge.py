@@ -109,6 +109,7 @@ class Merger(Task):
         self.output["fitres_file"] = self.lc_fit["fitres_file"]
         self.output["SURVEY"] = self.lc_fit["SURVEY"]
         self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
+        print(self.output)
 
         # print(f"XXX: merge\n{self.prepare_merge_input_lines()}")
 
