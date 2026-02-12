@@ -228,32 +228,35 @@ class Merger(Task):
         self.output["SURVEY"] = self.lc_fit["SURVEY"]
         self.output["SURVEY_ID"] = self.lc_fit["SURVEY_ID"]
 
-        if os.path.exists(self.done_file):
-            self.logger.debug(
-                f"Merger finished, see combined fitres at {self.suboutput_dir}"
-            )
+        if Path(self.done_file).exists():
+            failed = False
+            self.logger.debug(f"Found done file at {self.done_file}")
+            with open(self.done_file) as f:
+                if "SUCCESS" not in f.read().upper():
+                    failed = True
+            if failed:
+                output_error = False
+                if os.path.exists(self.logfile):
+                    with open(self.logfile, "r") as f:
+                        for line in f.read().splitlines():
+                            if "ERROR" in line or "ABORT" in line:
+                                self.logger.error(
+                                    f"Fatal error in combine_fitres. See {self.logfile} for details."
+                                )
+                                output_error = True
+                            if output_error:
+                                self.logger.info(f"Excerpt: {line}")
+                    if output_error:
+                        self.logger.debug("Removing hash on failure")
+                        os.remove(self.hash_file)
+                        chown_dir(self.output_dir)
+                else:
+                    self.logger.error(
+                        "Combine task failed with no output log. Please debug"
+                    )
+                return Task.FINISHED_FAILURE
             return Task.FINISHED_SUCCESS
-        else:
-            output_error = False
-            if os.path.exists(self.logfile):
-                with open(self.logfile, "r") as f:
-                    for line in f.read().splitlines():
-                        if "ERROR" in line or "ABORT" in line:
-                            self.logger.error(
-                                f"Fatal error in combine_fitres. See {self.logfile} for details."
-                            )
-                            output_error = True
-                        if output_error:
-                            self.logger.info(f"Excerpt: {line}")
-                if output_error:
-                    self.logger.debug("Removing hash on failure")
-                    os.remove(self.hash_file)
-                    chown_dir(self.output_dir)
-            else:
-                self.logger.error(
-                    "Combine task failed with no output log. Please debug"
-                )
-            return Task.FINISHED_FAILURE
+        return 1
 
     def add_to_fitres(self, fitres_file, outdir, lcfit, index=0):
         if not self.agg["lcfit_names"]:
