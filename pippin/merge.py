@@ -79,7 +79,7 @@ class Merger(Task):
         )
 
         self.passed = False
-        self.logfile = os.path.join(self.output_dir, "output.log")
+        self.logfile = os.path.join(self.output_dir, "submit_combine_fitres.log")
         self.original_output = os.path.join(self.output_dir, "FITOPT000.FITRES.gz")
         self.lc_fit = self.get_lcfit_dep()
         self.classifiers = self.get_class_deps()
