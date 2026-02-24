@@ -125,7 +125,7 @@ class Aggregator(Task):
         merge_classifiers = self.config.get("MERGE_CLASSIFIERS")
         if merge_classifiers is not None:
             Task.fail_config(
-                "MERGE_CLASSIFIERS is deprecated and must be removed. Probability names can be explicitly defined in the CLASSIFICATION stage. See the [docs](https://pippin.readthedocs.io/en/latest/src/tasks/classify.html) for more details."
+                "MERGE_CLASSIFIERS in the AGG stage is deprecated and must be removed. Probability names must be explicitly defined in the CLASSIFICATION stage. See the [docs](https://pippin.readthedocs.io/en/latest/src/tasks/classify.html) for more details."
             )
         self.classifier_merge = {
             c.output["name"]: c.get_prob_column_name() for c in self.classifiers
