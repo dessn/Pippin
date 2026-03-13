@@ -12,6 +12,7 @@ CLASSIFICATION:
     MASK_FIT: lcfit_only_mask
     COMBINE_MASK: [SIM_IA, SIM_CC] # optional mask to combine multiple sim runs into one classification job (e.g. separate CC and Ia sims). NOTE: currently not compatible with SuperNNova/SNIRF
     OPTS:
+      PROB_COLUMN_NAME:  PROB_RENAME_THIS  # give PROB_ name here; must start with PROB_
       MODEL: file_or_label  # only needed in predict mode, how to find the trained classifier
       OPTIONAL_MASK: opt_mask # mask for optional dependencies. Not all classifiers make use of this
       OPTIONAL_MASK_SIM: opt_sim_only_mask # mask for optional sim dependencies. Not all classifiers make use of this

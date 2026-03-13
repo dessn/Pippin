@@ -10,7 +10,9 @@ from pippin.classifiers.perfect import PerfectClassifier
 from pippin.classifiers.scone import SconeClassifier
 from pippin.classifiers.scone_legacy import SconeLegacyClassifier
 from pippin.aggregator import Aggregator
+from pippin.aggregator_legacy import AggregatorLegacy
 from pippin.merge import Merger
+from pippin.merge_legacy import MergerLegacy
 from pippin.biascor import BiasCor
 from pippin.create_cov import CreateCov
 from pippin.cosmofitters.cosmomc import CosmoMC
@@ -211,17 +213,38 @@ def test_agg_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_agg.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 5
+    assert len(tasks) == 6
     assert isinstance(tasks[0], SNANASimulation)
     assert isinstance(tasks[1], SNANALightCurveFit)
     assert isinstance(tasks[2], FitProbClassifier)
     assert isinstance(tasks[3], PerfectClassifier)
-    assert isinstance(tasks[4], Aggregator)
+    for task in tasks[4:]:
+        # isinstance => Class or Subclass
+        assert isinstance(tasks[4], Aggregator)
 
-    task = tasks[-1]
-    assert task.output["name"] == "AGGLABEL_ASIM"
-    assert task.output["sim_name"] == "ASIM"
-    assert len(task.dependencies) == 2
+    tests = [
+        {
+            "task": tasks[4],
+            "cls": AggregatorLegacy,
+            "attr": {"name": "LEGACY_AGG_ASIM", "sim_name": "ASIM"},
+        },
+        {
+            "task": tasks[5],
+            "cls": Aggregator,
+            "attr": {
+                "name": "NEW_AGG_ASIM",
+                "sim_name": "ASIM",
+            },
+        },
+    ]
+
+    for test in tests:
+        task = test["task"]
+        assert type(task) is test["cls"]
+        for attr, val in test["attr"].items():
+            assert attr in task.output
+            assert task.output[attr] == val
+        assert len(task.dependencies) == 2
 
 
 def test_merge_config_valid():
@@ -229,21 +252,50 @@ def test_merge_config_valid():
     manager = get_manager(yaml="tests/config_files/valid_merge.yml", check=True)
     tasks = manager.tasks
 
-    assert len(tasks) == 6
+    assert len(tasks) == 8
     assert isinstance(tasks[0], SNANASimulation)
     assert isinstance(tasks[1], SNANALightCurveFit)
     assert isinstance(tasks[2], FitProbClassifier)
     assert isinstance(tasks[3], PerfectClassifier)
     assert isinstance(tasks[4], Aggregator)
-    assert isinstance(tasks[5], Merger)
+    assert isinstance(tasks[5], Aggregator)
+    assert isinstance(tasks[6], Merger)
+    assert isinstance(tasks[7], Merger)
 
-    task = tasks[-1]
-    assert task.output["name"] == "MERGE_D_ASIM"
-    assert task.output["sim_name"] == "ASIM"
-    assert task.output["lcfit_name"] == "D_ASIM"
-    assert not task.output["blind"]
-    assert task.output["classifier_names"] == ["FITPROBTEST", "PERFECT"]
-    assert len(task.dependencies) == 2
+    tests = [
+        {
+            "task": tasks[6],
+            "cls": MergerLegacy,
+            "attr": {
+                "name": "LEGACY_MERGE_D_ASIM",
+                "sim_name": "ASIM",
+                "lcfit_name": "D_ASIM",
+                "agg_name": "LEGACY_AGG_ASIM",
+                "blind": False,
+                "classifier_names": ["FITPROBTEST", "PERFECT"],
+            },
+        },
+        {
+            "task": tasks[7],
+            "cls": Merger,
+            "attr": {
+                "name": "NEW_MERGE_D_ASIM",
+                "sim_name": "ASIM",
+                "lcfit_name": "D_ASIM",
+                "agg_name": "NEW_AGG_ASIM",
+                "blind": False,
+                "classifier_names": ["FITPROBTEST", "PERFECT"],
+            },
+        },
+    ]
+
+    for test in tests:
+        task = test["task"]
+        assert type(task) is test["cls"]
+        for attr, val in test["attr"].items():
+            assert attr in task.output
+            assert task.output[attr] == val
+        assert len(task.dependencies) == 4
 
 
 def test_biascor_config_valid():

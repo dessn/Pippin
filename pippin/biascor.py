@@ -1,7 +1,7 @@
 import copy
 import shutil
 import subprocess
-import os
+import os, sys
 import pandas as pd
 import numpy as np
 
@@ -428,6 +428,15 @@ class BiasCor(ConfigBasedExecutable):
         self.cc_prior_fits = self.get_simfile_ccprior(
             self.merged_ccsim, self.merged_ccsim_fitopts
         )
+
+        # xxxxxx RK playground xxxxxxxxxx
+        #tmp_ty = type(self.merged_data)
+        #print(f"\n xxx type(merged_data) = {tmp_ty}")
+        #for m in self.merged_data:
+        #    print(f" xxx m.output = {m.output}")
+        #sys.exit(f"\n xxx bye ")
+        # xxxxxxxxxxxxxxxxxxxxxx
+
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
         # print('MERGED DATA')

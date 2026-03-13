@@ -295,8 +295,10 @@ class SconeClassifier(Classifier):
         config_lines.append(f"sbatch_job_name: {self.job_base_name}\n")
 
         config_lines.append("input_data_paths:")
+        sim_dirs_base = []
         for sim_dir in sim_dirs:
-            resolved_dir = os.path.realpath(sim_dir)
+            resolved_dir = os.path.realpath(sim_dir)  
+            sim_dirs_base.append( os.path.basename(resolved_dir) )  # RK 2/2026 keep list of base names=data VERSION
             config_lines.append(f"  - {resolved_dir}")
 
         # add pippin-specified keys that were not in the original scone input
@@ -309,18 +311,21 @@ class SconeClassifier(Classifier):
                 config_lines.append(f"{line}")
 
         # check option to select events passing LCFIT
-
+        # RK Feb 10 2026: make sure that fitres_dir base name matches a sim_dir base name
+        #   to avoid bad-duplicate abort
         if self.select_lcfit:
             config_lines.append("")
             config_lines.append("# Train on events passing LCFIT")
             config_lines.append("snid_select_files:")
             lcfit_deps = self.get_fit_dependency()
             # self.logger.info(f"\n xxx lcfit_deps = \n{lcfit_deps}\n")
-            for tmp_dict in lcfit_deps:
-                fitres_dir = tmp_dict["fitres_dirs"][self.index]
-                fitopt_base_file = tmp_dict["fitopt_map"]["DEFAULT"]
-                fitres_file = f"{fitres_dir}/{fitopt_base_file}"
-                config_lines.append(f"  - {fitres_file}")
+            for tmp_dict in lcfit_deps:   # .xyz
+                fitres_dir       = tmp_dict["fitres_dirs"][self.index]
+                fitres_dir_base  = os.path.basename(fitres_dir)
+                if fitres_dir_base in sim_dirs_base:  # require a match somewhere (Feb 10 2026)
+                    fitopt_base_file = tmp_dict["fitopt_map"]["DEFAULT"]
+                    fitres_file      = f"{fitres_dir}/{fitopt_base_file}"
+                    config_lines.append(f"  - {fitres_file}")
 
         return config_lines
 

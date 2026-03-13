@@ -1,12 +1,12 @@
 import inspect
 import shutil
 import subprocess
-from pathlib import Path
 
 from scipy.interpolate import interp1d
 from scipy.ndimage import gaussian_filter
 from scipy.stats import binned_statistic
 
+from pippin.aggregator import Aggregator
 from pippin.classifiers.classifier import Classifier
 from pippin.config import mkdirs, get_output_loc, ensure_list
 from pippin.dataprep import DataPrep
@@ -15,10 +15,11 @@ from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 import pandas as pd
 import os
+from astropy.io import fits
 import numpy as np
 
 
-class Aggregator(Task):
+class AggregatorLegacy(Aggregator):
     """Merge fitres files and aggregator output
 
     CONFIGURATION:
@@ -50,20 +51,11 @@ class Aggregator(Task):
         empty_agg: if there were no types or ids that could be found.
     """
 
-    def __new__(cls, name, output_dir, config, dependencies, options, recal_aggtask):
-        # XXX DEPRECATION
-        # If no BASE file is present, run legacy version of Aggregator
-        # Avoid recursive nonsense by making sure the type of `cls` is Aggregator
-        if cls == Aggregator and config.get("LEGACY"):
-            # Have to import later because Aggregator must exist prior to importing AggregatorLegacy
-            from pippin.aggregator_legacy import AggregatorLegacy
-
-            cls = AggregatorLegacy
-        return super().__new__(cls)
-
     def __init__(self, name, output_dir, config, dependencies, options, recal_aggtask):
-        super().__init__(name, output_dir, config=config, dependencies=dependencies)
-
+        super().__init__(name, output_dir, config, dependencies, options, recal_aggtask)
+        self.logger.warning(
+            "Using Legacy Aggregator version, remove LEGACY: True to use the latest Aggregator"
+        )
         self.passed = False
         self.classifiers = [d for d in dependencies if isinstance(d, Classifier)]
         self.lcfit_deps = [
@@ -123,10 +115,6 @@ class Aggregator(Task):
             )
 
         merge_classifiers = self.config.get("MERGE_CLASSIFIERS")
-        if merge_classifiers is not None:
-            Task.fail_config(
-                "MERGE_CLASSIFIERS in the AGG stage is deprecated and must be removed. Probability names must be explicitly defined in the CLASSIFICATION stage. See the [docs](https://pippin.readthedocs.io/en/latest/src/tasks/classify.html) for more details."
-            )
         self.classifier_merge = {
             c.output["name"]: c.get_prob_column_name() for c in self.classifiers
         }
@@ -314,26 +302,236 @@ class Aggregator(Task):
     def _run(
         self,
     ):
-        failed = False
-        if Path(self.done_file).exists():
-            self.logger.debug(f"Found done file at {self.done_file}")
-            with open(self.done_file) as f:
-                if "SUCCESS" not in f.read().upper():
-                    failed = True
         new_hash = self.get_hash_from_string(
             self.name + str(self.include_type) + str(self.plot)
         )
-        if self._check_regenerate(new_hash) or failed:
-            self.logger.debug("Regenerating aggregator")
+        if self._check_regenerate(new_hash):
+            shutil.rmtree(self.output_dir, ignore_errors=True)
+            mkdirs(self.output_dir)
+
+            # Want to loop over each number and grab the relevant IDs and classifiers
+            for index in range(self.num_versions):
+                relevant_classifiers = [c for c in self.classifiers if c.index == index]
+                self.logger.debug(f"relevant_classifiers: {relevant_classifiers}")
+
+                prediction_files = [
+                    d.output["predictions_filename"] for d in relevant_classifiers
+                ]
+                lcfits = [d.get_fit_dependency() for d in relevant_classifiers]
+                self.logger.debug(f"lcfits: {lcfits}")
+
+                df = None
+
+                colnames = [self.classifier_merge[d.name] for d in relevant_classifiers]
+                self.logger.debug(f"colnames: {colnames}")
+                need_to_rename = len(colnames) != len(set(colnames))
+                rename_ind = []
+                if need_to_rename:
+                    self.logger.info(
+                        "Detected duplicate probability column names, will need to rename them"
+                    )
+                    for i, n in enumerate(colnames):
+                        if (
+                            len([j for j in range(len(colnames)) if colnames[j] == n])
+                            > 1
+                        ):
+                            rename_ind.append(i)
+
+                for i, (f, d, l) in enumerate(
+                    zip(prediction_files, relevant_classifiers, lcfits)
+                ):
+                    self.logger.debug(f"l: {l}")
+                    dataframe = self.load_prediction_file(f)
+                    dataframe = dataframe.rename(
+                        columns={
+                            d.get_prob_column_name(): self.classifier_merge[d.name]
+                        }
+                    )
+                    dataframe = dataframe.rename(
+                        columns={dataframe.columns[0]: self.id}
+                    )
+                    dataframe[self.id] = dataframe[self.id].apply(str)
+                    dataframe[self.id] = dataframe[self.id].str.strip()
+                    if (
+                        need_to_rename
+                        and (l is not None or l != [])
+                        and i in rename_ind
+                    ):
+                        lcname = ensure_list(l)[0]["name"]
+                        self.logger.debug(
+                            f"Renaming column {self.classifier_merge[d.name]} to include LCFIT name {lcname}"
+                        )
+                        dataframe = dataframe.rename(
+                            columns={
+                                self.classifier_merge[d.name]: self.classifier_merge[
+                                    d.name
+                                ]
+                                + "_RENAMED_"
+                                + lcname
+                            }
+                        )
+                    self.logger.debug(f"Merging on column {self.id} for file {f}")
+                    if df is None:
+                        df = dataframe
+                    else:
+                        df = pd.merge(df, dataframe, on=self.id, how="outer")
+
+                self.logger.info(
+                    f"Finding original types, size of prediction df is {df.shape if df is not None else 'None'}"
+                )
+                s = self.get_underlying_sim_task()
+                type_df = None
+                phot_dir = s.output["photometry_dirs"][index]
+                headers = [
+                    os.path.join(phot_dir, a)
+                    for a in os.listdir(phot_dir)
+                    if "HEAD" in a
+                ]
+                if len(headers) == 0:
+                    self.logger.warning(
+                        f"No HEAD fits files found in {phot_dir}, manually running grep command!"
+                    )
+
+                    cmd = "grep --exclude-dir=* TYPE *.dat | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command   {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(
+                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                    )
+                    output = process.stdout.decode("ascii").split("\n")
+                    output = [x for x in output if x]
+
+                    cmd = "zgrep TYPE *.dat.gz | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(
+                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                    )
+                    output2 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output2 if x]
+
+                    cmd = "zgrep TYPE *.txt | awk -F ':' '{print $1 $3}'"
+                    self.logger.debug(f"Running command  {cmd}  in dir {phot_dir}")
+                    process = subprocess.run(
+                        cmd, capture_output=True, cwd=phot_dir, shell=True
+                    )
+                    output3 = process.stdout.decode("ascii").split("\n")
+                    output += [x for x in output3 if x]
+
+                    if len(output) == 0:
+                        snid = []
+                    else:
+                        if "_" in output[0]:  # check if photometry is in filename
+                            snid = [
+                                x.split()[0].split("_")[1].split(".")[0] for x in output
+                            ]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
+                        else:
+                            snid = [x.split()[0].split(".")[0] for x in output]
+                            snid = [x[1:] if x.startswith("0") else x for x in snid]
+                    sntype = [x.split()[1].strip() for x in output]
+
+                    type_df = pd.DataFrame({self.id: snid, self.type_name: sntype})
+                    type_df[self.id] = type_df[self.id].astype(str).str.strip()
+                    type_df.drop_duplicates(subset=self.id, inplace=True)
+                else:
+                    for h in headers:
+                        with fits.open(h) as hdul:
+                            data = hdul[1].data
+                            snid = np.array(data.field("SNID"))
+                            sntype = np.array(data.field("SNTYPE")).astype(np.int64)
+                            # self.logger.debug(f"Photometry has fields {hdul[1].columns.names}")
+                            dataframe = pd.DataFrame(
+                                {self.id: snid, self.type_name: sntype}
+                            )
+                            dataframe[self.id] = (
+                                dataframe[self.id].astype(str).str.strip()
+                            )
+                            if type_df is None:
+                                type_df = dataframe
+                            else:
+                                type_df = pd.concat([type_df, dataframe])
+                        type_df.drop_duplicates(subset=self.id, inplace=True)
+                    self.logger.debug(
+                        f"Photometric types are {type_df['SNTYPE'].unique()}"
+                    )
+
+                if type_df is not None:
+                    if df is None:
+                        self.logger.debug("No original df found, only saving types")
+                        df = type_df
+                    else:
+                        self.logger.debug(
+                            f"Merging types of shape {type_df.shape} into df {df.shape}"
+                        )
+                        df = pd.merge(df, type_df, on=self.id, how="left")
+
+                self.logger.debug(
+                    f"Final dataframe from file ingestion has shape {df.shape}"
+                )
+                types = self.get_underlying_sim_task().output["types_dict"]
+                has_nonia = len(types.get("NONIA", [])) > 0
+                has_ia = len(types.get("IA", [])) > 0
+                self.logger.debug(f"Input types are {types}")
+                ia = df["SNTYPE"].apply(
+                    lambda y: 1.0
+                    if y in types["IA"]
+                    else (0.0 if y in types["NONIA"] else np.nan)
+                )
+                df["IA"] = ia
+
+                num_ia = (ia == 1.0).sum()
+                num_cc = (ia == 0.0).sum()
+                num_nan = ia.isnull().sum()
+
+                self.logger.info(
+                    f"Truth type has {num_ia} Ias, {num_cc} CCs and {num_nan} unknowns"
+                )
+
+                sorted_columns = [self.id, "SNTYPE", "IA"] + sorted(
+                    [c for c in df.columns if c.startswith("PROB_")]
+                )
+                df = df.reindex(sorted_columns, axis=1)
+                self.logger.info(
+                    f"Merged into dataframe of {df.shape[0]} rows, with columns {list(df.columns)}"
+                )
+
+                if df.shape[0] == 0:
+                    self.logger.warning(
+                        "Oh no, dataframe doesnt have any rows. What is going on? What strange data format is this?"
+                    )
+                    self.output["empty_agg"] = True
+
+                if has_nonia and has_ia:
+                    self.save_calibration_curve(df, self.output_cals[index])
+                    if self.recal_aggtask:
+                        df = self.recalibrate(df)
+
+                df.to_csv(self.output_dfs[index], index=False, float_format="%0.4f")
+
+                for l in self.lcfit_names:
+                    self.save_key_format(df, index, l)
+                self.logger.debug(
+                    f"Saving merged dataframe to {self.output_dfs[index]}"
+                )
+                self.save_new_hash(new_hash)
+
+                if self.plot:
+                    if index == 0 or self.plot_all:
+                        return_good = self._plot(index)
+                        if not return_good:
+                            self.logger.error(
+                                "Plotting did not work correctly! Attempting to continue anyway."
+                            )
+                else:
+                    self.logger.debug("Plot not set, skipping plotting section")
+
+            # Write the done file
+            self.logger.debug(f"Writing done file to {self.done_file}")
+            with open(self.done_file, "w") as f:
+                f.write("SUCCESS")
+
         else:
             self.should_be_done()
             self.logger.info("Hash check passed, not rerunning")
-            return True
-
-        shutil.rmtree(self.output_dir, ignore_errors=True)
-        mkdirs(self.output_dir)
-
-        self.save_new_hash(new_hash)
 
         self.output["merge_predictions_filename"] = self.output_dfs
         self.output["merge_key_filename"] = self.output_dfs_key
@@ -341,17 +539,9 @@ class Aggregator(Task):
         if self.include_type:
             self.output["sn_type_name"] = self.type_name
 
-        self.passed = not failed
+        self.passed = True
 
-        # Write the done file
-        self.logger.debug(f"Writing done file to {self.done_file}")
-        with open(self.done_file, "w") as f:
-            if self.passed:
-                f.write("SUCCESS")
-            else:
-                f.write("FAILED")
-
-        return self.passed
+        return True
 
     def save_key_format(self, df, index, lcfitname):
         lc_index = (
@@ -468,7 +658,7 @@ class Aggregator(Task):
                         )
                     else:
                         deps.append(recal_aggtask)
-                a = Aggregator(
+                a = AggregatorLegacy(
                     agg_name2,
                     _get_aggregator_dir(base_output_dir, stage_number, agg_name2),
                     config,
