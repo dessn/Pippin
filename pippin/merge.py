@@ -382,7 +382,10 @@ class Merger(Task):
                         continue
 
                     classifiers = []
+                    classify_name = '(noClassifier)'
                     for classify in classify_tasks:
+                        classify_name = classify.name  # RK Mar 19 2026 for diagnostic print below
+
                         if mask_class and mask_class not in classify.name:
                             continue
                         if mask and mask not in classify.name:
@@ -400,6 +403,7 @@ class Merger(Task):
                         ] and lcfit not in classify.get_fit_dependency(output=False):
                             continue
                         classifiers.append(classify)
+                    
                     num_gen += 1
 
                     merge_name2 = f"{name}_{lcfit.name}"
@@ -413,7 +417,9 @@ class Merger(Task):
                         options,
                     )
                     Task.logger.info(
-                        f"Creating merge task {merge_name2} for {lcfit.name}, {classify.name}, and {agg.name} with {task.num_jobs} jobs"
+                        f"Creating merge task {merge_name2} for {lcfit.name}, {classify_name}, " \
+                        f"and {agg.name} with {task.num_jobs} jobs"
+                        # xxx mark delete by RK 3/19/2026 f"Creating merge task {merge_name2} for {lcfit.name}, {classify.name}, and {agg.name} with {task.num_jobs} jobs"
                     )
                     tasks.append(task)
             if num_gen == 0:
