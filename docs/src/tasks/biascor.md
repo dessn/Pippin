@@ -1,6 +1,7 @@
-# 6. BIASCOR
+# 6. BIASCOR  
+- revised May 15 2026 by R.Kessler
 
-With all the probability goodness now in the FITRES files, we can move onto calculating bias corrections. For spec-confirmed surveys, you only need a Ia sample for bias corrections. For surveys with contamination, you will also need a CC only simulation/lcfit result. For each survey being used (as we would often combine lowz and highz surveys), you can specify inputs like below.
+Using the FITRES files produce by light curve fitting (2_LCFIT), along with optional classifer probabilities (3_CLASS), this stage runs SALT2mu.exe to implement "BEAMS with Bias Corrections" (BBC). A large SNIa simulation is needed for spec-confirmed and photometrically-identified samples; the latter also needs a large "non-Ia" simulation with Core Collapse SNe and peculiar SNe Ia. Inputs are shown below, along with how to combine surveys (e.g., low-z plus high-z).
 
 ```yaml
 BIASCOR:
@@ -8,52 +9,57 @@ BIASCOR:
     # The base input file to utilise
     BASE: surveys/des/bbc/bbc.input
     
-    # The names of the lcfits_data/simulations going in. List format please. Note LcfitLabel_SimLabel format
+    # names of the lcfits_data (real or sim). Note list format, and LcfitLabel_SimLabel key.
     DATA: [DESFIT_DESSIM, LOWZFIT_LOWZSIM]
     
-    # Input Ia bias correction simulations to be concatenated
+    # Input Ia bias correction simulation per survey
     SIMFILE_BIASCOR: [DESFIT_DESBIASCOR, LOWZFIT_LOWZBIASCOR]
 
-    # Optional, specify FITOPT to use. Defaults to 0 for each SIMFILE_BIASCOR. If using this option, you must specify a FITOPT for each SIMFILE_BIASCOR
-    SIMFILE_BIASCOR_FITOPTS: [0, 1] # FITOPT000 and FITOPT001
-
-    # For surveys that have contamination, add in the cc only simulation under CCPRIOR    
+    # For surveys with contamination (e.g., DES-SN5YR), include NONIA-only simulation for CCPRIOR    
     SIMFILE_CCPRIOR: DESFIT_DESSIMBIAS5YRCC
 
-    # Optional, specify FITOPT to use. Defaults to 0 for each SIMFILE_CCPRIOR. If using this option, you must specify a FITOPT for each SIMFILE_CCPRIOR
+    # Define which classifier PROB-Ia to use by specifying argument of PROB_COLUMN_NAME in 3_CLAS stage.
+    CLASSIFIER: PROB_SCONEV19
+    
+    # - - - - - - - - - - - - rarely used/obsolete features - - - - - - - - - - -
+    # Optional, specify FITOPT to use. Defaults to 0 for each SIMFILE_BIASCOR/SIMFILE_CCPRIOR. Must specify a FITOPT for each SIMFILE_BIASCOR/SIMFILE_CCPRIOR
+    SIMFILE_BIASCOR_FITOPTS: [0, 1] # FITOPT000 and FITOPT001
     SIMFILE_CCPRIOR_FITOPTS: [0, 1] # FITOPT000 and FITOPT001
 
-
-    # Which classifier to use. Column name in FITRES will be determined from this property.
-    # In the case of multiple classifiers this can either be
-    #    1. A list of classifiers which map to the same probability column name (as defined by MERGE_CLASSIFIERS in the AGGREGATION stage)
-    #    2. A probability column name (as defined by MERGE_CLASSIFIERS in the AGGREGATION stage)
-    # Note that this will crash if the specified classifiers do not map to the same probability column.
-    CLASSIFIER: UNITY
-    
     # Default False. If multiple sims (RANSEED_CHANGE), make one or all Hubble plots.
     MAKE_ALL_HUBBLE: False
     
-    # Defaults to False. Will load in the recalibrated probabilities, and crash and burn if they dont exist.
+    # Defaults to False. Load recalibrated probabilities.
     USE_RECALIBRATED: True
-    
-    # Defaults to True. If set to True, will rerun biascor twice, removing any SNID that got dropped in any FITOPT/MUOPT
-    CONSISTENT_SAMPLE: False
+    # - - - - - - - - - - - end rare/obsolete - - - - - - - - - - - - - - - 
 
   
-  # We can also specify muopts to add in systematics. They share the structure of the main biascor definition
-  # You can have multiple, use a dict structure, with the muopt name being the key
+  # Optional "MUOPTS" add BBC-related systematics. They share the structure of the main biascor definition. Can define multiple, or use a dict structure, with the MUOPT name being the key
   MUOPTS:
       C11:
         SIMFILE_BIASCOR: [D_DESBIASSYS_C11, L_LOWZBIASSYS_C11]
-        SCALE: 0.5 # Defaults to 1.0 scale, used by CREATE_COV to determine covariance matrix contribution
+        SCALE: 0.5 # Default=1, used by CREATE_COV to determine COVSYS contribution
         
   # Generic OPTS that can modify the base file and overwrite properties
   OTPS:
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
+
+    # optional replace BCOR & CCPRIOR for specific LCFIT-FITOPTS. 
+    # Each /path argument can be a comma-sep list (no brackets, no spaces) 
+    # to include multuple surveys.
+    # Initial motivation is for systematics with altered host zPHOT algorithm; 
+    # same zPHOT alteration should be be used for both data and biasCor.
+    REPLACE_SIMFILE_BIASCOR: 
+      label0: /path_replace_bcor0  # label0 must match a FITOPT label at 2_LCFIT stage
+      label1: /path_replace_bcor1  # label1 must match a FITOPT label at 2_LCFIT stage
+      etc ...
+    REPLACE_SIMFILE_CCPRIOR:
+      label0: /path_replace_cc0    # label0 must match a FITOPT label at 2_LCFIT stage
+      label1: /path_replace_cc1    # label1 must match a FITOPT label at 2_LCFIT stage      
+      etc ...
 ```
 
-For those that generate large simulations and want to cut them up into little pieces, you want the `NSPLITRAN` syntax. The configuration below will take the inputs and divide them into 10 samples, which will then propagate to 10 CosmoMC runs if you have a CosmoMC task defined.
+For those that generate large simulations and want to cut them up into little pieces, you want the `NSPLITRAN` syntax. The configuration below will take the inputs and divide them into 10 samples.
 
 ```yaml
 BIASCOR:
