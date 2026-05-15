@@ -44,13 +44,19 @@ BIASCOR:
   OTPS:
     BATCH_INFO: sbatch $SBATCH_TEMPLATES/SBATCH_Midway2_1hr.TEMPLATE 10
 
-    # optional replace BCOR & CCPRIOR for specific LCFIT-FITOPTS. Initial motivation is for systematics with altered zPHOT algorithm; same zPHOT alteration should be be run for both data and biasCor. Each /path argument can be a comma-sep list (no brackets, no spaces) to include multuple surveys.
+    # optional replace BCOR & CCPRIOR for specific LCFIT-FITOPTS. 
+    # Each /path argument can be a comma-sep list (no brackets, no spaces) 
+    # to include multuple surveys.
+    # Initial motivation is for systematics with altered host zPHOT algorithm; 
+    # same zPHOT alteration should be be used for both data and biasCor.
     REPLACE_SIMFILE_BIASCOR: 
       label0: /path_replace_bcor0  # label0 must match a FITOPT label at 2_LCFIT stage
       label1: /path_replace_bcor1  # label1 must match a FITOPT label at 2_LCFIT stage
+      etc ...
     REPLACE_SIMFILE_CCPRIOR:
       label0: /path_replace_cc0    # label0 must match a FITOPT label at 2_LCFIT stage
       label1: /path_replace_cc1    # label1 must match a FITOPT label at 2_LCFIT stage      
+      etc ...
 ```
 
 For those that generate large simulations and want to cut them up into little pieces, you want the `NSPLITRAN` syntax. The configuration below will take the inputs and divide them into 10 samples.
