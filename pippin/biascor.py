@@ -36,9 +36,22 @@ class BiasCor(ConfigBasedExecutable):
         batch_mem = self.batch_replace.get("REPLACE_MEM", None)
         if batch_mem is not None:
             self.yaml["CONFIG"]["BATCH_MEM"] = batch_mem
+
         batch_walltime = self.batch_replace.get("REPLACE_WALLTIME", None)
         if batch_walltime is not None:
             self.yaml["CONFIG"]["BATCH_WALLTIME"] = batch_walltime
+
+
+        # May 1 2026: RK - need new (optional) keys pasted into CONFIG block
+        #   to replace biascor/ccprior sim for specific FITOPTs
+        #   SNANA's submit_batch_jobs (BBC class) has already been updated
+        #   to implement these new CONFIG keys.
+        KEYLIST_REPLACE_SIMFILE = [ 'REPLACE_SIMFILE_BIASCOR', 'REPLACE_SIMFILE_CCPRIOR' ]
+        for key in KEYLIST_REPLACE_SIMFILE :
+            simfile = self.options.get(key)
+            if simfile:
+                self.yaml["CONFIG"][key] = simfile
+
         self.prob_cols = config["PROB_COLS"]
 
         self.merged_data = config.get("DATA")
@@ -429,14 +442,6 @@ class BiasCor(ConfigBasedExecutable):
             self.merged_ccsim, self.merged_ccsim_fitopts
         )
 
-        # xxxxxx RK playground xxxxxxxxxx
-        #tmp_ty = type(self.merged_data)
-        #print(f"\n xxx type(merged_data) = {tmp_ty}")
-        #for m in self.merged_data:
-        #    print(f" xxx m.output = {m.output}")
-        #sys.exit(f"\n xxx bye ")
-        # xxxxxxxxxxxxxxxxxxxxxx
-
         self.data = [m.output["lc_output_dir"] for m in self.merged_data]
         self.data_fitres = [m.output["fitres_file"] for m in self.merged_data]
         # print('MERGED DATA')
@@ -459,6 +464,9 @@ class BiasCor(ConfigBasedExecutable):
         for key, value in self.options.items():
             assignment = "="
             if key.upper().startswith("BATCH") or key.upper() in yaml_keys:
+                self.yaml["CONFIG"][key] = value
+                continue
+            if key.upper().startswith("REPLACE_SIMFILE") :  # May 14 2026 R.Kessler
                 self.yaml["CONFIG"][key] = value
                 continue
             if key.upper().startswith("CUTWIN"):
