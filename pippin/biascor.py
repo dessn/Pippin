@@ -1,7 +1,7 @@
 import copy
 import shutil
 import subprocess
-import os, sys
+import os, sys, glob
 import pandas as pd
 import numpy as np
 
@@ -356,7 +356,7 @@ class BiasCor(ConfigBasedExecutable):
             else ",".join(
                 [
                     os.path.join(
-                        ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
+                        ia_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.{self.table_suffix}"
                     )
                     for (i, n) in enumerate(fitopt_num)
                 ]
@@ -372,7 +372,7 @@ class BiasCor(ConfigBasedExecutable):
             else ",".join(
                 [
                     os.path.join(
-                        cc_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz"
+                        cc_sims[i].output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.{self.table_suffix}"
                     )
                     for (i, n) in enumerate(fitopt_num)
                 ]
@@ -411,18 +411,35 @@ class BiasCor(ConfigBasedExecutable):
 
         return result, index_map
 
+    def get_table_suffix(self):
+        first_dir = self.merged_iasim[0].output['fitres_dirs'][0]
+        suffix_priority_list = [ 'NPZ', 'npz', 'gz' ]
+        for suf in suffix_priority_list:
+            wildcard = f"{first_dir}/FITOPT*.{suf}"
+            n        = len(glob.glob(wildcard))
+            if n > 0: return suf
+
+        return None
+
     def write_input(self):
         if self.merged_iasim is not None:
+
+            # Nov 24 2026 RK - use first dir to determine if tables are NPZ or gz(text)
+            self.table_suffix = self.get_table_suffix()
+            self.logger.info(f"Merged table suffix is {self.table_suffix}")
+
             for i, m in enumerate(self.merged_iasim):
                 if len(m.output["fitres_dirs"]) > 1:
                     self.logger.warning(
                         f"Your IA sim {m} has multiple versions! Using 0 index from options {m.output['fitres_dirs']}"
                     )
+
                 self.logger.debug(f"Fitres directory: {m.output['fitres_dirs'][0]}")
                 n = self.merged_iasim_fitopts[i]
+                fitopt_basename = f"FITOPT{n:03}.FITRES.{self.table_suffix}" 
                 assert os.path.exists(
-                    os.path.join(m.output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz")
-                ), f"FITOPT{n:03} does not exist for your IA sim {m}"
+                    os.path.join(m.output["fitres_dirs"][0], f"{fitopt_basename}")
+                ), f"{fitopt_basename} does not exist for your IA sim {m}"
         if self.merged_ccsim is not None:
             for i, m in enumerate(self.merged_ccsim):
                 if len(m.output["fitres_dirs"]) > 1:
@@ -431,9 +448,10 @@ class BiasCor(ConfigBasedExecutable):
                     )
                 self.logger.debug(f"Fitres directory: {m.output['fitres_dirs'][0]}")
                 n = self.merged_ccsim_fitopts[i]
+                fitopt_basename = f"FITOPT{n:03}.FITRES.{self.table_suffix}"
                 assert os.path.exists(
-                    os.path.join(m.output["fitres_dirs"][0], f"FITOPT{n:03}.FITRES.gz")
-                ), f"FITOPT{n:03} does not exist for your CC sim {m}"
+                    os.path.join(m.output["fitres_dirs"][0], f"{fitopt_basename}")
+                ), f"{fitopt_basename} does not exist for your CC sim {m}"
 
         self.bias_cor_fits = self.get_simfile_biascor(
             self.merged_iasim, self.merged_iasim_fitopts
@@ -590,6 +608,9 @@ class BiasCor(ConfigBasedExecutable):
         if self.blind:
             self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input()
+
+        sys.exit(f"\n xxx DEBUG EXIT ... ")
+
         if regenerating:
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Will check for done file at {self.done_file}")
