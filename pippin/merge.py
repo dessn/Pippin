@@ -148,7 +148,6 @@ class Merger(Task):
 
             fitres_wildcard = self.get_fitres_wildcard(fitres_dir)  # Nov 23 2026 ; return .NPZ or .gz list
 
-            # xxx mark sys.exit(f"\n xxx DEBUG EXIT: fitres_wildcard = \n{fitres_wildcard}")
             # xxx mark delete Nov 23 2026 by R.K.
             #fitres_wildcard = (f"{fitres_dir}/FITOPT*" )  # combine_fitres will search this wildcard
             # xxxxxxx end mark
@@ -182,11 +181,11 @@ class Merger(Task):
         # Return wildcard for FITOPT*NPZ or FITOPT*gz files.
         # If both exist, NPZ has priority
 
-        suffix_check_list = [ '.NPZ', '.npz', '.gz' ]  # priority-ordered list to check
+        suffix_check_list = [ 'NPZ', 'npz', 'gz' ]  # priority-ordered list to check
         import glob
 
         for suf in suffix_check_list:
-            fitres_wildcard = f"{fitres_dir}/FITOPT*{suf}" 
+            fitres_wildcard = f"{fitres_dir}/FITOPT*.FITRES.{suf}" 
             f_list = glob.glob(fitres_wildcard)
             if len(f_list) > 0: return fitres_wildcard
 
@@ -344,7 +343,7 @@ class Merger(Task):
         with open(self.merge_output_file, "wt") as io:
             io.write(merge_output)
 
-        #sys.exit(f"\n xxx DEBUG EXIT after wriing merge output config")
+        # xxx mark sys.exit(f"\n xxx DEBUG EXIT after wriing merge output config")
 
         self.save_new_hash(new_hash)
 
