@@ -12,6 +12,32 @@ from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
 
 
+def npz_name(fitres_name):
+    """Return the NPZ table name that goes with a FITRES text-table name,
+    e.g. FITOPT000.FITRES.gz -> FITOPT000.FITRES.NPZ"""
+    base = fitres_name[:-3] if fitres_name.endswith(".gz") else fitres_name
+    return base + ".NPZ"
+
+
+def get_fitres_path(lcfit_output, fitopt="DEFAULT", index=0, prefer_npz=True):
+    """
+    Created Nov 23 2026 by R.Kessler and Claude
+    Full path of the FITRES table for one LCFIT output dict (task.output).
+
+    If prefer_npz and the NPZ table exists, return it; otherwise return the
+    text (.gz) table, as before. The check is done on disk at call time, so it
+    also works for LCFIT tasks that finished in an earlier pippin run (no
+    'fitopt_map_best' key stored) as long as the LCFIT task is done.
+    """
+    fitres_dir = lcfit_output["fitres_dirs"][index]
+    name = lcfit_output["fitopt_map"][fitopt]
+    if prefer_npz:
+        npz_path = os.path.join(fitres_dir, npz_name(name))
+        if os.path.exists(npz_path):
+            return npz_path
+    return os.path.join(fitres_dir, name)
+
+
 class SNANALightCurveFit(ConfigBasedExecutable):
     """
 
@@ -200,6 +226,30 @@ class SNANALightCurveFit(ConfigBasedExecutable):
         self.output["fitres_file"] = os.path.join(
             self.fitres_dirs[0], mapped["DEFAULT"]
         )
+
+    def resolve_table_names(self):
+        """
+        Created Nov 23 2026 by R.Kessler and Claude
+        After LCFIT finishes, choose NPZ (if it exists) or .gz for each FITOPT.
+        fitopt_map / fitres_file are left unchanged (always .gz); new keys:
+          fitopt_map_best : same keys as fitopt_map, NPZ name where NPZ exists
+                            in every fitres_dir, else the .gz name
+          fitres_file_best: path of DEFAULT table in fitres_dirs[0]
+          fitres_format   : {fitopt label: 'NPZ' or 'gz'}
+        """
+        best, fmt = {}, {}
+        for label, name in self.output["fitopt_map"].items():
+            npz = npz_name(name)
+            if all(os.path.exists(os.path.join(d, npz)) for d in self.fitres_dirs):
+                best[label], fmt[label] = npz, "NPZ"
+            else:
+                best[label], fmt[label] = name, "gz"
+        self.output["fitopt_map_best"] = best
+        self.output["fitres_file_best"] = os.path.join(
+            self.fitres_dirs[0], best["DEFAULT"]
+        )
+        self.output["fitres_format"] = fmt
+        self.logger.info(f"FITRES table format per FITOPT: {fmt}")
 
     def get_sim_dependency(self):
         for t in self.dependencies:
@@ -426,6 +476,7 @@ class SNANALightCurveFit(ConfigBasedExecutable):
                             s = self.get_sim_dependency()
                             self.output["SURVEY"] = s["SURVEY"]
                             self.output["SURVEY_ID"] = s["SURVEY_ID"]
+                        self.resolve_table_names()
                         return Task.FINISHED_SUCCESS
                     else:
                         return Task.FINISHED_FAILURE

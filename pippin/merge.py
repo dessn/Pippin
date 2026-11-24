@@ -9,7 +9,7 @@ from pippin.dataprep import DataPrep
 from pippin.snana_fit import SNANALightCurveFit
 from pippin.snana_sim import SNANASimulation
 from pippin.task import Task
-import os
+import os, sys
 
 
 class Merger(Task):
@@ -112,16 +112,13 @@ class Merger(Task):
         # prepare config file for submit_batch_jobs to do the actual merging
         # of LCFIT and classifier probs.
 
-        merge_input_file = self.base_file  # in Pippin/data/files (no user input here)
-        task_name = self.lc_fit["genversion"]
+        merge_input_file  = self.base_file  # in Pippin/data/files (no user input here)
+        task_name         = self.lc_fit["genversion"]
         lcfit_fitres_dirs = self.lc_fit["fitres_dirs"]
-        classifiers = self.classifiers
-        output_dir = self.output_dir
+        classifiers       = self.classifiers
+        output_dir        = self.output_dir
 
         n_task = len(lcfit_fitres_dirs)
-
-        # print(f"XXX: lcfit\n{__import__('pprint').pprint(self.lc_fit)}")
-        # print(f"XXX: classifier\n{__import__('pprint').pprint(self.classifiers)}")
 
         # read base input file
         with open(merge_input_file, "r") as i:
@@ -148,9 +145,14 @@ class Merger(Task):
 
         # - - - - loop over folders (not FITRES files)
         for index, fitres_dir in enumerate(lcfit_fitres_dirs):
-            fitres_wildcard = (
-                f"{fitres_dir}/FITOPT*"  # combine_fitres will search this wildcard
-            )
+
+            fitres_wildcard = self.get_fitres_wildcard(fitres_dir)  # Nov 23 2026 ; return .NPZ or .gz list
+
+            # xxx mark sys.exit(f"\n xxx DEBUG EXIT: fitres_wildcard = \n{fitres_wildcard}")
+            # xxx mark delete Nov 23 2026 by R.K.
+            #fitres_wildcard = (f"{fitres_dir}/FITOPT*" )  # combine_fitres will search this wildcard
+            # xxxxxxx end mark
+
             subtask_name = os.path.basename(fitres_dir)
 
             # find classifiers for this task (borrow/tweak logic from legacy aggregator code)
@@ -174,6 +176,25 @@ class Merger(Task):
         config += "\n\n# === END: === \n"
 
         return config
+
+    def get_fitres_wildcard(self,fitres_dir):
+        # Created Nov 23 2026 by R.Kessler
+        # Return wildcard for FITOPT*NPZ or FITOPT*gz files.
+        # If both exist, NPZ has priority
+
+        suffix_check_list = [ '.NPZ', '.npz', '.gz' ]  # priority-ordered list to check
+        import glob
+
+        for suf in suffix_check_list:
+            fitres_wildcard = f"{fitres_dir}/FITOPT*{suf}" 
+            f_list = glob.glob(fitres_wildcard)
+            if len(f_list) > 0: return fitres_wildcard
+
+        # if we get here, found nothing so abort.
+        self.logger.error(f"\n ERROR: Could not find FITOPT*{suffix_check_list} files in" \
+                          f"\n\t{fitres_dir}")
+
+        return fitres_wildcard
 
     def get_underlying_sim_task(self):
 
@@ -322,6 +343,8 @@ class Merger(Task):
         # write merge output file
         with open(self.merge_output_file, "wt") as io:
             io.write(merge_output)
+
+        #sys.exit(f"\n xxx DEBUG EXIT after wriing merge output config")
 
         self.save_new_hash(new_hash)
 

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from pippin.classifiers.classifier import Classifier
 from pippin.config import get_config, get_data_loc
+from pippin.snana_fit import get_fitres_path
 from pippin.task import Task
 
 
@@ -323,8 +324,8 @@ class SconeClassifier(Classifier):
                 fitres_dir       = tmp_dict["fitres_dirs"][self.index]
                 fitres_dir_base  = os.path.basename(fitres_dir)
                 if fitres_dir_base in sim_dirs_base:  # require a match somewhere (Feb 10 2026)
-                    fitopt_base_file = tmp_dict["fitopt_map"]["DEFAULT"]
-                    fitres_file      = f"{fitres_dir}/{fitopt_base_file}"
+                    # NPZ table if it exists, else .gz (see snana_fit.get_fitres_path)
+                    fitres_file = get_fitres_path(tmp_dict, "DEFAULT", self.index)
                     config_lines.append(f"  - {fitres_file}")
 
         return config_lines
@@ -348,7 +349,12 @@ class SconeClassifier(Classifier):
                 if "SUCCESS" not in f.read().upper():
                     return Task.FINISHED_FAILURE
 
-            pred_path = str(Path(self.output_dir) / "predictions.csv")
+            # Nov 23 2026 R.Kessler check for npz or csv.
+            # Perhaps later this will become a general utility for all classifiers?
+            pred_path_npz = str(Path(self.output_dir) / "predictions.npz")
+            pred_path_csv = str(Path(self.output_dir) / "predictions.csv")
+            for pred_path in [ pred_path_npz, pred_path_csv ]:
+                if os.path.exists(pred_path): break
 
             self.output.update(
                 {
