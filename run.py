@@ -207,6 +207,8 @@ def run(args):
 
     if args.start is not None:
         args.refresh = True
+    # --fast only affects 1_SIM (read in SNANASimulation._run); not part of the hash.
+    get_config()["FAST"] = args.fast
     manager.set_start(args.start)
     manager.set_finish(args.finish)
     manager.set_force_refresh(args.refresh)
@@ -286,6 +288,12 @@ def get_args(test=False):
         "-c",
         "--check",
         help="Check if config is valid",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "--fast",
+        help="For quick tests: pass --fast to submit_batch_jobs.sh in stage 1_SIM only (10x fewer events). Does not affect the hash or later stages.",
         action="store_true",
         default=False,
     )

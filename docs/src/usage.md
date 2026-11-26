@@ -58,6 +58,7 @@ On top of this, Pippin has a few command line arguments, which you can detail wi
   -c, --check        Check that the input config is valid but don't actually run any tasks.
   -s, --start        Start at this task and refresh everything after it. Number of string accepted
   -f, --finish       Finish at this stage. For example -f 3 or -f CLASSIFY to run up to and including classification. 
+  --fast             Quick tests: adds --fast to submit_batch_jobs.sh for the 1_SIM stage only (10x fewer events). Later stages are unaffected, and the hash is unchanged so it will not trigger a rerun by itself.
   -p, --permission   Fix permissions and groups on all output, don't rerun
   -i, --ignore       Do NOT regenerate/run tasks up to and including this stage.
   -S, --syntax       If no task is given, prints out the possible tasks. If a task name or number is given, prints the docs on that task. For instance 'pippin.sh -S 0' and 'pippin.sh -S DATAPREP' will print the documentation for the DATAPREP task.

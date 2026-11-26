@@ -609,8 +609,6 @@ class BiasCor(ConfigBasedExecutable):
             self.logger.info("NOTE: This run is being BLINDED")
         regenerating = self.write_input()
 
-        sys.exit(f"\n xxx DEBUG EXIT ... ")
-
         if regenerating:
             command = ["submit_batch_jobs.sh", os.path.basename(self.config_filename)]
             self.logger.debug(f"Will check for done file at {self.done_file}")

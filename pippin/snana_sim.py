@@ -458,9 +458,14 @@ class SNANASimulation(ConfigBasedExecutable):
             self.should_be_done()
             return True
 
+        cmd = ["submit_batch_jobs.sh", os.path.basename(self.config_path)]
+        if self.global_config.get("FAST"):
+            cmd.append("--fast")  # SNANA prescales sim events by 10 (tests only)
+            self.logger.info("--fast: submit_batch_jobs.sh will use 10x fewer events")
+
         with open(self.logging_file, "w") as f:
             subprocess.run(
-                ["submit_batch_jobs.sh", os.path.basename(self.config_path)],
+                cmd,
                 stdout=f,
                 stderr=subprocess.STDOUT,
                 cwd=self.output_dir,
